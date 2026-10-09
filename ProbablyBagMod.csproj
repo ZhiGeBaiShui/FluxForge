@@ -1,0 +1,39 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <AssemblyName>ProbablyBagMod</AssemblyName>
+    <RootNamespace>ProbablyBagMod</RootNamespace>
+    <PlatformTarget>x64</PlatformTarget>
+    <LangVersion>10.0</LangVersion>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <OutputPath>..\build\</OutputPath>
+    <DebugType>none</DebugType>
+    <Optimize>true</Optimize>
+    <Deterministic>true</Deterministic>
+    <ProduceReferenceAssembly>false</ProduceReferenceAssembly>
+    <NoWarn>$(NoWarn);CS0108;CS0109;CS0114;CS0169;CS0414;CS0649;CS1591</NoWarn>
+    <GameDir>E:\SteamLibrary\steamapps\common\Probably Stolen Demo</GameDir>
+    <Il2CppDir>$(GameDir)\MelonLoader\Il2CppAssemblies</Il2CppDir>
+    <MelonDir>$(GameDir)\MelonLoader\net6</MelonDir>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Il2CppRef Include="$(Il2CppDir)\*.dll" Exclude="$(Il2CppDir)\Il2Cpp0Harmony.dll" />
+    <MelonRef Include="$(MelonDir)\*.dll" Exclude="$(MelonDir)\MelonLoader.NativeHost.dll;$(MelonDir)\Il2CppInterop.Generator.dll;$(MelonDir)\AsmResolver*.dll;$(MelonDir)\Mono.Cecil*.dll;$(MelonDir)\Iced.dll" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="@(Il2CppRef)">
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="@(MelonRef)">
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+
+</Project>
