@@ -6,7 +6,7 @@
     <RootNamespace>ProbablyBagMod</RootNamespace>
     <LangVersion>10.0</LangVersion>
     <Nullable>disable</Nullable>
-    <ImplicitUsings>disable</ImplicitUsings>
+    <ImplicitUsings>enable</ImplicitUsings>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <OutputPath>..\build\</OutputPath>

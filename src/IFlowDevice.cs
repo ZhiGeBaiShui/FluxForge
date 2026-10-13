@@ -7,8 +7,8 @@ namespace ProbablyBagMod
     ///
     /// 装置是「运动 + 反应」的复合体，一个接口搞定：
     ///   返回值决定流源从哪些方向出去（运动）
-    ///   载荷由装置自行 <see cref="IFlowPayload.Clone"/> / <see cref="IFlowPayload.Merge"/> 得到
-    ///   （反应——装置调用这两个能力，却不必知道载荷是什么）
+    ///   载荷由装置自行 <see cref="IFlowPayload.Split"/> / <see cref="IFlowPayload.Merge"/> 得到
+    ///   （反应——装置调用这两个能力，却不必知道字段含义）
     /// </summary>
     public interface IFlowDevice
     {
