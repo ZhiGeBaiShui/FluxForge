@@ -111,12 +111,12 @@ namespace ProbablyBagMod
                 else
                 {
                     // 加权平均：按各份的物质总量加权（现算，不信任何缓存状态）
-                    double weight = ComputeAddSum(this);
+                    double weight = SumSubstances(this);
                     double weightedSum = (double)field.GetValue(this) * weight;
 
                     foreach (FlowProperties other in others)
                     {
-                        double otherWeight = ComputeAddSum(other);
+                        double otherWeight = SumSubstances(other);
                         weightedSum += (double)field.GetValue(other) * otherWeight;
                         weight += otherWeight;
                     }
@@ -134,7 +134,7 @@ namespace ProbablyBagMod
         }
 
         /// <summary>现算一份的物质总量：所有 Merge=Add 的字段之和。</summary>
-        private static double ComputeAddSum(FlowProperties p)
+        private static double SumSubstances(FlowProperties p)
         {
             double total = 0d;
             foreach (PropertyRule rule in RuleTable)
