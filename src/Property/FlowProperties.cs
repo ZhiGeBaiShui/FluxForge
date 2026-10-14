@@ -53,6 +53,10 @@ namespace ProbablyBagMod
         /// <summary>
         /// 等分成 count 份。总量守恒——不是复制，每份得到原值的 1/count。
         /// Keep 规则的字段（温度）每份保留原值。
+        /// <para>
+        /// 实现：先算出「一份」应有的样子，再复制 count 遍。
+        /// 每份内容彼此等价但相互独立（引用不同），可各自被单独修改。
+        /// </para>
         /// </summary>
         public List<FlowProperties> Split(int count)
         {
@@ -61,27 +65,26 @@ namespace ProbablyBagMod
                 throw new ArgumentOutOfRangeException(nameof(count));
             }
 
+            // ① 算出「一份」
+            var template = (FlowProperties)MemberwiseClone();
+            foreach (PropertyRule rule in RuleTable)
+            {
+                if (rule.Split != SplitRule.Divide)
+                {
+                    continue;   // Keep：原样保留
+                }
+
+                FieldInfo field = FieldMap[rule.FieldName];
+                double value = (double)field.GetValue(this);
+                field.SetValue(template, value / count);
+            }
+            template.Recalculate();
+
+            // ② 复制 count 份（MemberwiseClone 不走构造函数，故可反复复制）
             var result = new List<FlowProperties>(count);
             for (int i = 0; i < count; i++)
             {
-                // MemberwiseClone 不走构造函数，直接按字段复制一份；
-                // 这样本类无需对外暴露无参构造。
-                var copy = (FlowProperties)MemberwiseClone();
-
-                foreach (PropertyRule rule in RuleTable)
-                {
-                    if (rule.Split != SplitRule.Divide)
-                    {
-                        continue;   // Keep：原样保留
-                    }
-
-                    FieldInfo field = FieldMap[rule.FieldName];
-                    double value = (double)field.GetValue(this);
-                    field.SetValue(copy, value / count);
-                }
-
-                copy.Recalculate();
-                result.Add(copy);
+                result.Add((FlowProperties)template.MemberwiseClone());
             }
             return result;
         }
