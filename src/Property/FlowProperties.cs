@@ -12,7 +12,6 @@ namespace ProbablyBagMod
     /// 设计约定：
     ///   - 只提供带参构造，外部无法 <c>new FlowProperties()</c> 造出半空对象
     ///   - <see cref="Split"/> / <see cref="Merge"/> 均为纯函数：返回新对象，不修改本对象与入参
-    ///   - 造出的新对象内部已重算 <see cref="TotalMass"/>，拿出来就是自洽的
     ///   - 新增 public double 字段时，必须在 <c>RuleTable</c> 声明分合规则，
     ///     否则静态构造函数直接抛异常点名
     /// </summary>
@@ -23,12 +22,6 @@ namespace ProbablyBagMod
 
         /// <summary>温度。单位与刻度由上层约定，框架不解释。</summary>
         public double Temperature;
-
-        /// <summary>
-        /// 总物质含量。只读，外部改不了，由 <see cref="Recalculate"/> 写入。
-        /// 作为加权平均的权重：物质越多，该份话语权越大。
-        /// </summary>
-        public double TotalMass { get; private set; }
 
         private static readonly PropertyRule[] RuleTable = new[]
         {
@@ -47,7 +40,6 @@ namespace ProbablyBagMod
         {
             Moisture = moisture;
             Temperature = temperature;
-            Recalculate();
         }
 
         /// <summary>
@@ -78,7 +70,6 @@ namespace ProbablyBagMod
                 double value = (double)field.GetValue(this);
                 field.SetValue(template, value / count);
             }
-            template.Recalculate();
 
             // ② 复制 count 份（MemberwiseClone 不走构造函数，故可反复复制）
             List<FlowProperties> result = new List<FlowProperties>(count);
@@ -119,13 +110,13 @@ namespace ProbablyBagMod
                 }
                 else
                 {
-                    // 加权平均：按各份的总物质加权
-                    double weight = ComputeMass(this);
+                    // 加权平均：按各份的物质总量加权（现算，不信任何缓存状态）
+                    double weight = ComputeAddSum(this);
                     double weightedSum = (double)field.GetValue(this) * weight;
 
                     foreach (FlowProperties other in others)
                     {
-                        double otherWeight = ComputeMass(other);
+                        double otherWeight = ComputeAddSum(other);
                         weightedSum += (double)field.GetValue(other) * otherWeight;
                         weight += otherWeight;
                     }
@@ -139,21 +130,11 @@ namespace ProbablyBagMod
                 }
             }
 
-            result.Recalculate();
             return result;
         }
 
-        /// <summary>重算总物质含量：把所有 Merge=Add 的字段求和。</summary>
-        public void Recalculate()
-        {
-            TotalMass = ComputeMass(this);
-        }
-
-        /// <summary>
-        /// 现算一份的总物质。刻意不读 <see cref="TotalMass"/>，
-        /// 因为合并时各份是否刚被刷过不可信，不能依赖入参状态。
-        /// </summary>
-        private static double ComputeMass(FlowProperties p)
+        /// <summary>现算一份的物质总量：所有 Merge=Add 的字段之和。</summary>
+        private static double ComputeAddSum(FlowProperties p)
         {
             double total = 0d;
             foreach (PropertyRule rule in RuleTable)

@@ -11,13 +11,12 @@ namespace ProbablyBagMod.Tests
         }
 
         [Fact]
-        public void Ctor_SetsFieldsAndTotalMass()
+        public void Ctor_SetsFields()
         {
             FlowProperties p = Make(100d, 20d);
 
             Assert.Equal(100d, p.Moisture);
             Assert.Equal(20d, p.Temperature);
-            Assert.Equal(100d, p.TotalMass);   // 只有 Moisture 是 Add 字段
         }
 
         [Fact]
@@ -36,7 +35,7 @@ namespace ProbablyBagMod.Tests
         }
 
         [Fact]
-        public void Split_KeepsTotalMassConsistent()
+        public void Split_KeepsTotalAmountConsistent()
         {
             FlowProperties p = Make(100d, 50d);
 
@@ -46,9 +45,20 @@ namespace ProbablyBagMod.Tests
             foreach (FlowProperties part in parts)
             {
                 sum += part.Moisture;
-                Assert.Equal(50d, part.TotalMass);   // 每份的 TotalMass 与自身水分一致
             }
-            Assert.Equal(100d, sum);                  // 总量守恒
+            Assert.Equal(100d, sum);   // 总量守恒
+        }
+
+        [Fact]
+        public void Split_ProducedPartsAreIndependentInstances()
+        {
+            FlowProperties p = Make(100d, 50d);
+
+            List<FlowProperties> parts = p.Split(3);
+
+            Assert.NotSame(parts[0], parts[1]);
+            parts[0].Moisture = 999d;
+            Assert.Equal(100d / 3d, parts[1].Moisture);   // 改一份不影响另一份
         }
 
         [Fact]
@@ -60,7 +70,6 @@ namespace ProbablyBagMod.Tests
 
             Assert.Equal(100d, p.Moisture);
             Assert.Equal(50d, p.Temperature);
-            Assert.Equal(100d, p.TotalMass);
         }
 
         [Fact]
@@ -76,7 +85,6 @@ namespace ProbablyBagMod.Tests
             Assert.Equal(100d, merged.Moisture);
             // (20*60 + 80*40) / 100 = 44
             Assert.Equal(44d, merged.Temperature);
-            Assert.Equal(100d, merged.TotalMass);
         }
 
         [Fact]
@@ -129,18 +137,22 @@ namespace ProbablyBagMod.Tests
 
             Assert.Equal(70d, merged.Moisture);
             Assert.Equal(30d, merged.Temperature);
-            Assert.Equal(70d, merged.TotalMass);
+            Assert.NotSame(a, merged);   // 是新对象，不改原对象
         }
 
         [Fact]
-        public void Merge_RecalculateAfterDirectFieldChange()
+        public void Merge_WeightsUseLiveFieldValues_NotStaleState()
         {
-            FlowProperties p = Make(100d, 20d);
+            // 入参刚被直接改过字段：Merge 必须按当前真实值加权
+            FlowProperties a = Make(60d, 20d);
+            FlowProperties b = Make(40d, 80d);
+            b.Moisture = 200d;      // 直接改字段，没有中间状态可刷
 
-            p.Moisture = 40d;
-            p.Recalculate();
+            FlowProperties merged = a.Merge(new List<FlowProperties> { b });
 
-            Assert.Equal(40d, p.TotalMass);
+            Assert.Equal(260d, merged.Moisture);
+            // 按真实水分加权：(20*60 + 80*200) / 260 = 66.15...
+            Assert.Equal((20d * 60d + 80d * 200d) / 260d, merged.Temperature, 6);
         }
 
         [Fact]
@@ -158,21 +170,6 @@ namespace ProbablyBagMod.Tests
             FlowProperties p = Make(100d, 20d);
 
             Assert.Throws<ArgumentNullException>(() => p.Merge(null));
-        }
-
-        [Fact]
-        public void Merge_DoesNotTrustStaleTotalMassOfInput()
-        {
-            // 入参的 TotalMass 过期（水分改了没刷），Merge 仍应算对
-            FlowProperties a = Make(60d, 20d);
-            FlowProperties b = Make(40d, 80d);
-            b.Moisture = 200d;      // 直接改字段，不调 Recalculate → b.TotalMass 仍是 40
-
-            FlowProperties merged = a.Merge(new List<FlowProperties> { b });
-
-            Assert.Equal(260d, merged.Moisture);
-            // 按真实水分加权：(20*60 + 80*200) / 260 = 66.15...
-            Assert.Equal((20d * 60d + 80d * 200d) / 260d, merged.Temperature, 6);
         }
     }
 }
