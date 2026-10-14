@@ -70,7 +70,7 @@ namespace ProbablyBagMod.Tests
             FlowProperties a = Make(60d, 20d);
             FlowProperties b = Make(40d, 80d);
 
-            var rest = new List<FlowProperties> { b };
+            List<FlowProperties> rest = new List<FlowProperties> { b };
             FlowProperties merged = a.Merge(rest);
 
             Assert.Equal(100d, merged.Moisture);

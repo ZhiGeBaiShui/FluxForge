@@ -66,7 +66,7 @@ namespace ProbablyBagMod
             }
 
             // ① 算出「一份」
-            var template = (FlowProperties)MemberwiseClone();
+            FlowProperties template = (FlowProperties)MemberwiseClone();
             foreach (PropertyRule rule in RuleTable)
             {
                 if (rule.Split != SplitRule.Divide)
@@ -81,7 +81,7 @@ namespace ProbablyBagMod
             template.Recalculate();
 
             // ② 复制 count 份（MemberwiseClone 不走构造函数，故可反复复制）
-            var result = new List<FlowProperties>(count);
+            List<FlowProperties> result = new List<FlowProperties>(count);
             for (int i = 0; i < count; i++)
             {
                 result.Add((FlowProperties)template.MemberwiseClone());
@@ -102,7 +102,7 @@ namespace ProbablyBagMod
                 throw new ArgumentNullException(nameof(others));
             }
 
-            var result = (FlowProperties)MemberwiseClone();
+            FlowProperties result = (FlowProperties)MemberwiseClone();
 
             foreach (PropertyRule rule in RuleTable)
             {
@@ -172,7 +172,7 @@ namespace ProbablyBagMod
             FieldInfo[] fields = typeof(FlowProperties).GetFields(
                 BindingFlags.Public | BindingFlags.Instance);
 
-            var map = new Dictionary<string, FieldInfo>(fields.Length);
+            Dictionary<string, FieldInfo> map = new Dictionary<string, FieldInfo>(fields.Length);
             foreach (FieldInfo field in fields)
             {
                 map[field.Name] = field;
