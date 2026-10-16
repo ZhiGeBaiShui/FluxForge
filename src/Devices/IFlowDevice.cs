@@ -13,6 +13,6 @@ namespace ProbablyBagMod
         /// 尝试对流源发生反应。是否真的反应由实现类自己判断。
         /// </summary>
         /// <param name="properties">流源的属性（实参）。</param>
-        void TryReact(FlowProperties properties);
+        bool TryReact(FlowProperties properties);
     }
 }

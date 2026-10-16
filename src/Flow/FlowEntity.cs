@@ -1,15 +1,14 @@
 namespace ProbablyBagMod
 {
     /// <summary>
-    /// 流源：在背包格间传导的「一团东西」。
+    /// 流源：在背包格间传导的「一团东西」。纯数据对象。
     ///
-    /// 它是三层共用的核心对象：
-    ///   · 运动层管理它（推进、转向）
-    ///   · 装置的注册入口（分流/汇聚产生的新流源就是它）
-    ///   · 待生成容器的条目本体
+    /// 不持有任何事件与方法——生命周期三时机全部由框架集中广播：
+    ///   生：FlowSpawner.Register（装置注册）→ OnEntityAdded 广播
+    ///   动：FlowManager.Tick 推进 → OnEntityMoved 广播
+    ///   死：FlowSpawner.Kill（装置发起）→ OnEntityRemoved 广播
     ///
-    /// 纯逻辑对象，不含任何 Unity 内容。进入游戏后，由 mod 层为每个 FlowEntity
-    /// 配一个 GameObject 壳（壳持有本对象引用），显式与动画全在壳上——本类不知道壳存在。
+    /// 纯逻辑对象，不含 Unity 内容。显示由 mod 层的 GameObject 壳经框架广播间接关联。
     /// </summary>
     public class FlowEntity
     {

@@ -13,6 +13,11 @@ namespace ProbablyBagMod
     /// </summary>
     public class FlowMotionData
     {
+        public FlowMotionData(int direction, double speed)
+        {
+            Direction = direction;
+            Speed = speed;
+        }
         /// <summary>方向索引对应的 X 位移表（与 <see cref="Dy"/> 同序使用）。</summary>
         public static readonly int[] Dx = { 0, 1, 0, -1 };
 
@@ -22,7 +27,17 @@ namespace ProbablyBagMod
         /// <summary>方向索引（0=上 1=右 2=下 3=左）。</summary>
         public int Direction;
 
-        /// <summary>速度（格/帧）。</summary>
-        public float Speed;
+        /// <summary>速度（格/秒）。</summary>
+        public double Speed;
+
+        /// <summary>
+        /// 按当前方向和速度，算一帧（deltaTime 秒）的位移分量。
+        /// 查表封装在此——调用方无需感知 Dx / Dy 表。
+        /// </summary>
+        public (double Dx, double Dy) FrameOffset(double deltaTime)
+        {
+            double distance = Speed * deltaTime;
+            return (Dx[Direction] * distance, Dy[Direction] * distance);
+        }
     }
 }

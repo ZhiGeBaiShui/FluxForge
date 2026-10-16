@@ -12,7 +12,7 @@ namespace ProbablyBagMod
     /// 设计约定：
     ///   - 只提供带参构造，外部无法 <c>new FlowProperties()</c> 造出半空对象
     ///   - <see cref="Split"/> / <see cref="Merge"/> 均为纯函数：返回新对象，不修改本对象与入参
-    ///   - 新增 public double 字段时，必须在 <c>RuleTable</c> 声明分合规则，
+    ///   - 新增 public double 字段时，必须在 <c>_ruleTable</c> 声明分合规则，
     ///     否则静态构造函数直接抛异常点名
     /// </summary>
     public sealed class FlowProperties
@@ -23,13 +23,13 @@ namespace ProbablyBagMod
         /// <summary>温度。单位与刻度由上层约定，框架不解释。</summary>
         public double Temperature;
 
-        private static readonly PropertyRule[] RuleTable = new[]
+        private static readonly PropertyRule[] _ruleTable = new[]
         {
             new PropertyRule(nameof(Moisture),    SplitRule.Divide, MergeRule.Add),
             new PropertyRule(nameof(Temperature), SplitRule.Keep,    MergeRule.WeightedAverage),
         };
 
-        private static readonly Dictionary<string, FieldInfo> FieldMap = BuildFieldMap();
+        private static readonly Dictionary<string, FieldInfo> _fieldMap = BuildFieldMap();
 
         static FlowProperties()
         {
@@ -52,21 +52,22 @@ namespace ProbablyBagMod
         /// </summary>
         public List<FlowProperties> Split(int count)
         {
-            if (count < 1)
+            if (count < 2)
             {
-                throw new ArgumentOutOfRangeException(nameof(count));
+                throw new ArgumentOutOfRangeException(nameof(count), "count 必须大于等于 2");
             }
 
             // ① 算出「一份」
             FlowProperties template = (FlowProperties)MemberwiseClone();
-            foreach (PropertyRule rule in RuleTable)
+
+            foreach (PropertyRule rule in _ruleTable)
             {
                 if (rule.Split != SplitRule.Divide)
                 {
                     continue;   // Keep：原样保留
                 }
 
-                FieldInfo field = FieldMap[rule.FieldName];
+                FieldInfo field = _fieldMap[rule.FieldName];
                 double value = (double)field.GetValue(this);
                 field.SetValue(template, value / count);
             }
@@ -95,9 +96,9 @@ namespace ProbablyBagMod
 
             FlowProperties result = (FlowProperties)MemberwiseClone();
 
-            foreach (PropertyRule rule in RuleTable)
+            foreach (PropertyRule rule in _ruleTable)
             {
-                FieldInfo field = FieldMap[rule.FieldName];
+                FieldInfo field = _fieldMap[rule.FieldName];
 
                 if (rule.Merge == MergeRule.Add)
                 {
@@ -137,13 +138,13 @@ namespace ProbablyBagMod
         private static double SumSubstances(FlowProperties p)
         {
             double total = 0d;
-            foreach (PropertyRule rule in RuleTable)
+            foreach (PropertyRule rule in _ruleTable)
             {
                 if (rule.Merge != MergeRule.Add)
                 {
                     continue;
                 }
-                total += (double)FieldMap[rule.FieldName].GetValue(p);
+                total += (double)_fieldMap[rule.FieldName].GetValue(p);
             }
             return total;
         }
@@ -164,9 +165,9 @@ namespace ProbablyBagMod
         private static void Validate()
         {
             // 规则指向的字段必须存在
-            foreach (PropertyRule rule in RuleTable)
+            foreach (PropertyRule rule in _ruleTable)
             {
-                if (!FieldMap.ContainsKey(rule.FieldName))
+                if (!_fieldMap.ContainsKey(rule.FieldName))
                 {
                     throw new InvalidOperationException(
                         "分合规则指向了不存在的字段：" + rule.FieldName);
@@ -174,10 +175,10 @@ namespace ProbablyBagMod
             }
 
             // 每个 public 字段都必须配规则
-            foreach (string name in FieldMap.Keys)
+            foreach (string name in _fieldMap.Keys)
             {
                 bool matched = false;
-                foreach (PropertyRule rule in RuleTable)
+                foreach (PropertyRule rule in _ruleTable)
                 {
                     if (rule.FieldName == name)
                     {
@@ -190,7 +191,7 @@ namespace ProbablyBagMod
                 {
                     throw new InvalidOperationException(
                         "属性字段缺少分合规则：FlowProperties." + name
-                        + "（请在 RuleTable 中为该字段声明 PropertyRule）");
+                        + "（请在 _ruleTable 中为该字段声明 PropertyRule）");
                 }
             }
         }

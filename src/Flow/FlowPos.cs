@@ -16,19 +16,33 @@ namespace ProbablyBagMod
     /// </summary>
     public class FlowPos
     {
-        public float X;
-        public float Y;
+        public double X;
+        public double Y;
 
-        public FlowPos(float x, float y)
+        public FlowPos(double x, double y)
         {
             X = x;
             Y = y;
         }
 
+        /// <summary>把位置设为给定坐标（格子坐标截停等场景用）。</summary>
+        public void Set(double x, double y)
+        {
+            X = x;
+            Y = y;
+        }
+
+        /// <summary>把位置设为另一位置的值（直达终点等场景用）。</summary>
+        public void Set(FlowPos other)
+        {
+            X = other.X;
+            Y = other.Y;
+        }
+
         /// <summary>
         /// 判断给定坐标是否与本位置处于同一格：各自向下取整、舍弃小数位后比较。
         /// </summary>
-        public bool IsSameCell(float x, float y)
+        public bool IsSameCell(double x, double y)
         {
             return Math.Floor(x) == Math.Floor(X)
                 && Math.Floor(y) == Math.Floor(Y);

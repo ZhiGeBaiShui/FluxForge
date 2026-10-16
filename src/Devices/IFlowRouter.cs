@@ -23,6 +23,6 @@ namespace ProbablyBagMod
         /// 对流入的流源做路由（再分配）。
         /// </summary>
         /// <param name="incoming">流入的流源（实参）。装置自行读取其位置/运动数据/属性。</param>
-        void Route(FlowEntity incoming);
+        bool Route(FlowEntity incoming);
     }
 }
