@@ -1,0 +1,10 @@
+{
+  "items": [
+    {
+      "key": "flow_machine",
+      "template": "system_module_performance",
+      "sprite": "flow_machine",
+      "name": "流量机"
+    }
+  ]
+}

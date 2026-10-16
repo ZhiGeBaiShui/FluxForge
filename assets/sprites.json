@@ -1,0 +1,12 @@
+{
+  "sprites": [
+    {
+      "key": "flow_machine",
+      "atlas": "flow_machine_atlas",
+      "file": "flow_machine_16x32.png",
+      "shape": "11",
+      "shapeWidth": 1,
+      "ppu": 100.0
+    }
+  ]
+}

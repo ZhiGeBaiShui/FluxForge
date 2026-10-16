@@ -4,17 +4,36 @@
     <TargetFramework>net6.0</TargetFramework>
     <AssemblyName>ProbablyBagMod</AssemblyName>
     <RootNamespace>ProbablyBagMod</RootNamespace>
+    <PlatformTarget>x64</PlatformTarget>
     <LangVersion>10.0</LangVersion>
     <Nullable>disable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <OutputPath>..\build\</OutputPath>
     <DebugType>none</DebugType>
     <Optimize>true</Optimize>
     <Deterministic>true</Deterministic>
-    <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <NoWarn>$(NoWarn);CS0108;CS0109;CS0114;CS0169;CS0414;CS0649;CS1591</NoWarn>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Il2CppRef Include="E:\SteamLibrary\steamapps\common\Probably Stolen Demo\MelonLoader\Il2CppAssemblies\*.dll"
+                 Exclude="E:\SteamLibrary\steamapps\common\Probably Stolen Demo\MelonLoader\Il2CppAssemblies\Il2Cpp0Harmony.dll" />
+    <MelonRef Include="E:\SteamLibrary\steamapps\common\Probably Stolen Demo\MelonLoader\net6\*.dll"
+                Exclude="E:\SteamLibrary\steamapps\common\Probably Stolen Demo\MelonLoader\net6\MelonLoader.NativeHost.dll;E:\SteamLibrary\steamapps\common\Probably Stolen Demo\MelonLoader\net6\Il2CppInterop.Generator.dll;E:\SteamLibrary\steamapps\common\Probably Stolen Demo\MelonLoader\net6\AsmResolver*.dll;E:\SteamLibrary\steamapps\common\Probably Stolen Demo\MelonLoader\net6\Mono.Cecil*.dll;E:\SteamLibrary\steamapps\common\Probably Stolen Demo\MelonLoader\net6\Iced.dll" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="@(Il2CppRef)"><Private>false</Private></Reference>
+    <Reference Include="@(MelonRef)"><Private>false</Private></Reference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="assets\*.png" />
+    <EmbeddedResource Include="assets\*.json" />
+  </ItemGroup>
 
   <ItemGroup>
     <Compile Remove="tests/**/*.cs" />

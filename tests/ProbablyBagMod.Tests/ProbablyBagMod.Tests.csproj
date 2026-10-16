@@ -18,7 +18,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\ProbablyBagMod.csproj" />
+    <!-- 测试只编译逻辑层（src/Logic），保持「零游戏依赖」的独立可测性。
+         主工程已引用游戏 Il2Cpp 程序集（mod 层需要），测试环境加载不了，
+         故不 ProjectReference，直接编入逻辑层源码。 -->
+    <Compile Include="..\..\src\Logic\**\*.cs" />
   </ItemGroup>
 
 </Project>
