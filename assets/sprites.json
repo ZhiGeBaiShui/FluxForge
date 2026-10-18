@@ -3,10 +3,16 @@
     {
       "key": "flow_machine",
       "atlas": "flow_machine_atlas",
-      "file": "flow_machine_16x32.png",
-      "shape": "11",
-      "shapeWidth": 1,
-      "ppu": 100.0
+      "file": "flow_machine.png",
+      "shape": "111111",
+      "shapeWidth": 2
+    },
+    {
+      "key": "ice_block",
+      "atlas": "ice_block_atlas",
+      "file": "ice_block.png",
+      "shape": "1",
+      "shapeWidth": 1
     }
   ]
 }

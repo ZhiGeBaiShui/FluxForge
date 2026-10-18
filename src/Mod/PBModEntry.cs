@@ -8,8 +8,13 @@ using MelonLoader;
 namespace ProbablyBagMod.Mod
 {
     /// <summary>
-    /// mod 入口：场景加载时把 items.json 的每个物品注册进原版物品目录；
-    /// 生成走通用工厂（原版模板 + 贴图三字段 + shape 占位 + 名称）。
+    /// mod 入口：把 items.json 的每个物品注册进游戏物品目录。
+    ///
+    /// 注册走两条路（钩子优先，扫描兜底）：
+    ///   ① 官方钩子 <see cref="Il2Cpp.ModHook.OnModItemDirectoryInit"/>：游戏初始化 mod 目录时回调。
+    ///      ModItemDirectory.InitDirectory 内部会 Fire，实测会触发。
+    ///   ② 兜底：场景加载时 FindObjectsOfType&lt;ItemDirectory&gt; 取现成目录注册。
+    /// 两条路只走一条（_registered 保证幂等）。
     /// </summary>
     public sealed class PBModEntry : MelonMod
     {
@@ -18,7 +23,29 @@ namespace ProbablyBagMod.Mod
         public override void OnInitializeMelon()
         {
             HarmonyInstance.PatchAll();
+
+            // 代码工厂必须在物品目录注册前登记（目录工厂回调时才查得到）
+            IceBlockFactory.Register();
+
+            Il2Cpp.ModHook.OnModItemDirectoryInit = DelegateSupport.ConvertDelegate<
+                Il2CppSystem.Action<Il2Cpp.ModItemDirectory>>(OnModItemDirectoryInit);
+
+            FlowTooltipPatch.LogPatchState();
+
             LoggerInstance.Msg("ProbablyBagMod 已加载");
+        }
+
+        /// <summary>官方钩子：mod 目录初始化时回调。</summary>
+        private void OnModItemDirectoryInit(Il2Cpp.ModItemDirectory directory)
+        {
+            if (_registered || directory == null)
+            {
+                return;
+            }
+
+            string report = RegisterInto(directory);
+            _registered = true;
+            LoggerInstance.Msg("[注册] 经 ModHook.OnModItemDirectoryInit：" + report);
         }
 
         public override void OnSceneWasLoaded(int buildIndex, string sceneName)
@@ -36,43 +63,40 @@ namespace ProbablyBagMod.Mod
             }
 
             Il2Cpp.ItemDirectory directory = dirs[0].TryCast<Il2Cpp.ItemDirectory>();
+            if (directory == null)
+            {
+                return;
+            }
+
+            string report = RegisterInto(directory);
+            _registered = true;
+            LoggerInstance.Msg("[注册] 经场景扫描（钩子未触发）：" + report);
+        }
+
+        /// <summary>把配置里的每个物品塞进目录。返回简要报告。</summary>
+        private static string RegisterInto(Il2Cpp.ItemDirectory directory)
+        {
             FlowItemRegistry registry = FlowItemRegistry.Instance;
+            int success = 0;
 
             foreach (string key in registry.Keys)
             {
                 FlowItemDefinition def = registry.Get(key);
-                Func<Il2Cpp.GameItem> factory = () => CreateItem(def);
-                directory.Add(def.key,
+                Func<Il2Cpp.GameItem> factory = () => ItemFactory.Create(def);
+                bool added = directory.Add(def.key,
                     DelegateSupport.ConvertDelegate<Il2CppSystem.Func<Il2Cpp.GameItem>>(factory));
+
+                if (added)
+                {
+                    success++;
+                }
+                else
+                {
+                    MelonLogger.Warning("[注册] " + def.key + " 添加失败（可能已存在）");
+                }
             }
 
-            _registered = true;
-            LoggerInstance.Msg("[注册] " + registry.Count + " 个物品已注册");
-        }
-
-        /// <summary>通用工厂：原版模板 + 贴图（三字段 + shape）+ 名称。</summary>
-        private static Il2Cpp.GameItem CreateItem(FlowItemDefinition def)
-        {
-            Il2Cpp.GameItem item = Il2Cpp.DirectoryMaster.Item(def.template, true);
-            SpriteEntry sprite = FlowSpriteRegistry.Instance.GetEntry(def.SpriteKey);
-
-            if (sprite != null)
-            {
-                item.spriteAtlasPath = sprite.atlas;
-                item.spritePath = sprite.key;
-                item.spriteChanged = true;
-
-                Il2Cpp.GridShapeBuilder shapeBuilder = new Il2Cpp.GridShapeBuilder();
-                shapeBuilder.SetData(sprite.shape, sprite.shapeWidth);
-                item.shape = shapeBuilder.shape;
-            }
-
-            if (!string.IsNullOrEmpty(def.name))
-            {
-                item.SetName(def.name);
-            }
-
-            return item;
+            return success + "/" + registry.Count + " 个物品";
         }
     }
 }

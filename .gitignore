@@ -13,6 +13,12 @@ obj/
 # === 本工具的工作目录 ===
 .workbuddy-ai/
 
+# === 工具产物 / 调试中间文件 ===
+*.genie
+review_results.json
+assets/raw/
+generated-images/
+
 # === 系统文件 ===
 Thumbs.db
 desktop.ini

@@ -2,9 +2,45 @@
   "items": [
     {
       "key": "flow_machine",
+      "base": "template",
       "template": "system_module_performance",
       "sprite": "flow_machine",
-      "name": "流量机"
+      "name": "流量机",
+      "desc": "使背包内相邻的流源按方向逐格传导。\n每帧推进一格，遇到装置即改变走向。",
+      "flavor": "它嗡嗡作响，像在抱怨自己被降级了。"
+    },
+    {
+      "key": "ice_block",
+      "base": "empty",
+      "sprite": "ice_block",
+      "name": "冰块",
+      "desc": "吸收流源的热量，自身逐渐融化。\n融化后水分随流源带走。",
+      "flavor": "握在手里有股刺骨的凉意。",
+      "itemTypes": [],
+      "tags": [
+        { "valueName": "ICE_BLOCK_TAG" },
+        { "valueName": "LIQUID_CONTAINER_CURRENT", "valueInt": 100000 },
+        { "valueName": "ICE_TEMPERATURE", "valueFloat": -5.0 }
+      ],
+      "statusLines": [
+        {
+          "tag": "LIQUID_CONTAINER_CURRENT",
+          "label": "含冰量",
+          "scale": 0.001,
+          "format": "0.#",
+          "unit": "g",
+          "color": "LightBlue"
+        },
+        {
+          "tag": "ICE_TEMPERATURE",
+          "label": "温度",
+          "scale": 1,
+          "format": "0.#",
+          "unit": "℃",
+          "color": "LightCyan",
+          "valueType": "float"
+        }
+      ]
     }
   ]
 }
