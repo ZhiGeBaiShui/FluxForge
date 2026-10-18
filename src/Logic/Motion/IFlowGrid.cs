@@ -9,6 +9,9 @@ namespace ProbablyBagMod
     /// </summary>
     public interface IFlowGrid
     {
+        /// <summary>格子是否在网格范围内。流源走出去就该消失，靠这个判断。</summary>
+        bool Contains(int cellX, int cellY);
+
         /// <summary>查询格子上的路由装置（分流 / 转向）。没有返回 null。</summary>
         IFlowRouter GetRouterAt(int cellX, int cellY);
 

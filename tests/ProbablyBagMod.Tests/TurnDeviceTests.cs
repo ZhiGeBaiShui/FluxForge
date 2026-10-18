@@ -7,8 +7,8 @@ namespace ProbablyBagMod.Tests
 {
     /// <summary>
     /// L 型转向装置（2 通道 SplitDevice）的端到端验证：
-    /// 流源从左向右发射，在 (10,10) 撞上 L 装置后转向朝上。
-    /// 坐标系：x 自左往右递增，y 自下往上递增。
+    /// 流源从左向右发射，在 (10,10) 撞上 L 装置后转向朝下。
+    /// 坐标系与游戏网格一致：x 自左往右递增，y 自上往下递增。
     /// </summary>
     public class TurnDeviceTests
     {
@@ -42,22 +42,28 @@ namespace ProbablyBagMod.Tests
             {
                 return null;
             }
+
+            /// <summary>测试网格当作无限大，边界回收逻辑不在本测试覆盖范围。</summary>
+            public bool Contains(int cellX, int cellY)
+            {
+                return true;
+            }
         }
 
         [Fact]
         public void FlowFromRight_TurnsUpAtLDevice()
         {
-            // L 形装置：两开口朝左、下（左进下出）。
-            // 通道集：朝左开口收右行流源(1)；朝下开口为出口——流源出去时朝下走(2)。
-            SplitDevice lDevice = new SplitDevice(facing: 0, new[] { 1, 2 });
+            // 通道方向 = 开口朝向。流源向右运动，要从「朝左的开口」(3) 进入，
+            // 所以通道集是 { 左(3), 下(2) }：左进、下出。
+            SplitDevice lDevice = new SplitDevice(facing: 0, new[] { 3, 2 });
             FakeGrid grid = new FakeGrid().SetRouter(10, 10, lDevice);
-            FlowManager.Instance.Bind(grid);
 
             // 流源：起点 (1,10)，朝右(1)，1 格/秒
             FlowEntity entity = new FlowEntity(
                 new FlowPos(1, 10),
                 new FlowMotionData(1, 1),
-                new FlowProperties(100, 20));
+                new FlowProperties(100, 20),
+                grid);
             FlowSpawner.Instance.Register(entity, 0);
 
             // 逐帧推进并记录跨格轨迹（dt = 0.5s/帧 → 0.5 格/帧）
@@ -103,9 +109,9 @@ namespace ProbablyBagMod.Tests
             // ③ 到达装置前仍是向右
             Assert.Equal(1, trajectory[deviceIndex - 1].Dir);
 
-            // ④ 转向后朝下走（y 递减）
-            Assert.True(trajectory[trajectory.Count - 1].CellY < 10,
-                "转向后应朝下走（y 递减）");
+            // ④ 转向后朝下走（Y 轴向下，故 y 递增）
+            Assert.True(trajectory[trajectory.Count - 1].CellY > 10,
+                "转向后应朝下走（y 递增）");
 
             // ⑤ 速度全程不变
             foreach ((double t, int cx, int cy, int dir, double speed) in trajectory)

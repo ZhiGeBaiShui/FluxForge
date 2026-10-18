@@ -6,8 +6,12 @@
       "template": "system_module_performance",
       "sprite": "flow_machine",
       "name": "流量机",
-      "desc": "使背包内相邻的流源按方向逐格传导。\n每帧推进一格，遇到装置即改变走向。",
-      "flavor": "它嗡嗡作响，像在抱怨自己被降级了。"
+      "desc": "打开后是一块可自定义大小的网格，把流量装置放进去即可驱动流源。",
+      "flavor": "它嗡嗡作响，像在抱怨自己被降级了。",
+      "grid": "4x3",
+      "itemTypes": [
+        "MACHINE"
+      ]
     },
     {
       "key": "ice_block",
@@ -16,15 +20,25 @@
       "name": "冰块",
       "desc": "吸收流源的热量，自身逐渐融化。\n融化后水分随流源带走。",
       "flavor": "握在手里有股刺骨的凉意。",
-      "itemTypes": [],
+      "itemTypes": [
+        "FLOW_DEVICE"
+      ],
       "tags": [
-        { "valueName": "ICE_BLOCK_TAG" },
-        { "valueName": "LIQUID_CONTAINER_CURRENT", "valueInt": 100000 },
-        { "valueName": "ICE_TEMPERATURE", "valueFloat": -5.0 }
+        {
+          "valueName": "ICE_BLOCK_TAG"
+        },
+        {
+          "valueName": "FLOW_STOCK",
+          "valueInt": 1000000
+        },
+        {
+          "valueName": "ICE_TEMPERATURE",
+          "valueFloat": -5.0
+        }
       ],
       "statusLines": [
         {
-          "tag": "LIQUID_CONTAINER_CURRENT",
+          "tag": "FLOW_STOCK",
           "label": "含冰量",
           "scale": 0.001,
           "format": "0.#",
@@ -33,6 +47,86 @@
         },
         {
           "tag": "ICE_TEMPERATURE",
+          "label": "温度",
+          "scale": 1,
+          "format": "0.#",
+          "unit": "℃",
+          "color": "LightCyan",
+          "valueType": "float"
+        }
+      ]
+    },
+    {
+      "key": "flow_emitter",
+      "base": "empty",
+      "sprite": "flow_emitter",
+      "name": "发射装置",
+      "desc": "从水容器接收水分，启动后持续向上发射流源。",
+      "flavor": "它不讲道理，只讲方向。",
+      "itemTypes": [
+        "FLOW_DEVICE"
+      ],
+      "tags": [
+        {
+          "valueName": "FLOW_STOCK",
+          "valueInt": 0
+        },
+        {
+          "valueName": "FLOW_TEMPERATURE",
+          "valueFloat": 25.0
+        }
+      ],
+      "statusLines": [
+        {
+          "tag": "FLOW_STOCK",
+          "label": "存量",
+          "scale": 0.001,
+          "format": "0.#",
+          "unit": "mL",
+          "color": "LightBlue"
+        },
+        {
+          "tag": "FLOW_TEMPERATURE",
+          "label": "温度",
+          "scale": 1,
+          "format": "0.#",
+          "unit": "℃",
+          "color": "LightCyan",
+          "valueType": "float"
+        }
+      ]
+    },
+    {
+      "key": "flow_collector",
+      "base": "empty",
+      "sprite": "flow_collector",
+      "name": "收集装置",
+      "desc": "接收流源，把其中的水分与温度累积存储。",
+      "flavor": "来者不拒。",
+      "itemTypes": [
+        "FLOW_DEVICE"
+      ],
+      "tags": [
+        {
+          "valueName": "FLOW_STOCK",
+          "valueInt": 0
+        },
+        {
+          "valueName": "FLOW_TEMPERATURE",
+          "valueFloat": 25.0
+        }
+      ],
+      "statusLines": [
+        {
+          "tag": "FLOW_STOCK",
+          "label": "已收集",
+          "scale": 0.001,
+          "format": "0.#",
+          "unit": "mL",
+          "color": "LightGreen"
+        },
+        {
+          "tag": "FLOW_TEMPERATURE",
           "label": "温度",
           "scale": 1,
           "format": "0.#",

@@ -1,3 +1,4 @@
+using System;
 using HarmonyLib;
 using MelonLoader;
 using UnityEngine;
@@ -10,26 +11,49 @@ namespace ProbablyBagMod.Mod
     ///
     /// 正路：物品工厂设置三字段（spriteAtlasPath=我们的atlas / spritePath=我们的key /
     /// spriteChanged=true）→ 元素刷新 → 解析时 atlas 命中 → 返回嵌入图。
+    ///
+    /// ⚠ 这是游戏 UI 的原生调用入口，Prefix 里抛异常会顺着原生栈冒出去直接杀进程。
+    ///   所以整段包 try/catch，任何失败都退回「放行」，让游戏用原生贴图继续跑。
     /// </summary>
     [HarmonyPatch(typeof(Il2Cpp.RenderHandler), "LoadFromAtlas")]
     public static class LoadFromAtlasPatch
     {
+        /// <summary>命中日志只打一次：UI 每次刷新都会走这里，无条件打会刷爆日志。</summary>
+        private static bool _hitLogged;
+
         public static bool Prefix(string atlasPath, string name, ref Sprite __result)
         {
-            SpriteEntry entry;
-            if (FlowSpriteRegistry.Instance.TryMatchAtlas(atlasPath, out entry))
+            try
             {
-                Sprite sprite = FlowSpriteRegistry.Instance.GetSprite(entry.key);
-                if (sprite != null)
+                SpriteEntry entry;
+                if (!FlowSpriteRegistry.Instance.TryMatchAtlas(atlasPath, out entry))
                 {
-                    __result = sprite;
-                    MelonLogger.Msg("[贴图] 拦截命中：atlas=" + atlasPath
-                        + " name=" + name + " sprite=" + sprite.rect.width + "x" + sprite.rect.height);
-                    return false;   // 拦截：返回我们的贴图
+                    return true;
                 }
-            }
 
-            return true;            // 放行：游戏原生 atlas
+                Sprite sprite = FlowSpriteRegistry.Instance.GetSprite(entry.key);
+                if (sprite == null)
+                {
+                    return true;
+                }
+
+                __result = sprite;
+
+                if (!_hitLogged)
+                {
+                    _hitLogged = true;
+                    MelonLogger.Msg("[贴图] 首次拦截命中：atlas=" + atlasPath
+                        + " name=" + name + " sprite=" + sprite.rect.width + "x" + sprite.rect.height
+                        + "（后续命中不再打印）");
+                }
+
+                return false;
+            }
+            catch (Exception e)
+            {
+                MelonLogger.Error("[贴图] 拦截过程出错，退回原生贴图：" + e);
+                return true;
+            }
         }
     }
 }

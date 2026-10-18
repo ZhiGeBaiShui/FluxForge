@@ -1,6 +1,6 @@
 # Probably Stolen 游戏机制 API 手册
 
-> 来源：2026-10-09 ~ 10-17 的 mod 开发沉淀（ProbablyBagMod）
+> 来源：2026-10-09 ~ 10-18 的 mod 开发沉淀（ProbablyBagMod）
 > 取证手段：ISIL 转储（`_isil_out/IsilDump`）+ ilspycmd 反编译（mod DLL / Il2Cpp 程序集）+ UnityPy 资源提取 + 游戏内只读探针
 > 适用对象：给 Probably Stolen 做自定义物品 / 贴图 / UI 的 mod 开发者
 
@@ -15,9 +15,13 @@
 | 10-14 | 代码清零，改由用户主导设计 | 保留 29 项设计决策，代码从 git 历史恢复 |
 | 10-16 | 自定义物品生成层 | 目录注册 + `items.json` / `sprites.json` 双配置驱动 |
 | 10-17 | **贴图链路攻关**（本文重点） | 从「16px 假设」到「ppu 才是真参数」，渲染层 patch 全部撤销 |
+| 10-18 | 物品交互层攻关（面板 / 拖拽 / 液体 / 生命周期） | 双击走 `contentWindow`、拖拽走 `Target` 链、水瓶按物质分 tag、网格 Y 轴向下 |
 
 **10-17 的最终结论（一句话）**：
 > 游戏把贴图按 **ppu 换算成「世界尺寸」** 再排进 UI；只要 `ppu = 贴图宽 ÷ (列数 × 0.16)`，图片尺寸、平铺格数、命中判定会同时自动正确，**不需要任何渲染层补丁**。
+
+**10-18 的最终结论（一句话）**：
+> 物品交互都由游戏通用处理器驱动：双击看 `contentWindow`、拖拽看 `Target` 链、液体看容器类型；mod 只挂数据、打行为 Prefix，不改交互层。
 
 ---
 
@@ -147,7 +151,7 @@ GameItem item = DirectoryMaster.Item("system_module_performance", true);
 GameItem item = ItemDirectory.CreateEmptyItem(null);
 ```
 
-**用途**：从零构建容器类物品（需要自己配 `SetContentWindow` / 标签）。
+**用途**：从零构建容器类物品（需要自己配 `SetContentWindow` / 标签；面板构造见 3.8）。
 
 ---
 
@@ -231,6 +235,28 @@ GridShape lShape = new GridShapeBuilder().SetData("1110", 2).Build();
 | `globalWidth` / `globalHeight` | 按 orientation 交换后的宽高 |
 | `minX` / `minY` | 最小坐标（锚点） |
 | `data` | `byte[]`，0/1 占位表 |
+
+#### 网格坐标系（Y 轴向下）
+
+`GridPixelElement.Validate` 把网格坐标换算成 UI 位置，ISIL 指令 470~482：
+
+```
+470 Move rax, r14          ; 行号 × 格高
+471 Neg rax                 ; 取负
+472 Move xmm0, rbp          ; 列号 × 格宽
+474 Move stack:0x38, xmm0   ; x
+476 Move xmm0, rax          ; -y
+477 Move stack:0x3C, xmm0   ; y
+482 Call RectTransform.set_anchoredPosition
+```
+
+⇒ **`anchoredPosition = (x, -y)`，网格 Y 轴向下。**
+
+- `minY = 0` 是**最上面**一行；`minY` 越大越靠屏幕下方
+- 想让物品在视觉上「向上」移动，网格 Y 要**减小**
+- 不要按数学坐标（Y 向上）理解 `shape.minY`，否则上下会反
+
+> 按 `shape.minY + height` 遍历占格时，行号递增在屏幕上就是往下走。
 
 ---
 
@@ -340,6 +366,254 @@ item.SetSprite("my_atlas", "my_sprite");
 **结论**：物品必须在目录里**稳定注册**（`directory.Add(key, factory)`），否则读档后物品丢失；
 运行中临时改的字段若不在存档里，读档后会被目录工厂的默认值覆盖。
 
+> `ModHook.OnGameLoadedInit` 在读档流程的 **ISIL 108** 就触发，早于真正的读档 IO
+> （`SaveFiles.WithIORetry` 121/134、`SaveFiles.IndexLoad` 154），即**先于物品重建**。
+> 要清空「旧物品 → 自定义状态」的缓存，放在这个钩子里是安全的。详见 4.5。
+
+---
+
+### 3.8 物品 UI 面板（PixelWindow）
+
+> 结论先行：物品面板不需要预制体，也不需要 patch 双击——`PixelWindow` 可以纯代码构造，
+> `item.SetContentWindow(window)` 之后游戏的双击处理器会自动开/关它。
+>
+> 取证：`ItemMouseDoubleClickHandler` / `PixelWindow` / `GridPixelElement` 反编译，`AnimalCage.CreateCageWindow` 原版范例。
+
+#### 3.8.1 双击打开：`ItemMouseDoubleClickHandler.DoubleClickAction`
+
+处理顺序（ISIL 反编译）：
+
+```
+DoubleClickAction(item, mousePosition)
+  ├─ item.contentWindow != null → OpenContentAction（打开 / 关闭，开关式）
+  └─ 否则                      → OpenExamineAction（原版检视窗）
+```
+
+所以 mod 侧只需要：
+
+```csharp
+item.SetContentWindow(window);
+```
+
+`GameItem.SetContentWindow(PixelWindow window)` 把窗口挂到物品的 `contentWindow` 字段；
+窗口的开关由双击处理器负责。双击就自动生效，**不要**再 patch `DoubleClickAction` 去手动 Show/Hide。
+只有要追加「双击时顺便做别的事」才 patch（见 7.4）。
+
+#### 3.8.2 `PixelWindow` 构造
+
+```csharp
+new PixelWindow(
+    int width,
+    int height,
+    bool canMove,
+    int xPadding,
+    int yPadding,
+    string title = null)
+```
+
+- 纯代码构造：内部 `new GameObject`，边框由 `RenderHandler.LoadFromAtlas("border_*")` 自绘，不依赖任何预制体
+- 构造末尾执行 `Validate(); Hide();` ⇒ **new 出来默认是隐藏的**；手动展示要调 `Show()`，走双击则由 `OpenContentAction` 打开
+- 宽高是 UI 像素；本项目按「格数 × 16 + padding」算（见 3.8.5）
+
+| 方法 | 作用 |
+|---|---|
+| `bool Attach(PixelElement element)` | 把一个子元素挂进窗口 |
+| `PixelWindow SetTitle(string title)` | 设置标题 |
+| `PixelWindow Show()` / `PixelWindow Hide()` | 显示 / 隐藏 |
+| `PixelWindow Center()` | 居中 |
+| `void ToFront(bool force = false)` | 提到最前 |
+| `Canvas GetBoundsCanvas()` | 取画布边界（定位用） |
+
+#### 3.8.3 `GridPixelElement`：窗口里的网格容器
+
+| 成员 | 签名 |
+|---|---|
+| 构造 | `new GridPixelElement(int gridWidth, int gridHeight, bool isCentered = false)` |
+| 间距 | `GridPixelElement SetSpacing(int x, int y)`（实例方法） |
+| 挂接 | `bool Attach(PixelElement element, int x, int y, int minimumWidth = 0, int minimumHeight = 0)` |
+
+`GridPixelElement` 本身不是「物品网格」，只是按格坐标摆放 `PixelElement` 的布局容器；
+真正的背包数据由 `GameGridInventory` 提供，挂进去之后游戏自带的拖拽/放置链就能工作。
+
+#### 3.8.4 Il2CppInterop 的继承关系坑
+
+`GameGridInventory` / `GridPixelElement` 在运行时确实是 `PixelElement` 的子类，
+但 Il2CppInterop **没有生成这条继承关系**，所以不能直接传给 `Attach(PixelElement)`：
+
+```csharp
+// 编译不过：GameGridInventory 不被视为 PixelElement
+// grid.Attach(inventory, 0, 0);
+
+// 正确：走原生类型转换
+Il2Cpp.PixelElement inventoryElement = inventory.TryCast<Il2Cpp.PixelElement>();
+grid.Attach(inventoryElement, 0, 1, 1, 4);
+
+window.Attach(grid.TryCast<Il2Cpp.PixelElement>());
+```
+
+#### 3.8.5 原版组装范例（`AnimalCage.CreateCageWindow`）
+
+```
+new PixelWindow(...)
+  → new GridPixelElement(...)
+  → new TagElement(...).SetText(...)
+  → new GameGridInventory(w, h)
+  → grid.Attach(inventory, ...)
+  → window.Attach(grid)
+```
+
+顺序不能反：`GameGridInventory` 必须先包进 `GridPixelElement`，再挂到 `PixelWindow`；
+原版与项目都按这个顺序组装。
+
+本项目中的完整版本（`FlowItemSetup.AttachPanel`）：
+
+```csharp
+PixelWindow window = new PixelWindow(columns * 16 + 48, rows * 16 + 72, true, 8, 8, "流量机");
+GridPixelElement grid = new GridPixelElement(columns, rows, true);
+GameGridInventory inventory = new GameGridInventory(columns, rows);
+
+grid.Attach(inventory.TryCast<PixelElement>(), 0, 1, 1, 4);
+window.Attach(grid.TryCast<PixelElement>());
+
+item.SetContentWindow(window);
+```
+
+> 挂按钮同样要 `TryCast`：`window.Attach(button.TryCast<PixelElement>())`。
+
+### 3.9 物品拖拽的 Target 链
+
+拖拽松手 `ItemMouseDragHandler.EndDrag` 的判定顺序（ISIL 反编译）：
+
+```
+MayPlayerInsertInto
+  → SlotMarker.IsValid
+  → AcceptUnchecked / TryAcceptOnce
+  → 失败则 MayStack / GetStackSlot
+  → 再失败 MayTarget / CanTarget / Target
+```
+
+前两段是「放进格子 / 堆叠」，最后一段是「A 落到 B 上」的物品间交互。
+
+#### `GameItem` 的三个 Target 方法
+
+实例是**被拖的物品**，参数是**落点物品**：
+
+| 方法 | 语义 |
+|---|---|
+| `bool MayTarget(GameItem targetItem)` | 权限：允不允许尝试 |
+| `bool CanTarget(GameItem targetItem)` | 可行性：当前条件下能不能成 |
+| `void Target(GameItem targetItem)` | 执行：真正发生交互 |
+
+底层由 `ItemBehaviourManager.current.targetBehaviourList`（`List<ItemTargetBehaviour>`）驱动，
+每个行为实现 `CheckFilter` / `CheckMay` / `CheckCan` / `OnTarget` / `GetTooltip`。
+
+#### mod 侧接入
+
+不要改拖拽代码，直接 patch `GameItem.CanTarget` / `Target` 的 Prefix，按 identifier 或物品指针识别自己的物品：
+
+```csharp
+[HarmonyPatch(typeof(Il2Cpp.GameItem), "CanTarget")]
+static class MyCanTargetPatch
+{
+    static bool Prefix(Il2Cpp.GameItem __instance, Il2Cpp.GameItem targetItem, ref bool __result)
+    {
+        if (__instance == null || __instance.identifier != "water_jug") return true;
+        if (targetItem == null || targetItem.identifier != "my_device") return true;
+
+        __result = true;
+        return false;   // 已给出结论，跳过原逻辑
+    }
+}
+```
+
+`Target` 的 Prefix 返回 `false` 表示「已处理」，游戏不会再走原行为。
+`GetTooltip` 也挂在同一个 behaviour 上，用于生成悬停提示。
+
+
+#### ⚠ 两个必须记住的坑（实测踩过）
+
+**1. 物品的格位在 `modifiedShape`，不是 `shape`**
+
+| 字段 | 偏移 | 语义 |
+|---|---|---|
+| `GameItem.shape` | +0x198 | **定义形状**：宽高、像素掩码、局部原点。minX/minY 不随摆放更新 |
+| `GameItem.modifiedShape` | +0x1A0 | **摆放后的形状**：拖放落点写这里（`SlotMarker.AcceptUnchecked` → `GridShapeBuilder.SetTransform`） |
+
+想要「物品现在在哪一格」必须读 `modifiedShape.minX/minY`。
+读 `shape` 会永远拿到定义时的原点，表现为「位置固定不动」。
+
+**2. `GameItem.GetTagReadonly` 返回的是克隆体**
+
+`GameItem.txt:6311-6322` 末尾 `Call TagState.Clone` —— 拿到的是副本，
+改它**不会影响活 tag**。
+
+写活 tag 必须走：
+```csharp
+item.ModifyTag(tag, state => state.Enable().SetInt(newValue));
+```
+原版 API 内部都走 `ModifyTag`。
+
+**3. 物品朝向在 `GridShape.orientation`**
+
+| 值 | 含义 |
+|---|---|
+| 0 | 0° |
+| 1 | 逆时针 90° |
+| 2 | 180° |
+| 3 | 顺时针 90° |
+
+物品原图朝上时，方向码 = `(4 - orientation) & 3` → 0上 1右 2下 3左。
+`GameItem` 本身没有 rotation 字段，朝向完全存在 shape 里。
+
+**4. 扣液体用 `WaterHelper.Remove(item, volumeInPart)`**
+
+- 内部单位 = **0.001 mL**（`InitLiquidContainerItem` 把 capacityInMl × 1000 存进 tag）
+- `Remove` 按各物质占比分摊、自动钳到 0、并刷新水质与容器贴图
+- `AddLiquid` 的 addAmount ≤ 0 会直接 return，**不能用负数扣水**
+
+### 3.10 背包数据结构（GameGridInventory）
+
+> 以下为 `GameGridInventory` / `GridShape` 反编译 + 项目侧实测结论。
+
+| 成员 | 事实 |
+|---|---|
+| `childItems` | `List<GameItem>`；**每次访问都 `new List<GameItem>(...)`** |
+| `item.shape.minX` / `minY` | 物品在网格中的最小坐标 |
+| `shape.Get(x, y)` | 该格是否占用（`!= 0`）；内部处理旋转 / 翻转 |
+| `inventoryShape` | 网格自身的尺寸（`width` / `height`） |
+
+#### 读取纪律
+
+```csharp
+// 每次刷新只取一次 childItems，不要在「每格 / 每帧」循环里反复访问
+Il2CppSystem.Collections.Generic.List<GameItem> items = inventory.childItems;
+for (int i = 0; i < items.Count; i++)
+{
+    GameItem item = items[i];
+    GridShape shape = item.shape;
+    for (int y = shape.minY; y < shape.minY + shape.height; y++)
+    for (int x = shape.minX; x < shape.minX + shape.width; x++)
+        if (shape.Get(x, y) != 0) { /* 该格属于 item */ }
+}
+```
+
+`shape.Get(x, y)` 已经处理 orientation（旋转）与镜像，**不要**自己按 `data[]` 下标算。
+
+#### 物品身份：只能用 Pointer
+
+`GameItem` 不是 `UnityEngine.Object`，没有 `GetInstanceID()`，也不能挂组件/字段。
+做「物品 → 自定义状态」字典时只能用 `item.Pointer`（`IntPtr`）：
+
+```csharp
+Dictionary<IntPtr, MyDevice> _devices = new Dictionary<IntPtr, MyDevice>();
+_devices[item.Pointer] = device;
+```
+
+⚠️ 读档后游戏按目录重建物品，旧 wrapper 失效、原生对象可能被复用（指针值重复），
+所以缓存必须在读档时**整体 `Clear()`**，不能按指针「复用」旧条目。见 4.5。
+
+> 这里说的是**可重建的运行时缓存**；需要跨读档保存的状态仍按 7.5 写进 tag。
+
 ---
 
 ## 4. 我们的框架（ProbablyBagMod）
@@ -348,15 +622,28 @@ item.SetSprite("my_atlas", "my_sprite");
 
 ```
 src/Mod/
-├─ PBModEntry.cs                  入口：目录注册
+├─ PBModEntry.cs                  入口：目录注册 + 每帧驱动 + 读档重置
 ├─ Common/EmbeddedResources.cs    嵌入资源（前缀探测 + 读取）
 ├─ Items/
 │   ├─ FlowItemRegistry.cs        物品定义（items.json）
-│   └─ ItemFactory.cs             物品工厂（模板/空装配 + 标签 + 代码工厂注册）
+│   ├─ ItemFactory.cs             物品工厂（模板/空装配 + 标签 + 代码工厂注册）
+│   ├─ FlowItemSetup.cs           按 key 挂装置 / 面板 / Target 行为
+│   └─ StatusLine.cs              statusLines 配置模型
+├─ Flow/
+│   ├─ FlowDriver.cs              每帧中枢（逐台刷新 → 发射 → 全局推进）
+│   ├─ FlowGridAdapter.cs         背包网格 → 格子表
+│   ├─ FlowMachine.cs             机器（网格 + 发射 / 收集 / 冰块）
+│   ├─ FlowVisual.cs              流源可视化（overlay Canvas）
+│   ├─ DeviceRegistry.cs          物品指针 → 装置实例
+│   ├─ LiquidStock.cs             容器存量读写（唯一适配点）
+│   └─ FlowMachine.cs             一台流量机的运行时状态
 ├─ Sprites/
 │   ├─ FlowSpriteRegistry.cs      贴图管理（sprites.json + PNG→Sprite）
 │   └─ SpriteEntry.cs             贴图配置模型
-└─ Patches/LoadFromAtlasPatch.cs  贴图拦截
+└─ Patches/
+    ├─ LoadFromAtlasPatch.cs      贴图拦截
+    ├─ PatchRunner.cs             逐组安装补丁（单个失败不杀进程）
+    └─ FlowTooltipPatch.cs        tooltip 分派（GetTooltipBasic）
 ```
 
 ### 4.2 数据流
@@ -480,6 +767,75 @@ ItemFactory.Register("my_device", def =>
 
 `CreateFromData` 可复用，所以代码工厂只需写「额外那部分」。
 
+### 4.5 每帧驱动与生命周期
+
+| 需求 | 入口 | 说明 |
+|---|---|---|
+| 逻辑推进 | `MelonMod.OnUpdate` | 每帧一次；`Time.deltaTime` 在暂停时为 0 |
+| 位置同步 | `MelonMod.OnLateUpdate` | 游戏 UI 排完版之后，避免用到上一帧的 rect |
+| 读档初始化 | `ModHook.OnGameLoadedInit` | 读档流程早期触发，早于物品重建 |
+| 场景加载 | `MelonMod.OnSceneWasLoaded` | 游戏没有专门的「场景切换」钩子，用这个 |
+| 常驻 overlay | `CustomUIManager.Instance.OverlayRoot()` | `DontDestroyOnLoad` 的 overlay Canvas |
+| 窗口清理 | `OnSceneUnloaded → PruneDeadWindows` | `CustomUIManager` 自己清理 |
+
+#### 暂停语义
+
+`UnityEngine.Time.deltaTime` 在游戏暂停时自动为 0，所以自维护时间轴不需要额外判断暂停：
+
+```csharp
+public override void OnUpdate()
+{
+    float dt = UnityEngine.Time.deltaTime;
+    if (dt <= 0f) return;      // 暂停帧
+    FlowDriver.Update(dt);
+}
+
+public override void OnLateUpdate()
+{
+    FlowVisual.LateUpdate();   // UI 已排完版
+}
+```
+
+#### `OnGameLoadedInit` 的真实时机
+
+`PlayerStore` 读档流程的 ISIL：
+
+```
+指令 108   Call ModHook.OnGameLoadedInit
+...
+指令 121   SaveFiles.WithIORetry
+指令 134   SaveFiles.WithIORetry
+...
+指令 154   SaveFiles.IndexLoad
+```
+
+⇒ **Init 钩子先于真正的读档 IO，也先于物品重建**。
+在这里「清空旧缓存」是安全的：新的物品数据还没被读出来，不存在「清完又被旧数据覆盖」的窗口。
+
+注册方式（静态委托字段，不是 event）：
+
+```csharp
+Il2Cpp.ModHook.OnGameLoadedInit = DelegateSupport.ConvertDelegate<Il2CppSystem.Action>(OnGameLoaded);
+
+private void OnGameLoaded()
+{
+    DeviceRegistry.Clear();    // 旧指针可能复用，必须整体失效
+}
+```
+
+#### 场景与常驻 UI
+
+- 没有场景切换专用钩子；场景相关逻辑放 `MelonMod.OnSceneWasLoaded(int buildIndex, string sceneName)`
+- `CustomUIManager.Instance.OverlayRoot()` 返回常驻 overlay Canvas（`DontDestroyOnLoad`），适合挂跨场景的流源可视化
+- `CustomUIManager` 的窗口在 `OnSceneUnloaded → PruneDeadWindows` 中清理，这是游戏侧的窗口生命周期
+
+```csharp
+public override void OnSceneWasLoaded(int buildIndex, string sceneName)
+{
+    // 场景相关初始化
+}
+```
+
 ---
 
 ## 5. 踩坑清单
@@ -492,6 +848,14 @@ ItemFactory.Register("my_device", def =>
 | 高清图被算成几十格 | `SetSpriteAndShape` 用「像素 ÷ 16」反推 shape | 自定义贴图用 `SetSprite` + `SetShape` 分开设，格数由 shape 决定 |
 | 读档后自定义物品消失 | 未在目录稳定注册 | 用 `directory.Add(key, factory)` 注册 |
 | 改物品字段后重读档失效 | 读档按目录工厂重建 | 稳定值写进工厂/配置，不要只改运行时对象 |
+| 双击容器/机器没反应，只开检视窗 | 物品的 `contentWindow` 为空 | `item.SetContentWindow(window)` 后双击自动开关，不要 patch 双击 |
+| `grid.Attach(inventory, ...)` 编译不过 | Il2CppInterop 没生成 `GameGridInventory → PixelElement` 继承 | 传参前 `TryCast<Il2Cpp.PixelElement>()` |
+| 面板里的物品上下位置反了 | 网格 `anchoredPosition = (x, -y)`，Y 轴向下 | 要视觉上移就减小网格 Y，不要加 |
+| 水瓶的 `LIQUID_CONTAINER_CURRENT` 永远是 0 | 水瓶用 `CURRENT_PART_<ID>` 分物质存储 | 读 `LIQUID_CONTAINER_CAPACITY` + 物质 tag；机器才读 `MAX/CURRENT` |
+| 倒液后源和目标反了 | `LiquidContainerHelper.TransferLiquid(target, source)` 与 `WaterHelper.TransferLiquid(source, target)` 顺序相反 | 按具体 helper 核对参数顺序 |
+| `dict.Keys[i]` 编译不过 | IL2CPP 的 `KeyCollection` 不支持索引器 | `foreach` `Il2CppSystem.Collections.Generic.KeyValuePair` |
+| 背包每帧卡顿 / GC 飙升 | `GameGridInventory.childItems` 每次访问都新建 List | 每次刷新只取一次，循环内复用 |
+| 读档后装置状态错乱 / 挂到旧物品 | `GameItem` 没有 `GetInstanceID()`；指针读档后可能复用 | 用 `item.Pointer` 做 key，读档时整体 `Clear()` |
 
 ---
 
@@ -627,9 +991,13 @@ item.EnableManufacturer("my_mod");  // 可选：厂商标记
 |---|---|---|
 | `ItemSelectHandler.TrySelectItem` | 选中物品 | `(GameItem newItem)` |
 | `ItemSelectHandler.TryEquipItem` | 装备物品 | `(GameItem newItem)` |
-| `ItemMouseDoubleClickHandler.DoubleClickAction` | 双击 | `(GameItem newItem, Vector2 mousePosition)` |
+| `ItemMouseDoubleClickHandler.DoubleClickAction` | 双击 | `(GameItem newItem, Vector2 mousePosition)`；有 `contentWindow` 时自动开关窗口 |
 | `ItemContextHandler` | 右键菜单 | — |
 | `ItemDefaultActivateHandler` | 默认激活（按键） | — |
+
+> `DoubleClickAction` 自带两个分支：`contentWindow != null` → 开关窗口；否则 → `OpenExamineAction`（检视窗）。
+> 所以容器/机器类物品只要 `item.SetContentWindow(window)`，双击就自动开关，**不需要 patch**（详见 3.8）。
+> 下面这个 patch 只用于追加「双击时做别的事」。
 
 ```csharp
 [HarmonyPatch(typeof(Il2Cpp.ItemMouseDoubleClickHandler), "DoubleClickAction")]
@@ -659,7 +1027,7 @@ string charge = state == null ? null : state.valueString;
 
 > 不要用 `ModifyTag(Action<TagState>)` —— IL2CPP 下自定义委托有类型不匹配风险。
 
-`TagState` 字段：`identifier` / `identifierName` / `valueString` / `valueInt` / `valueLong` / `valueFloat` / `valueDouble` / `valueBool`；
+`TagState` 字段：`identifier` / `identifierName` / `valueString` / `valueInt` / `valueLong`（仅可写，无 getter）/ `valueFloat` / `valueDouble` / `valueBool`；
 方法：`IsEnabled` / `Enable` / `Disable` / `ToggleEnabled` / `Clone` / `Reset`。
 
 ⚠️ **每个 `SetXxx` 只写自己那一个槽位，其余槽位保持默认值（`0` / `null`），既不置 null 也不清零**；
@@ -791,14 +1159,17 @@ item.state.GetTag("ADDITIONAL_EFFECT_STRING").valueString = "传导时额外 +1 
 ⇒ 这就是我们把 `items.json` 的 `tags` 设计成「字段名直接对应槽位」的原因：
 让写端和读端共用同一套词汇，消灭「按字面形态猜类型」这层歧义。
 
-### 7.9 液体容器（水分含量）
+### 7.9 液体容器（两套存储）
 
-> 这是**游戏原生**的水瓶机制（可倒、可灌、可喝、有水质等级）。
-> 我们自己的装置状态（冰块的水分 / 温度）用普通 tag 数值，不走这套系统。
+> 这是**游戏原生**的液体机制（可倒、可灌、可喝、有水质等级）。
+> 我们自己的装置状态（冰块的水分 / 温度）用自定义 tag（`FLOW_STOCK` / `ICE_TEMPERATURE`），
+> 不占用任何原版槽位；发射装置的存量则以真实容器 tag 为唯一真相。
+> 不调用液体容器的倒 / 灌 API。
 
-#### 装配入口（原版水瓶走的就是它）
+#### 两种装配入口
 
 ```csharp
+// 水瓶 / 酒瓶：按物质分 tag
 WaterHelper.InitLiquidContainerItem(
     GameItem item,
     int capacityInMl,                  // 容量（毫升）——water_jug 是 6000
@@ -807,31 +1178,103 @@ WaterHelper.InitLiquidContainerItem(
     bool isGraduated = false,          // 是否有刻度
     bool isDropper = false,
     bool isTransparentContainer = false,
-    int sheetPage = 3)
+    int sheetPage = 3);
+
+// 机器 / 简化容器：只记总量
+LiquidContainerHelper.InitLiquidContainerItem(
+    GameItem item, int capacity = 500, bool isStartFull = true);
 ```
 
-简化版：`LiquidContainerHelper.InitLiquidContainerItem(item, capacity=500, isStartFull=true)`
-（只设 tag + `WATER` 类型）。
+#### 两套存储（互不相通）
 
-#### 它写入的数据
+| 容器类型 | 容量 tag | 内容 tag | 备注 |
+|---|---|---|---|
+| 机器 / 简化容器 | `LIQUID_CONTAINER_MAX` | `LIQUID_CONTAINER_CURRENT` | 总量，不分物质 |
+| 水瓶 / 酒瓶 | `LIQUID_CONTAINER_CAPACITY` | `CURRENT_PART_<ID>`，每种物质一个 | `WaterHelper.InitLiquidContainerItem` 写入 |
+
+- 物质 tag 名由 `Liquid.GetCurrentPartFromId(id)` 生成，实际就是 `"CURRENT_PART_" + id.ToUpperInvariant()`
+- **两套互不相通**：水瓶上 `LIQUID_CONTAINER_CURRENT` 恒为 0；机器上也不会出现 `CURRENT_PART_*`
+- 所以判断容器类型不能只看 `LIQUID_CONTAINER_TAG`，要看它带的是 `LIQUID_CONTAINER_CAPACITY` 还是 `LIQUID_CONTAINER_MAX`
+
+> **修正（10-18）**：旧版本手册把水瓶也写成 `LIQUID_CONTAINER_MAX/CURRENT`。
+> 实测 `WaterHelper.InitLiquidContainerItem` 写的是 `LIQUID_CONTAINER_CAPACITY` + 每种物质一个
+> `CURRENT_PART_<ID>`；`MAX/CURRENT` 是机器/简化容器那一套。两套字段不通用。
+
+装配时还会写入/设置（与容量存储无关）：
 
 | 载体 | 内容 |
 |---|---|
 | `LIQUID_CONTAINER_TAG` | 标志（`IsTag` 判定） |
-| `LIQUID_CONTAINER_MAX.valueInt` | 容量（毫升） |
-| `LIQUID_CONTAINER_CURRENT.valueInt` | 当前水量（毫升） |
-| `LIQUID_CONTAINER_SIPPING` | 吸饮状态（简化版才有） |
+| `LIQUID_CONTAINER_SIPPING` | 吸饮状态（简化版） |
 | `GameItemType` | `WATER` |
 | 水质数据 / 音效 | 等级与特征 / `AudioHelper.InitDrinkableAudio` |
 
 #### 读取
 
 ```csharp
-int currentMl = item.GetTagReadonly("LIQUID_CONTAINER_CURRENT").valueInt;
-int maxMl     = item.GetTagReadonly("LIQUID_CONTAINER_MAX").valueInt;
 bool isLiquid = item.IsTag("LIQUID_CONTAINER_TAG");
-int value     = LiquidContainerHelper.GetLiquidContainerValue(item);
+
+// 机器 / 简化容器
+int max     = item.GetTagReadonly("LIQUID_CONTAINER_MAX").valueInt;
+int current = item.GetTagReadonly("LIQUID_CONTAINER_CURRENT").valueInt;
+
+// 水瓶 / 酒瓶
+int capacity    = item.GetTagReadonly("LIQUID_CONTAINER_CAPACITY").valueInt;
+int waterAmount = item.GetTagReadonly(Liquid.GetCurrentPartFromId("WATER")).valueInt;
+
+int value = LiquidContainerHelper.GetLiquidContainerValue(item);
 ```
+
+> `GetLiquidContainerValue` 内部读的是 `LIQUID_CONTAINER_CURRENT`，只对机器/简化容器有效；
+> 水瓶的 `CURRENT` 恒为 0，不能拿它算水瓶价值。
+
+#### 枚举全部物质
+
+**方案 A：遍历物品的 tag 字典，按前缀过滤**（推荐，只列实际存在的物质）：
+
+```csharp
+Il2CppSystem.Collections.Generic.Dictionary<string, Il2Cpp.TagState> dict = item.state.dict;
+
+foreach (Il2CppSystem.Collections.Generic.KeyValuePair<string, Il2Cpp.TagState> pair in dict)
+{
+    if (pair.Key == null || !pair.Key.StartsWith("CURRENT_PART_", StringComparison.Ordinal))
+        continue;
+
+    string liquidId = pair.Key.Substring("CURRENT_PART_".Length);
+    int amount = pair.Value.valueInt;
+}
+```
+
+IL2CPP 限制：
+
+- `Dictionary.KeyCollection` **不支持索引器**（`dict.Keys[i]` 编译不过），必须 `foreach` `KeyValuePair`
+- `KeyValuePair` 必须用 `Il2CppSystem.Collections.Generic.KeyValuePair<K,V>`，**不是** `System.Collections.Generic.KeyValuePair`
+- 遍历时不要增删 tag；要清零就先收集 key，再统一写
+
+**方案 B：遍历 `Liquid.InitLiquid()` 的完整物质表**（需要「所有物质都列出来，包括 0」时用）：
+对每一项的物质 id 调 `Liquid.GetCurrentPartFromId(id)` 拼出 tag 名，再逐个读 `valueInt`。
+
+#### 倒空
+
+没有专门的「倒空」API。原版做法是：
+
+```csharp
+item.state.GetTag(Liquid.GetCurrentPartFromId(liquidId)).SetInt(0);
+WaterFeatureHelper.OnLiquidContainerPourOutOf(item);
+SpriteHelper.UpdateWaterContainerSprite(item);
+```
+
+顺序：先把物质 tag 清零，再通知液体特性「倒出」，最后刷新容器贴图。
+`SetInt` 只写 `valueInt` 槽位，不碰该 tag 的其他槽位。
+
+#### 两个同名方法，参数顺序相反（易错）
+
+```csharp
+LiquidContainerHelper.TransferLiquid(GameItem targetItem, GameItem sourceItem)   // (target, source)
+WaterHelper.TransferLiquid(GameItem sourceContainer, GameItem targetContainer)   // (source, target)
+```
+
+调用前先确认是哪个 helper；两者顺序相反，不能按同一个习惯传参。
 
 ---
 

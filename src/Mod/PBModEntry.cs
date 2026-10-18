@@ -22,14 +22,41 @@ namespace ProbablyBagMod.Mod
 
         public override void OnInitializeMelon()
         {
-            HarmonyInstance.PatchAll();
+            // 逐个装补丁：某一个目标不存在/是抽象方法时只记错误，不让整个进程陪葬
+            PatchRunner.ApplyAll(HarmonyInstance);
 
             Il2Cpp.ModHook.OnModItemDirectoryInit = DelegateSupport.ConvertDelegate<
                 Il2CppSystem.Action<Il2Cpp.ModItemDirectory>>(OnModItemDirectoryInit);
 
+            Il2Cpp.ModHook.OnGameLoadedInit = DelegateSupport.ConvertDelegate<
+                Il2CppSystem.Action>(OnGameLoaded);
+
             FlowTooltipPatch.LogPatchState();
+            ItemTypeLocalization.Register(FlowItemSetup.FlowDeviceType, FlowItemSetup.FlowDeviceDisplayName);
+            FlowVisual.Initialize();
 
             LoggerInstance.Msg("ProbablyBagMod 已加载");
+        }
+
+        /// <summary>读档完成：旧物品、旧网格、旧流源全部作废，整体重置。</summary>
+        private void OnGameLoaded()
+        {
+            FlowDriver.Reset();
+
+            // 读档会重载本地化表，启动时补的类型名会丢，这里再补一次（AddEntry 是覆盖，幂等）
+            ItemTypeLocalization.Register(FlowItemSetup.FlowDeviceType, FlowItemSetup.FlowDeviceDisplayName);
+
+            LoggerInstance.Msg("[流源] 读档完成，已重置");
+        }
+
+        public override void OnUpdate()
+        {
+            FlowDriver.Update(UnityEngine.Time.deltaTime);
+        }
+
+        public override void OnLateUpdate()
+        {
+            FlowVisual.LateUpdate();
         }
 
         /// <summary>官方钩子：mod 目录初始化时回调。</summary>
@@ -79,7 +106,7 @@ namespace ProbablyBagMod.Mod
             foreach (string key in registry.Keys)
             {
                 FlowItemDefinition def = registry.Get(key);
-                Func<Il2Cpp.GameItem> factory = () => ItemFactory.Create(def);
+                Func<Il2Cpp.GameItem> factory = () => FlowItemSetup.Create(def);
                 bool added = directory.Add(def.key,
                     DelegateSupport.ConvertDelegate<Il2CppSystem.Func<Il2Cpp.GameItem>>(factory));
 

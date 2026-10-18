@@ -119,11 +119,19 @@ namespace ProbablyBagMod.Mod
             }
         }
 
-        /// <summary>物品类型（可多个，对应 tooltip 的 "[类型]" 段）+ 价值。类型为空则不显示类目。</summary>
+        /// <summary>
+        /// 物品类型（可多个，对应 tooltip 的 "[类型]" 段）+ 价值。
+        ///
+        /// 显式配了类型时先 <c>RemoveAllGameItemType</c>：<c>base: template</c> 会把模板的类型
+        /// （比如性能模块的 MODULE）一起复制过来，而 <c>SetGameItemType</c> 只加不清，
+        /// 不先清掉的话物品会同时属于两个类型，被原版的模块逻辑当成模组处理。
+        /// </summary>
         private static void ApplyTypeAndValue(Il2Cpp.GameItem item, FlowItemDefinition def)
         {
             if (def.itemTypes != null)
             {
+                item.RemoveAllGameItemType();
+
                 for (int i = 0; i < def.itemTypes.Length; i++)
                 {
                     string itemType = def.itemTypes[i];
@@ -135,6 +143,7 @@ namespace ProbablyBagMod.Mod
             }
             else if (!string.IsNullOrEmpty(def.type))
             {
+                item.RemoveAllGameItemType();
                 item.SetGameItemType(def.type);
             }
 

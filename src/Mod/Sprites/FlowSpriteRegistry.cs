@@ -94,9 +94,22 @@ namespace ProbablyBagMod.Mod
         private void LoadConfig()
         {
             byte[] json = EmbeddedResources.Read(_resourcePrefix, "sprites.json");
-            SpriteConfig config = json == null
-                ? null
-                : JsonSerializer.Deserialize<SpriteConfig>(Encoding.UTF8.GetString(json));
+            SpriteConfig config = null;
+
+            // 本单例可能是在 LoadFromAtlas 的 Prefix 里首次构造的（游戏 UI 原生调用链），
+            // 抛异常会直接杀进程，所以配置解析失败只降级为「没有自定义贴图」
+            try
+            {
+                if (json != null)
+                {
+                    config = JsonSerializer.Deserialize<SpriteConfig>(Encoding.UTF8.GetString(json));
+                }
+            }
+            catch (Exception e)
+            {
+                MelonLogger.Error("[贴图] sprites.json 解析失败：" + e.Message);
+                return;
+            }
 
             if (config == null || config.sprites == null)
             {
@@ -148,22 +161,32 @@ namespace ProbablyBagMod.Mod
                 return null;
             }
 
-            Texture2D texture = new Texture2D(2, 2, TextureFormat.RGBA32, false);
-            texture.filterMode = FilterMode.Point;    // 像素风：不模糊
-            texture.wrapMode = TextureWrapMode.Clamp;
-            texture.hideFlags = HideFlags.DontSave;   // 防 Unity 资源管理卸载
-            LoadImageMethod.Invoke(null, new object[] { texture, (Il2CppStructArray<byte>)png });
+            // 这段可能跑在 RenderHandler.LoadFromAtlas 的 Prefix 里（原生 UI 调用链），
+            // 异常不拦就会把进程带走，所以整段兜住、失败即返回 null 走原生贴图
+            try
+            {
+                Texture2D texture = new Texture2D(2, 2, TextureFormat.RGBA32, false);
+                texture.filterMode = FilterMode.Point;    // 像素风：不模糊
+                texture.wrapMode = TextureWrapMode.Clamp;
+                texture.hideFlags = HideFlags.DontSave;   // 防 Unity 资源管理卸载
+                LoadImageMethod.Invoke(null, new object[] { texture, (Il2CppStructArray<byte>)png });
 
-            // ppu = 贴图宽 ÷ (列数 × 每格世界尺寸)：640 / (2 × 0.16) = 2000
-            // 这样任意像素宽度的贴图都会铺满「列数」个格子，格数由 shape 决定而非贴图尺寸
-            float ppu = texture.width / (entry.shapeWidth * (StandardCellPixels / StandardPixelsPerUnit));
-            Sprite sprite = Sprite.Create(
-                texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0.5f, 0.5f), ppu);
-            sprite.hideFlags = HideFlags.DontSave;
+                // ppu = 贴图宽 ÷ (列数 × 每格世界尺寸)：640 / (2 × 0.16) = 2000
+                // 这样任意像素宽度的贴图都会铺满「列数」个格子，格数由 shape 决定而非贴图尺寸
+                float ppu = texture.width / (entry.shapeWidth * (StandardCellPixels / StandardPixelsPerUnit));
+                Sprite sprite = Sprite.Create(
+                    texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0.5f, 0.5f), ppu);
+                sprite.hideFlags = HideFlags.DontSave;
 
-            MelonLogger.Msg("[贴图] 已加载 " + entry.key + " → "
-                + texture.width + "x" + texture.height + " ppu=" + ppu);
-            return sprite;
+                MelonLogger.Msg("[贴图] 已加载 " + entry.key + " → "
+                    + texture.width + "x" + texture.height + " ppu=" + ppu);
+                return sprite;
+            }
+            catch (Exception e)
+            {
+                MelonLogger.Error("[贴图] 解码失败 " + entry.file + "：" + e);
+                return null;
+            }
         }
 
         private sealed class SpriteConfig

@@ -46,7 +46,16 @@ namespace ProbablyBagMod.Mod
                     + " helper=" + FlowTooltipHelpers.Count);
             }
 
-            FlowTooltipHelpers.AppendAll(__result, __instance);
+            // 这是原生 tooltip 链上的回调，异常冒出去会直接杀进程；
+            // 追加失败最多是这个物品少两行状态，不该让游戏陪葬
+            try
+            {
+                FlowTooltipHelpers.AppendAll(__result, __instance);
+            }
+            catch (System.Exception e)
+            {
+                MelonLogger.Error("[tooltip] 追加状态行失败：" + e);
+            }
         }
 
         /// <summary>防止 _seen 无限增长（builder 是临时对象，指针会复用/失效）。</summary>

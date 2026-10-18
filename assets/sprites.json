@@ -13,6 +13,20 @@
       "file": "ice_block.png",
       "shape": "1",
       "shapeWidth": 1
+    },
+    {
+      "key": "flow_emitter",
+      "atlas": "flow_emitter_atlas",
+      "file": "flow_emitter.png",
+      "shape": "1",
+      "shapeWidth": 1
+    },
+    {
+      "key": "flow_collector",
+      "atlas": "flow_collector_atlas",
+      "file": "flow_collector.png",
+      "shape": "1",
+      "shapeWidth": 1
     }
   ]
 }

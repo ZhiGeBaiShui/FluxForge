@@ -145,7 +145,7 @@ namespace ProbablyBagMod
                 {
                     FlowMotionData motion = new FlowMotionData(_rotatedChannelDirs[i], incoming.Motion.Speed);
                     FlowPos position = new FlowPos(incoming.Position.X, incoming.Position.Y);
-                    FlowEntity entity = new FlowEntity(position, motion, parts[index]);
+                    FlowEntity entity = new FlowEntity(position, motion, parts[index], incoming.Grid);
                     index++;
 
                     FlowSpawner.Instance.Register(entity, 0d);

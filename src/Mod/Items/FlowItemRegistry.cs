@@ -169,6 +169,12 @@ namespace ProbablyBagMod.Mod
         public long value { get; set; }
 
         /// <summary>
+        /// 面板网格尺寸（仅流量机这类带网格的物品用）：如 "4x3" 表示 4 列 3 行。
+        /// 空则用默认 4x3。
+        /// </summary>
+        public string grid { get; set; }
+
+        /// <summary>
         /// 标签声明列表（结构直接镜像游戏的 TagState）：
         /// 每项用 valueName 指定 tag 名，再用 valueInt / valueFloat / valueDouble /
         /// valueBool / valueString 指定要写入哪个槽位。只写 valueName = 仅启用不设值。
