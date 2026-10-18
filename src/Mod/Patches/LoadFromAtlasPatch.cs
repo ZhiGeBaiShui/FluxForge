@@ -1,4 +1,5 @@
 using HarmonyLib;
+using MelonLoader;
 using UnityEngine;
 
 namespace ProbablyBagMod.Mod
@@ -22,7 +23,7 @@ namespace ProbablyBagMod.Mod
                 if (sprite != null)
                 {
                     __result = sprite;
-                    MelonLoader.MelonLogger.Msg("[贴图] 拦截命中：atlas=" + atlasPath
+                    MelonLogger.Msg("[贴图] 拦截命中：atlas=" + atlasPath
                         + " name=" + name + " sprite=" + sprite.rect.width + "x" + sprite.rect.height);
                     return false;   // 拦截：返回我们的贴图
                 }

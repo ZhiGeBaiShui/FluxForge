@@ -8,8 +8,8 @@ namespace ProbablyBagMod
     ///   · <see cref="Temperature"/> 温度（单位：摄氏度；原版无温度系统，本 mod 自定）
     ///
     /// 与运动层的关系：
-    ///   流源逐格撞上本装置时，运动层调用 <see cref="TryReact"/>。
-    ///   返回 true  = 本帧发生了反应 → 流源该帧不前进，下一帧继续撞本装置（逐帧反应）；
+    ///   流源撞上本装置时，运动层调用 <see cref="TryReact"/>。
+    ///   返回 true  = 发生了反应 → 流源停在装置格上（每次经过只触发一次）；
     ///   返回 false = 无条件反应（或存量已耗尽）→ 流源正常穿过。
     ///
     /// 本类不认识 GameItem / TagSystem / 存档——那是 mod / 适配层的事。

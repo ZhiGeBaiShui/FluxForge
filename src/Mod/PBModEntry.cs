@@ -24,9 +24,6 @@ namespace ProbablyBagMod.Mod
         {
             HarmonyInstance.PatchAll();
 
-            // 代码工厂必须在物品目录注册前登记（目录工厂回调时才查得到）
-            IceBlockFactory.Register();
-
             Il2Cpp.ModHook.OnModItemDirectoryInit = DelegateSupport.ConvertDelegate<
                 Il2CppSystem.Action<Il2Cpp.ModItemDirectory>>(OnModItemDirectoryInit);
 

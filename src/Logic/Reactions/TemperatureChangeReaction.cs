@@ -3,7 +3,7 @@ namespace ProbablyBagMod
     /// <summary>
     /// 温度改变：最基础的单一反应。
     ///
-    /// 反应是「纯属性变换」——只认 FlowProperties，不认识 FlowToken / 装置 / 运动层。
+    /// 反应是「纯属性变换」——只认 FlowProperties，不认识 FlowEntity / 装置 / 运动层。
     /// 调用方（装置）负责把要改的属性取出来传入，反应只做一件事：施加一次温度增减。
     ///
     /// 这一类同时是所有「单一/简单反应」的样板：

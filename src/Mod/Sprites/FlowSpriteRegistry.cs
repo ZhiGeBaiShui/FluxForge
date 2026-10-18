@@ -3,6 +3,7 @@ using System.Reflection;
 using System.Text;
 using System.Text.Json;
 using Il2CppInterop.Runtime.InteropTypes.Arrays;
+using MelonLoader;
 using UnityEngine;
 
 namespace ProbablyBagMod.Mod
@@ -13,8 +14,11 @@ namespace ProbablyBagMod.Mod
     /// </summary>
     public sealed class FlowSpriteRegistry
     {
-        private const int StandardCellPixels = 16;          // 原版 16px/格
-        private const float StandardPixelsPerUnit = 100f;   // 原版 ppu → 1 格 = 0.16 世界单位
+        /// <summary>原版美术的每格像素数——仅作密度换算基准，不是引擎约束。</summary>
+        private const int StandardCellPixels = 16;
+
+        /// <summary>原版 ppu。两者相除得「每格的世界尺寸」= 0.16。</summary>
+        private const float StandardPixelsPerUnit = 100f;
 
         // Il2Cpp 下 Texture2D.LoadImage 不可直接调，经 ImageConversion.LoadImage
         private static readonly MethodInfo LoadImageMethod = typeof(ImageConversion).GetMethod(
@@ -44,24 +48,34 @@ namespace ProbablyBagMod.Mod
         public Sprite GetSprite(string key)
         {
             Sprite cached;
-            if (_cache.TryGetValue(key, out cached)) return cached;
+            if (_cache.TryGetValue(key, out cached))
+            {
+                return cached;
+            }
 
             SpriteEntry entry = GetEntry(key);
             if (entry == null)
             {
-                MelonLoader.MelonLogger.Warning("[贴图] 未配置的 key：" + key);
+                MelonLogger.Warning("[贴图] 未配置的 key：" + key);
                 return null;
             }
 
             Sprite sprite = LoadPng(entry);
-            if (sprite != null) _cache[key] = sprite;
+            if (sprite != null)
+            {
+                _cache[key] = sprite;
+            }
+
             return sprite;
         }
 
         public bool TryMatchAtlas(string atlasPath, out SpriteEntry entry)
         {
             entry = null;
-            if (string.IsNullOrEmpty(atlasPath)) return false;
+            if (string.IsNullOrEmpty(atlasPath))
+            {
+                return false;
+            }
 
             foreach (KeyValuePair<string, SpriteEntry> pair in _entries)
             {
@@ -86,20 +100,23 @@ namespace ProbablyBagMod.Mod
 
             if (config == null || config.sprites == null)
             {
-                MelonLoader.MelonLogger.Error("[贴图] 配置读取失败（sprites.json）");
+                MelonLogger.Error("[贴图] 配置读取失败（sprites.json）");
                 return;
             }
 
             for (int i = 0; i < config.sprites.Length; i++)
             {
                 SpriteEntry entry = config.sprites[i];
-                if (IsUsable(entry)) _entries[entry.key] = entry;
+                if (IsUsable(entry))
+                {
+                    _entries[entry.key] = entry;
+                }
             }
 
-            MelonLoader.MelonLogger.Msg("[贴图] 配置加载完成，共 " + _entries.Count + " 项");
+            MelonLogger.Msg("[贴图] 配置加载完成，共 " + _entries.Count + " 项");
         }
 
-        // 字段齐全 + shape 全为 0/1 + 长度能被 shapeWidth 整除
+        /// <summary>字段齐全 + shape 全为 0/1 + 长度能被 shapeWidth 整除。</summary>
         private static bool IsUsable(SpriteEntry entry)
         {
             bool ok = entry != null
@@ -111,8 +128,12 @@ namespace ProbablyBagMod.Mod
                 && entry.shape.Length % entry.shapeWidth == 0
                 && entry.shape.Trim('0', '1').Length == 0;
 
-            if (!ok) MelonLoader.MelonLogger.Warning("[贴图] 配置项无效，已跳过："
-                + (entry == null ? "<null>" : entry.key));
+            if (!ok)
+            {
+                MelonLogger.Warning("[贴图] 配置项无效，已跳过："
+                    + (entry == null ? "<null>" : entry.key));
+            }
+
             return ok;
         }
 
@@ -123,7 +144,7 @@ namespace ProbablyBagMod.Mod
             byte[] png = EmbeddedResources.Read(_resourcePrefix, entry.file);
             if (png == null || LoadImageMethod == null)
             {
-                MelonLoader.MelonLogger.Error("[贴图] 图片读取失败：" + entry.file);
+                MelonLogger.Error("[贴图] 图片读取失败：" + entry.file);
                 return null;
             }
 
@@ -133,13 +154,14 @@ namespace ProbablyBagMod.Mod
             texture.hideFlags = HideFlags.DontSave;   // 防 Unity 资源管理卸载
             LoadImageMethod.Invoke(null, new object[] { texture, (Il2CppStructArray<byte>)png });
 
-            // ppu = 贴图宽 ÷ (列数 × 0.16)：640 / (2 × 0.16) = 2000（原版 100 的 20 倍密度）
+            // ppu = 贴图宽 ÷ (列数 × 每格世界尺寸)：640 / (2 × 0.16) = 2000
+            // 这样任意像素宽度的贴图都会铺满「列数」个格子，格数由 shape 决定而非贴图尺寸
             float ppu = texture.width / (entry.shapeWidth * (StandardCellPixels / StandardPixelsPerUnit));
             Sprite sprite = Sprite.Create(
                 texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0.5f, 0.5f), ppu);
             sprite.hideFlags = HideFlags.DontSave;
 
-            MelonLoader.MelonLogger.Msg("[贴图] 已加载 " + entry.key + " → "
+            MelonLogger.Msg("[贴图] 已加载 " + entry.key + " → "
                 + texture.width + "x" + texture.height + " ppu=" + ppu);
             return sprite;
         }

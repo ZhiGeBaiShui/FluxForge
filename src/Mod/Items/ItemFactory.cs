@@ -67,7 +67,7 @@ namespace ProbablyBagMod.Mod
             }
             else
             {
-                MelonLoader.MelonLogger.Error("[工厂] " + def.key + " 既未指定 template 也不是 empty");
+                MelonLogger.Error("[工厂] " + def.key + " 既未指定 template 也不是 empty");
                 return null;
             }
 

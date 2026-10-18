@@ -30,7 +30,14 @@ namespace ProbablyBagMod.Mod
         /// <summary>颜色名（RenderHandler.ColorPalette 成员名），缺省 LightBlue。</summary>
         public string color { get; set; }
 
-        /// <summary>读取哪个字段：int（默认）/ float / string。</summary>
+        /// <summary>
+        /// 从 TagState 的哪个槽位读值：int（默认 → valueInt）/ float（→ valueFloat）/
+        /// string（→ valueString）。
+        /// <para>
+        /// 必须与 items.json 里 tags 声明的槽位一致——槽位是六个并存的字段，
+        /// 读错槽位不会报错，只会静默拿到默认值 0。
+        /// </para>
+        /// </summary>
         public string valueType { get; set; }
     }
 }

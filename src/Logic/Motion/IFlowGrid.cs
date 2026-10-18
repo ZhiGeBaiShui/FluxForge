@@ -5,7 +5,7 @@ namespace ProbablyBagMod
     ///
     /// 路由 / 反应两个查询分开（而不是返回一个「装置」对象）：
     /// 一个格子上的东西可能只实现其中之一、两者都实现、或都不实现（空格），
-    /// 分开查询让运动层直接 <c>router?.Route(entity)</c> 这样调，不用 is 判断。
+    /// 分开查询让运动层直接判空后调用，不用做 is 类型判断。
     /// </summary>
     public interface IFlowGrid
     {

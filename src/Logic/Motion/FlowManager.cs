@@ -16,6 +16,14 @@ namespace ProbablyBagMod
     {
         public static FlowManager Instance { get; } = new FlowManager();
 
+        /// <summary>
+        /// 撞上装置时停在装置格内的偏移量（沿运动方向前进一点点）。
+        /// 让位置明确落在装置格内部、不压在格边界上：
+        /// 下一帧起点格仍是装置格，探测从下一格开始，本装置只触发一次。
+        /// 1e-3 格远小于一格，视觉上不可见。
+        /// </summary>
+        private const double StopEpsilon = 1e-3;
+
         private IFlowGrid _grid;
         private readonly List<FlowEntity> _active = new List<FlowEntity>();
 
@@ -84,17 +92,18 @@ namespace ProbablyBagMod
             (double dx, double dy) = entity.Motion.FrameOffset(deltaTime);
             FlowPos endPos = new FlowPos(entity.Position.X + dx, entity.Position.Y + dy);
 
-            if(!TryFindBlocker(entity.Position, endPos, entity.Motion.Direction, entity))
+            if (!TryFindBlocker(entity.Position, endPos, entity.Motion.Direction, entity))
             {
                 entity.Position.Set(endPos);
                 return true;
             }
-            return _active.Contains(entity);           // 装置可能已 Kill 它
+
+            return _active.Contains(entity);    // 装置可能已 Kill 它
         }
 
         /// <summary>
         /// 逐格碰撞探测：从起点格沿方向走到终点格（含终点格，不查起点格），
-        /// 返回第一个「有路由或反应装置」的格子。
+        /// 返回是否撞上了「路由或反应装置」。
         /// </summary>
         private bool TryFindBlocker(FlowPos startPos, FlowPos endPos, int direction, FlowEntity entity)
         {
@@ -111,24 +120,32 @@ namespace ProbablyBagMod
             {
                 probeX += stepX;
                 probeY += stepY;
-                IFlowRouter deviceFlowRouter = _grid.GetRouterAt(probeX, probeY);
-                IFlowDevice deviceFlowDevice = _grid.GetReactorAt(probeX, probeY);
-                entity.Position.Set((double)probeX, (double)probeY); // 可以忽略double，这里是提醒开发者注意
-                // 先检查反应装置，再检查路由装置
-                bool flag = false;
-                if(deviceFlowDevice != null && deviceFlowDevice.TryReact(entity.Properties))
+
+                IFlowRouter router = _grid.GetRouterAt(probeX, probeY);
+                IFlowDevice reactor = _grid.GetReactorAt(probeX, probeY);
+
+                // 先反应、后路由：同一格两者都有时，反应先改属性，路由再按新属性分流
+                bool blocked = false;
+                if (reactor != null && reactor.TryReact(entity.Properties))
                 {
-                    flag = true;
+                    blocked = true;
                 }
-                if(deviceFlowRouter != null && deviceFlowRouter.Route(entity))
+                if (router != null && router.Route(entity))
                 {
-                    flag = true;
+                    blocked = true;
                 }
-                if(flag)
+
+                if (blocked)
                 {
+                    // 停在装置格内部（沿运动方向偏 eps）：下一帧起点格仍是本格，
+                    // 探测从下一格开始，所以本装置只触发这一次
+                    entity.Position.Set(
+                        probeX + stepX * StopEpsilon,
+                        probeY + stepY * StopEpsilon);
                     return true;
                 }
             }
+
             return false;
         }
     }
