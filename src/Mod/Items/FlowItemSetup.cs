@@ -142,7 +142,7 @@ namespace ProbablyBagMod.Mod
             item.SetContentWindow(window);
 
             FlowDriver.Add(machine);
-            FlowVisual.RegisterGrid(machine.Grid, inventory);
+            FlowVisual.RegisterGrid(machine.Grid, inventory, machine.Flows);
         }
 
         /// <summary>解析 "4x3" 这类尺寸串，格式不对就保留默认值。</summary>

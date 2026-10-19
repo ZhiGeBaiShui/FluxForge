@@ -11,13 +11,18 @@ namespace ProbablyBagMod.Tests
     /// </summary>
     public class DeviceTests
     {
+        // 网格 / 生命周期 / 运动各一份，模拟一台流量机的最小装配。
+        // xUnit 每个测试方法都会新建测试类实例，三者天然隔离，
+        // 所以单例时代那种在每个测试开头 Reset 的写法不再需要。
+        private readonly FakeGrid _grid = new FakeGrid();
+        private readonly FlowSpawner _flows = new FlowSpawner();
+        private readonly FlowManager _motion;
+
         public DeviceTests()
         {
-            FlowSpawner.Instance.Reset();
-            FlowManager.Instance.Reset();
+            // 网格由构造注入：一台机器一块网格，流源不再自带网格
+            _motion = new FlowManager(_grid);
         }
-
-        private readonly FakeGrid _grid = new FakeGrid();
 
         /// <summary>
         /// 默认无限大、无装置的测试网格；需要装置时用 <see cref="SetRouter"/> 放，
@@ -72,10 +77,14 @@ namespace ProbablyBagMod.Tests
             }
         }
 
-        private static List<FlowEntity> CaptureSpawned()
+        /// <summary>
+        /// 订阅本测试实例的出生广播。
+        /// 名单归测试实例所有，不能再从单例入口挂事件，否则测试之间会互相串台。
+        /// </summary>
+        private List<FlowEntity> CaptureSpawned()
         {
             List<FlowEntity> spawned = new List<FlowEntity>();
-            FlowSpawner.Instance.OnEntityAdded += spawned.Add;
+            _flows.OnEntityAdded += spawned.Add;
             return spawned;
         }
 
@@ -85,8 +94,8 @@ namespace ProbablyBagMod.Tests
             List<FlowEntity> spawned = CaptureSpawned();
             EmitterDevice emitter = new EmitterDevice(100d, 30d);
 
-            bool emitted = emitter.EmitAll(new FlowPos(3.5d, 3.5d), 2, _grid);
-            FlowSpawner.Instance.Advance(0d);
+            // 发射即入名单：Accept 是同步的，不再需要紧跟一次 Advance
+            bool emitted = emitter.EmitAll(new FlowPos(3.5d, 3.5d), 2, _flows);
 
             Assert.True(emitted);
             Assert.Single(spawned);                       // 整份存量 → 一个流源
@@ -102,9 +111,8 @@ namespace ProbablyBagMod.Tests
             List<FlowEntity> spawned = CaptureSpawned();
             EmitterDevice emitter = new EmitterDevice(50d, 20d);
 
-            Assert.True(emitter.EmitAll(new FlowPos(0, 0), 0, _grid));
-            Assert.False(emitter.EmitAll(new FlowPos(0, 0), 0, _grid));
-            FlowSpawner.Instance.Advance(0d);
+            Assert.True(emitter.EmitAll(new FlowPos(0, 0), 0, _flows));
+            Assert.False(emitter.EmitAll(new FlowPos(0, 0), 0, _flows));
 
             Assert.Single(spawned);
         }
@@ -115,20 +123,19 @@ namespace ProbablyBagMod.Tests
             List<FlowEntity> spawned = CaptureSpawned();
             EmitterDevice emitter = new EmitterDevice(0d, 20d);
 
-            Assert.False(emitter.EmitAll(new FlowPos(0, 0), 0, _grid));
-            FlowSpawner.Instance.Advance(0d);
+            Assert.False(emitter.EmitAll(new FlowPos(0, 0), 0, _flows));
 
             Assert.Empty(spawned);
         }
 
         [Fact]
-        public void Emitter_NoGrid_DoesNotEmit()
+        public void Emitter_NoFlows_DoesNotEmit()
         {
             List<FlowEntity> spawned = CaptureSpawned();
             EmitterDevice emitter = new EmitterDevice(100d, 20d);
 
+            // 没有名单就无处安放流源；整份存量必须原样留在发射器里
             Assert.False(emitter.EmitAll(new FlowPos(0, 0), 0, null));
-            FlowSpawner.Instance.Advance(0d);
 
             Assert.Empty(spawned);
             Assert.Equal(100d, emitter.Stock.Moisture);
@@ -139,8 +146,8 @@ namespace ProbablyBagMod.Tests
         {
             CollectorDevice collector = new CollectorDevice();
 
-            collector.Route(new FlowEntity(new FlowPos(0, 0), new FlowMotionData(0, 1), new FlowProperties(40, 10), _grid));
-            collector.Route(new FlowEntity(new FlowPos(0, 0), new FlowMotionData(0, 1), new FlowProperties(60, 20), _grid));
+            collector.Route(new FlowEntity(new FlowPos(0, 0), new FlowMotionData(0, 1), new FlowProperties(40, 10)), _flows, 0, 0);
+            collector.Route(new FlowEntity(new FlowPos(0, 0), new FlowMotionData(0, 1), new FlowProperties(60, 20)), _flows, 0, 0);
 
             Assert.Equal(100d, collector.Stock.Moisture);
             Assert.Equal(2, collector.Collected.Count);
@@ -168,8 +175,7 @@ namespace ProbablyBagMod.Tests
             collector.Route(new FlowEntity(
                 new FlowPos(0.5d, 0.5d),
                 new FlowMotionData(1, 1),
-                new FlowProperties(40d, 10d),
-                _grid));
+                new FlowProperties(40d, 10d)), _flows, 1, 0);
 
             Assert.Equal(1, changedCount);
             // 播报时库存已经合并完成，订阅方读到的是一次完整的吸收结果
@@ -180,33 +186,37 @@ namespace ProbablyBagMod.Tests
         public void TwoGrids_AdvanceIndependently()
         {
             // 网格 A 在 (1,0) 放了收集器，网格 B 同样位置是空的：
-            // 两个流源同帧推进，A 的流源被吸走，B 的必须原样走完这一帧
+            // 两个流源同帧推进，A 的流源被吸走，B 的必须原样走完这一帧。
+            // 新设计里「独立」的单位是一台流量机：各有一套网格 / 名单 / 运动器。
             CollectorDevice collector = new CollectorDevice();
             FakeGrid gridA = new FakeGrid().SetRouter(1, 0, collector);
             FakeGrid gridB = new FakeGrid();
 
+            FlowSpawner flowsA = new FlowSpawner();
+            FlowSpawner flowsB = new FlowSpawner();
+            FlowManager motionA = new FlowManager(gridA);
+            FlowManager motionB = new FlowManager(gridB);
+
             FlowEntity entityA = new FlowEntity(
                 new FlowPos(0.5d, 0.5d),
                 new FlowMotionData(1, 1),
-                new FlowProperties(10d, 20d),
-                gridA);
+                new FlowProperties(10d, 20d));
             FlowEntity entityB = new FlowEntity(
                 new FlowPos(0.5d, 0.5d),
                 new FlowMotionData(1, 1),
-                new FlowProperties(10d, 20d),
-                gridB);
+                new FlowProperties(10d, 20d));
 
-            FlowSpawner.Instance.Register(entityA, 0d);
-            FlowSpawner.Instance.Register(entityB, 0d);
-            FlowSpawner.Instance.Advance(0d);
+            flowsA.Accept(entityA);
+            flowsB.Accept(entityB);
 
-            FlowManager.Instance.Tick(1d);
+            motionA.Tick(1d, flowsA);
+            motionB.Tick(1d, flowsB);
 
             Assert.Single(collector.Collected);
             Assert.Same(entityA, collector.Collected[0]);
-            Assert.DoesNotContain(entityA, FlowManager.Instance.ActiveEntities);
+            Assert.DoesNotContain(entityA, flowsA.Active);
 
-            Assert.Contains(entityB, FlowManager.Instance.ActiveEntities);
+            Assert.Contains(entityB, flowsB.Active);
             Assert.Equal(1.5d, entityB.Position.X, 3);
             Assert.Equal(0.5d, entityB.Position.Y, 3);
         }
@@ -312,25 +322,22 @@ namespace ProbablyBagMod.Tests
         {
             // 一块网格里同时跑三个流源：位置不同、方向不同，谁都不该被谁挤掉。
             // 「流源不是一格一个」是这套框架的前提，发射装置一秒钟能吐好几个。
-            FakeGrid grid = new FakeGrid();
-
             FlowEntity goingRight = new FlowEntity(
-                new FlowPos(0.5d, 0.5d), new FlowMotionData(1, 1), new FlowProperties(10d, 20d), grid);
+                new FlowPos(0.5d, 0.5d), new FlowMotionData(1, 1), new FlowProperties(10d, 20d));
             FlowEntity goingUp = new FlowEntity(
-                new FlowPos(3.5d, 2.5d), new FlowMotionData(0, 1), new FlowProperties(11d, 21d), grid);
+                new FlowPos(3.5d, 2.5d), new FlowMotionData(0, 1), new FlowProperties(11d, 21d));
             FlowEntity goingLeft = new FlowEntity(
-                new FlowPos(6.5d, 4.5d), new FlowMotionData(3, 1), new FlowProperties(12d, 22d), grid);
+                new FlowPos(6.5d, 4.5d), new FlowMotionData(3, 1), new FlowProperties(12d, 22d));
 
-            FlowSpawner.Instance.Register(goingRight, 0d);
-            FlowSpawner.Instance.Register(goingUp, 0d);
-            FlowSpawner.Instance.Register(goingLeft, 0d);
-            FlowSpawner.Instance.Advance(0d);
+            _flows.Accept(goingRight);
+            _flows.Accept(goingUp);
+            _flows.Accept(goingLeft);
 
-            Assert.Equal(3, FlowManager.Instance.ActiveEntities.Count);
+            Assert.Equal(3, _flows.Active.Count);
 
-            FlowManager.Instance.Tick(1d);
+            _motion.Tick(1d, _flows);
 
-            Assert.Equal(3, FlowManager.Instance.ActiveEntities.Count);
+            Assert.Equal(3, _flows.Active.Count);
             Assert.Equal(1.5d, goingRight.Position.X, 3);
             Assert.Equal(0.5d, goingRight.Position.Y, 3);
             Assert.Equal(3.5d, goingUp.Position.X, 3);
@@ -345,24 +352,23 @@ namespace ProbablyBagMod.Tests
         {
             // 一格一个装置只吸收撞上它的那个流源，同网格里的其他流源不受牵连
             CollectorDevice collector = new CollectorDevice();
-            FakeGrid grid = new FakeGrid().SetRouter(1, 0, collector);
+            _grid.SetRouter(1, 0, collector);
 
             FlowEntity absorbed = new FlowEntity(
-                new FlowPos(0.5d, 0.5d), new FlowMotionData(1, 1), new FlowProperties(10d, 20d), grid);
+                new FlowPos(0.5d, 0.5d), new FlowMotionData(1, 1), new FlowProperties(10d, 20d));
             FlowEntity untouched = new FlowEntity(
-                new FlowPos(0.5d, 5.5d), new FlowMotionData(1, 1), new FlowProperties(10d, 20d), grid);
+                new FlowPos(0.5d, 5.5d), new FlowMotionData(1, 1), new FlowProperties(10d, 20d));
 
-            FlowSpawner.Instance.Register(absorbed, 0d);
-            FlowSpawner.Instance.Register(untouched, 0d);
-            FlowSpawner.Instance.Advance(0d);
+            _flows.Accept(absorbed);
+            _flows.Accept(untouched);
 
-            FlowManager.Instance.Tick(1d);
+            _motion.Tick(1d, _flows);
 
             Assert.Single(collector.Collected);
             Assert.Same(absorbed, collector.Collected[0]);
-            Assert.DoesNotContain(absorbed, FlowManager.Instance.ActiveEntities);
+            Assert.DoesNotContain(absorbed, _flows.Active);
 
-            Assert.Contains(untouched, FlowManager.Instance.ActiveEntities);
+            Assert.Contains(untouched, _flows.Active);
             Assert.Equal(1.5d, untouched.Position.X, 3);
         }
 
@@ -372,16 +378,15 @@ namespace ProbablyBagMod.Tests
             // 装置贴着网格左边界（x=0）时，向左撞停曾经算出 -0.001，
             // 下一帧 Floor 变成 -1 直接被越界回收。撞停必须落在格内。
             CollectorDevice collector = new CollectorDevice();
-            FakeGrid grid = new FakeGrid().SetRouter(0, 0, collector)
+            _grid.SetRouter(0, 0, collector)
                 .SetBounds(0, 0, 4, 4);
 
             FlowEntity entity = new FlowEntity(
-                new FlowPos(2.5d, 0.5d), new FlowMotionData(3, 1), new FlowProperties(10d, 20d), grid);
+                new FlowPos(2.5d, 0.5d), new FlowMotionData(3, 1), new FlowProperties(10d, 20d));
 
-            FlowSpawner.Instance.Register(entity, 0d);
-            FlowSpawner.Instance.Advance(0d);
+            _flows.Accept(entity);
 
-            FlowManager.Instance.Tick(3d);   // 足够撞上 x=0 的装置
+            _motion.Tick(3d, _flows);   // 足够撞上 x=0 的装置
 
             Assert.Single(collector.Collected);
             Assert.Same(entity, collector.Collected[0]);
@@ -392,16 +397,16 @@ namespace ProbablyBagMod.Tests
         {
             // 游戏网格 Y 轴向下（anchoredPosition = (x, -y)），
             // 所以「上」必须是 Y 减小；写成 +1 会让流源在界面上朝反方向跑。
-            Assert.Equal(-1, FlowMotionData.Dy[0]);
-            Assert.Equal(0, FlowMotionData.Dy[1]);
-            Assert.Equal(1, FlowMotionData.Dy[2]);
-            Assert.Equal(0, FlowMotionData.Dy[3]);
+            Assert.Equal(-1, FlowMotionData.StepY(0));
+            Assert.Equal(0, FlowMotionData.StepY(1));
+            Assert.Equal(1, FlowMotionData.StepY(2));
+            Assert.Equal(0, FlowMotionData.StepY(3));
 
             // 四个方向两两互反，且旋转仍按 +1 顺时针
             for (int direction = 0; direction < 4; direction++)
             {
-                Assert.Equal(-FlowMotionData.Dx[direction], FlowMotionData.Dx[(direction + 2) % 4]);
-                Assert.Equal(-FlowMotionData.Dy[direction], FlowMotionData.Dy[(direction + 2) % 4]);
+                Assert.Equal(-FlowMotionData.StepX(direction), FlowMotionData.StepX((direction + 2) % 4));
+                Assert.Equal(-FlowMotionData.StepY(direction), FlowMotionData.StepY((direction + 2) % 4));
             }
         }
 
@@ -410,14 +415,13 @@ namespace ProbablyBagMod.Tests
         {
             // 发射装置一秒吐两个，不封顶的话一天是几十万个对象
             CollectorDevice collector = new CollectorDevice();
-            FakeGrid grid = new FakeGrid();
 
             int total = CollectorDevice.MaxCollected + 20;
             for (int i = 0; i < total; i++)
             {
                 FlowEntity entity = new FlowEntity(
-                    new FlowPos(0.5d, 0.5d), new FlowMotionData(1, 1), new FlowProperties(1d, 20d), grid);
-                collector.Route(entity);
+                    new FlowPos(0.5d, 0.5d), new FlowMotionData(1, 1), new FlowProperties(1d, 20d));
+                collector.Route(entity, _flows, 0, 0);
             }
 
             Assert.Equal(CollectorDevice.MaxCollected, collector.Collected.Count);
@@ -430,17 +434,130 @@ namespace ProbablyBagMod.Tests
         {
             // 流源沿 X 轴撞上装置时，Y 不该被瞬移到格中线（那会看起来像跳了一下）
             CollectorDevice collector = new CollectorDevice();
-            FakeGrid grid = new FakeGrid().SetRouter(3, 2, collector);
+            _grid.SetRouter(3, 2, collector);
 
             FlowEntity entity = new FlowEntity(
-                new FlowPos(0.5d, 2.3d), new FlowMotionData(1, 1), new FlowProperties(10d, 20d), grid);
+                new FlowPos(0.5d, 2.3d), new FlowMotionData(1, 1), new FlowProperties(10d, 20d));
 
-            FlowSpawner.Instance.Register(entity, 0d);
-            FlowSpawner.Instance.Advance(0d);
-            FlowManager.Instance.Tick(3d);
+            _flows.Accept(entity);
+            _motion.Tick(3d, _flows);
 
             Assert.Single(collector.Collected);
             Assert.Equal(2.3d, entity.Position.Y, 3);
+        }
+
+        [Theory]
+        [InlineData(0)]   // 上
+        [InlineData(1)]   // 右
+        [InlineData(2)]   // 下
+        [InlineData(3)]   // 左
+        public void Split_ChildAlwaysBornInsideDeviceCell(int exitDirection)
+        {
+            // 出口必须发 2 道，才会走「分裂」而不是「原地转向」。
+            // 入口通道 = 流源运动方向的反方向：出口朝左时从右往左走，其余从左往右走。
+            int moveDirection = exitDirection == 3 ? 3 : 1;
+            int entryChannel = (moveDirection + 2) % 4;
+
+            SplitDevice split = new SplitDevice(
+                0,
+                new int[] { entryChannel, exitDirection },
+                new int[] { 0, 2 });
+
+            _grid.SetRouter(3, 3, split);
+
+            double startX = exitDirection == 3 ? 5d : 1d;
+            FlowEntity entity = new FlowEntity(
+                new FlowPos(startX, 3d),
+                new FlowMotionData(moveDirection, 1),
+                new FlowProperties(10d, 20d));
+
+            _flows.Accept(entity);
+            _motion.Tick(3d, _flows);
+
+            Assert.Equal(2, _flows.Active.Count);
+
+            // 出生格必须就是装置格。朝上/朝左时若跟着方向做负偏移，就会落到隔壁去。
+            foreach (FlowEntity child in _flows.Active)
+            {
+                Assert.Equal(3, (int)Math.Floor(child.Position.X));
+                Assert.Equal(3, (int)Math.Floor(child.Position.Y));
+                Assert.Equal(exitDirection, child.Motion.Direction);
+            }
+        }
+
+        [Fact]
+        public void Split_ChildrenBornOnDeviceCell_NoExponentialGrowth()
+        {
+            // 流源向右(1)撞上 (3,3) 的分流器，入口通道是反方向的左(3)，出口是下(2)发 2 道。
+            SplitDevice split = new SplitDevice(
+                0, new int[] { 3, 2 }, new int[] { 0, 2 });
+            _grid.SetRouter(3, 3, split);
+
+            FlowEntity entity = new FlowEntity(
+                new FlowPos(1.5d, 3.5d), new FlowMotionData(1, 1), new FlowProperties(100d, 20d));
+
+            _flows.Accept(entity);
+            _motion.Tick(3d, _flows);      // 足够从 x=1.5 走进装置格
+
+            Assert.Equal(2, _flows.Active.Count);
+
+            // 子流源必须出生在装置格上。若出生在撞停前的上一格，它们下一帧会再撞同一个
+            // 装置，每帧翻倍——这条断言就是钉住那个回归的。
+            foreach (FlowEntity child in _flows.Active)
+            {
+                Assert.Equal(3, (int)Math.Floor(child.Position.X));
+                Assert.Equal(3, (int)Math.Floor(child.Position.Y));
+                Assert.Equal(2, child.Motion.Direction);
+            }
+
+            // 再跑若干帧，数量不能增长
+            for (int i = 0; i < 20; i++)
+            {
+                _motion.Tick(0.5d, _flows);
+            }
+
+            Assert.Equal(2, _flows.Active.Count);
+        }
+
+        [Fact]
+        public void Split_NeverTakesControl_LeavesPositionUntouched()
+        {
+            // 装置放在 (3,4)，通道只有左右(1/3)；流源向上(0)运动，
+            // 入口通道需要是下(2)，装置不收 → Route 返回 false。
+            SplitDevice split = new SplitDevice(0, new int[] { 1, 3 });
+            _grid.SetRouter(3, 4, split);
+
+            FlowEntity entity = new FlowEntity(
+                new FlowPos(3.5d, 5.5d), new FlowMotionData(0, 1), new FlowProperties(100d, 20d));
+
+            _flows.Accept(entity);
+            _motion.Tick(1d, _flows);      // 一帧走一格，正好穿过装置格
+
+            // 位置必须按正常移动走到 4.5：既不能被截停在格边缘，也不能被回滚丢步
+            Assert.Single(_flows.Active);
+            Assert.Equal(3.5d, entity.Position.X, 3);
+            Assert.Equal(4.5d, entity.Position.Y, 3);
+        }
+
+        [Fact]
+        public void KillAll_BroadcastsEachEntityExactlyOnce()
+        {
+            List<FlowEntity> removed = new List<FlowEntity>();
+            _flows.OnEntityRemoved += removed.Add;
+
+            FlowEntity a = new FlowEntity(new FlowPos(0, 0), new FlowMotionData(1, 1), new FlowProperties(1, 1));
+            FlowEntity b = new FlowEntity(new FlowPos(0, 0), new FlowMotionData(1, 1), new FlowProperties(1, 1));
+
+            _flows.Accept(a);
+            _flows.Accept(b);
+            _flows.KillAll();
+
+            Assert.Equal(2, removed.Count);
+            Assert.Empty(_flows.Active);
+
+            // 已经清空后再来一次，不应重复播报
+            _flows.KillAll();
+            Assert.Equal(2, removed.Count);
         }
     }
 }

@@ -14,7 +14,7 @@ namespace ProbablyBagMod
     ///   · 每个通道有独立的**发射数量**：同一个出口可以发 1 道、2 道乃至更多道流源
     ///     （入口通道的发射数量被忽略；发射 0 道 = 该通道不出流）
     ///   · 流源属性按「总发射数」等分，每道各拿一份（总量守恒）
-    ///   · 「同步」= 分完立刻注册进 <see cref="FlowSpawner"/>（延迟 0）
+    ///   · 「同步」= 分完立刻交给 <see cref="FlowSpawner"/> 纳入名单
     ///   · 通道方向按「相对 Facing」存储：装置旋转（索引 +1 = 右旋 90°）后全部通道一起转
     /// </summary>
     public class SplitDevice : IFlowRouter
@@ -90,7 +90,7 @@ namespace ProbablyBagMod
         }
 
         /// <inheritdoc/>
-        public bool Route(FlowEntity incoming)
+        public bool Route(FlowEntity incoming, FlowSpawner flows, int cellX, int cellY)
         {
             int direction = incoming.Motion.Direction;
             if (!CanEnter(direction))
@@ -118,7 +118,7 @@ namespace ProbablyBagMod
             // 所有出口都不出流 = 吸收
             if (total == 0)
             {
-                FlowSpawner.Instance.Kill(incoming);
+                flows.Kill(incoming);
                 return true;
             }
 
@@ -132,6 +132,16 @@ namespace ProbablyBagMod
             // 多道：属性按总发射数等分，每道拿一份
             List<FlowProperties> parts = incoming.Properties.Split(total);
 
+            // 新流源直接出生在装置格上，不加任何偏移。
+            //
+            // 为什么不沿用 incoming.Position：它还在装置之前，一帧跨多格时甚至隔了好几格，
+            // 子流源下一帧会再走进装置格、再分一次——每帧翻倍。
+            //
+            // 为什么不加 eps：判定从起点格的**下一格**开始探测（起点格永不参与），
+            // 所以生在装置格上下一帧不会再撞同一个装置，偏移纯属多余。
+            double spawnX = cellX;
+            double spawnY = cellY;
+
             int index = 0;
             for (int i = 0; i < _rotatedChannelDirs.Length; i++)
             {
@@ -143,16 +153,17 @@ namespace ProbablyBagMod
                 int count = _emitCounts[i];
                 for (int k = 0; k < count; k++)
                 {
-                    FlowMotionData motion = new FlowMotionData(_rotatedChannelDirs[i], incoming.Motion.Speed);
-                    FlowPos position = new FlowPos(incoming.Position.X, incoming.Position.Y);
-                    FlowEntity entity = new FlowEntity(position, motion, parts[index], incoming.Grid);
+                    int exitDirection = _rotatedChannelDirs[i];
+                    FlowMotionData motion = new FlowMotionData(exitDirection, incoming.Motion.Speed);
+                    FlowPos position = new FlowPos(spawnX, spawnY);
+                    FlowEntity entity = new FlowEntity(position, motion, parts[index]);
                     index++;
 
-                    FlowSpawner.Instance.Register(entity, 0d);
+                    flows.Accept(entity);
                 }
             }
 
-            FlowSpawner.Instance.Kill(incoming);
+            flows.Kill(incoming);
             return true;
         }
 

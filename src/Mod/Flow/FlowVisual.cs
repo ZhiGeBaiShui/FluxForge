@@ -14,8 +14,8 @@ namespace ProbablyBagMod.Mod
     ///   挂成网格的子节点后，父节点失活 → 子节点自动隐藏，裁切、缩放、面板拖动也全部跟随原版，
     ///   不需要任何世界坐标换算。
     ///
-    /// 多机器并存：每个流源出生就自带 <see cref="FlowEntity.Grid"/>，
-    /// 壳的父节点由这个网格决定，所以多块网格同时有流源也不会互相干扰。
+    /// 订阅是**按机器**的：每家机器有自己的流源名单，出生/死亡各自广播。
+    /// 所以壳天生知道自己属于哪块网格，不需要再从流源身上反查。
     ///
     /// 位置同步放在 LateUpdate：逻辑帧结束时游戏 UI 还没排版完，
     /// 那一刻算出的坐标会被下一帧的布局覆盖掉。
@@ -29,6 +29,12 @@ namespace ProbablyBagMod.Mod
         {
             public Il2Cpp.GameGridInventory Inventory;
             public RectTransform Rect;
+            public FlowSpawner Flows;
+
+            // 订阅用的委托要留着：撤销登记时要 -=
+            // （lambda 每次是不同实例，不留引用就再也退订不掉）
+            public System.Action<FlowEntity> AddedHandler;
+            public System.Action<FlowEntity> RemovedHandler;
         }
 
         private static readonly Dictionary<FlowEntity, RectTransform> _shells
@@ -41,42 +47,73 @@ namespace ProbablyBagMod.Mod
         /// 出生时网格还取不到 rectTransform 的流源。
         /// 逻辑照跑，只推迟到能取到父节点的那一帧再补壳——否则这些流源永远看不见。
         /// </summary>
-        private static readonly List<FlowEntity> _pending = new List<FlowEntity>();
+        private static readonly Dictionary<FlowEntity, IFlowGrid> _pending
+            = new Dictionary<FlowEntity, IFlowGrid>();
 
-        private static bool _subscribed;
-
-        /// <summary>挂上事件。重复调用安全。</summary>
-        public static void Initialize()
+        /// <summary>
+        /// 流量机创建时登记：记住网格与它对应的流源名单，并订阅该机器的生死广播。
+        /// 每家机器一次，互不影响。
+        /// </summary>
+        public static void RegisterGrid(IFlowGrid grid, Il2Cpp.GameGridInventory inventory, FlowSpawner flows)
         {
-            if (_subscribed)
+            if (grid == null || flows == null)
             {
                 return;
             }
 
-            _subscribed = true;
-            FlowSpawner.Instance.OnEntityAdded += OnEntityAdded;
-            FlowSpawner.Instance.OnEntityRemoved += OnEntityRemoved;
-        }
-
-        /// <summary>流量机创建时登记它的网格，之后落在这块网格上的流源才知道该挂到哪。</summary>
-        public static void RegisterGrid(IFlowGrid grid, Il2Cpp.GameGridInventory inventory)
-        {
             GridVisual visual = new GridVisual();
             visual.Inventory = inventory;
+            visual.Flows = flows;
+            visual.AddedHandler = entity => OnEntityAdded(entity, grid);
+            visual.RemovedHandler = OnEntityRemoved;
             _grids[grid] = visual;
+
+            flows.OnEntityAdded += visual.AddedHandler;
+            flows.OnEntityRemoved += visual.RemovedHandler;
         }
 
         /// <summary>网格作废（流量机被销毁）时撤销登记，避免映射表一直挂着死网格。</summary>
         public static void UnregisterGrid(IFlowGrid grid)
         {
-            if (grid != null)
+            GridVisual visual;
+            if (grid == null || !_grids.TryGetValue(grid, out visual))
             {
-                _grids.Remove(grid);
+                return;
             }
+
+            // 必须退订：机器退役后如果它还能广播，会往 _pending 里塞永远解析不到的实体
+            // （网格已不在表里），_pending 就会无界增长
+            if (visual.Flows != null)
+            {
+                visual.Flows.OnEntityAdded -= visual.AddedHandler;
+                visual.Flows.OnEntityRemoved -= visual.RemovedHandler;
+            }
+
+            _grids.Remove(grid);
         }
 
         /// <summary>由 MelonMod.OnLateUpdate 每帧调用。</summary>
         public static void LateUpdate()
+        {
+            // 这里会读原生组件（rectTransform），对象被销毁后可能抛。
+            // 不兜住的话视觉层整帧停摆且每帧复现；只记一次，避免刷屏。
+            try
+            {
+                SyncShells();
+            }
+            catch (Exception e)
+            {
+                if (!_syncFailed)
+                {
+                    _syncFailed = true;
+                    MelonLoader.MelonLogger.Error("[流源] 视觉同步失败，后续不再重复报告：" + e);
+                }
+            }
+        }
+
+        private static bool _syncFailed;
+
+        private static void SyncShells()
         {
             BuildPendingShells();
 
@@ -124,22 +161,26 @@ namespace ProbablyBagMod.Mod
                 }
             }
 
+            foreach (KeyValuePair<IFlowGrid, GridVisual> pair in _grids)
+            {
+                if (pair.Value.Flows != null)
+                {
+                    pair.Value.Flows.OnEntityAdded -= pair.Value.AddedHandler;
+                    pair.Value.Flows.OnEntityRemoved -= pair.Value.RemovedHandler;
+                }
+            }
+
             _shells.Clear();
             _pending.Clear();
             _grids.Clear();
         }
 
-        private static void OnEntityAdded(FlowEntity entity)
+        private static void OnEntityAdded(FlowEntity entity, IFlowGrid grid)
         {
-            // 网格还取不到父节点就先记账，LateUpdate 里补建
-            RectTransform gridRect = ResolveGridRect(entity.Grid);
+            RectTransform gridRect = ResolveGridRect(grid);
             if (gridRect == null)
             {
-                if (entity.Grid != null)
-                {
-                    _pending.Add(entity);
-                }
-
+                _pending[entity] = grid;
                 return;
             }
 
@@ -149,25 +190,36 @@ namespace ProbablyBagMod.Mod
         /// <summary>为上一帧没能建壳的流源补壳（面板打开、排版完成后就能建）。</summary>
         private static void BuildPendingShells()
         {
-            for (int i = _pending.Count - 1; i >= 0; i--)
+            if (_pending.Count == 0)
             {
-                FlowEntity entity = _pending[i];
+                return;
+            }
 
-                // 期间已被装置吸收的，不用再画
-                if (!FlowManager.Instance.ActiveEntities.Contains(entity))
-                {
-                    _pending.RemoveAt(i);
-                    continue;
-                }
+            List<FlowEntity> ready = null;
 
-                RectTransform gridRect = ResolveGridRect(entity.Grid);
+            foreach (KeyValuePair<FlowEntity, IFlowGrid> pair in _pending)
+            {
+                RectTransform gridRect = ResolveGridRect(pair.Value);
                 if (gridRect == null)
                 {
                     continue;
                 }
 
-                CreateShell(entity, gridRect);
-                _pending.RemoveAt(i);
+                if (ready == null)
+                {
+                    ready = new List<FlowEntity>();
+                }
+
+                CreateShell(pair.Key, gridRect);
+                ready.Add(pair.Key);
+            }
+
+            if (ready != null)
+            {
+                for (int i = 0; i < ready.Count; i++)
+                {
+                    _pending.Remove(ready[i]);
+                }
             }
         }
 
@@ -221,8 +273,11 @@ namespace ProbablyBagMod.Mod
         /// <summary>
         /// 格坐标 → 网格 RectTransform 的本地坐标（anchoredPosition）。
         ///
-        /// 壳的锚点与 pivot 都是默认的 (0.5,0.5)，所以 anchoredPosition 就是壳中心相对网格中心的偏移。
-        /// 网格的 <c>rect</c> 同样是相对 pivot 的，因此直接用 rect 的左下角往上算：
+        /// 逻辑层的整数点代表「这一格」，不是格子边界，所以每个轴要再加半格，
+        /// 壳才会落在格子正中。这个半格偏移只属于渲染，逻辑层不参与。
+        ///
+        /// 壳的锚点与 pivot 都是 (0.5,0.5)，anchoredPosition 就是壳中心相对网格中心的偏移；
+        /// 网格的 <c>rect</c> 同样相对 pivot，因此直接从 rect 的左上角往里算：
         /// X 从左边加，Y 从上边减——格坐标的 (0,0) 是网格左上角，Y 越大越靠下。
         /// </summary>
         private static Vector2 ToGridLocal(RectTransform gridRect, FlowPos cell)
@@ -234,8 +289,8 @@ namespace ProbablyBagMod.Mod
 
             Rect area = gridRect.rect;
             return new Vector2(
-                area.xMin + (float)(cell.X * CellSize),
-                area.yMax - (float)(cell.Y * CellSize));
+                area.xMin + (float)((cell.X + 0.5d) * CellSize),
+                area.yMax - (float)((cell.Y + 0.5d) * CellSize));
         }
 
         /// <summary>拿某块网格的 RectTransform（缓存；面板重建后 rectTransform 会变，失效就重取）。</summary>

@@ -28,10 +28,18 @@ namespace ProbablyBagMod.Mod
             Item = item;
             Inventory = inventory;
             Grid = new FlowGridAdapter(inventory);
+            Flows = new FlowSpawner();
+            Motion = new FlowManager(Grid);
         }
 
         /// <summary>本机网格的运动层代理（流源靠它查装置、判越界）。</summary>
         public FlowGridAdapter Grid { get; }
+
+        /// <summary>本机的流源名单与生死广播。</summary>
+        public FlowSpawner Flows { get; }
+
+        /// <summary>本机的流源推进器。与 <see cref="Flows"/> 互不隶属，由本类接线。</summary>
+        public FlowManager Motion { get; }
 
         /// <summary>流量机物品本身。物品被销毁（读档 / 删除）即本机作废。</summary>
         public Il2Cpp.GameItem Item { get; }
@@ -57,6 +65,12 @@ namespace ProbablyBagMod.Mod
         /// </summary>
         public void Emit()
         {
+            // 机器物品或网格已失效时不能再碰原生对象
+            if (!IsAlive)
+            {
+                return;
+            }
+
             // 布局在按下启动的那一刻就定了：格子表这里建一次，
             // 之后的碰撞探测只查字典，不再每帧遍历 childItems
             Grid.Refresh();
@@ -138,7 +152,7 @@ namespace ProbablyBagMod.Mod
             emitter.Stock.Moisture = available;
             emitter.Stock.Temperature = LiquidStock.Temperature(item, emitter.Stock.Temperature);
 
-            if (!emitter.EmitAll(origin, direction, Grid))
+            if (!emitter.EmitAll(origin, direction, Flows))
             {
                 return false;
             }
@@ -187,10 +201,9 @@ namespace ProbablyBagMod.Mod
 
             direction = (4 - (shape.orientation & 3)) & 3;
 
-            // 发射点取装置占据区域的中点；1×1 装置就是它自己那格的中心
-            double centerX = shape.minX + shape.width * 0.5d;
-            double centerY = shape.minY + shape.height * 0.5d;
-            origin = new FlowPos(centerX, centerY);
+            // 发射点就是装置所在的整数格位。逻辑层不补半格——
+            // 「落在格子中间」是渲染层的事，由视觉映射统一处理。
+            origin = new FlowPos(shape.minX, shape.minY);
             return true;
         }
 

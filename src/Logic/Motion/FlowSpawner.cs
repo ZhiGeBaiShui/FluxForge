@@ -4,85 +4,74 @@ using System.Collections.Generic;
 namespace ProbablyBagMod
 {
     /// <summary>
-    /// 流源生命周期中枢（单例，全局唯一）：管「生」也管「死」，出入口对偶。
+    /// 流源的生命周期：谁还活着、什么时候生、什么时候死。
     ///
-    /// 生：装置 <see cref="Register"/>（注册）→ <see cref="Advance"/> 到点出队
-    ///      → 送进 FlowManager + 发 <see cref="OnEntityAdded"/>（mod 层建壳）
-    /// 死：装置 <see cref="Kill"/>（删除）→ FlowManager 移除
-    ///      → 发 <see cref="OnEntityRemoved"/>（mod 层毁壳）
+    /// 与运动层是**并行的两件事**，互不隶属：
+    ///   · 本类只维护「活着的流源」这一份名单，并在进出时广播；
+    ///   · 怎么动、撞到谁，全由 <see cref="FlowManager"/> 负责。
+    /// 两者由持有它们的上层（每台流量机）接线，彼此不持有对方的引用。
     ///
-    /// Register / Kill 一对（外部对流的出入口）、
-    /// OnEntityAdded / OnEntityRemoved 一对（框架对外的广播）——完全对等。
-    ///
-    /// 时钟是自维护的现实时间轴——参考 Unity Time.time 的做法：
-    /// 外部每帧喂一次帧间隔（deltaTime），本类累加出自己的当前时间。
-    /// 游戏暂停时没人喂，时间就不走；读档回退也不会错乱。
+    /// 一家机器一份：多台流量机各管各的名单，清理一台不影响另一台。
+    /// 不认识 mod 层——外壳的创建/销毁由订阅 <see cref="OnEntityAdded"/> /
+    /// <see cref="OnEntityRemoved"/> 的一方自己做。
     /// </summary>
     public sealed class FlowSpawner
     {
-        public static FlowSpawner Instance { get; } = new FlowSpawner();
+        private readonly List<FlowEntity> _active = new List<FlowEntity>();
 
-        private readonly PriorityQueue<FlowEntity, double> _pending;
-        private double _now;
-
-        /// <summary>新流源出生时触发（mod 层订阅 → 造 GameObject 壳）。</summary>
+        /// <summary>流源出生时触发（mod 层订阅 → 造外壳）。</summary>
         public event Action<FlowEntity> OnEntityAdded;
 
-        /// <summary>流源被删除时触发（mod 层订阅 → 销毁壳）。</summary>
+        /// <summary>流源消失时触发（mod 层订阅 → 毁灭外壳）。</summary>
         public event Action<FlowEntity> OnEntityRemoved;
 
-        private FlowSpawner()
+        /// <summary>当前活着的流源（运动层遍历它来推进）。</summary>
+        public IReadOnlyList<FlowEntity> Active
         {
-            _pending = new PriorityQueue<FlowEntity, double>();
+            get { return _active; }
         }
 
-        /// <summary>当前时间（秒）。注册与出队都以它为准。</summary>
-        public double Now
+        /// <summary>纳入一个新的流源并广播出生。</summary>
+        public void Accept(FlowEntity entity)
         {
-            get { return _now; }
-        }
+            if (entity == null)
+            {
+                return;
+            }
 
-        /// <summary>清空待出生队列并复位时间轴（读档 / 重开 / 测试隔离用）。</summary>
-        public void Reset()
-        {
-            _pending.Clear();
-            _now = 0;
-        }
-
-        /// <summary>
-        /// 注册一个流源，delaySeconds 后出生（0 = 下一次 Advance 便出队）。
-        /// 排队期间不提供删除（待出生状态「到点必出」）。
-        /// </summary>
-        public void Register(FlowEntity entity, double delaySeconds)
-        {
-            _pending.Enqueue(entity, _now + delaySeconds);
+            _active.Add(entity);
+            OnEntityAdded?.Invoke(entity);
         }
 
         /// <summary>
-        /// 删除一个流源：从运动层移除并广播（供装置 / 越界 / 到输出口调用）。
-        /// 若目标还在排队（未出生），运动层移除是 no-op——但按约定删除只发生在出生后。
+        /// 终结一个流源并广播。不在名单里就直接返回——
+        /// 同一个流源不会被播报两次，调用方也不必先判重。
         /// </summary>
         public void Kill(FlowEntity entity)
         {
-            FlowManager.Instance.Remove(entity);
+            if (entity == null || !_active.Remove(entity))
+            {
+                return;
+            }
+
             OnEntityRemoved?.Invoke(entity);
         }
 
         /// <summary>
-        /// 推进时间轴。由外部每帧调用，传入本帧现实间隔。
-        /// 所有到点的流源出队、送进运动层，并发 OnEntityAdded。
+        /// 终结全部（机器退役 / 网格失效时用），逐个广播，外壳才会跟着销毁。
+        ///
+        /// 必须「先移出名单、再广播」——和 <see cref="Kill"/> 的契约保持一致。
+        /// 如果先广播后清空，广播期间 <see cref="Active"/> 里还留着已经死掉的流源，
+        /// 订阅者如果顺手再 Kill 一次就会播两遍。
         /// </summary>
-        public void Advance(double deltaTime)
+        public void KillAll()
         {
-            _now += deltaTime;
-
-            while (_pending.Count > 0
-                && _pending.TryPeek(out FlowEntity entity, out double due)
-                && due <= _now)
+            while (_active.Count > 0)
             {
-                _pending.Dequeue();
-                FlowManager.Instance.Accept(entity);
-                OnEntityAdded?.Invoke(entity);
+                int last = _active.Count - 1;
+                FlowEntity entity = _active[last];
+                _active.RemoveAt(last);
+                OnEntityRemoved?.Invoke(entity);
             }
         }
     }

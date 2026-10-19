@@ -58,7 +58,7 @@ namespace ProbablyBagMod
         }
 
         /// <inheritdoc/>
-        public bool Route(FlowEntity incoming)
+        public bool Route(FlowEntity incoming, FlowSpawner flows, int cellX, int cellY)
         {
             List<FlowProperties> incomingOnly = new List<FlowProperties>(1);
             incomingOnly.Add(incoming.Properties);
@@ -70,7 +70,7 @@ namespace ProbablyBagMod
             }
 
             _collected.Add(incoming);
-            FlowSpawner.Instance.Kill(incoming);
+            flows.Kill(incoming);
 
             // 库存与记录都定稿后再播报，订阅方读到的是一次完整的吸收结果
             Changed?.Invoke(this);

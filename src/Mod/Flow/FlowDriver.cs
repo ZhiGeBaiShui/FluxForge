@@ -3,14 +3,15 @@ using System.Collections.Generic;
 namespace ProbablyBagMod.Mod
 {
     /// <summary>
-    /// 多机器调度器：只管「有哪些机器」和每帧的调用顺序，不再持有任何网格引用。
+    /// 多机器调度器：只管「有哪些机器」和每帧的调用顺序。
     ///
     /// 顺序有讲究：
     ///   ① 剔除已失效的机器（物品被销毁后不再触碰）
-    ///   ② 全局 Advance 一次 → 所有机器的流源一起出队，同一帧就能被推进，不白等一帧
-    ///   ③ 全局 Tick 一次 → 运动层按流源自带的 Grid 分别探测、分别越界回收
+    ///   ② 逐台推进：每台机器用自己的网格推进自己的流源名单
+    ///
+    /// 机器之间没有任何共享状态——网格、名单、推进器都各归各的，
+    /// 所以这里不需要分区、不需要按网格分发，也不需要在循环里比对归属。
     /// 装置的状态回写与移除由装置自己的事件驱动，调度器不参与。
-    /// 分流放不在这里做：网格归属由 FlowEntity.Grid 决定，调度器不需要知道谁是谁的。
     /// </summary>
     public static class FlowDriver
     {
@@ -33,36 +34,48 @@ namespace ProbablyBagMod.Mod
                 // 一台机器出问题不该连累其他机器：这里把它的流源和显示一并撤掉。
                 if (!machine.IsAlive)
                 {
-                    Retire(machine);
+                    // 先摘出表再退役：退役里的广播会调订阅方，万一它抛异常，
+                    // 已经摘掉的机器不会永远留在表里每帧重试
                     _machines.RemoveAt(i);
+                    Retire(machine);
+                    continue;
+                }
+
+                try
+                {
+                    machine.Motion.Tick(deltaTime, machine.Flows);
+                }
+                catch (System.Exception e)
+                {
+                    // 装置在这条链上会碰原生对象，一旦抛异常而没人兜，
+                    // 后面所有机器当帧都不再推进，且下一帧照样复现——等于永久饿死
+                    MelonLoader.MelonLogger.Error("[流量机] 推进失败，已退役该机器：" + e);
+                    _machines.RemoveAt(i);
+                    Retire(machine);
                 }
             }
-
-            FlowSpawner.Instance.Advance(deltaTime);
-            FlowManager.Instance.Tick(deltaTime);
         }
 
-        /// <summary>撤掉一台作废的机器：它网格上的流源、装置登记、显示登记、网格过滤都要清。</summary>
+        /// <summary>
+        /// 撤掉一台作废的机器。
+        ///
+        /// 走到这里说明机器物品已经失效，所以**不能再读它的网格内容**——
+        /// 那是在解引用已经归零的原生指针。只做两件不依赖原生对象的事：
+        /// 广播流源死亡（订阅方销毁外壳）、撤销显示登记。
+        /// </summary>
         private static void Retire(FlowMachine machine)
         {
-            FlowManager.Instance.KillAllOfGrid(machine.Grid);
-
-            // 网格里的装置物品还活着的话，多半只是这台机器被删了、物品被挪走；
-            // 指针已失效的则必须注销，否则原生地址被新物品复用时会被误认成装置
-            Il2CppSystem.Collections.Generic.List<Il2Cpp.GameItem> items = machine.Inventory.childItems;
-            if (items != null)
+            try
             {
-                for (int i = 0; i < items.Count; i++)
-                {
-                    Il2Cpp.GameItem item = items[i];
-                    if (item != null)
-                    {
-                        DeviceRegistry.Unregister(item.Pointer);
-                    }
-                }
+                machine.Flows.KillAll();
+                FlowVisual.UnregisterGrid(machine.Grid);
+            }
+            catch (System.Exception e)
+            {
+                // 退役本身也在处理原生订阅方，失败只能记下来——机器已摘出表，不会重复
+                MelonLoader.MelonLogger.Error("[流量机] 退役过程出错：" + e);
             }
 
-            FlowVisual.UnregisterGrid(machine.Grid);
             MelonLoader.MelonLogger.Msg("[流量机] 已移除失效的机器");
         }
 
@@ -71,9 +84,6 @@ namespace ProbablyBagMod.Mod
         {
             _machines.Clear();
             DeviceRegistry.Clear();
-
-            FlowManager.Instance.Reset();
-            FlowSpawner.Instance.Reset();
             FlowVisual.Clear();
         }
     }

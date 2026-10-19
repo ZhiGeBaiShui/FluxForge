@@ -14,11 +14,17 @@ namespace ProbablyBagMod.Tests
     {
         private readonly ITestOutputHelper _output;
 
+        // 网格 / 生命周期 / 运动各一份，模拟一台流量机的最小装配。
+        // 每个测试方法都会新建测试类实例，三者天然隔离，不需要 Reset。
+        private readonly FakeGrid _grid = new FakeGrid();
+        private readonly FlowSpawner _flows = new FlowSpawner();
+        private readonly FlowManager _motion;
+
         public TurnDeviceTests(ITestOutputHelper output)
         {
             _output = output;
-            FlowSpawner.Instance.Reset();
-            FlowManager.Instance.Reset();
+            // 网格由构造注入：一台机器一块网格，流源不再自带网格
+            _motion = new FlowManager(_grid);
         }
 
         private sealed class FakeGrid : IFlowGrid
@@ -56,15 +62,14 @@ namespace ProbablyBagMod.Tests
             // 通道方向 = 开口朝向。流源向右运动，要从「朝左的开口」(3) 进入，
             // 所以通道集是 { 左(3), 下(2) }：左进、下出。
             SplitDevice lDevice = new SplitDevice(facing: 0, new[] { 3, 2 });
-            FakeGrid grid = new FakeGrid().SetRouter(10, 10, lDevice);
+            _grid.SetRouter(10, 10, lDevice);
 
             // 流源：起点 (1,10)，朝右(1)，1 格/秒
             FlowEntity entity = new FlowEntity(
                 new FlowPos(1, 10),
                 new FlowMotionData(1, 1),
-                new FlowProperties(100, 20),
-                grid);
-            FlowSpawner.Instance.Register(entity, 0);
+                new FlowProperties(100, 20));
+            _flows.Accept(entity);
 
             // 逐帧推进并记录跨格轨迹（dt = 0.5s/帧 → 0.5 格/帧）
             const double dt = 0.5d;
@@ -76,8 +81,7 @@ namespace ProbablyBagMod.Tests
 
             for (int frame = 0; frame < 60; frame++)
             {
-                FlowSpawner.Instance.Advance(dt);
-                FlowManager.Instance.Tick(dt);
+                _motion.Tick(dt, _flows);
                 time += dt;
 
                 int cellX = (int)Math.Floor(entity.Position.X);

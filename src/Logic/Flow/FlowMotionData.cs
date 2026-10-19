@@ -26,10 +26,25 @@ namespace ProbablyBagMod
         }
 
         /// <summary>方向索引对应的 X 位移表（与 <see cref="Dy"/> 同序使用）。</summary>
-        public static readonly int[] Dx = { 0, 1, 0, -1 };
+        private static readonly int[] DxTable = { 0, 1, 0, -1 };
 
         /// <summary>方向索引对应的 Y 位移表。Y 轴向下，故「上」是 -1。</summary>
-        public static readonly int[] Dy = { -1, 0, 1, 0 };
+        private static readonly int[] DyTable = { -1, 0, 1, 0 };
+
+        /// <summary>
+        /// 某个方向在 X 轴上的位移（-1 / 0 / 1）。
+        /// 用方法而不是公开数组：数组元素是可变，任何一处改一格都会影响所有机器的运动。
+        /// </summary>
+        public static int StepX(int direction)
+        {
+            return DxTable[direction];
+        }
+
+        /// <summary>某个方向在 Y 轴上的位移。-1 = 向上（Y 减小）。</summary>
+        public static int StepY(int direction)
+        {
+            return DyTable[direction];
+        }
 
         /// <summary>方向索引（0=上 1=右 2=下 3=左）。</summary>
         public int Direction;
@@ -44,7 +59,7 @@ namespace ProbablyBagMod
         public (double Dx, double Dy) FrameOffset(double deltaTime)
         {
             double distance = Speed * deltaTime;
-            return (Dx[Direction] * distance, Dy[Direction] * distance);
+            return (DxTable[Direction] * distance, DyTable[Direction] * distance);
         }
     }
 }

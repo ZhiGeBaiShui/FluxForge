@@ -4,22 +4,20 @@ using System.Collections.Generic;
 namespace ProbablyBagMod
 {
     /// <summary>
-    /// 运动层（单例，全局唯一）：管「活着的流源」的推进。
+    /// 流源的运动：一帧推进多少、撞上谁、被谁拦住。
     ///
-    /// 只管推进，不向上通报每帧位置——视觉层在 <c>LateUpdate</c> 里直接读
+    /// 与生命周期是**并行的两件事**：名单和生死广播在 <see cref="FlowSpawner"/>，
+    /// 本类只负责「怎么动」，既不持有名单，也不知道谁在订阅生死。
+    /// 两者由持有它们的上层（每台流量机）接线。
+    ///
+    /// 网格由构造注入：一台机器一块网格，所以不需要每个流源再自带一份。
+    ///
+    /// 不向上通报每帧位置——视觉层在 <c>LateUpdate</c> 里直接读
     /// <see cref="FlowEntity.Position"/>，因为逻辑帧结束时游戏 UI 还没排完版，
     /// 那一刻算出的像素坐标到 UI 真正落地前还会变。
-    ///
-    /// 收人 / 送人（<see cref="Accept"/> / <see cref="Remove"/>）由
-    /// <see cref="FlowSpawner"/> 驱动——本类不持有生命周期事件，不认识 mod 层。
-    ///
-    /// 网格不在这里持有：每个流源自带 <see cref="FlowEntity.Grid"/>，
-    /// 所以多台装置（多个网格）的流源可以同时在同一个列表里推进而互不干扰。
     /// </summary>
     public sealed class FlowManager
     {
-        public static FlowManager Instance { get; } = new FlowManager();
-
         /// <summary>
         /// 撞上装置时停在装置格内的偏移量（沿运动方向前进一点点）。
         /// 让位置明确落在装置格内部、不压在格边界上：
@@ -28,97 +26,48 @@ namespace ProbablyBagMod
         /// </summary>
         private const double StopEpsilon = 1e-3;
 
-        private readonly List<FlowEntity> _active = new List<FlowEntity>();
+        private readonly IFlowGrid _grid;
 
-        private FlowManager()
+        public FlowManager(IFlowGrid grid)
         {
-        }
-
-        /// <summary>当前管理的流源。</summary>
-        public IReadOnlyList<FlowEntity> ActiveEntities
-        {
-            get { return _active; }
-        }
-
-        /// <summary>由 <see cref="FlowSpawner"/> 调用：把出队的流源纳入管理。</summary>
-        public void Accept(FlowEntity entity)
-        {
-            _active.Add(entity);
-        }
-
-        /// <summary>由 <see cref="FlowSpawner"/> 调用：把流源移出管理。</summary>
-        public void Remove(FlowEntity entity)
-        {
-            _active.Remove(entity);
-        }
-
-        /// <summary>清空活跃列表（读档 / 重开 / 测试隔离用）。</summary>
-        public void Reset()
-        {
-            _active.Clear();
+            _grid = grid ?? throw new ArgumentNullException(nameof(grid));
         }
 
         /// <summary>
-        /// 回收落在某块网格上的所有流源。
-        /// 网格被销毁（流量机被删 / 面板失效）时，它上面的流源失去了推进依据，
-        /// 留着会让 _active 只增不减，且下一帧仍会去查已经是废墟的装置表。
+        /// 推进一帧。deltaTime = 本帧现实间隔（秒）。
+        ///
+        /// 倒序遍历：装置反应中可能终结当前流源（从名单里移除），
+        /// 倒序不受影响；分流装置在同一帧新增的流源追加在末尾，本轮也不会被遍历到。
         /// </summary>
-        public void KillAllOfGrid(IFlowGrid grid)
+        public void Tick(double deltaTime, FlowSpawner flows)
         {
-            if (grid == null)
+            IReadOnlyList<FlowEntity> active = flows.Active;
+
+            for (int i = active.Count - 1; i >= 0; i--)
             {
-                return;
-            }
+                FlowEntity entity = active[i];
 
-            for (int i = _active.Count - 1; i >= 0; i--)
-            {
-                if (ReferenceEquals(_active[i].Grid, grid))
+                // 走出网格的流源直接回收：否则它会一路飘向无穷远，名单只增不减
+                if (!_grid.Contains((int)Math.Floor(entity.Position.X), (int)Math.Floor(entity.Position.Y)))
                 {
-                    FlowSpawner.Instance.Kill(_active[i]);
-                }
-            }
-        }
-
-        /// <summary>
-        /// 推进一帧。deltaTime = 本帧现实间隔（秒）——与 FlowSpawner 同一个时间轴。
-        /// 倒序遍历：装置反应中可能 Kill 当前流源（移除 _active），倒序不影响未处理项的索引。
-        /// </summary>
-        public void Tick(double deltaTime)
-        {
-            for (int i = _active.Count - 1; i >= 0; i--)
-            {
-                FlowEntity entity = _active[i];
-
-                // 没有网格的流源无处可去（外部构造漏传），按越界处理直接回收
-                IFlowGrid grid = entity.Grid;
-                if (grid == null)
-                {
-                    FlowSpawner.Instance.Kill(entity);
-                    continue;
-                }
-
-                // 走出网格的流源直接回收：否则它会一路飘向无穷远，_active 只增不减
-                if (!grid.Contains((int)Math.Floor(entity.Position.X), (int)Math.Floor(entity.Position.Y)))
-                {
-                    FlowSpawner.Instance.Kill(entity);
+                    flows.Kill(entity);
                     continue;
                 }
 
                 // 位置直接写进 entity.Position，视觉层在 LateUpdate 里自己读
-                MoveFlowEntity(entity, deltaTime);
+                MoveFlowEntity(entity, deltaTime, flows);
             }
         }
 
         /// <summary>
         /// 一帧推进单个流源：算候选终点 → 逐格探测装置 → 撞上则截停并触发装置，无阻则直达。
-        /// 被装置终结（Kill）时由 <see cref="FlowSpawner"/> 从 _active 里摘掉，这里不再关心。
         /// </summary>
-        private void MoveFlowEntity(FlowEntity entity, double deltaTime)
+        private void MoveFlowEntity(FlowEntity entity, double deltaTime, FlowSpawner flows)
         {
             (double dx, double dy) = entity.Motion.FrameOffset(deltaTime);
             FlowPos endPos = new FlowPos(entity.Position.X + dx, entity.Position.Y + dy);
 
-            if (!TryFindBlocker(entity.Position, endPos, entity.Motion.Direction, entity))
+            if (!TryFindBlocker(entity.Position, endPos, entity.Motion.Direction, entity, flows))
             {
                 entity.Position.Set(endPos);
             }
@@ -127,14 +76,15 @@ namespace ProbablyBagMod
         /// <summary>
         /// 逐格碰撞探测：从起点格沿方向走到终点格（含终点格，不查起点格），
         /// 返回是否撞上了「路由或反应装置」。
+        ///
+        /// 装置需要造新流源或终结旧流源时，用的是传进来的 <paramref name="flows"/>——
+        /// 运动层不持有它，只是这一步借用一下。
         /// </summary>
-        private bool TryFindBlocker(FlowPos startPos, FlowPos endPos, int direction, FlowEntity entity)
+        private bool TryFindBlocker(
+            FlowPos startPos, FlowPos endPos, int direction, FlowEntity entity, FlowSpawner flows)
         {
-            int stepX = FlowMotionData.Dx[direction];
-            int stepY = FlowMotionData.Dy[direction];
-
-            // 探测的是流源自己的网格：同一帧里可能混着多个网格的流源
-            IFlowGrid grid = entity.Grid;
+            int stepX = FlowMotionData.StepX(direction);
+            int stepY = FlowMotionData.StepY(direction);
 
             int probeX = (int)Math.Floor(startPos.X);
             int probeY = (int)Math.Floor(startPos.Y);
@@ -147,8 +97,8 @@ namespace ProbablyBagMod
                 probeX += stepX;
                 probeY += stepY;
 
-                IFlowRouter router = grid.GetRouterAt(probeX, probeY);
-                IFlowDevice reactor = grid.GetReactorAt(probeX, probeY);
+                IFlowRouter router = _grid.GetRouterAt(probeX, probeY);
+                IFlowDevice reactor = _grid.GetReactorAt(probeX, probeY);
 
                 // 先反应、后路由：同一格两者都有时，反应先改属性，路由再按新属性分流
                 bool blocked = false;
@@ -156,21 +106,31 @@ namespace ProbablyBagMod
                 {
                     blocked = true;
                 }
-                if (router != null && router.Route(entity))
+                if (router != null && router.Route(entity, flows, probeX, probeY))
                 {
                     blocked = true;
                 }
 
                 if (blocked)
                 {
-                    entity.Position.Set(
-                        StopInsideCell(entity.Position.X, probeX, stepX),
-                        StopInsideCell(entity.Position.Y, probeY, stepY));
+                    StopAt(entity, probeX, probeY, stepX, stepY);
                     return true;
                 }
             }
 
             return false;
+        }
+
+        /// <summary>
+        /// 把流源落到装置格的内缘上。
+        /// 单独抽出来是因为「落位」必须发生在把控制权交给装置**之前**，
+        /// 见 <see cref="TryFindBlocker"/> 里的说明。
+        /// </summary>
+        private static void StopAt(FlowEntity entity, int cellX, int cellY, int stepX, int stepY)
+        {
+            entity.Position.Set(
+                StopInsideCell(entity.Position.X, cellX, stepX),
+                StopInsideCell(entity.Position.Y, cellY, stepY));
         }
 
         /// <summary>

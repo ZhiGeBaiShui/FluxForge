@@ -36,11 +36,11 @@ namespace ProbablyBagMod
         /// </summary>
         /// <param name="origin">出发格（格中心）。</param>
         /// <param name="direction">出发方向（0=上 1=右 2=下 3=左）。</param>
-        /// <param name="grid">流源所属网格。</param>
+        /// <param name="flows">接收新流源的生命周期（本机一份）。</param>
         /// <returns>真的发出了流源才返回 true。</returns>
-        public bool EmitAll(FlowPos origin, int direction, IFlowGrid grid)
+        public bool EmitAll(FlowPos origin, int direction, FlowSpawner flows)
         {
-            if (grid == null || origin == null || !HasContent)
+            if (flows == null || origin == null || !HasContent)
             {
                 return false;
             }
@@ -49,9 +49,9 @@ namespace ProbablyBagMod
             FlowProperties payload = new FlowProperties(Stock.Moisture, Stock.Temperature);
             FlowPos position = new FlowPos(origin.X, origin.Y);
             FlowMotionData motion = new FlowMotionData(direction, Speed);
-            FlowEntity entity = new FlowEntity(position, motion, payload, grid);
+            FlowEntity entity = new FlowEntity(position, motion, payload);
 
-            FlowSpawner.Instance.Register(entity, 0d);
+            flows.Accept(entity);
             Stock.Moisture = 0d;
 
             return true;

@@ -10,8 +10,9 @@ namespace ProbablyBagMod.Mod
     /// 物品位置存在各自的 shape.minX/minY 里，占格要逐格用 shape.Get 现算。
     /// 所以每帧 Refresh 一次展开成格子表，之后探测就只查字典。
     ///
-    /// ⚠ childItems 每次访问都会 new 一个 List，绝不能每格每帧去拿——
-    ///   只能每帧拿一次，在 Refresh 里展开。
+    /// ⚠ childItems 每次访问都会 new 一个 List，所以只在 Refresh 里取一次。
+    ///   而 Refresh 只在机器启动（FlowMachine.Emit）时调——面板布局在启动后视为锁定，
+    ///   运行中拖动装置不会反映到这张表里。
     /// </summary>
     public sealed class FlowGridAdapter : IFlowGrid
     {

@@ -8,14 +8,19 @@ namespace ProbablyBagMod
     ///   · 本接口管「流源去哪、分几路」（数量与方向的变化）
     ///
     /// 运动层发现流源撞上本装置时调用本方法。装置自行决定怎么再分配：
-    /// 通过 <see cref="FlowSpawner.Instance"/> 把新流源一个个注册出去
-    /// （注册 0 个 = 吸收，1 个 = 直通/转向，N 个 = 分流）。
-    /// 注册完就不归它管——延迟期间流源在容器里排队，到点生成后归运动层管理。
+    /// 通过传入的 <see cref="FlowSpawner"/> 接受新流源或终结旧流源
+    /// （终结 = 吸收，接受 1 个 = 直通/转向，接受 N 个 = 分流）。
+    ///
+    /// 生命周期由调用方传进来而不是装置自己持有：
+    /// 一家机器一份名单，装置不该知道自己在哪台机器上。
+    ///
+    /// 装置格由运动层传入而不是让装置自己从 <c>incoming.Position</c> 推算：
+    /// 一帧跨多格时（卡顿、提速）当前位置离装置可能隔了好几格，推算必错。
     ///
     /// 分流、汇聚、延迟重放都是「路由」的不同形态：
-    ///   · 分流：1 个流入 → 注册 N 个新流源
-    ///   · 汇聚：N 个流入（每次调用收 1 个，装置内部 buffer 累积）→ 凑齐后注册 1 个
-    ///   · 延迟重放：照常路由，只是注册时给非 0 延迟
+    ///   · 分流：1 个流入 → 接受 N 个新流源
+    ///   · 汇聚：N 个流入（每次调用收 1 个，装置内部 buffer 累积）→ 凑齐后接受 1 个
+    ///   · 吸收：1 个流入 → 终结它
     /// </summary>
     public interface IFlowRouter
     {
@@ -23,6 +28,10 @@ namespace ProbablyBagMod
         /// 对流入的流源做路由（再分配）。
         /// </summary>
         /// <param name="incoming">流入的流源（实参）。装置自行读取其位置/运动数据/属性。</param>
-        bool Route(FlowEntity incoming);
+        /// <param name="flows">提供这份名单的流源生命周期（接受新流源 / 终结旧流源）。</param>
+        /// <param name="cellX">装置所在格（流源即将进入的那一格）。</param>
+        /// <param name="cellY">装置所在格。</param>
+        /// <returns>是否截停流源（true = 由本装置接管，不再继续前进）。</returns>
+        bool Route(FlowEntity incoming, FlowSpawner flows, int cellX, int cellY);
     }
 }
