@@ -148,7 +148,7 @@ namespace ProbablyBagMod.Mod
             // 不再有按网格登记的静态表，所以第二台机器落地不会覆盖第一台。
             // 覆盖字段前先释放旧视图：否则旧视图的订阅与层会永远留在已销毁的网格下。
             machine.AtlasView?.Dispose();
-            machine.AtlasView = new FlowAtlasView(machine.Grid, inventory, machine.Flows);
+            machine.AtlasView = new FlowAtlasView(inventory, machine.Flows);
         }
 
         /// <summary>解析 "4x3" 这类尺寸串，格式不对就保留默认值。</summary>

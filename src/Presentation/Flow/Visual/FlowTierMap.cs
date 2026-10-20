@@ -6,7 +6,7 @@ namespace ProbablyBagMod.Presentation.Flow.Visual
     /// 刻意保持纯函数、零状态、零 Unity：
     ///   · 温度只影响「冷/常温/热」三档，不改尺寸（SPEC §2 的 bbox 不变约束）；
     ///   · 含量四档是**唯一**控制尺寸的通道（SPEC §1）；
-    ///   · 状态目前来自「被移除 / 两帧未动」两个布尔，不读 Composition；
+    ///   · 状态目前来自「两帧未动」一个布尔，不读 Composition；
     ///   · 方向来自 <c>Motion.Direction</c> 的 0..3。
     /// 值域以外的输入都有明确的兜底，保证渲染层永远拿到一个合法枚举。
     /// </summary>
@@ -82,16 +82,13 @@ namespace ProbablyBagMod.Presentation.Flow.Visual
         }
 
         /// <summary>
-        /// 状态判定。优先级：被移除（collect）&gt; 被阻挡（blocked）&gt; 流动（flow）。
-        /// 「被移除」优先是因为 collect 只画一帧就销毁，必须压过同一帧里的 blocked。
+        /// 状态判定：被阻挡（blocked）优先，否则流动（flow）。
+        ///
+        /// collect 是死亡当帧的一次性贴图，已从生产路径移除（死亡改由粒子淡出表达），
+        /// 所以这里不再接收 removed 参数，也不产出 <see cref="FlowState.Collect"/>。
         /// </summary>
-        public static FlowState StateFrom(bool removed, bool blocked)
+        public static FlowState StateFrom(bool blocked)
         {
-            if (removed)
-            {
-                return FlowState.Collect;
-            }
-
             if (blocked)
             {
                 return FlowState.Blocked;
@@ -101,7 +98,7 @@ namespace ProbablyBagMod.Presentation.Flow.Visual
         }
 
         /// <summary>
-        /// 拖尾层数（0–6）：尾巴长度要跟体量走，否则"重"和"轻"的流源拖着一样长的尾巴，
+        /// 拖尾层数（1–6）：尾巴长度要跟体量走，否则"重"和"轻"的流源拖着一样长的尾巴，
         /// 会把含量通道读乱。按面积档给：空 1、少 2、中 4、多 6（每层 3px）。
         /// </summary>
         public static int TrailLayersFromContent(FlowContent content)

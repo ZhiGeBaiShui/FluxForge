@@ -202,7 +202,8 @@ namespace ProbablyBagMod.Mod
             origin = null;
             direction = 0;
 
-            Il2Cpp.GridShape shape = item == null ? null : item.modifiedShape;
+            // 调用方已跳过 null 物品，这里直接读形状
+            Il2Cpp.GridShape shape = item.modifiedShape;
             if (shape == null)
             {
                 return false;

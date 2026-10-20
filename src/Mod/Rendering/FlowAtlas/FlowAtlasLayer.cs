@@ -25,7 +25,7 @@ namespace ProbablyBagMod.Mod.Rendering.FlowAtlas
         public readonly FlowVisualState State;
 
         /// <summary>
-        /// 拖尾层数（0–6）：由含量档决定（见 <see cref="FlowTierMap.TrailLayersFromContent"/>）。
+        /// 拖尾层数（1–6）：由含量档决定（见 <see cref="FlowTierMap.TrailLayersFromContent"/>）。
         /// 尾巴长度必须跟体量走，否则轻/重流源拖一样长的尾，含量读数会被拉平。
         /// </summary>
         public readonly int TrailLayers;
@@ -64,6 +64,12 @@ namespace ProbablyBagMod.Mod.Rendering.FlowAtlas
         /// <summary>每个流源最多 6 层残影：亚格间距叠出连续渐隐的拖尾。</summary>
         private const int GhostsPerSource = 6;
 
+        /// <summary>本体通道池的槽位数（body/edge/accent/wall 各一份）。</summary>
+        private const int SourceCapacity = 64;
+
+        /// <summary>残影池槽位数：每个本体槽位 <see cref="GhostsPerSource"/> 层。</summary>
+        private const int GhostCapacity = SourceCapacity * GhostsPerSource;
+
         /// <summary>残影相对本体的后退像素（亚格：3px 一档，6 层共 18px ≈ 1.1 格）。</summary>
         private static readonly int[] GhostOffsetsPx = { 3, 6, 9, 12, 15, 18 };
 
@@ -80,20 +86,24 @@ namespace ProbablyBagMod.Mod.Rendering.FlowAtlas
             public Color Color;
         }
 
+        // 下标约束：body/edge/accent/wall 的下标 ∈ [0, SourceCapacity)；
+        // 残影下标 = body 下标 * GhostsPerSource + 层号 ∈ [0, GhostCapacity)。
+        // Submit 已按 SourceCapacity 截断提交数，所以池内下标不会越界。
+
         /// <summary>本体通道池：一个流源一个 Image。</summary>
-        private readonly Image[] _bodies = new Image[64];
+        private readonly Image[] _bodies = new Image[SourceCapacity];
 
         /// <summary>边缘通道池（温度色只作用在这一层）。</summary>
-        private readonly Image[] _edges = new Image[64];
+        private readonly Image[] _edges = new Image[SourceCapacity];
 
         /// <summary>亮核通道池（高光/霜/沫）。</summary>
-        private readonly Image[] _accents = new Image[64];
+        private readonly Image[] _accents = new Image[SourceCapacity];
 
         /// <summary>墙通道池：只有 blocked 且墙图可用时才创建。</summary>
-        private readonly Image[] _walls = new Image[64];
+        private readonly Image[] _walls = new Image[SourceCapacity];
 
         /// <summary>残影池：一个流源 6 个 Image，下标 = 本体下标 * 6 + k。</summary>
-        private readonly Image[] _ghosts = new Image[384];
+        private readonly Image[] _ghosts = new Image[GhostCapacity];
 
         /// <summary>
         /// 常驻粒子池：每颗一个 1×1 白 Image，位置/颜色每帧写。
@@ -103,11 +113,11 @@ namespace ProbablyBagMod.Mod.Rendering.FlowAtlas
 
         // 每槽位上次写入的 sprite/color：位置每帧都写，但 sprite/color 只在变化时写，
         // 避免每帧触发 Canvas 的材质/网格重建。
-        private readonly QuadCache[] _bodyCache = new QuadCache[64];
-        private readonly QuadCache[] _edgeCache = new QuadCache[64];
-        private readonly QuadCache[] _accentCache = new QuadCache[64];
-        private readonly QuadCache[] _wallCache = new QuadCache[64];
-        private readonly QuadCache[] _ghostCache = new QuadCache[384];
+        private readonly QuadCache[] _bodyCache = new QuadCache[SourceCapacity];
+        private readonly QuadCache[] _edgeCache = new QuadCache[SourceCapacity];
+        private readonly QuadCache[] _accentCache = new QuadCache[SourceCapacity];
+        private readonly QuadCache[] _wallCache = new QuadCache[SourceCapacity];
+        private readonly QuadCache[] _ghostCache = new QuadCache[GhostCapacity];
 
         private readonly RectTransform _gridRect;
         private readonly RectTransform _root;
@@ -167,23 +177,13 @@ namespace ProbablyBagMod.Mod.Rendering.FlowAtlas
             get { return !_destroyed && _root != null; }
         }
 
-        /// <summary>
-        /// 提交一帧的全部流源。空列表也要提交——那是清屏信号。
-        ///
-        /// 像素对齐（沿用旧层的取整公式）：
-        ///   leftPx = Round((area.xMin + cellX * 16) * ppu)
-        ///   topPx  = Round((area.yMax - cellY * 16) * ppu)
-        ///   sizePx = Round(16 * ppu)
-        /// Image 的锚点/pivot 都是左上角，所以 anchoredPosition 就是「相对网格左上角的偏移」。
-        /// 注意 area 是 _root.rect：根节点 pivot 在左上，area.yMax == 0，topPx 天然是负值（向下）。
-        /// </summary>
         /// <summary>提交前的公共前置：守卫 + 同步根尺寸 + 取局部矩形与 ppu。返回 false 表示本层已销毁。</summary>
         private bool TryBeginSubmit(out Rect area, out float ppu)
         {
             area = default(Rect);
             ppu = 1f;
 
-            if (_destroyed || _root == null)
+            if (!IsAlive)
             {
                 return false;
             }
@@ -208,6 +208,17 @@ namespace ProbablyBagMod.Mod.Rendering.FlowAtlas
             return new Vector2(leftPx / ppu - area.xMin, topPx / ppu - area.yMax);
         }
 
+        /// <summary>
+        /// 提交一帧的全部流源。空列表也要提交——那是清屏信号。
+        ///
+        /// 像素对齐（沿用旧层的取整公式）：
+        ///   leftPx = Round((area.xMin + cellX * 16) * ppu)
+        ///   topPx  = Round((area.yMax - cellY * 16) * ppu)
+        ///   sizePx = Round(16 * ppu)
+        /// Image 的锚点/pivot 都是左上角，所以 anchoredPosition 就是「相对网格左上角的偏移」。
+        /// 注意 area 是 _root.rect：根节点 pivot 在左上，area.yMax == 0，topPx 天然是负值（向下）。
+        /// </summary>
+        /// <param name="items">本帧要画的流源；调用方保证非空（可以是空列表）。</param>
         public void Submit(List<FlowDrawItem> items)
         {
             if (!TryBeginSubmit(out Rect area, out float ppu))
@@ -237,7 +248,7 @@ namespace ProbablyBagMod.Mod.Rendering.FlowAtlas
 
             Vector2 quadSize = new Vector2(sizePx / ppu, sizePx / ppu);
 
-            int count = items == null ? 0 : items.Count;
+            int count = items.Count;
             if (count > _bodies.Length)
             {
                 count = _bodies.Length;
@@ -295,6 +306,7 @@ namespace ProbablyBagMod.Mod.Rendering.FlowAtlas
         /// alpha = Life / MaxLife × (粒子自带 Alpha / 255)，RGB 直接用粒子自带的 8 位通道。
         /// 粒子排在 body/edge/accent 之后，散开的粒子不会被本体盖住。
         /// </summary>
+        /// <param name="dots">本帧要画的粒子；调用方保证非空（可以是空列表）。</param>
         public void SubmitDots(List<FlowAmbientParticle> dots)
         {
             if (!TryBeginSubmit(out Rect area, out float ppu))
@@ -302,7 +314,7 @@ namespace ProbablyBagMod.Mod.Rendering.FlowAtlas
                 return;
             }
 
-            int count = dots == null ? 0 : dots.Count;
+            int count = dots.Count;
             if (count > _dots.Length)
             {
                 count = _dots.Length;
@@ -561,13 +573,11 @@ namespace ProbablyBagMod.Mod.Rendering.FlowAtlas
         private void SubmitGhosts(int bodyIndex, in FlowDrawItem item, Color bodyTint,
             Sprite bodySprite, Rect area, float ppu)
         {
+            // 前置条件：TrailLayers 的值域是 1..6（FlowTierMap.TrailLayersFromContent），
+            // 不会超过 GhostsPerSource，也不存在 0 层；这里不再夹取。
             int layers = item.TrailLayers;
-            if (layers > GhostsPerSource)
-            {
-                layers = GhostsPerSource;
-            }
 
-            bool show = bodySprite != null && layers > 0 && item.State.State == FlowState.Flow;
+            bool show = bodySprite != null && item.State.State == FlowState.Flow;
 
             int dx;
             int dy;

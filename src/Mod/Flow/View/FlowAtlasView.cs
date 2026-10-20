@@ -45,24 +45,33 @@ namespace ProbablyBagMod.Mod.Flow.View
         private const int NoFrame = -1;
 
         /// <summary>
-        /// 一个流源的逐帧状态：上帧原始位置 + 连续静止帧数（判 blocked 用）。
+        /// 一个流源的运行时状态：上帧原始位置 + 连续静止帧数（判 blocked 用），
+        /// 以及它的常驻粒子场与发射累加器。
+        ///
+        /// 合成一个对象而不是两张平行字典：位置状态与粒子场共享同一个键，
+        /// 两份表必须同生同灭，分开维护只会多出一半的同步点。
         ///
         /// 注意 <see cref="FlowPos.X"/> / <see cref="FlowPos.Y"/> 是 double（连续坐标，
         /// 整数点才是格中心），不是整数格号：格内移动时位置每帧都在变，
         /// 所以 blocked 必须比较原始 double，不能比较取整后的格子，否则一进格就误判为卡住。
+        ///
+        /// 容量 32 是稳态估算：8 颗/秒 × 0.65 秒寿命 ≈ 5 颗，留足余量。
         /// </summary>
-        private sealed class EntityState
+        private sealed class EntityRuntime
         {
             public double LastX;
             public double LastY;
             public int StillFrames;
+
+            public FlowAmbientField Field;
+            public float Accum;
         }
 
         /// <summary>
         /// 一帧内一条流源的全部视觉输入（位置/方向/速度/成分/温度/含量/状态）。
         ///
         /// 为什么要有它：贴图与粒子都需要同一组属性，旧实现是两条路径各算一遍
-        /// （两遍 `_states` 查表、两遍 Temp/Content/State 换算）。现在每帧只读一次，
+        /// （两遍逐实体状态查表、两遍 Temp/Content/State 换算）。现在每帧只读一次，
         /// 贴图与粒子共用同一份结果，也保证两者的 blocked 判定永远一致。
         /// </summary>
         private readonly struct EntitySnapshot
@@ -91,37 +100,21 @@ namespace ProbablyBagMod.Mod.Flow.View
             }
         }
 
-        /// <summary>
-        /// 一个流源的常驻粒子场与发射累加器。
-        ///
-        /// <see cref="Alive"/> 与实体名单分开标记：实体死亡后先摘出 <c>_emitters</c>，
-        /// 场地带着已经存在的粒子转入 <c>_fading</c> 继续积分，直到粒子自然死光。
-        /// 容量 32 是稳态估算：8 颗/秒 × 0.65 秒寿命 ≈ 5 颗，留足余量。
-        /// </summary>
-        private sealed class Emitter
-        {
-            public FlowAmbientField Field;
-            public float Accum;
-            public bool Alive;
-        }
-
-        private readonly IFlowGrid _grid;
         private readonly Il2Cpp.GameGridInventory _inventory;
         private readonly FlowSpawner _flows;
 
         /// <summary>本机当前活着的流源。出生加、死亡删，Tick 只遍历它。</summary>
         private readonly List<FlowEntity> _entities = new List<FlowEntity>();
 
-        /// <summary>逐流源的 blocked 判定状态（按实体索引；实体死亡即删）。</summary>
-        private readonly Dictionary<FlowEntity, EntityState> _states
-            = new Dictionary<FlowEntity, EntityState>();
-
-        /// <summary>每流源一个粒子场：出生建、死亡转入 <see cref="_fading"/>。</summary>
-        private readonly Dictionary<FlowEntity, Emitter> _emitters
-            = new Dictionary<FlowEntity, Emitter>();
+        /// <summary>
+        /// 每流源一份运行时状态。与 <see cref="_entities"/> 同生同灭：
+        /// 出生建、死亡转入 <see cref="_fading"/>，Tick 只遍历这个字典。
+        /// </summary>
+        private readonly Dictionary<FlowEntity, EntityRuntime> _runtime
+            = new Dictionary<FlowEntity, EntityRuntime>();
 
         /// <summary>死亡后仍在把剩余粒子走完的场；Count 归零才移除。</summary>
-        private readonly List<Emitter> _fading = new List<Emitter>();
+        private readonly List<EntityRuntime> _fading = new List<EntityRuntime>();
 
         /// <summary>每帧复用的粒子快照列表：由各场逐颗拷贝进来，交给层一次性绘制。</summary>
         private readonly List<FlowAmbientParticle> _dots = new List<FlowAmbientParticle>();
@@ -147,9 +140,11 @@ namespace ProbablyBagMod.Mod.Flow.View
 
         private bool _disposed;
 
-        public FlowAtlasView(IFlowGrid grid, Il2Cpp.GameGridInventory inventory, FlowSpawner flows)
+        /// <summary>快照读取失败是否已报错：每视图只报一次，避免坏实体每帧刷屏。</summary>
+        private bool _snapshotErrorReported;
+
+        public FlowAtlasView(Il2Cpp.GameGridInventory inventory, FlowSpawner flows)
         {
-            _grid = grid;
             _inventory = inventory;
             _flows = flows;
 
@@ -163,12 +158,6 @@ namespace ProbablyBagMod.Mod.Flow.View
             }
         }
 
-        /// <summary>本视图所属机器的网格（诊断用；视图自己不靠它取数据）。</summary>
-        public IFlowGrid Grid
-        {
-            get { return _grid; }
-        }
-
         /// <summary>
         /// 每帧由 <see cref="FlowDriver.LateUpdateVisuals"/> 调用（已经在其 try 保护内）。
         /// 顺序：推进时钟 → 解析网格 RectTransform（变了重建层）→ 面板关闭则整块跳过 →
@@ -178,7 +167,8 @@ namespace ProbablyBagMod.Mod.Flow.View
         {
             // 暂停帧不推进：timeScale=0 时游戏逻辑停走，流源位置自然也不变。
             // 若继续走下面的 blocked 启发式，"暂停导致的没动"会在两帧后被误判成 blocked。
-            if (deltaTime <= 0f)
+            // 写成 !(deltaTime > 0f) 而不是 deltaTime <= 0f：NaN 也要挡在门外。
+            if (!(deltaTime > 0f))
             {
                 return;
             }
@@ -198,8 +188,10 @@ namespace ProbablyBagMod.Mod.Flow.View
                 frame += FrameCount;
             }
 
-            RectTransform rect = ResolveRect();
-            if (rect == null)
+            // 层为 null 表示这块网格当前还画不了（原生对象已失效 / RectTransform 还没建好），
+            // 此时整块跳过；能走到下面说明 rect 与 layer 都有效。
+            RectTransform rect = ResolveRect(out FlowAtlasLayer layer);
+            if (layer == null)
             {
                 return;
             }
@@ -224,15 +216,25 @@ namespace ProbablyBagMod.Mod.Flow.View
                 EntitySnapshot snapshot;
                 if (!TryReadSnapshot(entity, out snapshot))
                 {
+                    // 实体加入时已保证属性/位置非空，正常生命周期内读快照不会失败；
+                    // 真出现说明上游给了坏数据。只报一次（每帧刷屏会掩盖第一条），
+                    // 但不静默跳过——否则这条流源会永久不画而没人知道。
+                    if (!_snapshotErrorReported)
+                    {
+                        _snapshotErrorReported = true;
+                        MelonLoader.MelonLogger.Error(
+                            "[流量机] 视觉快照读取失败，已跳过该流源（本机后续不再重复报错）");
+                    }
+
                     continue;
                 }
 
                 _items.Add(BuildDrawItem(in snapshot, frame));
 
-                Emitter emitter;
-                if (_emitters.TryGetValue(entity, out emitter) && emitter.Alive)
+                EntityRuntime runtime;
+                if (_runtime.TryGetValue(entity, out runtime))
                 {
-                    UpdateEmitter(emitter, in snapshot, deltaTime);
+                    UpdateEmitter(runtime, in snapshot, deltaTime);
                 }
             }
 
@@ -240,11 +242,9 @@ namespace ProbablyBagMod.Mod.Flow.View
             AdvanceFading(deltaTime);
             CollectDots();
 
-            if (_layer != null)
-            {
-                _layer.Submit(_items);
-                _layer.SubmitDots(_dots);
-            }
+            // 本帧的本体与粒子一次性提交；层在解析处已确认存活
+            layer.Submit(_items);
+            layer.SubmitDots(_dots);
         }
 
         /// <summary>
@@ -276,8 +276,7 @@ namespace ProbablyBagMod.Mod.Flow.View
             _rect = null;
             _clock = 0f;
             _entities.Clear();
-            _states.Clear();
-            _emitters.Clear();
+            _runtime.Clear();
             _fading.Clear();
             _dots.Clear();
             _items.Clear();
@@ -287,32 +286,30 @@ namespace ProbablyBagMod.Mod.Flow.View
 
         private void OnEntityAdded(FlowEntity entity)
         {
-            if (_disposed || entity == null)
+            if (entity == null)
             {
                 return;
             }
 
-            if (!_states.ContainsKey(entity))
+            // 同一实体只登记一次：重复广播会把位置状态重置，还会在名单里留下重复项
+            if (_runtime.ContainsKey(entity))
             {
-                _entities.Add(entity);
+                return;
             }
+
+            EntityRuntime runtime = new EntityRuntime();
 
             // 初始位置就是当前位置：下一帧若还在这里，才开始累计静止帧
-            EntityState record = new EntityState();
-            record.LastX = entity.Position == null ? 0d : entity.Position.X;
-            record.LastY = entity.Position == null ? 0d : entity.Position.Y;
-            record.StillFrames = 0;
-            _states[entity] = record;
+            runtime.LastX = entity.Position == null ? 0d : entity.Position.X;
+            runtime.LastY = entity.Position == null ? 0d : entity.Position.Y;
+            runtime.StillFrames = 0;
 
             // 每个流源独立一个场：共用场会让多个流源的粒子混在一起，死亡时也无法只淡出一源
-            if (!_emitters.ContainsKey(entity))
-            {
-                Emitter emitter = new Emitter();
-                emitter.Field = new FlowAmbientField(32, _seed++);
-                emitter.Accum = 0f;
-                emitter.Alive = true;
-                _emitters[entity] = emitter;
-            }
+            runtime.Field = new FlowAmbientField(32, _seed++);
+            runtime.Accum = 0f;
+
+            _runtime[entity] = runtime;
+            _entities.Add(entity);
         }
 
         private void OnEntityRemoved(FlowEntity entity)
@@ -322,36 +319,30 @@ namespace ProbablyBagMod.Mod.Flow.View
                 return;
             }
 
-            _states.Remove(entity);
             _entities.Remove(entity);
 
-            // 视图已经销毁：层都没了，不必再把场转入淡出
-            if (_disposed)
-            {
-                return;
-            }
-
-            // 死亡不再生成 collect 贴图：本体下一帧从提交列表里消失，
+            // 死亡后把整份运行时状态转入淡出队列：
             // 已经存在的粒子留在原地自然衰减，视觉上就是「散掉」而不是「换一张图」。
-            Emitter emitter;
-            if (!_emitters.TryGetValue(entity, out emitter))
+            EntityRuntime runtime;
+            if (!_runtime.TryGetValue(entity, out runtime))
             {
                 return;
             }
 
-            _emitters.Remove(entity);
-            emitter.Alive = false;
-            _fading.Add(emitter);
+            _runtime.Remove(entity);
+            _fading.Add(runtime);
         }
 
         // ---- 每帧换算 ----
 
         /// <summary>
         /// 拿本机网格的 RectTransform（缓存；面板重建后 rectTransform 会变，失效就重挂层）。
-        /// 返回 null 表示这块网格当前还画不了，整块跳过。
+        /// <paramref name="layer"/> 返回本次可用的层；为 null 表示这块网格当前还画不了，整块跳过。
         /// </summary>
-        private RectTransform ResolveRect()
+        private RectTransform ResolveRect(out FlowAtlasLayer layer)
         {
+            layer = null;
+
             if (_inventory == null || _inventory.Pointer == IntPtr.Zero)
             {
                 return null;
@@ -365,6 +356,7 @@ namespace ProbablyBagMod.Mod.Flow.View
 
             if (_layer != null && _layer.IsAlive && _rect == rect)
             {
+                layer = _layer;
                 return rect;
             }
 
@@ -377,6 +369,7 @@ namespace ProbablyBagMod.Mod.Flow.View
 
             _rect = rect;
             _layer = new FlowAtlasLayer(rect);
+            layer = _layer;
             return rect;
         }
 
@@ -395,8 +388,8 @@ namespace ProbablyBagMod.Mod.Flow.View
                 return false;
             }
 
-            EntityState record;
-            if (!_states.TryGetValue(entity, out record))
+            EntityRuntime runtime;
+            if (!_runtime.TryGetValue(entity, out runtime))
             {
                 return false;
             }
@@ -408,23 +401,23 @@ namespace ProbablyBagMod.Mod.Flow.View
 
             // 「位置与上帧相同且 Speed > 0.01」连续 2 帧才 blocked：
             // 位置变了、或者速度本来就低（真静止），都从 0 重新计数。
-            if (positionX == record.LastX && positionY == record.LastY && speed > BlockedMinSpeed)
+            if (positionX == runtime.LastX && positionY == runtime.LastY && speed > BlockedMinSpeed)
             {
-                record.StillFrames++;
+                runtime.StillFrames++;
             }
             else
             {
-                record.StillFrames = 0;
+                runtime.StillFrames = 0;
             }
 
-            record.LastX = positionX;
-            record.LastY = positionY;
+            runtime.LastX = positionX;
+            runtime.LastY = positionY;
 
             // Tier-0 的 blocked 只是**启发式**：真正的 blocked 需要逻辑层标志
             // （FlowManager/装置判定"这条路走不通"），这里只有"位置与上帧相同且仍在运动"
             // 连续 2 帧。暂停帧已在 Tick 开头早退，所以 timeScale=0 不会被算成 blocked；
             // 但它仍可能把"动画卡顿/浮点抖动"误读成受阻，逻辑层标志落地后应改为读标志。
-            bool blocked = record.StillFrames >= BlockedStillFrames;
+            bool blocked = runtime.StillFrames >= BlockedStillFrames;
 
             // Tier-0：成分固定纯水（REFACTOR-A §4）；射程暂无数据源，
             // FlowVisualState.Range 保持 0（预留：字段就绪前不渲染射程点）。
@@ -436,7 +429,7 @@ namespace ProbablyBagMod.Mod.Flow.View
                 FlowComposition.PureWater,
                 FlowTierMap.TempFrom((float)entity.Properties.Temperature),
                 FlowTierMap.ContentFromMoisture(entity.Properties.Moisture),
-                FlowTierMap.StateFrom(false, blocked));
+                FlowTierMap.StateFrom(blocked));
             return true;
         }
 
@@ -464,22 +457,22 @@ namespace ProbablyBagMod.Mod.Flow.View
         /// 死亡实体的场不会进这里（它们已在 <see cref="_fading"/> 里），
         /// 所以「死亡后停止生成」是由调用方（Tick 的单次遍历）保证的，不靠这里的判断。
         /// </summary>
-        private static void UpdateEmitter(Emitter emitter, in EntitySnapshot snapshot, float deltaTime)
+        private static void UpdateEmitter(EntityRuntime runtime, in EntitySnapshot snapshot, float deltaTime)
         {
             FlowParticleInput input = new FlowParticleInput(
                 snapshot.Composition, snapshot.Temp, snapshot.Content, snapshot.State, (float)snapshot.Speed);
             FlowParticleProfile profile = FlowParticleRules.Build(in input);
 
-            emitter.Field.Content = snapshot.Content;
-            emitter.Field.Advance(deltaTime);
+            runtime.Field.Content = snapshot.Content;
+            runtime.Field.Advance(deltaTime);
 
             // 按 SpawnRate 累加，整数部分才真正生成；不足一颗的余量留到下一帧。
             // 用累加器而不是每帧四舍五入，低帧率时发射数也不会被截断。
-            emitter.Accum += profile.SpawnRate * deltaTime;
-            while (emitter.Accum >= 1f)
+            runtime.Accum += profile.SpawnRate * deltaTime;
+            while (runtime.Accum >= 1f)
             {
-                emitter.Accum -= 1f;
-                emitter.Field.Spawn(
+                runtime.Accum -= 1f;
+                runtime.Field.Spawn(
                     profile,
                     snapshot.X,
                     snapshot.Y,
@@ -494,9 +487,9 @@ namespace ProbablyBagMod.Mod.Flow.View
             // 倒序遍历：RemoveAt 只会挪动后面的元素，不会跳过尚未检查的场。
             for (int i = _fading.Count - 1; i >= 0; i--)
             {
-                Emitter emitter = _fading[i];
-                emitter.Field.Advance(deltaTime);
-                if (emitter.Field.Count == 0)
+                EntityRuntime runtime = _fading[i];
+                runtime.Field.Advance(deltaTime);
+                if (runtime.Field.Count == 0)
                 {
                     _fading.RemoveAt(i);
                 }
@@ -507,9 +500,9 @@ namespace ProbablyBagMod.Mod.Flow.View
         private void CollectDots()
         {
             _dots.Clear();
-            foreach (Emitter emitter in _emitters.Values)
+            foreach (EntityRuntime runtime in _runtime.Values)
             {
-                AppendDots(emitter.Field);
+                AppendDots(runtime.Field);
             }
 
             for (int i = 0; i < _fading.Count; i++)
@@ -534,9 +527,9 @@ namespace ProbablyBagMod.Mod.Flow.View
         /// </summary>
         private void ClearAmbientFields()
         {
-            foreach (Emitter emitter in _emitters.Values)
+            foreach (EntityRuntime runtime in _runtime.Values)
             {
-                emitter.Field.Clear();
+                runtime.Field.Clear();
             }
 
             for (int i = 0; i < _fading.Count; i++)

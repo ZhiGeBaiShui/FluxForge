@@ -119,10 +119,5 @@ namespace ProbablyBagMod.Mod
 
             return device as T;
         }
-
-        public static int Count
-        {
-            get { return _devices.Count; }
-        }
     }
 }

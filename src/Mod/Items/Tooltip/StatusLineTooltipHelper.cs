@@ -17,13 +17,15 @@ namespace ProbablyBagMod.Mod
         private const Il2Cpp.RenderHandler.ColorPalette DefaultColor
             = Il2Cpp.RenderHandler.ColorPalette.LightBlue;
 
+        /// <summary>
+        /// 追加本物品在 items.json 里声明的状态行。
+        ///
+        /// 前置条件：<paramref name="builder"/> 与 <paramref name="item"/> 均非 null；
+        /// 唯一调用入口 <see cref="FlowTooltipPatch.Postfix"/> 在分派前已经判过，
+        /// 所以这里不再重复检查。
+        /// </summary>
         public void Append(Il2Cpp.RichTextBuilder builder, Il2Cpp.GameItemElement item)
         {
-            if (builder == null || item == null)
-            {
-                return;
-            }
-
             // 自判：配置里没声明状态行 → 不归我管
             FlowItemDefinition def = FlowItemRegistry.Instance.Get(item.identifier);
             if (def == null || def.statusLines == null || def.statusLines.Length == 0)

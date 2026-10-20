@@ -79,9 +79,6 @@ namespace ProbablyBagMod.Presentation.Flow.Particles
         /// <summary>本体在 16×16 tile 内的像素中心（SPEC §1：中心 7.5/7.5，浮点坐标 8/8）。</summary>
         private const float GridCenterPixel = 8f;
 
-        /// <summary>方向归一化时的零长度阈值。</summary>
-        private const float DirectionEpsilon = 1e-6f;
-
         private readonly FlowAmbientParticle[] _particles;
 
         /// <summary>每颗粒子的出生点（格），用于判断扩散距离。</summary>
@@ -189,20 +186,13 @@ namespace ProbablyBagMod.Presentation.Flow.Particles
             float positionY = (float)(cellY + (pixelY + 0.5d) / GridPixels);
 
             // 径向：从格中心指向出生像素。
+            // 前提：出生像素坐标取半整数（pixel + 0.5），格中心是整数 8，
+            // 所以两个分量恒为非零的 .5 值，径向长度至少 0.5，不存在零长度需要兜底。
             float radialX = pixelX + 0.5f - GridCenterPixel;
             float radialY = pixelY + 0.5f - GridCenterPixel;
             float radialLength = MathF.Sqrt(radialX * radialX + radialY * radialY);
-            if (radialLength > DirectionEpsilon)
-            {
-                radialX /= radialLength;
-                radialY /= radialLength;
-            }
-            else
-            {
-                // 出生点正好在格中心：没有径向可依，退化为纯后向。
-                radialX = 0f;
-                radialY = 0f;
-            }
+            radialX /= radialLength;
+            radialY /= radialLength;
 
             float backwardX;
             float backwardY;
@@ -212,14 +202,8 @@ namespace ProbablyBagMod.Presentation.Flow.Particles
             float directionY = radialY + backwardY * profile.BackwardBias;
             float directionLength = MathF.Sqrt(directionX * directionX + directionY * directionY);
 
-            if (directionLength < DirectionEpsilon)
-            {
-                // 径向与后向恰好抵消（理论上只在 BackwardBias=1 且径向正对前方时发生）。
-                directionX = backwardX;
-                directionY = backwardY;
-                directionLength = 1f;
-            }
-
+            // 前提：径向单位向量不可能正好落在坐标轴上（两个分量都是 .5 的半整数），
+            // 因此不论 BackwardBias 取何值，径向与后向都不可能完全抵消，长度恒 > 0。
             directionX /= directionLength;
             directionY /= directionLength;
 

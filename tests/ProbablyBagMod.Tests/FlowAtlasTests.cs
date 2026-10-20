@@ -16,11 +16,6 @@ namespace ProbablyBagMod.Tests
     public class FlowAtlasTests
     {
         // 枚举全集用数组而不是 Enum.GetValues：不用反射，顺序也与图集生成器一致。
-        private static readonly FlowTemp[] AllTemps =
-        {
-            FlowTemp.Cold, FlowTemp.Normal, FlowTemp.Hot,
-        };
-
         private static readonly FlowContent[] AllContents =
         {
             FlowContent.Empty, FlowContent.Small, FlowContent.Mid, FlowContent.Large,
@@ -116,6 +111,31 @@ namespace ProbablyBagMod.Tests
         }
 
         [Fact]
+        public void Frame_IsClampedByConstructor()
+        {
+            // 帧越界只在构造时钳一次：之后 key 生成与图集缓存都按 -1..11 处理。
+            FlowVisualState before = new FlowVisualState(
+                FlowComposition.PureWater,
+                FlowTemp.Normal,
+                FlowContent.Large,
+                FlowState.Flow,
+                FlowDir.Right,
+                -7);
+            Assert.Equal(FlowVisualState.NoFrame, before.Frame);
+            Assert.Equal("large|flow|right", before.ToKey());
+
+            FlowVisualState after = new FlowVisualState(
+                FlowComposition.PureWater,
+                FlowTemp.Normal,
+                FlowContent.Large,
+                FlowState.Flow,
+                FlowDir.Right,
+                99);
+            Assert.Equal(FlowVisualState.FrameCount - 1, after.Frame);
+            Assert.Equal("large|flow|right|f11", after.ToKey());
+        }
+
+        [Fact]
         public void CompositionAndTemperature_DoNotAffectKey()
         {
             // A 方案的颜色是运行时乘到灰度蒙版上的，所以成分/温度变化不能换 tile。
@@ -171,15 +191,9 @@ namespace ProbablyBagMod.Tests
         [Fact]
         public void EnumNames_MatchMaskAtlasVocabulary()
         {
-            string[] temps = { "cold", "normal", "hot" };
             string[] contents = { "empty", "small", "mid", "large" };
             string[] states = { "flow", "blocked", "split", "merge", "collect" };
             string[] dirs = { "up", "right", "down", "left" };
-
-            for (int i = 0; i < temps.Length; i++)
-            {
-                Assert.Equal(temps[i], FlowVisualState.TempName(AllTemps[i]));
-            }
 
             for (int i = 0; i < contents.Length; i++)
             {
@@ -196,9 +210,8 @@ namespace ProbablyBagMod.Tests
                 Assert.Equal(dirs[i], FlowVisualState.DirName(AllDirs[i]));
             }
 
-            // 越界枚举值不能抛异常：渲染循环里宁可退到查表首项（cold/empty/flow/up），
+            // 越界枚举值不能抛异常：渲染循环里宁可退到查表首项（empty/flow/up），
             // 方向值本身应先经 FlowTierMap.DirFrom 归一化，那里才是 right 兜底。
-            Assert.Equal("cold", FlowVisualState.TempName((FlowTemp)(-1)));
             Assert.Equal("empty", FlowVisualState.ContentName((FlowContent)9));
             Assert.Equal("flow", FlowVisualState.StateName((FlowState)(-1)));
             Assert.Equal("up", FlowVisualState.DirName((FlowDir)4));
@@ -329,8 +342,6 @@ namespace ProbablyBagMod.Tests
 
             FlowComposition acid = new FlowComposition(0f, 0f, 0f, 0f, 1f, 0f);
             AssertColor(FlowTint.Accent(in acid), 206, 238, 174);
-
-            AssertColor(FlowTint.Wall, 0xC9, 0xC2, 0xB8);
         }
 
         // ── 索引解析 ────────────────────────────────────────────────
@@ -563,14 +574,10 @@ namespace ProbablyBagMod.Tests
         }
 
         [Fact]
-        public void StateFrom_RemovedBeatsBlockedBeatsFlow()
+        public void StateFrom_BlockedBeatsFlow()
         {
-            Assert.Equal(FlowState.Flow, FlowTierMap.StateFrom(false, false));
-            Assert.Equal(FlowState.Blocked, FlowTierMap.StateFrom(false, true));
-            Assert.Equal(FlowState.Collect, FlowTierMap.StateFrom(true, false));
-
-            // 同一帧里既被移除又被阻挡：collect 只画一帧就销毁，必须优先。
-            Assert.Equal(FlowState.Collect, FlowTierMap.StateFrom(true, true));
+            Assert.Equal(FlowState.Flow, FlowTierMap.StateFrom(false));
+            Assert.Equal(FlowState.Blocked, FlowTierMap.StateFrom(true));
         }
 
         [Fact]

@@ -1,5 +1,3 @@
-using System.Globalization;
-
 namespace ProbablyBagMod.Presentation.Flow.Visual
 {
     /// <summary>
@@ -69,7 +67,6 @@ namespace ProbablyBagMod.Presentation.Flow.Visual
         public const int FrameCount = 12;
 
         // 查表用的枚举名。下标必须与枚举值一一对应；顺序即图集 key 的通道顺序。
-        private static readonly string[] TempNames = { "cold", "normal", "hot" };
         private static readonly string[] ContentNames = { "empty", "small", "mid", "large" };
         private static readonly string[] StateNames = { "flow", "blocked", "split", "merge", "collect" };
         private static readonly string[] DirNames = { "up", "right", "down", "left" };
@@ -99,8 +96,8 @@ namespace ProbablyBagMod.Presentation.Flow.Visual
         public readonly FlowDir Dir;
 
         /// <summary>
-        /// 动效帧序号，合法范围 0..11；<see cref="NoFrame"/>（-1）表示用静态 tile。
-        /// 只有 <see cref="FlowState.Flow"/> 会把它写进 key。
+        /// 动效帧序号。构造时统一钳到 -1..11：<see cref="NoFrame"/>（-1）表示用静态 tile，
+        /// 0..11 对应图集里的 f0..f11。只有 <see cref="FlowState.Flow"/> 会把它写进 key。
         /// </summary>
         public readonly int Frame;
 
@@ -114,7 +111,8 @@ namespace ProbablyBagMod.Presentation.Flow.Visual
         /// 构造一个视觉状态。<paramref name="composition"/> 必须显式传入（通常取
         /// <see cref="FlowComposition.PureWater"/> 作为 Tier-0 默认值）；
         /// <paramref name="frame"/> 缺省为 <see cref="NoFrame"/>（静态 tile），
-        /// 渲染层在 flow 状态时显式传 0..11。
+        /// 渲染层在 flow 状态时显式传 0..11。越界帧在这里统一钳到 -1..11，
+        /// 后续 <see cref="ToKey"/> 与图集缓存不再各自兜底。
         /// </summary>
         public FlowVisualState(
             FlowComposition composition,
@@ -130,6 +128,18 @@ namespace ProbablyBagMod.Presentation.Flow.Visual
             Content = content;
             State = state;
             Dir = dir;
+
+            // 帧越界的唯一钳制点：-1 是静态哨兵，0..11 是合法动效帧。
+            // 这样 ToKey 的查表与图集缓存的位打包都只需处理已归一化的值。
+            if (frame < NoFrame)
+            {
+                frame = NoFrame;
+            }
+            else if (frame >= FrameCount)
+            {
+                frame = FrameCount - 1;
+            }
+
             Frame = frame;
             Range = range;
         }
@@ -154,19 +164,8 @@ namespace ProbablyBagMod.Presentation.Flow.Visual
                 return head;
             }
 
-            if (Frame < FrameSuffixes.Length)
-            {
-                return string.Concat(head, FrameSuffixes[Frame]);
-            }
-
-            // Frame 越界（调用方 bug）：仍然给出可读 key，交给 FlowAtlasIndex 的 fallback 兜底。
-            return string.Concat(head, "|f", Frame.ToString(CultureInfo.InvariantCulture));
-        }
-
-        /// <summary>温度的染色档名。**不进 key**，保留给日志与调试；越界值回退为 cold。</summary>
-        public static string TempName(FlowTemp temp)
-        {
-            return NameAt(TempNames, (int)temp);
+            // 构造时已把 Frame 钳到 0..11，所以这里不需要越界兜底
+            return string.Concat(head, FrameSuffixes[Frame]);
         }
 
         /// <summary>含量的 key 片段。传入越界枚举值时回退为 empty。</summary>

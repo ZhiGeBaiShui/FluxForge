@@ -41,12 +41,6 @@ namespace ProbablyBagMod.Mod.Rendering.FlowAtlas
             Accent = accent;
             Wall = wall;
         }
-
-        /// <summary>四层全空：图集不可用或该状态没有任何 tile。</summary>
-        public bool IsEmpty
-        {
-            get { return Body == null && Edge == null && Accent == null && Wall == null; }
-        }
     }
 
     /// <summary>
@@ -61,7 +55,7 @@ namespace ProbablyBagMod.Mod.Rendering.FlowAtlas
     /// 这里是全 mod **唯一**共享的可变状态：贴图与 Sprite 缓存。
     /// 它没有网格、没有实体、没有每帧数据——那些都在各自的 <see cref="FlowAtlasView"/> 里。
     ///
-    /// 失败策略：整份加载失败只记一条 Warning 并把 <see cref="Ready"/> 置 false，
+    /// 失败策略：整份加载失败只记一条 Warning 并把内部就绪标志置 false，
     /// 之后所有 Get 返回空（渲染层整层空转）；墙图单独缺失只让 <see cref="FlowSprites.Wall"/>
     /// 为 null，不影响本体/边缘/亮核。
     /// </summary>
@@ -104,18 +98,6 @@ namespace ProbablyBagMod.Mod.Rendering.FlowAtlas
         private static Texture2D _accentTexture;
         private static Texture2D _wallTexture;
         private static FlowAtlasIndex _index;
-
-        /// <summary>
-        /// 图集是否可用。首次访问触发懒加载；不可用时为 false（Get 全部返回空）。
-        /// </summary>
-        public static bool Ready
-        {
-            get
-            {
-                EnsureLoaded();
-                return _ready;
-            }
-        }
 
         /// <summary>
         /// 卸载时释放全部缓存：Sprite、四张贴图、状态记忆表一起销毁并清空，
@@ -186,7 +168,8 @@ namespace ProbablyBagMod.Mod.Rendering.FlowAtlas
 
             // 墙图与三层蒙版共用同一套 key/坐标；只有 blocked 才有墙，
             // 其它状态不建墙 Sprite（图集对应坐标本来就是空的）。
-            Sprite wall = state.State == FlowState.Blocked && _wallTexture != null
+            // 贴图缺失时 SpriteAt 自己会返回 null，这里不再重复判空。
+            Sprite wall = state.State == FlowState.Blocked
                 ? SpriteAt(TexWall, _wallTexture, x, y)
                 : null;
 
@@ -203,12 +186,8 @@ namespace ProbablyBagMod.Mod.Rendering.FlowAtlas
         /// <summary>把视觉状态压成一个 long，作为 <see cref="_resolved"/> 的 key。</summary>
         private static long PackState(in FlowVisualState state)
         {
-            // 帧号 -1..11 编码成 0..12（占 4 bit）；越界帧按「静态 tile」处理，与 ToKey 的语义一致
-            int frameCode = state.Frame < 0 ? 0 : state.Frame + 1;
-            if (frameCode > 15)
-            {
-                frameCode = 15;
-            }
+            // <see cref="FlowVisualState"/> 构造时已把帧钳到 -1..11，编码成 0..12 只占 4 bit
+            int frameCode = state.Frame + 1;
 
             return (long)(int)state.Content
                 | ((long)(int)state.State << 2)

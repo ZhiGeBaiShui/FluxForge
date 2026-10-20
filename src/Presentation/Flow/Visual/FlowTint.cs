@@ -63,12 +63,6 @@ namespace ProbablyBagMod.Presentation.Flow.Visual
             return Mix(Body(c), White, 0.62d);
         }
 
-        /// <summary>墙色 <c>#C9C2B8</c>（固定色，不随成分/温度变化）。</summary>
-        public static FlowColor Wall
-        {
-            get { return new FlowColor(0xC9, 0xC2, 0xB8); }
-        }
-
         /// <summary>
         /// 线性插值：<c>a * (1 - t) + b * t</c>，每通道直接按 double 运算后四舍五入。
         /// 公式与 <c>render_final.mix</c> 完全一致（不要改写成 <c>a + (b - a) * t</c>，
@@ -83,16 +77,12 @@ namespace ProbablyBagMod.Presentation.Flow.Visual
         }
 
         /// <summary>
-        /// 明暗调整：<c>factor ≥ 0</c> 向白色混，<c>factor &lt; 0</c> 向黑色混。
-        /// 与 <c>render_final.shade</c> 同式；-0.52 即每个通道乘 0.48。
+        /// 明暗调整：向黑色混合 <paramref name="factor"/> 的比例。
+        /// 与 <c>render_final.shade</c> 同式；唯一调用点恒传 -0.52（即每通道乘 0.48），
+        /// 所以这里只保留「压暗」方向，不再处理 factor ≥ 0 的提亮分支。
         /// </summary>
         private static FlowColor Shade(FlowColor color, double factor)
         {
-            if (factor >= 0d)
-            {
-                return Mix(color, White, factor);
-            }
-
             return Mix(color, Black, -factor);
         }
 
