@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using MelonLoader;
 
@@ -16,6 +17,17 @@ namespace ProbablyBagMod.Mod
         private const string DefaultFormat = "0.#";
         private const Il2Cpp.RenderHandler.ColorPalette DefaultColor
             = Il2Cpp.RenderHandler.ColorPalette.LightBlue;
+
+        /// <summary>
+        /// 颜色名 → 调色板缓存。tooltip 每帧全量重建，Enum.Parse + try/catch 不能放在热路径上；
+        /// 缓存键只来自 items.json 的 statusLines，数量有界。
+        /// </summary>
+        private static readonly Dictionary<string, Il2Cpp.RenderHandler.ColorPalette> ColorCache
+            = new Dictionary<string, Il2Cpp.RenderHandler.ColorPalette>(StringComparer.Ordinal);
+
+        /// <summary>已经警告过的未知颜色名，避免每帧刷日志。</summary>
+        private static readonly HashSet<string> WarnedColors
+            = new HashSet<string>(StringComparer.Ordinal);
 
         /// <summary>
         /// 追加本物品在 items.json 里声明的状态行。
@@ -67,14 +79,14 @@ namespace ProbablyBagMod.Mod
             string format = string.IsNullOrEmpty(line.format) ? DefaultFormat : line.format;
             double scale = line.scale > 0d ? line.scale : 1d;
 
-            string valueType = line.valueType == null ? "int" : line.valueType.ToLowerInvariant();
-
-            if (valueType == "string")
+            // 用 OrdinalIgnoreCase 比较：valueType 是配置里的固定小写词，
+            // 每次 ToLowerInvariant 会多一次分配，而这里在 tooltip 热路径上。
+            if (string.Equals(line.valueType, "string", StringComparison.OrdinalIgnoreCase))
             {
                 return state.valueString ?? string.Empty;
             }
 
-            if (valueType == "float")
+            if (string.Equals(line.valueType, "float", StringComparison.OrdinalIgnoreCase))
             {
                 return (state.valueFloat * scale).ToString(format, CultureInfo.InvariantCulture);
             }
@@ -89,16 +101,30 @@ namespace ProbablyBagMod.Mod
                 return DefaultColor;
             }
 
+            Il2Cpp.RenderHandler.ColorPalette cached;
+            if (ColorCache.TryGetValue(name, out cached))
+            {
+                return cached;
+            }
+
+            Il2Cpp.RenderHandler.ColorPalette parsed;
             try
             {
-                return (Il2Cpp.RenderHandler.ColorPalette)Enum.Parse(
+                parsed = (Il2Cpp.RenderHandler.ColorPalette)Enum.Parse(
                     typeof(Il2Cpp.RenderHandler.ColorPalette), name, true);
             }
             catch
             {
-                MelonLogger.Warning("[tooltip] 未知颜色名：" + name + "（用默认 LightBlue）");
-                return DefaultColor;
+                if (WarnedColors.Add(name))
+                {
+                    MelonLogger.Warning("[tooltip] 未知颜色名：" + name + "（用默认 LightBlue）");
+                }
+
+                parsed = DefaultColor;
             }
+
+            ColorCache[name] = parsed;
+            return parsed;
         }
     }
 }
