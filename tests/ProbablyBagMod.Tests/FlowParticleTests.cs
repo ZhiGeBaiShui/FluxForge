@@ -227,7 +227,7 @@ namespace ProbablyBagMod.Tests
         {
             // 四次采样平均：径向分量在对称 bbox 上相互抵消，剩下的应该指向运动反方向。
             FlowAmbientField field = new FlowAmbientField(512, 3);
-            field.Content = FlowContent.Mid;
+            field.SpawnContent = FlowContent.Mid;
             FlowParticleProfile profile = FlowParticleRules.Build(MakeInput(FlowTemp.Normal));
             FlowColor color = new FlowColor(1, 2, 3);
 
@@ -256,7 +256,7 @@ namespace ProbablyBagMod.Tests
             const double CellY = 20d;
 
             FlowAmbientField field = new FlowAmbientField(512, 4);
-            field.Content = FlowContent.Large;
+            field.SpawnContent = FlowContent.Large;
             FlowParticleProfile profile = FlowParticleRules.Build(MakeInput(FlowTemp.Normal));
             FlowColor color = new FlowColor(1, 2, 3);
 
@@ -282,7 +282,7 @@ namespace ProbablyBagMod.Tests
         {
             // 30% 边缘 + 70% 内部是行为契约；用固定种子采样 800 次，允许少量统计波动。
             FlowAmbientField field = new FlowAmbientField(1024, 5);
-            field.Content = FlowContent.Mid;
+            field.SpawnContent = FlowContent.Mid;
             FlowParticleProfile profile = FlowParticleRules.Build(MakeInput(FlowTemp.Normal));
             FlowColor color = new FlowColor(1, 2, 3);
 
@@ -484,8 +484,8 @@ namespace ProbablyBagMod.Tests
 
             FlowAmbientField wide = new FlowAmbientField(64, 11);
             FlowAmbientField narrow = new FlowAmbientField(64, 11);
-            wide.Content = FlowContent.Mid;
-            narrow.Content = FlowContent.Mid;
+            wide.SpawnContent = FlowContent.Mid;
+            narrow.SpawnContent = FlowContent.Mid;
 
             FlowColor color = new FlowColor(1, 2, 3);
             for (int i = 0; i < 16; i++)
@@ -691,7 +691,7 @@ namespace ProbablyBagMod.Tests
             const int Samples = 400;
 
             FlowAmbientField field = new FlowAmbientField(512, 20);
-            field.Content = content;
+            field.SpawnContent = content;
             FlowParticleProfile profile = FlowParticleRules.Build(
                 new FlowParticleInput(
                     FlowComposition.PureWater,

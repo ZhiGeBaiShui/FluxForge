@@ -111,36 +111,7 @@ namespace ProbablyBagMod.Presentation.Flow.Particles
         public static FlowColor ColorFor(in FlowParticleInput input)
         {
             FlowColor body = input.Composition.Blend();
-            return Mix(body, White, 0.10d);
-        }
-
-        /// <summary>
-        /// 线性插值：<c>a * (1 - t) + b * t</c>，按 double 计算后银行家舍入到 byte。
-        /// 与 <see cref="FlowTint"/> 的 mix 同式，保证颜色口径一致。
-        /// </summary>
-        private static FlowColor Mix(FlowColor a, FlowColor b, double t)
-        {
-            return new FlowColor(
-                RoundToByte(a.R * (1d - t) + b.R * t),
-                RoundToByte(a.G * (1d - t) + b.G * t),
-                RoundToByte(a.B * (1d - t) + b.B * t));
-        }
-
-        /// <summary>double → byte：银行家舍入后钳到 0–255（与 FlowComposition/FlowTint 同一规则）。</summary>
-        private static byte RoundToByte(double value)
-        {
-            double rounded = Math.Round(value);
-            if (rounded <= 0d)
-            {
-                return 0;
-            }
-
-            if (rounded >= 255d)
-            {
-                return 255;
-            }
-
-            return (byte)rounded;
+            return FlowColor.Mix(body, White, 0.10d);
         }
     }
 }

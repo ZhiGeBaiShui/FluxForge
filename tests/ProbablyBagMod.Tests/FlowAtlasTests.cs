@@ -593,6 +593,33 @@ namespace ProbablyBagMod.Tests
             Assert.Equal(FlowDir.Right, FlowTierMap.DirFrom(int.MaxValue));
         }
 
+        [Fact]
+        public void DirMath_StepsMatchCoordinateTableAndFallbackToRight()
+        {
+            // 视觉坐标 Y 向下：Up = (0,-1)、Right = (1,0)、Down = (0,1)、Left = (-1,0)。
+            Assert.Equal(0, FlowDirMath.StepX(FlowDir.Up));
+            Assert.Equal(-1, FlowDirMath.StepY(FlowDir.Up));
+
+            Assert.Equal(1, FlowDirMath.StepX(FlowDir.Right));
+            Assert.Equal(0, FlowDirMath.StepY(FlowDir.Right));
+
+            Assert.Equal(0, FlowDirMath.StepX(FlowDir.Down));
+            Assert.Equal(1, FlowDirMath.StepY(FlowDir.Down));
+
+            Assert.Equal(-1, FlowDirMath.StepX(FlowDir.Left));
+            Assert.Equal(0, FlowDirMath.StepY(FlowDir.Left));
+
+            // 越界枚举值按 Right 处理（与 FlowTierMap.DirFrom 的兜底一致）。
+            Assert.Equal(1, FlowDirMath.StepX((FlowDir)99));
+            Assert.Equal(0, FlowDirMath.StepY((FlowDir)99));
+
+            // 反方向就是取反，残影/粒子后偏共用同一张表。
+            Assert.Equal(-1, FlowDirMath.BackwardX(FlowDir.Right));
+            Assert.Equal(1, FlowDirMath.BackwardY(FlowDir.Up));
+            Assert.Equal(0, FlowDirMath.BackwardX(FlowDir.Down));
+            Assert.Equal(-1, FlowDirMath.BackwardY(FlowDir.Down));
+        }
+
         // ── 像素数学 ────────────────────────────────────────────────
 
         [Fact]

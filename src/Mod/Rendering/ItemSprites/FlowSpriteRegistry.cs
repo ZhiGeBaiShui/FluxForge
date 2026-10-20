@@ -1,8 +1,6 @@
 using System.Collections.Generic;
 using System.Reflection;
-using System.Text;
 using System.Text.Json;
-using Il2CppInterop.Runtime.InteropTypes.Arrays;
 using MelonLoader;
 using UnityEngine;
 
@@ -19,11 +17,6 @@ namespace ProbablyBagMod.Mod.Rendering.ItemSprites
 
         /// <summary>原版 ppu。两者相除得「每格的世界尺寸」= 0.16。</summary>
         private const float StandardPixelsPerUnit = 100f;
-
-        // Il2Cpp 下 Texture2D.LoadImage 不可直接调，经 ImageConversion.LoadImage
-        private static readonly MethodInfo LoadImageMethod = typeof(ImageConversion).GetMethod(
-            "LoadImage", BindingFlags.Public | BindingFlags.Static, null,
-            new[] { typeof(Texture2D), typeof(Il2CppStructArray<byte>) }, null);
 
         public static FlowSpriteRegistry Instance { get; } = new FlowSpriteRegistry();
 
@@ -93,7 +86,7 @@ namespace ProbablyBagMod.Mod.Rendering.ItemSprites
 
         private void LoadConfig()
         {
-            byte[] json = EmbeddedResources.Read(_resourcePrefix, "sprites.json");
+            string json = EmbeddedResources.ReadText(_resourcePrefix, "sprites.json");
             SpriteConfig config = null;
 
             // 本单例可能是在 LoadFromAtlas 的 Prefix 里首次构造的（游戏 UI 原生调用链），
@@ -102,7 +95,7 @@ namespace ProbablyBagMod.Mod.Rendering.ItemSprites
             {
                 if (json != null)
                 {
-                    config = JsonSerializer.Deserialize<SpriteConfig>(Encoding.UTF8.GetString(json));
+                    config = JsonSerializer.Deserialize<SpriteConfig>(json);
                 }
             }
             catch (Exception e)
@@ -154,8 +147,8 @@ namespace ProbablyBagMod.Mod.Rendering.ItemSprites
 
         private Sprite LoadPng(SpriteEntry entry)
         {
-            byte[] png = EmbeddedResources.Read(_resourcePrefix, entry.file);
-            if (png == null || LoadImageMethod == null)
+            Texture2D texture = EmbeddedResources.LoadTexture(_resourcePrefix, entry.file);
+            if (texture == null)
             {
                 MelonLogger.Error("[贴图] 图片读取失败：" + entry.file);
                 return null;
@@ -165,12 +158,6 @@ namespace ProbablyBagMod.Mod.Rendering.ItemSprites
             // 异常不拦就会把进程带走，所以整段兜住、失败即返回 null 走原生贴图
             try
             {
-                Texture2D texture = new Texture2D(2, 2, TextureFormat.RGBA32, false);
-                texture.filterMode = FilterMode.Point;    // 像素风：不模糊
-                texture.wrapMode = TextureWrapMode.Clamp;
-                texture.hideFlags = HideFlags.DontSave;   // 防 Unity 资源管理卸载
-                LoadImageMethod.Invoke(null, new object[] { texture, (Il2CppStructArray<byte>)png });
-
                 // ppu = 贴图宽 ÷ (列数 × 每格世界尺寸)：640 / (2 × 0.16) = 2000
                 // 这样任意像素宽度的贴图都会铺满「列数」个格子，格数由 shape 决定而非贴图尺寸
                 float ppu = texture.width / (entry.shapeWidth * (StandardCellPixels / StandardPixelsPerUnit));

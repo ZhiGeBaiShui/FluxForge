@@ -1,5 +1,3 @@
-using System;
-
 namespace ProbablyBagMod.Presentation.Flow.Visual
 {
     /// <summary>
@@ -14,7 +12,7 @@ namespace ProbablyBagMod.Presentation.Flow.Visual
     /// normal → base
     /// </code>
     /// 每一步都先落到 0–255 的 byte 再进入下一步，和 Python 侧返回整数元组的行为一致；
-    /// 舍入用 <see cref="Math.Round(double)"/>（银行家舍入）以对齐 Python 的 <c>round()</c>。
+    /// 舍入统一走 <see cref="FlowColor.RoundToByte"/>（银行家舍入），以对齐 Python 的 <c>round()</c>。
     /// </summary>
     public static class FlowTint
     {
@@ -44,9 +42,9 @@ namespace ProbablyBagMod.Presentation.Flow.Visual
             switch (temp)
             {
                 case FlowTemp.Cold:
-                    return Mix(baseColor, ColdTint, 0.88d);
+                    return FlowColor.Mix(baseColor, ColdTint, 0.88d);
                 case FlowTemp.Hot:
-                    return Mix(baseColor, HotTint, 0.86d);
+                    return FlowColor.Mix(baseColor, HotTint, 0.86d);
                 default:
                     return baseColor;
             }
@@ -60,20 +58,7 @@ namespace ProbablyBagMod.Presentation.Flow.Visual
         /// </summary>
         public static FlowColor Accent(in FlowComposition c)
         {
-            return Mix(Body(c), White, 0.62d);
-        }
-
-        /// <summary>
-        /// 线性插值：<c>a * (1 - t) + b * t</c>，每通道直接按 double 运算后四舍五入。
-        /// 公式与 <c>render_final.mix</c> 完全一致（不要改写成 <c>a + (b - a) * t</c>，
-        /// 浮点误差会在个别通道上差 1）。
-        /// </summary>
-        private static FlowColor Mix(FlowColor a, FlowColor b, double t)
-        {
-            return new FlowColor(
-                RoundToByte(a.R * (1d - t) + b.R * t),
-                RoundToByte(a.G * (1d - t) + b.G * t),
-                RoundToByte(a.B * (1d - t) + b.B * t));
+            return FlowColor.Mix(Body(c), White, 0.62d);
         }
 
         /// <summary>
@@ -83,24 +68,7 @@ namespace ProbablyBagMod.Presentation.Flow.Visual
         /// </summary>
         private static FlowColor Shade(FlowColor color, double factor)
         {
-            return Mix(color, Black, -factor);
-        }
-
-        /// <summary>double → byte：银行家舍入后钳到 0–255（与 <see cref="FlowComposition"/> 的落点规则相同）。</summary>
-        private static byte RoundToByte(double value)
-        {
-            double rounded = Math.Round(value);
-            if (rounded <= 0d)
-            {
-                return 0;
-            }
-
-            if (rounded >= 255d)
-            {
-                return 255;
-            }
-
-            return (byte)rounded;
+            return FlowColor.Mix(color, Black, -factor);
         }
     }
 }

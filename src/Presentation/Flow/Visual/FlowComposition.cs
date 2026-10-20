@@ -118,27 +118,10 @@ namespace ProbablyBagMod.Presentation.Flow.Visual
                           (double)Acid * AcidColor.B +
                           (double)Energy * EnergyColor.B) / total;
 
-            return new FlowColor(RoundToByte(red), RoundToByte(green), RoundToByte(blue));
-        }
-
-        /// <summary>
-        /// double → byte：先银行家舍入，再钳到 0–255。
-        /// 负权重等脏数据可能把结果推出色域，钳制保证渲染层永远拿到合法 byte。
-        /// </summary>
-        private static byte RoundToByte(double value)
-        {
-            double rounded = Math.Round(value);
-            if (rounded <= 0d)
-            {
-                return 0;
-            }
-
-            if (rounded >= 255d)
-            {
-                return 255;
-            }
-
-            return (byte)rounded;
+            return new FlowColor(
+                FlowColor.RoundToByte(red),
+                FlowColor.RoundToByte(green),
+                FlowColor.RoundToByte(blue));
         }
     }
 }

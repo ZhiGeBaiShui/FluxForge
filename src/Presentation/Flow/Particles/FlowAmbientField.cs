@@ -95,7 +95,7 @@ namespace ProbablyBagMod.Presentation.Flow.Particles
 
         private int _count;
         private long _nextSpawnOrder;
-        private FlowContent _content = FlowContent.Large;
+        private FlowContent _spawnContent = FlowContent.Large;
 
         /// <summary>
         /// 构造一个粒子场。
@@ -126,16 +126,17 @@ namespace ProbablyBagMod.Presentation.Flow.Particles
 
         /// <summary>
         /// 当前流源的含量档，决定 <see cref="Spawn"/> 使用的本体包围盒。
+        /// 只影响之后新生成的粒子；已存在的粒子保留出生时的位置与尺寸。
         ///
         /// **契约补充说明**：冻结的 <see cref="Spawn"/> 签名没有 FlowContent 参数，
         /// 因此这里提供一个可写属性（默认 <see cref="FlowContent.Large"/>）。
         /// 单流源调用方在含量档变化时同步本属性；多流源共用同一个场时，
         /// 建议每源一个场实例，避免在 Spawn 之间来回切换。越界枚举值按 large 兜底。
         /// </summary>
-        public FlowContent Content
+        public FlowContent SpawnContent
         {
-            get { return _content; }
-            set { _content = value; }
+            get { return _spawnContent; }
+            set { _spawnContent = value; }
         }
 
         /// <summary>
@@ -176,7 +177,7 @@ namespace ProbablyBagMod.Presentation.Flow.Particles
             int x1;
             int y0;
             int y1;
-            GetBounds(_content, out x0, out x1, out y0, out y1);
+            GetBounds(_spawnContent, out x0, out x1, out y0, out y1);
 
             int pixelX;
             int pixelY;
@@ -194,9 +195,10 @@ namespace ProbablyBagMod.Presentation.Flow.Particles
             radialX /= radialLength;
             radialY /= radialLength;
 
-            float backwardX;
-            float backwardY;
-            GetBackwardVector(dir, out backwardX, out backwardY);
+            // 运动反方向从 FlowDirMath 取：越界方向按 right，与旧的本地 switch 一致。
+            FlowDir flowDir = (FlowDir)dir;
+            float backwardX = FlowDirMath.BackwardX(flowDir);
+            float backwardY = FlowDirMath.BackwardY(flowDir);
 
             float directionX = radialX + backwardX * profile.BackwardBias;
             float directionY = radialY + backwardY * profile.BackwardBias;
@@ -292,7 +294,7 @@ namespace ProbablyBagMod.Presentation.Flow.Particles
             }
         }
 
-        /// <summary>清空所有存活粒子（不改随机序列，也不改 <see cref="Content"/>）。</summary>
+        /// <summary>清空所有存活粒子（不改随机序列，也不改 <see cref="SpawnContent"/>）。</summary>
         public void Clear()
         {
             _count = 0;
@@ -340,36 +342,6 @@ namespace ProbablyBagMod.Presentation.Flow.Particles
                     x1 = 14;
                     y0 = 4;
                     y1 = 12;
-                    break;
-            }
-        }
-
-        /// <summary>
-        /// 取运动反方向：Up=(0,-1)→(0,1)，Right=(1,0)→(-1,0)，
-        /// Down=(0,1)→(0,-1)，Left=(-1,0)→(1,0)。越界方向按 right。
-        /// </summary>
-        private static void GetBackwardVector(int dir, out float x, out float y)
-        {
-            switch (dir)
-            {
-                case 0: // Up：反方向是向下（Y 向下为正）
-                    x = 0f;
-                    y = 1f;
-                    break;
-
-                case 2: // Down
-                    x = 0f;
-                    y = -1f;
-                    break;
-
-                case 3: // Left
-                    x = 1f;
-                    y = 0f;
-                    break;
-
-                default: // Right 以及越界值
-                    x = -1f;
-                    y = 0f;
                     break;
             }
         }

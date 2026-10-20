@@ -35,14 +35,12 @@ namespace ProbablyBagMod.Mod.Flow.View
         /// <summary>速度高于该值却连续不动，才算被阻挡；真静止的流源不算。</summary>
         private const double BlockedMinSpeed = 0.01d;
 
-        /// <summary>动效时钟：12 帧 / 秒（SPEC §6.1）。</summary>
+        /// <summary>
+        /// 动效时钟：12 帧 / 秒（SPEC §6.1）。
+        /// 帧数与静态哨兵统一用 <see cref="FlowVisualState.FrameCount"/> / <see cref="FlowVisualState.NoFrame"/>；
+        /// 这里只保留「每秒帧数」这个纯时钟常量，因为全仓库只有本视图消费它。
+        /// </summary>
         private const float FrameRate = 12f;
-
-        /// <summary>动效帧数（f0..f11）。</summary>
-        private const int FrameCount = 12;
-
-        /// <summary>静态 tile 的帧哨兵，语义同 <c>FlowVisualState.Frame</c> 的 -1。</summary>
-        private const int NoFrame = -1;
 
         /// <summary>
         /// 一个流源的运行时状态：上帧原始位置 + 连续静止帧数（判 blocked 用），
@@ -182,10 +180,10 @@ namespace ProbablyBagMod.Mod.Flow.View
 
             // 12fps 动效相位。先取模再兜一次负数，避免 float 溢出成 int.MinValue，
             // 也避免异常大的 deltaTime 让 (int) 转换落到未定义区间。
-            int frame = ((int)(_clock * FrameRate)) % FrameCount;
+            int frame = ((int)(_clock * FrameRate)) % FlowVisualState.FrameCount;
             if (frame < 0)
             {
-                frame += FrameCount;
+                frame += FlowVisualState.FrameCount;
             }
 
             // 层为 null 表示这块网格当前还画不了（原生对象已失效 / RectTransform 还没建好），
@@ -439,7 +437,7 @@ namespace ProbablyBagMod.Mod.Flow.View
             FlowDir dir = FlowTierMap.DirFrom(snapshot.Direction);
 
             // 只有 flow 有 12 帧动效；blocked/split/merge 都用静态 tile（collect 已不再生成）。
-            int visualFrame = snapshot.State == FlowState.Flow ? frame : NoFrame;
+            int visualFrame = snapshot.State == FlowState.Flow ? frame : FlowVisualState.NoFrame;
 
             FlowVisualState visual = new FlowVisualState(
                 snapshot.Composition, snapshot.Temp, snapshot.Content, snapshot.State, dir, visualFrame);
@@ -463,7 +461,7 @@ namespace ProbablyBagMod.Mod.Flow.View
                 snapshot.Composition, snapshot.Temp, snapshot.Content, snapshot.State, (float)snapshot.Speed);
             FlowParticleProfile profile = FlowParticleRules.Build(in input);
 
-            runtime.Field.Content = snapshot.Content;
+            runtime.Field.SpawnContent = snapshot.Content;
             runtime.Field.Advance(deltaTime);
 
             // 按 SpawnRate 累加，整数部分才真正生成；不足一颗的余量留到下一帧。

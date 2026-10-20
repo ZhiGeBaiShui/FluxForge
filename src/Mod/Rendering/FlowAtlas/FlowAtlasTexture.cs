@@ -1,8 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
-using System.Text;
-using Il2CppInterop.Runtime.InteropTypes.Arrays;
 using MelonLoader;
 using ProbablyBagMod.Mod.Rendering.ItemSprites;
 using ProbablyBagMod.Presentation.Flow.Visual;
@@ -72,11 +70,6 @@ namespace ProbablyBagMod.Mod.Rendering.FlowAtlas
         private const int TexEdge = 1;
         private const int TexAccent = 2;
         private const int TexWall = 3;
-
-        // Il2Cpp 下 Texture2D.LoadImage 不可直接调，经 ImageConversion.LoadImage（照抄 FlowSpriteRegistry）
-        private static readonly MethodInfo LoadImageMethod = typeof(ImageConversion).GetMethod(
-            "LoadImage", BindingFlags.Public | BindingFlags.Static, null,
-            new[] { typeof(Texture2D), typeof(Il2CppStructArray<byte>) }, null);
 
         /// <summary>蒙版编号 + 图集坐标 → Sprite。key = texId &lt;&lt; 48 | x &lt;&lt; 24 | y。</summary>
         private static readonly Dictionary<long, Sprite> _sprites = new Dictionary<long, Sprite>();
@@ -240,17 +233,17 @@ namespace ProbablyBagMod.Mod.Rendering.FlowAtlas
 
                 // 四张图共用一份索引：先探前缀再各读一次，前缀只需探一次
                 string prefix = EmbeddedResources.FindPrefix(assembly, "flow_mask.json");
-                byte[] json = EmbeddedResources.Read(prefix, "flow_mask.json");
+                string json = EmbeddedResources.ReadText(prefix, "flow_mask.json");
 
-                if (json == null || LoadImageMethod == null)
+                if (json == null)
                 {
                     MelonLogger.Warning("[流源] 蒙版图集索引缺失，图集层停用");
                     return;
                 }
 
-                Texture2D body = LoadTexture(prefix, "flow_mask_body.png");
-                Texture2D edge = LoadTexture(prefix, "flow_mask_edge.png");
-                Texture2D accent = LoadTexture(prefix, "flow_mask_accent.png");
+                Texture2D body = EmbeddedResources.LoadTexture(prefix, "flow_mask_body.png");
+                Texture2D edge = EmbeddedResources.LoadTexture(prefix, "flow_mask_edge.png");
+                Texture2D accent = EmbeddedResources.LoadTexture(prefix, "flow_mask_accent.png");
 
                 if (body == null || edge == null || accent == null)
                 {
@@ -259,13 +252,13 @@ namespace ProbablyBagMod.Mod.Rendering.FlowAtlas
                 }
 
                 // 墙图是可选通道：缺失只让 Wall 为 null，blocked 状态仍能画出本体
-                Texture2D wall = LoadTexture(prefix, "flow_mask_wall.png");
+                Texture2D wall = EmbeddedResources.LoadTexture(prefix, "flow_mask_wall.png");
                 if (wall == null)
                 {
                     MelonLogger.Warning("[流源] 缺少 flow_mask_wall.png，墙体将不显示");
                 }
 
-                FlowAtlasIndex index = FlowAtlasIndex.Parse(Encoding.UTF8.GetString(json));
+                FlowAtlasIndex index = FlowAtlasIndex.Parse(json);
 
                 _bodyTexture = body;
                 _edgeTexture = edge;
@@ -286,23 +279,6 @@ namespace ProbablyBagMod.Mod.Rendering.FlowAtlas
                 _index = null;
                 MelonLogger.Warning("[流源] 蒙版图集加载失败，图集层停用：" + e.Message);
             }
-        }
-
-        /// <summary>从嵌入资源读一张 PNG 并解码成 Texture2D；缺失/解码失败返回 null。</summary>
-        private static Texture2D LoadTexture(string prefix, string fileName)
-        {
-            byte[] png = EmbeddedResources.Read(prefix, fileName);
-            if (png == null)
-            {
-                return null;
-            }
-
-            Texture2D texture = new Texture2D(2, 2, TextureFormat.RGBA32, false);
-            texture.filterMode = FilterMode.Point;      // 像素风：放大不糊
-            texture.wrapMode = TextureWrapMode.Clamp;   // 相邻 tile 不串色
-            texture.hideFlags = HideFlags.DontSave;     // 防 Unity 资源管理卸载
-            LoadImageMethod.Invoke(null, new object[] { texture, (Il2CppStructArray<byte>)png });
-            return texture;
         }
 
         /// <summary>销毁一张缓存贴图；null 安全（加载失败时字段就是 null）。</summary>

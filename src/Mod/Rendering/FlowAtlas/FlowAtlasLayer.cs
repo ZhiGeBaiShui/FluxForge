@@ -76,14 +76,42 @@ namespace ProbablyBagMod.Mod.Rendering.FlowAtlas
         /// <summary>残影 alpha：越远越淡（与 final/png/trail-probe.png 的 A 方案一致，Σα≈1.43）。</summary>
         private static readonly float[] GhostAlpha = { 0.42f, 0.34f, 0.27f, 0.20f, 0.13f, 0.07f };
 
-        /// <summary>叠放顺序检查的间隔（帧）：面板重建才会插新节点，没必要每帧查。</summary>
-        private const int SiblingCheckInterval = 30;
+        /// <summary>叠放顺序检查的间隔（次 Submit）：面板重建才会插新节点，没必要每帧查。</summary>
+        private const int SiblingChecksEveryNSubmits = 30;
 
         /// <summary>某个 Image 上一次真正写入的 sprite/color（相同则跳过赋值）。</summary>
         private struct QuadCache
         {
             public Sprite Sprite;
             public Color Color;
+
+            /// <summary>
+            /// 只在 sprite 变化时写 Image：sprite/color 赋值会触发 Canvas 重建，
+            /// 位置每帧变没关系，材质不变就不该重建。sprite 为空时同时关掉 Image.enabled。
+            /// </summary>
+            public static void SetSprite(Image image, ref QuadCache cache, Sprite sprite)
+            {
+                if (ReferenceEquals(cache.Sprite, sprite))
+                {
+                    return;
+                }
+
+                image.sprite = sprite;
+                image.enabled = sprite != null;
+                cache.Sprite = sprite;
+            }
+
+            /// <summary>只在颜色变化时写 Image（UGUI 的颜色比较是逐通道浮点比较）。</summary>
+            public static void SetColor(Image image, ref QuadCache cache, Color color)
+            {
+                if (cache.Color == color)
+                {
+                    return;
+                }
+
+                image.color = color;
+                cache.Color = color;
+            }
         }
 
         // 下标约束：body/edge/accent/wall 的下标 ∈ [0, SourceCapacity)；
@@ -122,8 +150,8 @@ namespace ProbablyBagMod.Mod.Rendering.FlowAtlas
         private readonly RectTransform _gridRect;
         private readonly RectTransform _root;
 
-        /// <summary>上一帧用到第几个本体（用于把多出来的池对象关掉）。</summary>
-        private int _activeBodies;
+        /// <summary>上一帧用到第几个流源（用于把多出来的池对象关掉）。</summary>
+        private int _activeSources;
 
         /// <summary>上一帧用到第几颗粒子（用于把多出来的池对象关掉）。</summary>
         private int _activeDots;
@@ -137,8 +165,8 @@ namespace ProbablyBagMod.Mod.Rendering.FlowAtlas
         /// </summary>
         private bool _dotOrderDirty;
 
-        /// <summary>距下一次叠放顺序检查还剩几帧；层重建时随新实例归零重算。</summary>
-        private int _siblingCheckCountdown = SiblingCheckInterval;
+        /// <summary>距下一次叠放顺序检查还剩几次提交；层重建时随新实例归零重算。</summary>
+        private int _siblingCheckCountdown = SiblingChecksEveryNSubmits;
 
         /// <summary>Destroy 之后不再提交（旧层可能比网格晚一帧才真正销毁）。</summary>
         private bool _destroyed;
@@ -200,12 +228,50 @@ namespace ProbablyBagMod.Mod.Rendering.FlowAtlas
             return true;
         }
 
-        /// <summary>格坐标 → 本层局部锚点（左上角）：四边先取整到屏幕像素，再除回 ppu。</summary>
+        /// <summary>
+        /// 格坐标 → 本层局部锚点（左上角）：先把左上角吸到屏幕像素网格，再减回局部原点。
+        ///
+        /// 复用 <see cref="FlowPixelMath.Snap"/>（<c>round(value * scale) / scale</c>）：
+        /// 这里的位置是连续 double（流源在格内平滑移动），
+        /// 所以不能套 <see cref="FlowPixelMath.CellToLocal"/>（它只接受整数格 + 整数像素）。
+        /// </summary>
         private static Vector2 PositionFor(Rect area, float ppu, double cellX, double cellY)
         {
-            float leftPx = Mathf.Round((area.xMin + (float)cellX * FlowPixelMath.CellPixels) * ppu);
-            float topPx = Mathf.Round((area.yMax - (float)cellY * FlowPixelMath.CellPixels) * ppu);
-            return new Vector2(leftPx / ppu - area.xMin, topPx / ppu - area.yMax);
+            float left = FlowPixelMath.Snap(
+                area.xMin + (float)cellX * FlowPixelMath.CellPixels, ppu);
+            float top = FlowPixelMath.Snap(
+                area.yMax - (float)cellY * FlowPixelMath.CellPixels, ppu);
+            return new Vector2(left - area.xMin, top - area.yMax);
+        }
+
+        /// <summary>
+        /// 本体/残影共用的方块边长（屏幕像素）：<c>round(16 * ppu)</c>，最小 1。
+        /// 缩放到 1px 以下时仍保留 1px——0 尺寸的 Image 不会再被任何路径点亮。
+        /// </summary>
+        private static float QuadSizePx(float ppu)
+        {
+            float sizePx = Mathf.Round(FlowPixelMath.CellPixels * ppu);
+            if (sizePx < 1f)
+            {
+                sizePx = 1f;
+            }
+
+            return sizePx;
+        }
+
+        /// <summary>
+        /// 粒子边长（屏幕像素）：<c>round(设计像素 * ppu)</c>，最小 1。
+        /// 设计像素来自粒子出生时的 profile（1–4），不能套用本体的固定 16。
+        /// </summary>
+        private static float ParticleSizePx(byte sizePx, float ppu)
+        {
+            float scaledPx = Mathf.Round(sizePx * ppu);
+            if (scaledPx < 1f)
+            {
+                scaledPx = 1f;
+            }
+
+            return scaledPx;
         }
 
         /// <summary>
@@ -227,10 +293,10 @@ namespace ProbablyBagMod.Mod.Rendering.FlowAtlas
             }
 
             // 面板重建可能新建了物品节点：确保本层仍在最上层。
-            // 只有重建才会插进新节点，所以每 30 帧查一次即可（层重建时构造器已 SetAsLastSibling）。
+            // 只有重建才会插进新节点，所以每 30 次提交查一次即可（层重建时构造器已 SetAsLastSibling）。
             if (--_siblingCheckCountdown <= 0)
             {
-                _siblingCheckCountdown = SiblingCheckInterval;
+                _siblingCheckCountdown = SiblingChecksEveryNSubmits;
 
                 Transform parent = _root.parent;
                 if (parent != null && _root.GetSiblingIndex() != parent.childCount - 1)
@@ -239,20 +305,10 @@ namespace ProbablyBagMod.Mod.Rendering.FlowAtlas
                 }
             }
 
-            float sizePx = Mathf.Round(FlowPixelMath.CellPixels * ppu);
-            if (sizePx < 1f)
-            {
-                // 缩放到 1px 以下时仍保留 1px：0 尺寸的 Image 不会再被任何路径点亮
-                sizePx = 1f;
-            }
-
+            float sizePx = QuadSizePx(ppu);
             Vector2 quadSize = new Vector2(sizePx / ppu, sizePx / ppu);
 
-            int count = items.Count;
-            if (count > _bodies.Length)
-            {
-                count = _bodies.Length;
-            }
+            int count = ClampCount(items.Count, _bodies.Length);
 
             for (int i = 0; i < count; i++)
             {
@@ -277,11 +333,11 @@ namespace ProbablyBagMod.Mod.Rendering.FlowAtlas
                 ShowWall(i, sprites.Wall, state.State == FlowState.Blocked, position, quadSize);
 
                 // 拖尾用同一张 body 蒙版，只改 alpha：残影是"运动痕迹"，不是体积
-                SubmitGhosts(i, in item, bodyTint, sprites.Body, area, ppu);
+                SubmitGhosts(i, in item, bodyTint, sprites.Body, area, ppu, quadSize);
             }
 
             // 流源数变少：把上一帧多出来的所有池对象关掉（不销毁，下一波复用）
-            for (int i = count; i < _activeBodies; i++)
+            for (int i = count; i < _activeSources; i++)
             {
                 Deactivate(_bodies[i]);
                 Deactivate(_edges[i]);
@@ -294,7 +350,7 @@ namespace ProbablyBagMod.Mod.Rendering.FlowAtlas
                 }
             }
 
-            _activeBodies = count;
+            _activeSources = count;
         }
 
         /// <summary>
@@ -314,11 +370,7 @@ namespace ProbablyBagMod.Mod.Rendering.FlowAtlas
                 return;
             }
 
-            int count = dots.Count;
-            if (count > _dots.Length)
-            {
-                count = _dots.Length;
-            }
+            int count = ClampCount(dots.Count, _dots.Length);
 
             for (int i = 0; i < count; i++)
             {
@@ -331,10 +383,7 @@ namespace ProbablyBagMod.Mod.Rendering.FlowAtlas
                     _dots[i] = dot;
                 }
 
-                if (!dot.gameObject.activeSelf)
-                {
-                    dot.gameObject.SetActive(true);
-                }
+                Activate(dot);
 
                 FlowAmbientParticle particle = dots[i];
 
@@ -342,13 +391,7 @@ namespace ProbablyBagMod.Mod.Rendering.FlowAtlas
 
                 // 尺寸/alpha 用粒子自带的出生值（modifier 改 profile 后会落到这里），
                 // 不再读 FlowParticleTuning 常量，否则属性 modifier 对粒子外观无效。
-                float sizePx = Mathf.Round(particle.SizePx * ppu);
-                if (sizePx < 1f)
-                {
-                    // 缩放到 1px 以下时仍保留 1px：0 尺寸的 Image 不会再被任何路径点亮
-                    sizePx = 1f;
-                }
-
+                float sizePx = ParticleSizePx(particle.SizePx, ppu);
                 dot.rectTransform.sizeDelta = new Vector2(sizePx / ppu, sizePx / ppu);
 
                 float lifeRatio = particle.MaxLife > 0f
@@ -485,26 +528,13 @@ namespace ProbablyBagMod.Mod.Rendering.FlowAtlas
         private static void ShowQuad(Image image, ref QuadCache cache, Sprite sprite, Color color,
             Vector2 position, Vector2 size)
         {
-            if (!image.gameObject.activeSelf)
-            {
-                image.gameObject.SetActive(true);
-            }
+            Activate(image);
 
             image.rectTransform.anchoredPosition = position;
             image.rectTransform.sizeDelta = size;
 
-            if (!ReferenceEquals(cache.Sprite, sprite))
-            {
-                image.sprite = sprite;
-                image.enabled = sprite != null;
-                cache.Sprite = sprite;
-            }
-
-            if (cache.Color != color)
-            {
-                image.color = color;
-                cache.Color = color;
-            }
+            QuadCache.SetSprite(image, ref cache, sprite);
+            QuadCache.SetColor(image, ref cache, color);
         }
 
         /// <summary>
@@ -527,26 +557,28 @@ namespace ProbablyBagMod.Mod.Rendering.FlowAtlas
             if (wall == null)
             {
                 wall = CreateImage("FlowAtlasWall");
+                // 墙色恒白（贴图自带 #C9C2B8），缓存里不需要颜色比较
                 wall.color = Color.white;
                 // 后创建的节点会在上面：把墙挪到这一组的最底层（body 之前）
                 wall.rectTransform.SetAsFirstSibling();
                 _walls[index] = wall;
             }
 
-            if (!wall.gameObject.activeSelf)
-            {
-                wall.gameObject.SetActive(true);
-            }
+            Activate(wall);
 
             wall.rectTransform.anchoredPosition = position;
             wall.rectTransform.sizeDelta = size;
 
             // 墙图自身带 #C9C2B8，颜色恒为白；sprite 只在状态/方向/含量变化时换
-            if (!ReferenceEquals(_wallCache[index].Sprite, sprite))
+            QuadCache.SetSprite(wall, ref _wallCache[index], sprite);
+        }
+
+        /// <summary>点亮一个池对象（与 <see cref="Deactivate"/> 对称；null 安全）。</summary>
+        private static void Activate(Image image)
+        {
+            if (image != null && !image.gameObject.activeSelf)
             {
-                wall.sprite = sprite;
-                wall.enabled = true;
-                _wallCache[index].Sprite = sprite;
+                image.gameObject.SetActive(true);
             }
         }
 
@@ -557,6 +589,12 @@ namespace ProbablyBagMod.Mod.Rendering.FlowAtlas
             {
                 image.gameObject.SetActive(false);
             }
+        }
+
+        /// <summary>提交数量钳到池容量：超出部分按提交顺序截断，永不越界。</summary>
+        private static int ClampCount(int count, int capacity)
+        {
+            return count > capacity ? capacity : count;
         }
 
         /// <summary>
@@ -571,7 +609,7 @@ namespace ProbablyBagMod.Mod.Rendering.FlowAtlas
         /// 颜色 = 本体色带逐层下降的 alpha（不额外染色，否则成分会被拖尾"二次混色"）。
         /// </summary>
         private void SubmitGhosts(int bodyIndex, in FlowDrawItem item, Color bodyTint,
-            Sprite bodySprite, Rect area, float ppu)
+            Sprite bodySprite, Rect area, float ppu, Vector2 quadSize)
         {
             // 前置条件：TrailLayers 的值域是 1..6（FlowTierMap.TrailLayersFromContent），
             // 不会超过 GhostsPerSource，也不存在 0 层；这里不再夹取。
@@ -579,9 +617,8 @@ namespace ProbablyBagMod.Mod.Rendering.FlowAtlas
 
             bool show = bodySprite != null && item.State.State == FlowState.Flow;
 
-            int dx;
-            int dy;
-            DirStep(item.State.Dir, out dx, out dy);
+            int dx = FlowDirMath.StepX(item.State.Dir);
+            int dy = FlowDirMath.StepY(item.State.Dir);
 
             for (int gh = 0; gh < GhostsPerSource; gh++)
             {
@@ -602,63 +639,22 @@ namespace ProbablyBagMod.Mod.Rendering.FlowAtlas
                     _ghosts[ghostIndex] = ghost;
                 }
 
-                if (!ghost.gameObject.activeSelf)
-                {
-                    ghost.gameObject.SetActive(true);
-                }
+                Activate(ghost);
 
                 // 残影同理：sprite/color 只在变化时写，位置每帧写
-                if (!ReferenceEquals(_ghostCache[ghostIndex].Sprite, bodySprite))
-                {
-                    ghost.sprite = bodySprite;
-                    ghost.enabled = true;
-                    _ghostCache[ghostIndex].Sprite = bodySprite;
-                }
+                QuadCache.SetSprite(ghost, ref _ghostCache[ghostIndex], bodySprite);
 
                 // 残影位置 = 本体位置沿运动反方向退 offsetMap 像素（格坐标换算后交给统一的位置函数）
                 float distance = GhostOffsetsPx[gh];
                 double ghostX = item.PositionX - (dx * distance) / (double)FlowPixelMath.CellPixels;
                 double ghostY = item.PositionY - (dy * distance) / (double)FlowPixelMath.CellPixels;
-                float sizePx = Mathf.Round(FlowPixelMath.CellPixels * ppu);
-                if (sizePx < 1f)
-                {
-                    sizePx = 1f;
-                }
 
                 ghost.rectTransform.anchoredPosition = PositionFor(area, ppu, ghostX, ghostY);
-                ghost.rectTransform.sizeDelta = new Vector2(sizePx / ppu, sizePx / ppu);
+                // 尺寸与本体完全一致：直接复用 Submit 算好的 quadSize，不再每颗重算。
+                ghost.rectTransform.sizeDelta = quadSize;
 
                 Color ghostColor = new Color(bodyTint.r, bodyTint.g, bodyTint.b, GhostAlpha[gh]);
-                if (_ghostCache[ghostIndex].Color != ghostColor)
-                {
-                    ghost.color = ghostColor;
-                    _ghostCache[ghostIndex].Color = ghostColor;
-                }
-            }
-        }
-
-        /// <summary>方向 → 单位步长（Y 向下为正：Up 是 -1）。</summary>
-        private static void DirStep(FlowDir dir, out int dx, out int dy)
-        {
-            switch (dir)
-            {
-                case FlowDir.Up:
-                    dx = 0;
-                    dy = -1;
-                    return;
-                case FlowDir.Down:
-                    dx = 0;
-                    dy = 1;
-                    return;
-                case FlowDir.Left:
-                    dx = -1;
-                    dy = 0;
-                    return;
-                case FlowDir.Right:
-                default:
-                    dx = 1;
-                    dy = 0;
-                    return;
+                QuadCache.SetColor(ghost, ref _ghostCache[ghostIndex], ghostColor);
             }
         }
 

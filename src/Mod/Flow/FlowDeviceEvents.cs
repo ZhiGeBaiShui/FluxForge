@@ -37,16 +37,19 @@ namespace ProbablyBagMod.Mod
                 CollectorDevice collector = sender as CollectorDevice;
                 if (collector != null)
                 {
-                    WriteTag(item, "FLOW_STOCK", (int)collector.Stock.Moisture);
-                    WriteTag(item, "FLOW_TEMPERATURE", (float)collector.Stock.Temperature);
+                    FlowTags.WriteInt(
+                        item.state, FlowTags.Stock, (int)collector.Stock.Moisture);
+                    FlowTags.WriteFloat(
+                        item.state, FlowTags.FlowTemperature, (float)collector.Stock.Temperature);
                     return;
                 }
 
                 IceBlockDevice iceBlock = sender as IceBlockDevice;
                 if (iceBlock != null)
                 {
-                    WriteTag(item, "FLOW_STOCK", (int)iceBlock.Moisture);
-                    WriteTag(item, "ICE_TEMPERATURE", (float)iceBlock.Temperature);
+                    FlowTags.WriteInt(item.state, FlowTags.Stock, (int)iceBlock.Moisture);
+                    FlowTags.WriteFloat(
+                        item.state, FlowTags.IceTemperature, (float)iceBlock.Temperature);
                 }
             }
             catch (Exception e)
@@ -101,29 +104,6 @@ namespace ProbablyBagMod.Mod
             catch (Exception e)
             {
                 MelonLoader.MelonLogger.Error("[流量机] 移除耗尽装置失败：" + e);
-            }
-        }
-
-        /// <summary>
-        /// 写 tag。必须走 <c>TagSystem.GetTag</c>（活对象），
-        /// 不能用 <c>GameItem.GetTagReadonly</c>——它内部 <c>TagState.Clone()</c>，
-        /// 改的是副本，活 tag 分毫不动（这个坑踩过两次）。
-        /// </summary>
-        internal static void WriteTag(Il2Cpp.GameItem item, string tag, int value)
-        {
-            Il2Cpp.TagState state = item.state == null ? null : item.state.GetTag(tag);
-            if (state != null)
-            {
-                state.valueInt = value;
-            }
-        }
-
-        internal static void WriteTag(Il2Cpp.GameItem item, string tag, float value)
-        {
-            Il2Cpp.TagState state = item.state == null ? null : item.state.GetTag(tag);
-            if (state != null)
-            {
-                state.valueFloat = value;
             }
         }
     }

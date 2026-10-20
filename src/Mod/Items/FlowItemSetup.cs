@@ -71,7 +71,7 @@ namespace ProbablyBagMod.Mod
             switch (def.key)
             {
                 case FlowMachineKey:
-                    AttachPanel(item, def);
+                    AttachMachine(item, def);
                     break;
                 case EmitterKey:
                     AttachEmitter(item);
@@ -101,7 +101,7 @@ namespace ProbablyBagMod.Mod
         ///
         /// 另外窗口尺寸不用自己算：<c>Attach</c> 会按根元素的实际尺寸重算并覆盖构造时传的值。
         /// </summary>
-        private static void AttachPanel(Il2Cpp.GameItem item, FlowItemDefinition def)
+        private static void AttachMachine(Il2Cpp.GameItem item, FlowItemDefinition def)
         {
             int columns = 4;
             int rows = 3;
@@ -229,8 +229,8 @@ namespace ProbablyBagMod.Mod
         /// <summary>冰块：存量从物品的 tag 里读出来，之后由装置自己维护。</summary>
         private static void AttachIceBlock(Il2Cpp.GameItem item)
         {
-            double moisture = ReadTagInt(item, "FLOW_STOCK");
-            double temperature = ReadTagFloat(item, "ICE_TEMPERATURE");
+            double moisture = FlowTags.ReadInt(item.state, FlowTags.Stock, 0);
+            double temperature = FlowTags.ReadFloat(item.state, FlowTags.IceTemperature, 0f);
 
             IceBlockDevice device = new IceBlockDevice(moisture, temperature);
             DeviceRegistry.Register(item.Pointer, device, item);
@@ -247,18 +247,6 @@ namespace ProbablyBagMod.Mod
         {
             device.Changed += FlowDeviceEvents.OnChanged;
             device.Exhausted += FlowDeviceEvents.OnExhausted;
-        }
-
-        private static double ReadTagInt(Il2Cpp.GameItem item, string tag)
-        {
-            Il2Cpp.TagState state = item.GetTagReadonly(tag);
-            return state == null ? 0d : state.valueInt;
-        }
-
-        private static double ReadTagFloat(Il2Cpp.GameItem item, string tag)
-        {
-            Il2Cpp.TagState state = item.GetTagReadonly(tag);
-            return state == null ? 0d : state.valueFloat;
         }
     }
 }

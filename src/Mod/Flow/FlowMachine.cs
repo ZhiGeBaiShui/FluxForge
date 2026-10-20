@@ -113,7 +113,7 @@ namespace ProbablyBagMod.Mod
                 CollectorDevice collector = DeviceRegistry.Get<CollectorDevice>(item.Pointer);
                 if (collector != null)
                 {
-                    Adopt(item, collector.Stock, "FLOW_STOCK", "FLOW_TEMPERATURE");
+                    Adopt(item, collector.Stock);
                     continue;
                 }
 
@@ -124,8 +124,9 @@ namespace ProbablyBagMod.Mod
                     // 读档后 tag 才是真相，装置对象只是它的运行时镜像
                     if (_adopted.Add(item.Pointer))
                     {
-                        iceBlock.Moisture = ReadTagInt(item, "FLOW_STOCK");
-                        iceBlock.Temperature = ReadTagFloat(item, "ICE_TEMPERATURE");
+                        iceBlock.Moisture = FlowTags.ReadInt(item.state, FlowTags.Stock, 0);
+                        iceBlock.Temperature = FlowTags.ReadFloat(
+                            item.state, FlowTags.IceTemperature, 0f);
                     }
                 }
             }
@@ -168,23 +169,25 @@ namespace ProbablyBagMod.Mod
 
             double consumed = LiquidStock.Consume(item, available);
             emitter.Stock.Moisture = available - consumed;
-            FlowDeviceEvents.WriteTag(item, "FLOW_STOCK", (int)emitter.Stock.Moisture);
-            FlowDeviceEvents.WriteTag(item, "FLOW_TEMPERATURE", (float)emitter.Stock.Temperature);
+            FlowTags.WriteInt(item.state, FlowTags.Stock, (int)emitter.Stock.Moisture);
+            FlowTags.WriteFloat(
+                item.state, FlowTags.FlowTemperature, (float)emitter.Stock.Temperature);
             return true;
         }
 
         /// <summary>
         /// 物品第一次被本机接管时，用 tag 里的值覆盖装置存量。
         /// </summary>
-        private void Adopt(Il2Cpp.GameItem item, FlowProperties stock, string moistureTag, string temperatureTag)
+        private void Adopt(Il2Cpp.GameItem item, FlowProperties stock)
         {
             if (!_adopted.Add(item.Pointer))
             {
                 return;
             }
 
-            stock.Moisture = ReadTagInt(item, moistureTag);
-            stock.Temperature = ReadTagFloat(item, temperatureTag);
+            stock.Moisture = FlowTags.ReadInt(item.state, FlowTags.Stock, 0);
+            stock.Temperature = FlowTags.ReadFloat(
+                item.state, FlowTags.FlowTemperature, 0f);
         }
 
         /// <summary>
@@ -215,18 +218,6 @@ namespace ProbablyBagMod.Mod
             // 「落在格子中间」是渲染层的事，由视觉映射统一处理。
             origin = new FlowPos(shape.minX, shape.minY);
             return true;
-        }
-
-        private static double ReadTagInt(Il2Cpp.GameItem item, string tag)
-        {
-            Il2Cpp.TagState state = item.GetTagReadonly(tag);
-            return state == null ? 0d : state.valueInt;
-        }
-
-        private static double ReadTagFloat(Il2Cpp.GameItem item, string tag)
-        {
-            Il2Cpp.TagState state = item.GetTagReadonly(tag);
-            return state == null ? 0d : state.valueFloat;
         }
     }
 }

@@ -144,18 +144,7 @@ namespace ProbablyBagMod.Mod
 
             // KillAll 之后再 Dispose：订阅还在，死亡广播才会被本视图接住；
             // Dispose 里退订并销毁层，之后这台机器不可能再往旧网格上画
-            try
-            {
-                if (machine.AtlasView != null)
-                {
-                    machine.AtlasView.Dispose();
-                    machine.AtlasView = null;
-                }
-            }
-            catch (System.Exception e)
-            {
-                MelonLoader.MelonLogger.Error("[流量机] 退役时释放视图失败：" + e);
-            }
+            DisposeView(machine);
 
             // 装置登记随机器一起失效：网格退役后这些装置指针不该再被查到。
             // ItemPointers 是启动扫描时留下的 IntPtr，不访问已失效的物品对象。
@@ -171,28 +160,35 @@ namespace ProbablyBagMod.Mod
             // 漏掉任何一台都会留下订阅，下次开局重复订阅同一批流源
             for (int i = 0; i < _machines.Count; i++)
             {
-                FlowMachine machine = _machines[i];
-                FlowAtlasView view = machine.AtlasView;
-                if (view == null)
-                {
-                    continue;
-                }
-
-                try
-                {
-                    view.Dispose();
-                }
-                catch (System.Exception e)
-                {
-                    MelonLoader.MelonLogger.Error("[流量机] 重置时释放视图失败：" + e);
-                }
-
-                machine.AtlasView = null;
+                DisposeView(_machines[i]);
             }
 
             _machines.Clear();
             _visualErrorReported.Clear();
             DeviceRegistry.Clear();
+        }
+
+        /// <summary>
+        /// 释放一台机器的视觉视图（退订生死广播 + 销毁层 + 清空表），并把引用置空。
+        /// <see cref="Retire"/> 与 <see cref="Reset"/> 共用同一条路径；
+        /// 释放在这里兜底：视图的 Dispose 会碰原生对象，抛异常不能打断同帧其它机器的清理。
+        /// </summary>
+        private static void DisposeView(FlowMachine machine)
+        {
+            try
+            {
+                if (machine.AtlasView != null)
+                {
+                    machine.AtlasView.Dispose();
+                }
+            }
+            catch (System.Exception e)
+            {
+                MelonLoader.MelonLogger.Error("[流量机] 释放视图失败：" + e);
+            }
+
+            // 即使 Dispose 抛异常也断开引用：半销毁的视图不能再被下一帧 Tick。
+            machine.AtlasView = null;
         }
     }
 }

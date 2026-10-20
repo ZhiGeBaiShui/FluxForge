@@ -1,3 +1,5 @@
+using System;
+
 namespace ProbablyBagMod.Presentation.Flow.Visual
 {
     /// <summary>
@@ -24,6 +26,40 @@ namespace ProbablyBagMod.Presentation.Flow.Visual
             R = r;
             G = g;
             B = b;
+        }
+
+        /// <summary>
+        /// 线性插值：<c>a * (1 - t) + b * t</c>，每通道按 double 运算后四舍五入。
+        /// 公式与 <c>render_final.mix</c> 完全一致，**不要**改写成 <c>a + (b - a) * t</c>：
+        /// 浮点误差会在个别通道上差 1。
+        /// </summary>
+        internal static FlowColor Mix(in FlowColor a, in FlowColor b, double t)
+        {
+            return new FlowColor(
+                RoundToByte(a.R * (1d - t) + b.R * t),
+                RoundToByte(a.G * (1d - t) + b.G * t),
+                RoundToByte(a.B * (1d - t) + b.B * t));
+        }
+
+        /// <summary>
+        /// double → byte：先银行家舍入（恰为 .5 时取偶），再钳到 0–255。
+        /// 负权重等脏数据可能把结果推出色域，钳制保证渲染层永远拿到合法 byte。
+        /// 全仓库只有这一份落点规则，颜色相关实现一律调用这里。
+        /// </summary>
+        internal static byte RoundToByte(double value)
+        {
+            double rounded = Math.Round(value);
+            if (rounded <= 0d)
+            {
+                return 0;
+            }
+
+            if (rounded >= 255d)
+            {
+                return 255;
+            }
+
+            return (byte)rounded;
         }
     }
 }
