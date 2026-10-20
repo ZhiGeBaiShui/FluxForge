@@ -24,12 +24,9 @@
 | 路径 | 内容 |
 |---|---|
 | `BRIEF.md` | 第一轮设计简报：硬约束、历史否决清单、6 条信息、rubric |
-| `research/reference.md` | 背包英雄像素语法实测 + 本作基线 |
-| `research/engine-constraints.md` | 引擎/绘制/预算/IL2CPP 约束（带 file:line） |
-| `research/channels.md` | 11 条通道、3 套分配、色盲矩阵、Tier-0 |
-| `concepts/a|b|c/` | 三个独立概念（实体 / 流体 / 符号），含渲染脚本与图 |
-| `round2/` | 收敛轮：W1 剪影、W2 内核、W3 动效、评审规则、盲测 |
 | `final/` | 最终规格、通道表、实现契约、验收、决策 |
+
+> 旧阶段目录（research / concepts / round2）已清理，历史版本见 git 提交 `459051e` 及更早。
 | `ref/` | 参考图（**仅分析用，不随包发布**） |
 
 ## 已经被否决的东西（不要回头）
