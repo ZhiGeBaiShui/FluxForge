@@ -726,6 +726,53 @@ namespace ProbablyBagMod.Tests
             }
         }
 
+        [Fact]
+        public void Spawn_CarriesAlphaAndSizeFromProfile()
+        {
+            // 扩展点回归：modifier 改过的 AlphaStart / SizeCells 必须落到粒子上，
+            // 否则渲染层会回退到全局 tuning 常量，属性 modifier 对外观静默无效。
+            FlowAmbientField field = new FlowAmbientField(8, 123);
+            FlowParticleProfile profile = new FlowParticleProfile
+            {
+                SpeedMin = 0.6f,
+                SpeedMax = 0.6f,
+                LifeMin = 0.5f,
+                LifeMax = 0.5f,
+                AlphaStart = 0.2f,
+                SizeCells = 1f / 32f,
+                BackwardBias = 0f,
+                SpawnRate = 0f,
+                SpreadRadius = 1f,
+            };
+
+            FlowColor color = new FlowColor(1, 2, 3);
+            field.Spawn(in profile, 0d, 0d, 1, in color);
+
+            FlowAmbientParticle particle = field.Get(0);
+            Assert.Equal((byte)51, particle.Alpha);   // round(0.20 × 255) = 51
+            Assert.Equal((byte)1, particle.SizePx);   // round(0.5 px) 夹到最小 1
+        }
+
+        [Fact]
+        public void Spawn_DefaultProfileUsesTuningAlphaAndOnePixel()
+        {
+            FlowAmbientField field = new FlowAmbientField(8, 7);
+            FlowParticleInput input = new FlowParticleInput(
+                FlowComposition.PureWater,
+                FlowTemp.Normal,
+                FlowContent.Large,
+                FlowState.Flow,
+                2f);
+            FlowParticleProfile profile = FlowParticleRules.Build(in input);
+            FlowColor color = new FlowColor(1, 2, 3);
+
+            field.Spawn(in profile, 0d, 0d, 1, in color);
+            FlowAmbientParticle particle = field.Get(0);
+
+            Assert.Equal((byte)115, particle.Alpha);  // round(0.45 × 255) = 115
+            Assert.Equal((byte)1, particle.SizePx);   // 1/16 格 = 1 设计像素
+        }
+
         /// <summary>粒子是否在给定像素 bbox（半开区间）内；允许 1/100 像素的浮点误差。</summary>
         private static void AssertWithinPixelBounds(
             FlowAmbientParticle particle,

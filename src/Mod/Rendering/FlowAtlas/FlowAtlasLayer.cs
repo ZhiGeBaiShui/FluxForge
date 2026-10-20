@@ -177,15 +177,43 @@ namespace ProbablyBagMod.Mod.Rendering.FlowAtlas
         /// Image 的锚点/pivot 都是左上角，所以 anchoredPosition 就是「相对网格左上角的偏移」。
         /// 注意 area 是 _root.rect：根节点 pivot 在左上，area.yMax == 0，topPx 天然是负值（向下）。
         /// </summary>
+        /// <summary>提交前的公共前置：守卫 + 同步根尺寸 + 取局部矩形与 ppu。返回 false 表示本层已销毁。</summary>
+        private bool TryBeginSubmit(out Rect area, out float ppu)
+        {
+            area = default(Rect);
+            ppu = 1f;
+
+            if (_destroyed || _root == null)
+            {
+                return false;
+            }
+
+            SyncRootSize();
+
+            area = _root.rect;
+            ppu = _root.lossyScale.x;
+            if (ppu <= 0f)
+            {
+                ppu = 1f;
+            }
+
+            return true;
+        }
+
+        /// <summary>格坐标 → 本层局部锚点（左上角）：四边先取整到屏幕像素，再除回 ppu。</summary>
+        private static Vector2 PositionFor(Rect area, float ppu, double cellX, double cellY)
+        {
+            float leftPx = Mathf.Round((area.xMin + (float)cellX * FlowPixelMath.CellPixels) * ppu);
+            float topPx = Mathf.Round((area.yMax - (float)cellY * FlowPixelMath.CellPixels) * ppu);
+            return new Vector2(leftPx / ppu - area.xMin, topPx / ppu - area.yMax);
+        }
+
         public void Submit(List<FlowDrawItem> items)
         {
-            if (_destroyed || _root == null)
+            if (!TryBeginSubmit(out Rect area, out float ppu))
             {
                 return;
             }
-
-            // 网格尺寸可能在面板重建后变化，跟着同步一次；尺寸没变时赋值也很便宜
-            SyncRootSize();
 
             // 面板重建可能新建了物品节点：确保本层仍在最上层。
             // 只有重建才会插进新节点，所以每 30 帧查一次即可（层重建时构造器已 SetAsLastSibling）。
@@ -198,13 +226,6 @@ namespace ProbablyBagMod.Mod.Rendering.FlowAtlas
                 {
                     _root.SetAsLastSibling();
                 }
-            }
-
-            Rect area = _root.rect;
-            float ppu = _root.lossyScale.x;
-            if (ppu <= 0f)
-            {
-                ppu = 1f;
             }
 
             float sizePx = Mathf.Round(FlowPixelMath.CellPixels * ppu);
@@ -232,11 +253,7 @@ namespace ProbablyBagMod.Mod.Rendering.FlowAtlas
                 // 四张蒙版共用同一组图集坐标，一次查表全拿到
                 FlowSprites sprites = FlowAtlasTexture.Get(state);
 
-                float leftPx = Mathf.Round(
-                    (area.xMin + (float)item.PositionX * FlowPixelMath.CellPixels) * ppu);
-                float topPx = Mathf.Round(
-                    (area.yMax - (float)item.PositionY * FlowPixelMath.CellPixels) * ppu);
-                Vector2 position = new Vector2(leftPx / ppu - area.xMin, topPx / ppu - area.yMax);
+                Vector2 position = PositionFor(area, ppu, item.PositionX, item.PositionY);
 
                 // 三层颜色：成分为唯一本体色来源，温度只进边缘，亮核恒白
                 Color bodyTint = ToColor(FlowTint.Body(state.Composition));
@@ -275,34 +292,15 @@ namespace ProbablyBagMod.Mod.Rendering.FlowAtlas
         ///
         /// 位置与本体同口径：leftPx = Round((area.xMin + X * 16) * ppu)，
         /// topPx = Round((area.yMax - Y * 16) * ppu)；尺寸 = SizeCells 设计像素（最小 1）。
-        /// alpha = Life / MaxLife × AlphaStart，RGB 直接用粒子自带的 8 位通道。
+        /// alpha = Life / MaxLife × (粒子自带 Alpha / 255)，RGB 直接用粒子自带的 8 位通道。
         /// 粒子排在 body/edge/accent 之后，散开的粒子不会被本体盖住。
         /// </summary>
         public void SubmitDots(List<FlowAmbientParticle> dots)
         {
-            if (_destroyed || _root == null)
+            if (!TryBeginSubmit(out Rect area, out float ppu))
             {
                 return;
             }
-
-            SyncRootSize();
-
-            Rect area = _root.rect;
-            float ppu = _root.lossyScale.x;
-            if (ppu <= 0f)
-            {
-                ppu = 1f;
-            }
-
-            float sizePx = Mathf.Round(
-                FlowParticleTuning.SizeCells * FlowPixelMath.CellPixels * ppu);
-            if (sizePx < 1f)
-            {
-                // 缩放到 1px 以下时仍保留 1px：0 尺寸的 Image 不会再被任何路径点亮
-                sizePx = 1f;
-            }
-
-            Vector2 dotSize = new Vector2(sizePx / ppu, sizePx / ppu);
 
             int count = dots == null ? 0 : dots.Count;
             if (count > _dots.Length)
@@ -328,19 +326,23 @@ namespace ProbablyBagMod.Mod.Rendering.FlowAtlas
 
                 FlowAmbientParticle particle = dots[i];
 
-                float leftPx = Mathf.Round(
-                    (area.xMin + particle.X * FlowPixelMath.CellPixels) * ppu);
-                float topPx = Mathf.Round(
-                    (area.yMax - particle.Y * FlowPixelMath.CellPixels) * ppu);
-                dot.rectTransform.anchoredPosition = new Vector2(
-                    leftPx / ppu - area.xMin,
-                    topPx / ppu - area.yMax);
-                dot.rectTransform.sizeDelta = dotSize;
+                dot.rectTransform.anchoredPosition = PositionFor(area, ppu, particle.X, particle.Y);
+
+                // 尺寸/alpha 用粒子自带的出生值（modifier 改 profile 后会落到这里），
+                // 不再读 FlowParticleTuning 常量，否则属性 modifier 对粒子外观无效。
+                float sizePx = Mathf.Round(particle.SizePx * ppu);
+                if (sizePx < 1f)
+                {
+                    // 缩放到 1px 以下时仍保留 1px：0 尺寸的 Image 不会再被任何路径点亮
+                    sizePx = 1f;
+                }
+
+                dot.rectTransform.sizeDelta = new Vector2(sizePx / ppu, sizePx / ppu);
 
                 float lifeRatio = particle.MaxLife > 0f
                     ? particle.Life / particle.MaxLife
                     : 0f;
-                float alpha = Mathf.Clamp01(lifeRatio * FlowParticleTuning.AlphaStart);
+                float alpha = Mathf.Clamp01(lifeRatio * (particle.Alpha / 255f));
                 dot.color = new Color32(
                     particle.R,
                     particle.G,
@@ -589,20 +591,17 @@ namespace ProbablyBagMod.Mod.Rendering.FlowAtlas
                     _ghostCache[ghostIndex].Sprite = bodySprite;
                 }
 
+                // 残影位置 = 本体位置沿运动反方向退 offsetMap 像素（格坐标换算后交给统一的位置函数）
                 float distance = GhostOffsetsPx[gh];
-                float leftPx = Mathf.Round(
-                    (area.xMin + (float)item.PositionX * FlowPixelMath.CellPixels - dx * distance) * ppu);
-                float topPx = Mathf.Round(
-                    (area.yMax - (float)item.PositionY * FlowPixelMath.CellPixels + dy * distance) * ppu);
+                double ghostX = item.PositionX - (dx * distance) / (double)FlowPixelMath.CellPixels;
+                double ghostY = item.PositionY - (dy * distance) / (double)FlowPixelMath.CellPixels;
                 float sizePx = Mathf.Round(FlowPixelMath.CellPixels * ppu);
                 if (sizePx < 1f)
                 {
                     sizePx = 1f;
                 }
 
-                ghost.rectTransform.anchoredPosition = new Vector2(
-                    leftPx / ppu - area.xMin,
-                    topPx / ppu - area.yMax);
+                ghost.rectTransform.anchoredPosition = PositionFor(area, ppu, ghostX, ghostY);
                 ghost.rectTransform.sizeDelta = new Vector2(sizePx / ppu, sizePx / ppu);
 
                 Color ghostColor = new Color(bodyTint.r, bodyTint.g, bodyTint.b, GhostAlpha[gh]);

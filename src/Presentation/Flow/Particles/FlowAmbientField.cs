@@ -8,8 +8,9 @@ namespace ProbablyBagMod.Presentation.Flow.Particles
     ///
     /// 坐标单位是「格」（1.0 = 一格 = 16 个设计像素），Y 轴向下，与
     /// <c>docs/flow-visual/final/SPEC.md</c> 的画布约定一致。
-    /// 颜色是 8 位 RGB；不透明度由绘制层按 <c>Life / MaxLife × AlphaStart</c> 计算，
-    /// 这样同一颗粒子既能被快照读出，也不需要在结构里重复存 alpha。
+    /// 颜色是 8 位 RGB；出生时的 alpha 与尺寸随粒子一起保存，
+    /// 这样 modifier 改过的 <see cref="FlowParticleProfile.AlphaStart"/> / <see cref="FlowParticleProfile.SizeCells"/>
+    /// 才能真正生效（绘制层不再读全局 tuning 常量）。
     /// </summary>
     public struct FlowAmbientParticle
     {
@@ -39,6 +40,17 @@ namespace ProbablyBagMod.Presentation.Flow.Particles
 
         /// <summary>蓝通道，0–255。</summary>
         public byte B;
+
+        /// <summary>
+        /// 出生时的 alpha（0–255）。绘制层按 <c>Life / MaxLife × (Alpha / 255)</c> 衰减；
+        /// 与 <see cref="FlowParticleProfile.AlphaStart"/> 对应，modifier 改 profile 后能落到这里。
+        /// </summary>
+        public byte Alpha;
+
+        /// <summary>
+        /// 设计像素尺寸（1–4）。默认 1（= 1/16 格）；与 <see cref="FlowParticleProfile.SizeCells"/> 对应。
+        /// </summary>
+        public byte SizePx;
     }
 
     /// <summary>
@@ -236,6 +248,9 @@ namespace ProbablyBagMod.Presentation.Flow.Particles
                 R = color.R,
                 G = color.G,
                 B = color.B,
+                // 出生外观随粒子固化：绘制层不再读全局 tuning，modifier 改 profile 才有效。
+                Alpha = ToByteAlpha(profile.AlphaStart),
+                SizePx = ToSizePixels(profile.SizeCells),
             };
 
             _particles[index] = particle;
@@ -437,6 +452,39 @@ namespace ProbablyBagMod.Presentation.Flow.Particles
             }
 
             return min + (float)_random.NextDouble() * (max - min);
+        }
+
+        /// <summary>alpha 0–1 → 0–255（四舍五入并夹紧）。</summary>
+        private static byte ToByteAlpha(float alpha)
+        {
+            if (!(alpha > 0f))
+            {
+                return 0;
+            }
+
+            if (alpha >= 1f)
+            {
+                return 255;
+            }
+
+            return (byte)MathF.Round(alpha * 255f);
+        }
+
+        /// <summary>尺寸（格）→ 设计像素（1–4），1 像素 = 1/16 格。</summary>
+        private static byte ToSizePixels(float sizeCells)
+        {
+            if (!(sizeCells > 0f))
+            {
+                return 1;
+            }
+
+            int pixels = (int)MathF.Round(sizeCells * GridPixels);
+            if (pixels < 1)
+            {
+                return 1;
+            }
+
+            return pixels > 4 ? (byte)4 : (byte)pixels;
         }
 
         /// <summary>找出生序号最小的一颗；仅在容量已满时调用，容量 ≤ 256 时线性扫描足够。</summary>

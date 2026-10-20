@@ -23,10 +23,10 @@ namespace ProbablyBagMod.Presentation.Flow.Particles
         /// <summary>默认寿命上限（秒）。</summary>
         public const float LifeMax = 0.65f;
 
-        /// <summary>默认起始不透明度（0..1）。</summary>
+        /// <summary>默认起始不透明度（0..1）。modifier 可覆盖；实际值会固化进每颗粒子。</summary>
         public const float AlphaStart = 0.45f;
 
-        /// <summary>默认粒子边长（格）：1/16 格 = 1 个设计像素。</summary>
+        /// <summary>默认粒子边长（格）：1/16 格 = 1 个设计像素。modifier 可覆盖；实际值会固化进每颗粒子。</summary>
         public const float SizeCells = 1f / 16f;
 
         /// <summary>默认反方向偏置（0..1）。</summary>

@@ -59,6 +59,39 @@ namespace ProbablyBagMod.Mod.Flow.View
         }
 
         /// <summary>
+        /// 一帧内一条流源的全部视觉输入（位置/方向/速度/成分/温度/含量/状态）。
+        ///
+        /// 为什么要有它：贴图与粒子都需要同一组属性，旧实现是两条路径各算一遍
+        /// （两遍 `_states` 查表、两遍 Temp/Content/State 换算）。现在每帧只读一次，
+        /// 贴图与粒子共用同一份结果，也保证两者的 blocked 判定永远一致。
+        /// </summary>
+        private readonly struct EntitySnapshot
+        {
+            public readonly double X;
+            public readonly double Y;
+            public readonly int Direction;
+            public readonly double Speed;
+            public readonly FlowComposition Composition;
+            public readonly FlowTemp Temp;
+            public readonly FlowContent Content;
+            public readonly FlowState State;
+
+            public EntitySnapshot(
+                double x, double y, int direction, double speed,
+                FlowComposition composition, FlowTemp temp, FlowContent content, FlowState state)
+            {
+                X = x;
+                Y = y;
+                Direction = direction;
+                Speed = speed;
+                Composition = composition;
+                Temp = temp;
+                Content = content;
+                State = state;
+            }
+        }
+
+        /// <summary>
         /// 一个流源的常驻粒子场与发射累加器。
         ///
         /// <see cref="Alive"/> 与实体名单分开标记：实体死亡后先摘出 <c>_emitters</c>，
@@ -183,18 +216,29 @@ namespace ProbablyBagMod.Mod.Flow.View
 
             _items.Clear();
 
+            // 单次遍历：每个实体只读一次快照，贴图与粒子共用，避免两条路径重复换算。
             for (int i = 0; i < _entities.Count; i++)
             {
-                FlowDrawItem item;
-                if (TryBuildItem(_entities[i], frame, out item))
+                FlowEntity entity = _entities[i];
+
+                EntitySnapshot snapshot;
+                if (!TryReadSnapshot(entity, out snapshot))
                 {
-                    _items.Add(item);
+                    continue;
+                }
+
+                _items.Add(BuildDrawItem(in snapshot, frame));
+
+                Emitter emitter;
+                if (_emitters.TryGetValue(entity, out emitter) && emitter.Alive)
+                {
+                    UpdateEmitter(emitter, in snapshot, deltaTime);
                 }
             }
 
-            // 本体列表建好后再推进粒子：blocked 状态已经在 TryBuildItem 里更新，
-            // 死亡实体的场已经转入 _fading，这里只衰减、不再发射新粒子。
-            UpdateParticles(deltaTime);
+            // 死亡实体的场只积分、不发射；粒子清空即移出队列。
+            AdvanceFading(deltaTime);
+            CollectDots();
 
             if (_layer != null)
             {
@@ -337,12 +381,14 @@ namespace ProbablyBagMod.Mod.Flow.View
         }
 
         /// <summary>
-        /// 把一条流源的当前属性翻译成绘制参数。位置判定写在读取属性之前：
-        /// blocked 只依赖格位与速度，与视觉枚举无关。
+        /// 读一条流源这一帧的快照：位置/方向/速度 + 成分/温度/含量/状态。
+        ///
+        /// blocked 计数只在这里更新，每帧每实体一次；贴图与粒子都吃同一份结果。
+        /// 位置判定写在读取属性之前：blocked 只依赖格位与速度，与视觉枚举无关。
         /// </summary>
-        private bool TryBuildItem(FlowEntity entity, int frame, out FlowDrawItem item)
+        private bool TryReadSnapshot(FlowEntity entity, out EntitySnapshot snapshot)
         {
-            item = default(FlowDrawItem);
+            snapshot = default(EntitySnapshot);
 
             if (entity == null || entity.Properties == null || entity.Position == null)
             {
@@ -382,87 +428,70 @@ namespace ProbablyBagMod.Mod.Flow.View
 
             // Tier-0：成分固定纯水（REFACTOR-A §4）；射程暂无数据源，
             // FlowVisualState.Range 保持 0（预留：字段就绪前不渲染射程点）。
-            FlowComposition composition = FlowComposition.PureWater;
-            FlowTemp temp = FlowTierMap.TempFrom((float)entity.Properties.Temperature);
-            FlowContent content = FlowTierMap.ContentFromMoisture(entity.Properties.Moisture);
-            FlowDir dir = FlowTierMap.DirFrom(direction);
-            FlowState state = FlowTierMap.StateFrom(false, blocked);
-
-            // 只有 flow 有 12 帧动效；blocked/split/merge 都用静态 tile（collect 已不再生成）
-            int visualFrame = state == FlowState.Flow ? frame : NoFrame;
-
-            FlowVisualState visual = new FlowVisualState(
-                composition, temp, content, state, dir, visualFrame);
-
-            item = new FlowDrawItem(
-                positionX, positionY, visual,
-                FlowTierMap.TrailLayersFromContent(content));
+            snapshot = new EntitySnapshot(
+                positionX,
+                positionY,
+                direction,
+                speed,
+                FlowComposition.PureWater,
+                FlowTierMap.TempFrom((float)entity.Properties.Temperature),
+                FlowTierMap.ContentFromMoisture(entity.Properties.Moisture),
+                FlowTierMap.StateFrom(false, blocked));
             return true;
         }
 
-        /// <summary>
-        /// 推进所有粒子场：活着的实体继续按 profile 发射，死亡实体的场只积分不发射，
-        /// 粒子全部死光后把场从淡出队列移除。最后把所有场的粒子拷进复用列表。
-        /// 稳态（实体数、场容量、列表容量稳定后）不产生托管分配。
-        /// </summary>
-        private void UpdateParticles(float deltaTime)
+        /// <summary>把快照翻译成一条绘制指令（纯函数，不查表、不改状态）。</summary>
+        private static FlowDrawItem BuildDrawItem(in EntitySnapshot snapshot, int frame)
         {
-            for (int i = 0; i < _entities.Count; i++)
+            FlowDir dir = FlowTierMap.DirFrom(snapshot.Direction);
+
+            // 只有 flow 有 12 帧动效；blocked/split/merge 都用静态 tile（collect 已不再生成）。
+            int visualFrame = snapshot.State == FlowState.Flow ? frame : NoFrame;
+
+            FlowVisualState visual = new FlowVisualState(
+                snapshot.Composition, snapshot.Temp, snapshot.Content, snapshot.State, dir, visualFrame);
+
+            return new FlowDrawItem(
+                snapshot.X,
+                snapshot.Y,
+                visual,
+                FlowTierMap.TrailLayersFromContent(snapshot.Content));
+        }
+
+        /// <summary>
+        /// 推进一条活着的流源的粒子场：按快照建 profile、积分一帧、按 SpawnRate 补发。
+        ///
+        /// 死亡实体的场不会进这里（它们已在 <see cref="_fading"/> 里），
+        /// 所以「死亡后停止生成」是由调用方（Tick 的单次遍历）保证的，不靠这里的判断。
+        /// </summary>
+        private static void UpdateEmitter(Emitter emitter, in EntitySnapshot snapshot, float deltaTime)
+        {
+            FlowParticleInput input = new FlowParticleInput(
+                snapshot.Composition, snapshot.Temp, snapshot.Content, snapshot.State, (float)snapshot.Speed);
+            FlowParticleProfile profile = FlowParticleRules.Build(in input);
+
+            emitter.Field.Content = snapshot.Content;
+            emitter.Field.Advance(deltaTime);
+
+            // 按 SpawnRate 累加，整数部分才真正生成；不足一颗的余量留到下一帧。
+            // 用累加器而不是每帧四舍五入，低帧率时发射数也不会被截断。
+            emitter.Accum += profile.SpawnRate * deltaTime;
+            while (emitter.Accum >= 1f)
             {
-                FlowEntity entity = _entities[i];
-                if (entity == null || entity.Properties == null || entity.Position == null)
-                {
-                    continue;
-                }
-
-                Emitter emitter;
-                if (!_emitters.TryGetValue(entity, out emitter) || !emitter.Alive)
-                {
-                    continue;
-                }
-
-                EntityState record;
-                if (!_states.TryGetValue(entity, out record))
-                {
-                    continue;
-                }
-
-                int direction = entity.Motion == null ? 1 : entity.Motion.Direction;
-                double speed = entity.Motion == null ? 0d : entity.Motion.Speed;
-                double positionX = entity.Position.X;
-                double positionY = entity.Position.Y;
-
-                // 与 TryBuildItem 走同一套换算：粒子必须跟着本体的温度/含量/状态走。
-                // blocked 的 StillFrames 已经在 TryBuildItem 里更新过，这里直接读结果。
-                FlowComposition composition = FlowComposition.PureWater;
-                FlowTemp temp = FlowTierMap.TempFrom((float)entity.Properties.Temperature);
-                FlowContent content = FlowTierMap.ContentFromMoisture(entity.Properties.Moisture);
-                FlowState state = FlowTierMap.StateFrom(
-                    false, record.StillFrames >= BlockedStillFrames);
-
-                FlowParticleInput input = new FlowParticleInput(
-                    composition, temp, content, state, (float)speed);
-                FlowParticleProfile profile = FlowParticleRules.Build(in input);
-
-                emitter.Field.Content = content;
-                emitter.Field.Advance(deltaTime);
-
-                // 按 SpawnRate 累加，整数部分才真正生成；不足一颗的余量留到下一帧。
-                // 用累加器而不是每帧四舍五入，低帧率时发射数也不会被截断。
-                emitter.Accum += profile.SpawnRate * deltaTime;
-                while (emitter.Accum >= 1f)
-                {
-                    emitter.Accum -= 1f;
-                    emitter.Field.Spawn(
-                        profile,
-                        positionX,
-                        positionY,
-                        direction,
-                        FlowParticleRules.ColorFor(in input));
-                }
+                emitter.Accum -= 1f;
+                emitter.Field.Spawn(
+                    profile,
+                    snapshot.X,
+                    snapshot.Y,
+                    snapshot.Direction,
+                    FlowParticleRules.ColorFor(in input));
             }
+        }
 
-            // 倒序遍历：RemoveAt 只会挪动后面的元素，不会跳过尚未检查的场
+        /// <summary>死亡实体的场：只积分到粒子清空，清空后从淡出队列移除。</summary>
+        private void AdvanceFading(float deltaTime)
+        {
+            // 倒序遍历：RemoveAt 只会挪动后面的元素，不会跳过尚未检查的场。
             for (int i = _fading.Count - 1; i >= 0; i--)
             {
                 Emitter emitter = _fading[i];
@@ -472,7 +501,11 @@ namespace ProbablyBagMod.Mod.Flow.View
                     _fading.RemoveAt(i);
                 }
             }
+        }
 
+        /// <summary>把所有活场与淡出场里的粒子拷进本帧复用列表。</summary>
+        private void CollectDots()
+        {
             _dots.Clear();
             foreach (Emitter emitter in _emitters.Values)
             {
