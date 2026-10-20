@@ -1,0 +1,22 @@
+{
+  "1": {
+    "answer": "up",
+    "meta": "water/large/normal/flow/up",
+    "path": "../tiles/dir-up.png"
+  },
+  "2": {
+    "answer": "down",
+    "meta": "water/large/normal/flow/down",
+    "path": "../tiles/dir-down.png"
+  },
+  "3": {
+    "answer": "right",
+    "meta": "water/large/normal/flow/right",
+    "path": "../tiles/dir-right.png"
+  },
+  "4": {
+    "answer": "left",
+    "meta": "water/large/normal/flow/left",
+    "path": "../tiles/dir-left.png"
+  }
+}

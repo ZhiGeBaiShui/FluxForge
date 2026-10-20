@@ -1,0 +1,22 @@
+{
+  "1": {
+    "answer": "left",
+    "meta": null,
+    "path": "E:\\code\\ProbablyBagMod\\docs\\flow-visual\\round2\\w4\\tiles\\dir-left.png"
+  },
+  "2": {
+    "answer": "right",
+    "meta": null,
+    "path": "E:\\code\\ProbablyBagMod\\docs\\flow-visual\\round2\\w4\\tiles\\dir-right.png"
+  },
+  "3": {
+    "answer": "up",
+    "meta": null,
+    "path": "E:\\code\\ProbablyBagMod\\docs\\flow-visual\\round2\\w4\\tiles\\dir-up.png"
+  },
+  "4": {
+    "answer": "down",
+    "meta": null,
+    "path": "E:\\code\\ProbablyBagMod\\docs\\flow-visual\\round2\\w4\\tiles\\dir-down.png"
+  }
+}

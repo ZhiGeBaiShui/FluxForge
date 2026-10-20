@@ -1,0 +1,22 @@
+{
+  "1": {
+    "answer": "left",
+    "meta": "{\"direction\": \"left\"}",
+    "path": "docs/flow-visual/round2/blind-b/dir-left.png"
+  },
+  "2": {
+    "answer": "right",
+    "meta": "{\"direction\": \"right\"}",
+    "path": "docs/flow-visual/round2/blind-b/dir-right.png"
+  },
+  "3": {
+    "answer": "up",
+    "meta": "{\"direction\": \"up\"}",
+    "path": "docs/flow-visual/round2/blind-b/dir-up.png"
+  },
+  "4": {
+    "answer": "down",
+    "meta": "{\"direction\": \"down\"}",
+    "path": "docs/flow-visual/round2/blind-b/dir-down.png"
+  }
+}

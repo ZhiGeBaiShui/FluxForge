@@ -1,0 +1,17 @@
+{
+  "1": {
+    "answer": "1",
+    "meta": "water/large/normal/flow/right/range1",
+    "path": "../tiles/range-1.png"
+  },
+  "2": {
+    "answer": "3",
+    "meta": "water/large/normal/flow/right/range3",
+    "path": "../tiles/range-3.png"
+  },
+  "3": {
+    "answer": "2",
+    "meta": "water/large/normal/flow/right/range2",
+    "path": "../tiles/range-2.png"
+  }
+}

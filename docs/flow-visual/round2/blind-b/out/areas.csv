@@ -1,0 +1,23 @@
+answer,meta,file,area,x0,y0,x1,y1
+water,"{""comp"": ""water""}",comp-water.png,58,3,4,12,11
+poison,"{""comp"": ""poison""}",comp-poison.png,58,3,4,12,11
+oil,"{""comp"": ""oil""}",comp-oil.png,58,3,4,12,11
+blood,"{""comp"": ""blood""}",comp-blood.png,58,3,4,12,11
+acid,"{""comp"": ""acid""}",comp-acid.png,58,3,4,12,11
+energy,"{""comp"": ""energy""}",comp-energy.png,58,3,4,12,11
+cold,"{""temp"": ""cold""}",temp-cold.png,58,3,4,12,11
+ambient,"{""temp"": ""ambient""}",temp-ambient.png,58,3,4,12,11
+hot,"{""temp"": ""hot""}",temp-hot.png,54,3,4,12,11
+empty,"{""tier"": ""empty""}",content-empty.png,6,5,10,10,10
+small,"{""tier"": ""small""}",content-small.png,27,5,5,10,10
+mid,"{""tier"": ""mid""}",content-mid.png,35,4,5,11,10
+large,"{""tier"": ""large""}",content-large.png,58,3,4,12,11
+up,"{""direction"": ""up""}",dir-up.png,58,4,3,11,12
+right,"{""direction"": ""right""}",dir-right.png,58,3,4,12,11
+down,"{""direction"": ""down""}",dir-down.png,58,4,3,11,12
+left,"{""direction"": ""left""}",dir-left.png,58,3,4,12,11
+flow,"{""state"": ""flow""}",state-flow.png,58,3,4,12,11
+blocked,"{""state"": ""blocked""}",state-blocked.png,43,4,5,11,10
+split,"{""state"": ""split""}",state-split.png,49,3,4,12,11
+merge,"{""state"": ""merge""}",state-merge.png,55,3,4,12,11
+collect,"{""state"": ""collect""}",state-collect.png,54,3,4,14,11

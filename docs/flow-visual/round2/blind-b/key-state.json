@@ -1,0 +1,27 @@
+{
+  "1": {
+    "answer": "collect",
+    "meta": "{\"state\": \"collect\"}",
+    "path": "docs/flow-visual/round2/blind-b/state-collect.png"
+  },
+  "2": {
+    "answer": "flow",
+    "meta": "{\"state\": \"flow\"}",
+    "path": "docs/flow-visual/round2/blind-b/state-flow.png"
+  },
+  "3": {
+    "answer": "merge",
+    "meta": "{\"state\": \"merge\"}",
+    "path": "docs/flow-visual/round2/blind-b/state-merge.png"
+  },
+  "4": {
+    "answer": "blocked",
+    "meta": "{\"state\": \"blocked\"}",
+    "path": "docs/flow-visual/round2/blind-b/state-blocked.png"
+  },
+  "5": {
+    "answer": "split",
+    "meta": "{\"state\": \"split\"}",
+    "path": "docs/flow-visual/round2/blind-b/state-split.png"
+  }
+}

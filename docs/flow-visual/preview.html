@@ -1,0 +1,633 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>流源视觉 — 交互预览（壳）</title>
+<style>
+  :root{
+    --bg:#12100F; --panel:#1B1816; --panel2:#241F1C; --line:#3A322D;
+    --text:#EADFD4; --dim:#95857A; --accent:#2FE0C8;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);
+    font-family:"Microsoft YaHei","PingFang SC",-apple-system,Segoe UI,sans-serif;font-size:13px;line-height:1.6}
+  .wrap{max-width:1180px;margin:0 auto;padding:24px 20px 40px}
+  h1{font-size:17px;margin:0 0 2px;font-weight:600}
+  .sub{color:var(--dim);font-size:12px;margin-bottom:16px}
+  .layout{display:grid;grid-template-columns:1fr 300px;gap:16px;align-items:start}
+  @media(max-width:940px){.layout{grid-template-columns:1fr}}
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:7px;padding:12px}
+  .stageWrap{position:relative}
+  canvas.stage{display:block;width:100%;height:auto;image-rendering:pixelated;
+    background:#191514;border-radius:5px;cursor:crosshair}
+  .hud{display:flex;gap:14px;color:var(--dim);font-size:11.5px;margin-top:8px;flex-wrap:wrap}
+  .hud b{color:var(--text);font-weight:500}
+  .row{margin-bottom:10px}
+  .row:last-child{margin-bottom:0}
+  .lbl{display:flex;justify-content:space-between;font-size:11px;color:var(--dim);margin-bottom:5px}
+  .lbl b{color:var(--text);font-weight:500}
+  .btns{display:flex;flex-wrap:wrap;gap:5px}
+  .btns.three .btn{flex:1}
+  .btns.four .btn{flex:1}
+  .btn{background:var(--panel2);border:1px solid var(--line);color:var(--dim);padding:5px 8px;
+    border-radius:4px;font-size:11.5px;cursor:pointer;font-family:inherit;transition:.12s;
+    display:flex;align-items:center;gap:5px;justify-content:center}
+  .btn:hover{border-color:#5C4E48;color:var(--text)}
+  .btn.on{background:#2B2523;border-color:var(--sw,var(--accent));color:var(--text)}
+  .sw{width:8px;height:8px;border-radius:2px;flex:none}
+  .divider{height:1px;background:var(--line);margin:10px 0}
+  .note{color:var(--dim);font-size:11px;margin-top:10px;line-height:1.75}
+  .note b{color:#C9B9AC;font-weight:500}
+  .inspector{display:flex;gap:16px;margin-top:12px;align-items:flex-start}
+  .inspector > div{flex:none}
+  .inspector canvas{width:192px;height:192px;image-rendering:pixelated;background:#191514;
+    border:1px solid var(--line);border-radius:5px;display:block}
+  .cap{font-size:10.5px;color:var(--dim);margin-top:3px}
+  .toggle{display:flex;align-items:center;gap:7px;color:var(--dim);font-size:11.5px;cursor:pointer;user-select:none}
+  .toggle input{accent-color:#2FE0C8}
+  .legend{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px;font-size:10.5px;color:var(--dim)}
+  .legend span{display:flex;align-items:center;gap:4px}
+  .legend i{width:8px;height:8px;border-radius:2px;display:inline-block}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>流源视觉 · 交互预览</h1>
+  <div class="sub">16px 格 · 4× 放大 · 像素对齐 · 终稿图集（与 <code>final/png</code> 同源）</div>
+
+  <div class="layout">
+    <div>
+      <div class="panel stageWrap">
+        <canvas id="stage" class="stage" width="224" height="112"></canvas>
+        <div class="hud">
+          <span>格 <b id="hudCell">—</b></span>
+          <span>方向 <b id="hudDir">—</b></span>
+          <span>速度 <b id="hudSpeed">—</b></span>
+          <span>状态 <b id="hudState">—</b></span>
+          <span>帧 <b id="hudFrame">—</b></span>
+        </div>
+      </div>
+
+      <div class="panel" style="margin-top:12px">
+        <div class="inspector">
+          <div>
+            <canvas id="inspect" width="16" height="16" style="image-rendering:pixelated"></canvas>
+            <div class="cap">当前格 16×16（12× 最近邻）</div>
+          </div>
+          <div>
+            <canvas id="inspectGrid" width="16" height="16" style="image-rendering:pixelated"></canvas>
+            <div class="cap">像素网格叠层（调试）</div>
+          </div>
+        </div>
+        <div style="margin-top:10px">
+          <canvas id="matrix" width="288" height="144" style="width:288px;height:144px;image-rendering:pixelated;background:#191514;border:1px solid var(--line);border-radius:5px"></canvas>
+          <div class="cap">成分 × 温度（行=冷/常温/热，列=6 成分；点击选择）</div>
+        </div>
+        <div style="margin-top:10px">
+          <canvas id="states" width="240" height="48" style="width:240px;height:48px;image-rendering:pixelated;background:#191514;border:1px solid var(--line);border-radius:5px"></canvas>
+          <div class="cap">状态：流动 / 受阻 / 分流 / 汇聚 / 被收集（点击选择）</div>
+        </div>
+      </div>
+
+      <div class="legend" id="legend"></div>
+    </div>
+
+    <div>
+      <div class="panel">
+        <div class="row">
+          <div class="lbl"><span>成分</span><b id="vAttr">水</b></div>
+          <div class="btns" id="attrBtns"></div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="row">
+          <div class="lbl"><span>温度</span><b id="vTemp">常温</b></div>
+          <div class="btns three" id="tempBtns">
+            <button class="btn" data-v="cold">冷</button>
+            <button class="btn on" data-v="normal">常温</button>
+            <button class="btn" data-v="hot">热</button>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="lbl"><span>含量</span><b id="vAmt">多</b></div>
+          <div class="btns four" id="amtBtns">
+            <button class="btn" data-v="empty">空</button>
+            <button class="btn" data-v="low">少</button>
+            <button class="btn" data-v="mid">中</button>
+            <button class="btn on" data-v="high">多</button>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="lbl"><span>射程</span><b id="vRange">3 格</b></div>
+          <div class="btns three" id="rangeBtns">
+            <button class="btn" data-v="1">1</button>
+            <button class="btn" data-v="2">2</button>
+            <button class="btn on" data-v="3">3</button>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="lbl"><span>状态</span><b id="vState">流动</b></div>
+          <div class="btns" id="stateBtns">
+            <button class="btn on" data-v="flow">流动</button>
+            <button class="btn" data-v="blocked">受阻</button>
+            <button class="btn" data-v="split">分流</button>
+            <button class="btn" data-v="merge">汇聚</button>
+            <button class="btn" data-v="collect">收集</button>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="row">
+          <div class="lbl"><span>方向</span><b id="vDir">自动</b></div>
+          <div class="btns four" id="dirBtns">
+            <button class="btn on" data-v="auto">自动</button>
+            <button class="btn" data-v="up">上</button>
+            <button class="btn" data-v="right">右</button>
+            <button class="btn" data-v="down">下</button>
+          </div>
+        </div>
+
+        <div class="row">
+          <label class="toggle"><input id="play" type="checkbox" checked> 播放</label>
+          <label class="toggle" style="margin-top:6px"><input id="showIcons" type="checkbox" checked> 显示物品图标占位</label>
+          <label class="toggle" style="margin-top:6px"><input id="showPixelGrid" type="checkbox"> 显示像素网格</label>
+        </div>
+
+        <div class="note">
+          空格暂停/播放 · ←/→ 单帧步进 · 点击舞台放置一条流源<br>
+          <b>终稿</b>：图集由 <code>final/render_final.py</code> 烘出，含 12 帧动效；底部三点 = 射程。
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="final/atlas_preview.js"></script>
+<script src="final/atlas_frames.js"></script>
+<script>
+(function () {
+  "use strict";
+
+  window.onerror = function (msg, src, line, col) {
+    var el = document.getElementById("err");
+    if (!el) {
+      el = document.createElement("pre");
+      el.id = "err";
+      document.body.appendChild(el);
+    }
+    el.style.cssText = "position:fixed;left:0;top:0;z-index:99;background:#3a0d0d;color:#fff;padding:10px;" +
+      "font:12px monospace;white-space:pre-wrap;max-width:100%;";
+    el.textContent = "JS ERROR: " + msg + "  @" + line + ":" + col;
+  };
+
+  // ── 基础常量 ─────────────────────────────────────────────
+  var CELL = 16, COLS = 14, ROWS = 7, ZOOM = 4;
+  var ATTRS = {
+    water:  { name: "水",   hex: "#2FE0C8" },
+    poison: { name: "毒",   hex: "#B47CFF" },
+    oil:    { name: "油",   hex: "#F0B429" },
+    blood:  { name: "血",   hex: "#E8434F" },
+    acid:   { name: "酸",   hex: "#7FC22A" },
+    energy: { name: "能量", hex: "#EAF4FF" }
+  };
+  var OUTLINE = "#241E2E";
+  var state = {
+    attr: "water", temp: "normal", amt: "large", range: 3, st: "flow",
+    dir: "auto", playing: true, icons: true, pixelGrid: false
+  };
+
+  // ── 小工具 ───────────────────────────────────────────────
+  function rgb(hex) { return [parseInt(hex.slice(1,3),16), parseInt(hex.slice(3,5),16), parseInt(hex.slice(5,7),16)]; }
+  function mix(a,b,t){ return [0,1,2].map(function(i){ var v=a[i]+(b[i]-a[i])*t; return v<0?0:(v>255?255:v|0); }); }
+  function css(c,a){ return "rgba("+c[0]+","+c[1]+","+c[2]+","+(a===undefined?1:a)+")"; }
+  function shade(c,t){ return mix(c,[20,16,22],t); }
+  function light(c,t){ return mix(c,[255,255,255],t); }
+
+  // ── 舞台与网格 ───────────────────────────────────────────
+  var stage = document.getElementById("stage");
+  var g = stage.getContext("2d");
+  g.imageSmoothingEnabled = false;
+
+  var off = document.createElement("canvas");
+  off.width = COLS*CELL; off.height = ROWS*CELL;
+  var og = off.getContext("2d");
+
+  // ── 物品图标占位（12×12 的三种简单图标）──────────────────
+  var ICONS = [
+    { x: 2,  y: 2, kind: "bottle" },
+    { x: 6,  y: 1, kind: "gear" },
+    { x: 9,  y: 4, kind: "cell" },
+    { x: 4,  y: 5, kind: "bottle" }
+  ];
+  function drawIcon(c, cellX, cellY, kind) {
+    var x = cellX*CELL + 2, y = cellY*CELL + 2;
+    c.fillStyle = "#3A322D"; c.fillRect(x, y, 12, 12);
+    if (kind === "bottle") {
+      c.fillStyle = "#8A7F72"; c.fillRect(x+4, y+1, 4, 2);
+      c.fillStyle = "#6E8B7A"; c.fillRect(x+3, y+3, 6, 8);
+      c.fillStyle = "#A9C3B2"; c.fillRect(x+4, y+4, 2, 6);
+    } else if (kind === "gear") {
+      c.fillStyle = "#7A6E63"; c.fillRect(x+2, y+2, 8, 8);
+      c.fillStyle = "#3A322D"; c.fillRect(x+4, y+4, 4, 4);
+      c.fillStyle = "#9A8D80"; c.fillRect(x+5, y+5, 2, 2);
+    } else {
+      c.fillStyle = "#5D6B7A"; c.fillRect(x+3, y+2, 6, 8);
+      c.fillStyle = "#8FA3B8"; c.fillRect(x+4, y+3, 2, 6);
+      c.fillStyle = "#EAF4FF"; c.fillRect(x+7, y+4, 1, 1);
+    }
+  }
+
+  // ── 占位：液滴绘制（等 W1/W2 替换）──────────────────────
+  // 传入格内像素坐标（0..15），先画 1px 描边，再画主体、 高光、温度、含量、射程。
+  function drawFlowPixels(c, ox, oy, st, t, dirX, dirY) {
+    var base = rgb(ATTRS[st.attr].hex);
+    var body = base, edge = rgb(OUTLINE), hi = light(base, 0.55);
+
+    // 12×9 包围盒，中心 (ox+8, oy+8)
+    var w = 12, h = 9;
+    if (st.amt === "low")  { w = 7;  h = 5; }
+    if (st.amt === "high") { w = 13; h = 10; }
+    if (st.amt === "empty"){ w = 8;  h = 1; }
+
+    var x0 = ox + 8 - (w>>1), y0 = oy + 8 - (h>>1);
+    var bob = Math.round(Math.sin(t*8) * 0.6);
+
+    // 描边（外框）
+    c.fillStyle = css(edge, 1);
+    c.fillRect(x0-1, y0+bob, w+2, 1);
+    c.fillRect(x0-1, y0+h-1+bob, w+2, 1);
+    c.fillRect(x0-1, y0+bob, 1, h);
+    c.fillRect(x0+w, y0+bob, 1, h);
+
+    // 主体
+    c.fillStyle = css(body, 1);
+    c.fillRect(x0, y0+1+bob, w, h-2);
+
+    // 体积分界（含量）
+    var fill = st.amt === "low" ? 1 : (st.amt === "mid" ? 2 : 3);
+    c.fillStyle = css(light(base, 0.25), 1);
+    c.fillRect(x0+1, y0+h-1-fill*2+bob, w-2, 1);
+
+    // 高光
+    c.fillStyle = css(hi, 0.9);
+    c.fillRect(x0+2, y0+2+bob, 2, 1);
+
+    // 温度
+    if (st.temp === "cold") {
+      c.fillStyle = "#D6ECFF";
+      c.fillRect(x0, y0+bob-1, 1, 1);
+      c.fillRect(x0+w-1, y0+h+bob, 1, 1);
+    } else if (st.temp === "hot") {
+      c.fillStyle = "#FF9A4D";
+      c.fillRect(x0+2, y0+bob-2, 1, 1);
+      c.fillRect(x0+w-3, y0+bob-3, 1, 1);
+    }
+
+    // 射程（尾部 3 段）
+    var lit = st.range|0;
+    for (var k=0; k<3; k++) {
+      c.fillStyle = k < lit ? css(light(base,0.6), 1) : css(shade(base,0.55), 1);
+      c.fillRect(x0 - 2 - k, y0 + (h>>1) + bob, 1, 1);
+    }
+
+    // 方向头（简单 2×2 鼻）
+    c.fillStyle = css(light(base, 0.3), 1);
+    if (dirX > 0) c.fillRect(x0+w, y0+(h>>1)-1+bob, 2, 2);
+    if (dirX < 0) c.fillRect(x0-2, y0+(h>>1)-1+bob, 2, 2);
+    if (dirY > 0) c.fillRect(x0+(w>>1)-1, y0+h+bob, 2, 2);
+    if (dirY < 0) c.fillRect(x0+(w>>1)-1, y0-2+bob, 2, 2);
+  }
+
+  // ── 网格背景 ─────────────────────────────────────────────
+  function drawGridBg(c) {
+    c.fillStyle = "#191514"; c.fillRect(0,0,off.width,off.height);
+    for (var r=0; r<ROWS; r++) for (var q=0; q<COLS; q++) {
+      c.fillStyle = ((r+q)&1) ? "#1E1917" : "#1B1715";
+      c.fillRect(q*CELL, r*CELL, CELL, CELL);
+    }
+    c.fillStyle = "#2E2724";
+    for (var i=0;i<=COLS;i++) c.fillRect(i*CELL,0,1,ROWS*CELL);
+    for (var j=0;j<=ROWS;j++) c.fillRect(0,j*CELL,COLS*CELL,1);
+  }
+
+  // ── 运动模型（壳）：沿 L 型路径逐格移动 ─────────────────
+  var PATH = [{x:1,y:3},{x:11,y:3},{x:11,y:5}];
+  function pathPoints() {
+    var pts = [];
+    for (var i=0;i<PATH.length-1;i++) {
+      var a=PATH[i], b=PATH[i+1];
+      var sx=Math.sign(b.x-a.x), sy=Math.sign(b.y-a.y);
+      var n=Math.abs(b.x-a.x)+Math.abs(b.y-a.y);
+      for (var s=0;s<n;s++) pts.push({x:a.x+sx*s, y:a.y+sy*s, sx:sx, sy:sy});
+    }
+    pts.push({x:PATH[PATH.length-1].x, y:PATH[PATH.length-1].y, sx:pts[pts.length-1].sx, sy:pts[pts.length-1].sy});
+    return pts;
+  }
+  var PTS = pathPoints();
+  var speed = 1.6; // 格/秒
+  var dist = 0;     // 沿路径的连续距离（格）
+  var sinceEnter = 99;
+
+  // 连续位置：格坐标 + 段内插值；渲染时取整到格内像素，保持像素对齐
+  var flow = { x: PTS[0].x, y: PTS[0].y, cellX: PTS[0].x, cellY: PTS[0].y,
+               dirX: PTS[0].sx, dirY: PTS[0].sy, n: 0, prevCell: -1 };
+
+  function advance(dt) {
+    if (state.st === "blocked") { sinceEnter += dt; return; }
+    dist += dt * speed;
+    if (dist >= PTS.length - 1) { dist = 0; }
+    var i = Math.floor(dist);
+    var f = dist - i;
+    var a = PTS[i], b = PTS[Math.min(i + 1, PTS.length - 1)];
+    flow.x = a.x + (b.x - a.x) * f;
+    flow.y = a.y + (b.y - a.y) * f;
+    flow.dirX = a.sx; flow.dirY = a.sy;
+    flow.cellX = Math.round(flow.x);
+    flow.cellY = Math.round(flow.y);
+    if (i !== flow.prevCell) { flow.prevCell = i; sinceEnter = 0; flow.n++; }
+    else { sinceEnter += dt; }
+  }
+
+  // ── 图集优先：final/atlas_preview.png + .js 存在时，直接画最终 tile ──
+  var atlasImg = new Image();
+  var atlasReady = false;
+  atlasImg.onload = function () { atlasReady = true; drawMatrix(); drawStates(); };
+  atlasImg.src = "final/atlas_preview.png";
+
+  var framesImg = new Image();
+  var framesReady = false;
+  framesImg.onload = function () { framesReady = true; };
+  framesImg.src = "final/atlas_frames.png";
+
+  function drawPips(g, px, py, st) {
+    var base = rgb(ATTRS[st.attr].hex);
+    var lit = st.range | 0;
+    for (var k = 0; k < 3; k++) {
+      var on = k < lit;
+      var c = on ? mix(base, [255, 255, 255], 0.75) : mix(base, [20, 16, 14], 0.75);
+      g.fillStyle = css(c, on ? 1 : 0.8);
+      g.fillRect(px + 4 + k * 2, py + 14, 1, 1);
+    }
+  }
+
+  function drawMatrix() {
+    if (!atlasReady || !window.FLOW_ATLAS) { return; }
+    var cv = document.getElementById("matrix");
+    if (!cv) { return; }
+    var m = cv.getContext("2d");
+    m.imageSmoothingEnabled = false;
+    m.fillStyle = "#191514"; m.fillRect(0, 0, 288, 144);
+    var comps = ["water", "poison", "oil", "blood", "acid", "energy"];
+    var temps = ["cold", "normal", "hot"];
+    for (var r = 0; r < 3; r++) {
+      for (var c = 0; c < 6; c++) {
+        var k = [comps[c], temps[r], "large", "flow", "right"].join("|");
+        var rr = window.FLOW_ATLAS[k];
+        if (rr) { m.drawImage(atlasImg, rr[0], rr[1], 16, 16, c * 48, r * 48, 48, 48); }
+      }
+    }
+  }
+
+  function drawStates() {
+    if (!atlasReady || !window.FLOW_ATLAS) { return; }
+    var cv = document.getElementById("states");
+    if (!cv) { return; }
+    var m = cv.getContext("2d");
+    m.imageSmoothingEnabled = false;
+    m.fillStyle = "#191514"; m.fillRect(0, 0, 240, 48);
+    var states = ["flow", "blocked", "split", "merge", "collect"];
+    var tierMap = { empty: "empty", low: "small", mid: "mid", high: "large" };
+    var tier = tierMap[state.amt] || "large";
+    for (var i = 0; i < 5; i++) {
+      var k = [state.attr, state.temp, tier, states[i], "right"].join("|");
+      var rr = window.FLOW_ATLAS[k];
+      if (rr) { m.drawImage(atlasImg, rr[0], rr[1], 16, 16, i * 48, 0, 48, 48); }
+    }
+  }
+
+  function tryDrawAtlas(g, px, py, st, dx, dy) {
+    if (!atlasReady || !window.FLOW_ATLAS) { return false; }
+    var dir = dx > 0 ? "right" : (dx < 0 ? "left" : (dy > 0 ? "down" : "up"));
+    var tierMap = { empty: "empty", low: "small", mid: "mid", high: "large" };
+    var tier = tierMap[st.amt] || st.amt;
+    var tiers = [tier, "large"];
+    var temps = [st.temp, "normal"];
+    var states = [st.st, "flow"];
+
+    // 流动态优先用 12 帧图集（真动画）
+    if (st.st === "flow" && framesReady && window.FLOW_FRAMES) {
+      var f = Math.floor(clock * 12) % 12;
+      for (var a = 0; a < tiers.length; a++) {
+        for (var b = 0; b < temps.length; b++) {
+          var fk = [st.attr, temps[b], tiers[a], "flow", dir, f].join("|");
+          var fr = window.FLOW_FRAMES[fk];
+          if (fr) {
+            g.drawImage(framesImg, fr[0], fr[1], 16, 16, px, py, 16, 16);
+            drawPips(g, px, py, st);
+            return true;
+          }
+        }
+      }
+    }
+
+    var cands = [];
+    for (var i = 0; i < tiers.length; i++) {
+      for (var j = 0; j < temps.length; j++) {
+        for (var k = 0; k < states.length; k++) {
+          cands.push([st.attr, temps[j], tiers[i], states[k], dir].join("|"));
+        }
+      }
+    }
+    for (var n = 0; n < cands.length; n++) {
+      var r = window.FLOW_ATLAS[cands[n]];
+      if (r) {
+        g.drawImage(atlasImg, r[0], r[1], 16, 16, px, py, 16, 16);
+        drawPips(g, px, py, st);
+        return true;
+      }
+    }
+    return false;
+  }
+
+  // ── 主循环 ───────────────────────────────────────────────
+  var last = performance.now(), clock = 0, frameNo = 0;
+
+  function render(now) {
+    var dt = Math.min((now-last)/1000, 0.05); last = now;
+    if (state.playing) { clock += dt; advance(dt); }
+    frameNo = Math.floor(clock * 12);
+
+    drawGridBg(og);
+    if (state.icons) {
+      for (var i=0;i<ICONS.length;i++) drawIcon(og, ICONS[i].x, ICONS[i].y, ICONS[i].kind);
+    }
+
+    // 方向覆盖
+    var dx = flow.dirX, dy = flow.dirY;
+    if (state.dir !== "auto") {
+      dx = state.dir === "right" ? 1 : (state.dir === "left" ? -1 : 0);
+      dy = state.dir === "down" ? 1 : (state.dir === "up" ? -1 : 0);
+    }
+
+    // 经过格子的 2 帧反馈（1px 边框，alpha 0.35 → 0.17 → 0）
+    if (sinceEnter < 0.166) {
+      var fa = sinceEnter < 0.083 ? 0.35 : 0.17;
+      var bc = rgb(ATTRS[state.attr].hex);
+      og.fillStyle = css(mix(bc, [255,255,255], 0.35), fa);
+      var cx0 = flow.cellX * CELL, cy0 = flow.cellY * CELL;
+      og.fillRect(cx0, cy0, CELL, 1);
+      og.fillRect(cx0, cy0 + CELL - 1, CELL, 1);
+      og.fillRect(cx0, cy0, 1, CELL);
+      og.fillRect(cx0 + CELL - 1, cy0, 1, CELL);
+    }
+
+    // 逐格抖动/受阻
+    var jx = 0, jy = 0;
+    if (state.st === "blocked") { jx = Math.round(Math.sin(clock*40)*1); }
+
+    var px = Math.round(flow.x * CELL) + jx;
+    var py = Math.round(flow.y * CELL) + jy;
+    if (!tryDrawAtlas(og, px, py, state, dx, dy)) {
+      drawFlowPixels(og, px, py, state, clock, dx, dy);
+    }
+
+    // 像素网格调试
+    if (state.pixelGrid) {
+      og.fillStyle = "rgba(255,255,255,0.06)";
+      for (var v=0; v<COLS*CELL; v++) og.fillRect(v,0,1,ROWS*CELL);
+      for (var u=0; u<ROWS*CELL; u++) og.fillRect(0,u,COLS*CELL,1);
+    }
+
+    g.clearRect(0,0,stage.width,stage.height);
+    g.drawImage(off,0,0, stage.width, stage.height);
+
+    // 检查器：当前格 + 像素网格
+    var insp = document.getElementById("inspect").getContext("2d");
+    insp.imageSmoothingEnabled = false;
+    insp.clearRect(0,0,16,16);
+    insp.drawImage(off, flow.cellX*CELL, flow.cellY*CELL, 16, 16, 0, 0, 16, 16);
+
+    var grid = document.getElementById("inspectGrid").getContext("2d");
+    grid.imageSmoothingEnabled = false;
+    grid.clearRect(0,0,16,16);
+    grid.drawImage(off, flow.cellX*CELL, flow.cellY*CELL, 16, 16, 0, 0, 16, 16);
+    grid.fillStyle = "rgba(255,255,255,0.10)";
+    for (var k=0;k<=16;k++){ grid.fillRect(k,0,1,16); grid.fillRect(0,k,16,1); }
+
+    // HUD
+    document.getElementById("hudCell").textContent = flow.cellX + "," + flow.cellY;
+    document.getElementById("hudDir").textContent = (dx>0?"右":dx<0?"左":dy>0?"下":"上");
+    document.getElementById("hudSpeed").textContent = state.st === "blocked" ? "0（受阻）" : speed.toFixed(1) + " 格/秒";
+    document.getElementById("hudState").textContent = stateName(state.st);
+    document.getElementById("hudFrame").textContent = (frameNo % 12) + " / 12";
+
+    drawStates();
+
+    requestAnimationFrame(render);
+  }
+
+  function stateName(s) {
+    return { flow:"流动", blocked:"受阻", split:"分流", merge:"汇聚", collect:"被收集" }[s] || s;
+  }
+
+  // ── 控件绑定 ─────────────────────────────────────────────
+  var attrBtns = document.getElementById("attrBtns");
+  Object.keys(ATTRS).forEach(function (k) {
+    var b = document.createElement("button");
+    b.className = "btn" + (k === state.attr ? " on" : "");
+    b.dataset.k = k; b.style.setProperty("--sw", ATTRS[k].hex);
+    b.innerHTML = '<span class="sw" style="background:'+ATTRS[k].hex+'"></span>' + ATTRS[k].name;
+    b.onclick = function () {
+      state.attr = k;
+      document.getElementById("vAttr").textContent = ATTRS[k].name;
+      [].forEach.call(attrBtns.children, function (x) { x.classList.toggle("on", x.dataset.k === k); });
+    };
+    attrBtns.appendChild(b);
+  });
+
+  function bindGroup(id, key, labels, out, cast) {
+    var box = document.getElementById(id);
+    [].forEach.call(box.children, function (b) {
+      b.onclick = function () {
+        state[key] = cast ? cast(b.dataset.v) : b.dataset.v;
+        [].forEach.call(box.children, function (x) { x.classList.toggle("on", x === b); });
+        if (out) document.getElementById(out).textContent = labels[b.dataset.v] || b.dataset.v;
+      };
+    });
+  }
+  bindGroup("tempBtns", "temp", { cold:"冷", normal:"常温", hot:"热" }, "vTemp");
+  bindGroup("amtBtns", "amt", { empty:"空", low:"少", mid:"中", high:"多" }, "vAmt");
+  bindGroup("rangeBtns", "range", { "1":"1 格", "2":"2 格", "3":"3 格" }, "vRange", Number);
+  bindGroup("stateBtns", "st", { flow:"流动", blocked:"受阻", split:"分流", merge:"汇聚", collect:"被收集" }, "vState");
+  bindGroup("dirBtns", "dir", { auto:"自动", up:"上", right:"右", down:"下" }, "vDir");
+
+  // 键盘
+  window.addEventListener("keydown", function (e) {
+    if (e.code === "Space") {
+      e.preventDefault();
+      state.playing = !state.playing;
+      document.getElementById("play").checked = state.playing;
+    }
+    if (e.code === "ArrowRight" && !state.playing) { clock += 1/12; }
+    if (e.code === "ArrowLeft"  && !state.playing) { clock = Math.max(0, clock - 1/12); }
+  });
+
+  document.getElementById("play").onchange = function (e) { state.playing = e.target.checked; };
+  document.getElementById("showIcons").onchange = function (e) { state.icons = e.target.checked; };
+  document.getElementById("showPixelGrid").onchange = function (e) { state.pixelGrid = e.target.checked; };
+
+  stage.addEventListener("click", function (e) {
+    var r = stage.getBoundingClientRect();
+    var cx = Math.floor((e.clientX - r.left) / r.width * COLS);
+    var cy = Math.floor((e.clientY - r.top) / r.height * ROWS);
+    PATH = [{x:1,y:cy},{x:cx,y:cy},{x:cx,y:ROWS-2}];
+    PTS = pathPoints(); dist = 0; flow.prevCell = -1; sinceEnter = 99;
+  });
+
+  document.getElementById("matrix").addEventListener("click", function (e) {    var r = this.getBoundingClientRect();
+    var c = Math.max(0, Math.min(5, Math.floor((e.clientX - r.left) / r.width * 6)));
+    var row = Math.max(0, Math.min(2, Math.floor((e.clientY - r.top) / r.height * 3)));
+    var comps = ["water", "poison", "oil", "blood", "acid", "energy"];
+    var temps = ["cold", "normal", "hot"];
+    state.attr = comps[c];
+    state.temp = temps[row];
+    document.getElementById("vAttr").textContent = ATTRS[state.attr].name;
+    document.getElementById("vTemp").textContent = ({ cold: "冷", normal: "常温", hot: "热" })[state.temp];
+    [].forEach.call(document.querySelectorAll("#attrBtns .btn"), function (b) {
+      b.classList.toggle("on", b.dataset.k === state.attr);
+    });
+    [].forEach.call(document.querySelectorAll("#tempBtns .btn"), function (b) {
+      b.classList.toggle("on", b.dataset.v === state.temp);
+    });
+  });
+
+  document.getElementById("states").addEventListener("click", function (e) {
+    var r = this.getBoundingClientRect();
+    var i = Math.max(0, Math.min(4, Math.floor((e.clientX - r.left) / r.width * 5)));
+    var states = ["flow", "blocked", "split", "merge", "collect"];
+    state.st = states[i];
+    document.getElementById("vState").textContent = stateName(state.st);
+    [].forEach.call(document.querySelectorAll("#stateBtns .btn"), function (b) {
+      b.classList.toggle("on", b.dataset.v === state.st);
+    });
+  });
+
+  // 图例
+  var legend = document.getElementById("legend");
+  Object.keys(ATTRS).forEach(function (k) {
+    var s = document.createElement("span");
+    s.innerHTML = '<i style="background:'+ATTRS[k].hex+'"></i>' + ATTRS[k].name;
+    legend.appendChild(s);
+  });
+
+  requestAnimationFrame(render);
+})();
+</script>
+</body>
+</html>
+

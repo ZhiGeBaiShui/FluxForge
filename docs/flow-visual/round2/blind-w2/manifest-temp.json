@@ -1,0 +1,20 @@
+[
+  {
+    "path": "E:\\code\\ProbablyBagMod\\docs\\flow-visual\\round2\\w2\\tiles\\t07.png",
+    "group": "temp",
+    "answer": "cold",
+    "meta": "{\"temp\": \"cold\"}"
+  },
+  {
+    "path": "E:\\code\\ProbablyBagMod\\docs\\flow-visual\\round2\\w2\\tiles\\t08.png",
+    "group": "temp",
+    "answer": "ambient",
+    "meta": "{\"temp\": \"ambient\"}"
+  },
+  {
+    "path": "E:\\code\\ProbablyBagMod\\docs\\flow-visual\\round2\\w2\\tiles\\t09.png",
+    "group": "temp",
+    "answer": "hot",
+    "meta": "{\"temp\": \"hot\"}"
+  }
+]

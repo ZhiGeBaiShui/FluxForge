@@ -1,0 +1,22 @@
+[
+  {
+    "path": "E:\\code\\ProbablyBagMod\\docs\\flow-visual\\final\\tiles\\dir-up.png",
+    "group": "dir",
+    "answer": "up"
+  },
+  {
+    "path": "E:\\code\\ProbablyBagMod\\docs\\flow-visual\\final\\tiles\\dir-right.png",
+    "group": "dir",
+    "answer": "right"
+  },
+  {
+    "path": "E:\\code\\ProbablyBagMod\\docs\\flow-visual\\final\\tiles\\dir-down.png",
+    "group": "dir",
+    "answer": "down"
+  },
+  {
+    "path": "E:\\code\\ProbablyBagMod\\docs\\flow-visual\\final\\tiles\\dir-left.png",
+    "group": "dir",
+    "answer": "left"
+  }
+]

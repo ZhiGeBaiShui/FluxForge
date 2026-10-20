@@ -1,0 +1,17 @@
+[
+ {
+  "path": "../tiles/temp-cold.png",
+  "answer": "cold",
+  "meta": "water/large/cold/flow/right"
+ },
+ {
+  "path": "../tiles/temp-normal.png",
+  "answer": "normal",
+  "meta": "water/large/normal/flow/right"
+ },
+ {
+  "path": "../tiles/temp-hot.png",
+  "answer": "hot",
+  "meta": "water/large/hot/flow/right"
+ }
+]

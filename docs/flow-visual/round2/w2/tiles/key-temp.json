@@ -1,0 +1,17 @@
+{
+  "1": {
+    "answer": "hot",
+    "meta": "{\"temp\": \"hot\"}",
+    "path": "E:\\code\\ProbablyBagMod\\docs\\flow-visual\\round2\\w2\\tiles\\t09.png"
+  },
+  "2": {
+    "answer": "cold",
+    "meta": "{\"temp\": \"cold\"}",
+    "path": "E:\\code\\ProbablyBagMod\\docs\\flow-visual\\round2\\w2\\tiles\\t07.png"
+  },
+  "3": {
+    "answer": "ambient",
+    "meta": "{\"temp\": \"ambient\"}",
+    "path": "E:\\code\\ProbablyBagMod\\docs\\flow-visual\\round2\\w2\\tiles\\t08.png"
+  }
+}

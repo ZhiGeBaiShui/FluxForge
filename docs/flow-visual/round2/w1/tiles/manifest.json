@@ -1,0 +1,591 @@
+{
+  "generator": "render_w1.py",
+  "tile_size": 16,
+  "note": "每个 tile 是 16x16 真机密度的单格（含 12x12 灰色图标占位；流源在图标之上）。answer 是正确判读；group 是这一批只变的那一个量，其余量写在 meta。",
+  "groups": {
+    "comp": "6 种成分（含 gray=1 灰度子集）",
+    "temp": "冷/常温/热",
+    "content": "空/少/中/多",
+    "range": "range1/range2/range3",
+    "state": "流动/受阻/分流/汇聚/被收集",
+    "dir": "右/下/左/上"
+  },
+  "tiles": [
+    {
+      "path": "tiles/t001_water.png",
+      "group": "comp",
+      "answer": "water",
+      "meta": "tier=large temp=ambient range=3 gray=0"
+    },
+    {
+      "path": "tiles/t002_poison.png",
+      "group": "comp",
+      "answer": "poison",
+      "meta": "tier=large temp=ambient range=3 gray=0"
+    },
+    {
+      "path": "tiles/t003_oil.png",
+      "group": "comp",
+      "answer": "oil",
+      "meta": "tier=large temp=ambient range=3 gray=0"
+    },
+    {
+      "path": "tiles/t004_blood.png",
+      "group": "comp",
+      "answer": "blood",
+      "meta": "tier=large temp=ambient range=3 gray=0"
+    },
+    {
+      "path": "tiles/t005_acid.png",
+      "group": "comp",
+      "answer": "acid",
+      "meta": "tier=large temp=ambient range=3 gray=0"
+    },
+    {
+      "path": "tiles/t006_energy.png",
+      "group": "comp",
+      "answer": "energy",
+      "meta": "tier=large temp=ambient range=3 gray=0"
+    },
+    {
+      "path": "tiles/t007_water.png",
+      "group": "comp",
+      "answer": "water",
+      "meta": "tier=large temp=ambient range=3 gray=1"
+    },
+    {
+      "path": "tiles/t008_poison.png",
+      "group": "comp",
+      "answer": "poison",
+      "meta": "tier=large temp=ambient range=3 gray=1"
+    },
+    {
+      "path": "tiles/t009_oil.png",
+      "group": "comp",
+      "answer": "oil",
+      "meta": "tier=large temp=ambient range=3 gray=1"
+    },
+    {
+      "path": "tiles/t010_blood.png",
+      "group": "comp",
+      "answer": "blood",
+      "meta": "tier=large temp=ambient range=3 gray=1"
+    },
+    {
+      "path": "tiles/t011_acid.png",
+      "group": "comp",
+      "answer": "acid",
+      "meta": "tier=large temp=ambient range=3 gray=1"
+    },
+    {
+      "path": "tiles/t012_energy.png",
+      "group": "comp",
+      "answer": "energy",
+      "meta": "tier=large temp=ambient range=3 gray=1"
+    },
+    {
+      "path": "tiles/t013_water.png",
+      "group": "comp",
+      "answer": "water",
+      "meta": "tier=mid temp=hot range=2 gray=0"
+    },
+    {
+      "path": "tiles/t014_poison.png",
+      "group": "comp",
+      "answer": "poison",
+      "meta": "tier=mid temp=hot range=2 gray=0"
+    },
+    {
+      "path": "tiles/t015_oil.png",
+      "group": "comp",
+      "answer": "oil",
+      "meta": "tier=mid temp=hot range=2 gray=0"
+    },
+    {
+      "path": "tiles/t016_blood.png",
+      "group": "comp",
+      "answer": "blood",
+      "meta": "tier=mid temp=hot range=2 gray=0"
+    },
+    {
+      "path": "tiles/t017_acid.png",
+      "group": "comp",
+      "answer": "acid",
+      "meta": "tier=mid temp=hot range=2 gray=0"
+    },
+    {
+      "path": "tiles/t018_energy.png",
+      "group": "comp",
+      "answer": "energy",
+      "meta": "tier=mid temp=hot range=2 gray=0"
+    },
+    {
+      "path": "tiles/t019_water.png",
+      "group": "comp",
+      "answer": "water",
+      "meta": "tier=mid temp=hot range=2 gray=1"
+    },
+    {
+      "path": "tiles/t020_poison.png",
+      "group": "comp",
+      "answer": "poison",
+      "meta": "tier=mid temp=hot range=2 gray=1"
+    },
+    {
+      "path": "tiles/t021_oil.png",
+      "group": "comp",
+      "answer": "oil",
+      "meta": "tier=mid temp=hot range=2 gray=1"
+    },
+    {
+      "path": "tiles/t022_blood.png",
+      "group": "comp",
+      "answer": "blood",
+      "meta": "tier=mid temp=hot range=2 gray=1"
+    },
+    {
+      "path": "tiles/t023_acid.png",
+      "group": "comp",
+      "answer": "acid",
+      "meta": "tier=mid temp=hot range=2 gray=1"
+    },
+    {
+      "path": "tiles/t024_energy.png",
+      "group": "comp",
+      "answer": "energy",
+      "meta": "tier=mid temp=hot range=2 gray=1"
+    },
+    {
+      "path": "tiles/t025_water.png",
+      "group": "comp",
+      "answer": "water",
+      "meta": "tier=small temp=cold range=3 gray=0"
+    },
+    {
+      "path": "tiles/t026_poison.png",
+      "group": "comp",
+      "answer": "poison",
+      "meta": "tier=small temp=cold range=3 gray=0"
+    },
+    {
+      "path": "tiles/t027_oil.png",
+      "group": "comp",
+      "answer": "oil",
+      "meta": "tier=small temp=cold range=3 gray=0"
+    },
+    {
+      "path": "tiles/t028_blood.png",
+      "group": "comp",
+      "answer": "blood",
+      "meta": "tier=small temp=cold range=3 gray=0"
+    },
+    {
+      "path": "tiles/t029_acid.png",
+      "group": "comp",
+      "answer": "acid",
+      "meta": "tier=small temp=cold range=3 gray=0"
+    },
+    {
+      "path": "tiles/t030_energy.png",
+      "group": "comp",
+      "answer": "energy",
+      "meta": "tier=small temp=cold range=3 gray=0"
+    },
+    {
+      "path": "tiles/t031_water.png",
+      "group": "comp",
+      "answer": "water",
+      "meta": "tier=small temp=cold range=3 gray=1"
+    },
+    {
+      "path": "tiles/t032_poison.png",
+      "group": "comp",
+      "answer": "poison",
+      "meta": "tier=small temp=cold range=3 gray=1"
+    },
+    {
+      "path": "tiles/t033_oil.png",
+      "group": "comp",
+      "answer": "oil",
+      "meta": "tier=small temp=cold range=3 gray=1"
+    },
+    {
+      "path": "tiles/t034_blood.png",
+      "group": "comp",
+      "answer": "blood",
+      "meta": "tier=small temp=cold range=3 gray=1"
+    },
+    {
+      "path": "tiles/t035_acid.png",
+      "group": "comp",
+      "answer": "acid",
+      "meta": "tier=small temp=cold range=3 gray=1"
+    },
+    {
+      "path": "tiles/t036_energy.png",
+      "group": "comp",
+      "answer": "energy",
+      "meta": "tier=small temp=cold range=3 gray=1"
+    },
+    {
+      "path": "tiles/t037_cold.png",
+      "group": "temp",
+      "answer": "cold",
+      "meta": "comp=water tier=large range=3 gray=0"
+    },
+    {
+      "path": "tiles/t038_ambient.png",
+      "group": "temp",
+      "answer": "ambient",
+      "meta": "comp=water tier=large range=3 gray=0"
+    },
+    {
+      "path": "tiles/t039_hot.png",
+      "group": "temp",
+      "answer": "hot",
+      "meta": "comp=water tier=large range=3 gray=0"
+    },
+    {
+      "path": "tiles/t040_cold.png",
+      "group": "temp",
+      "answer": "cold",
+      "meta": "comp=poison tier=large range=3 gray=0"
+    },
+    {
+      "path": "tiles/t041_ambient.png",
+      "group": "temp",
+      "answer": "ambient",
+      "meta": "comp=poison tier=large range=3 gray=0"
+    },
+    {
+      "path": "tiles/t042_hot.png",
+      "group": "temp",
+      "answer": "hot",
+      "meta": "comp=poison tier=large range=3 gray=0"
+    },
+    {
+      "path": "tiles/t043_cold.png",
+      "group": "temp",
+      "answer": "cold",
+      "meta": "comp=energy tier=large range=3 gray=0"
+    },
+    {
+      "path": "tiles/t044_ambient.png",
+      "group": "temp",
+      "answer": "ambient",
+      "meta": "comp=energy tier=large range=3 gray=0"
+    },
+    {
+      "path": "tiles/t045_hot.png",
+      "group": "temp",
+      "answer": "hot",
+      "meta": "comp=energy tier=large range=3 gray=0"
+    },
+    {
+      "path": "tiles/t046_large.png",
+      "group": "content",
+      "answer": "large",
+      "meta": "comp=water temp=ambient range=3 gray=0"
+    },
+    {
+      "path": "tiles/t047_large.png",
+      "group": "content",
+      "answer": "large",
+      "meta": "comp=oil temp=ambient range=3 gray=0"
+    },
+    {
+      "path": "tiles/t048_large.png",
+      "group": "content",
+      "answer": "large",
+      "meta": "comp=acid temp=cold range=3 gray=0"
+    },
+    {
+      "path": "tiles/t049_large.png",
+      "group": "content",
+      "answer": "large",
+      "meta": "comp=blood temp=ambient range=3 gray=0"
+    },
+    {
+      "path": "tiles/t050_mid.png",
+      "group": "content",
+      "answer": "mid",
+      "meta": "comp=water temp=ambient range=3 gray=0"
+    },
+    {
+      "path": "tiles/t051_mid.png",
+      "group": "content",
+      "answer": "mid",
+      "meta": "comp=oil temp=ambient range=3 gray=0"
+    },
+    {
+      "path": "tiles/t052_mid.png",
+      "group": "content",
+      "answer": "mid",
+      "meta": "comp=acid temp=cold range=3 gray=0"
+    },
+    {
+      "path": "tiles/t053_mid.png",
+      "group": "content",
+      "answer": "mid",
+      "meta": "comp=blood temp=ambient range=3 gray=0"
+    },
+    {
+      "path": "tiles/t054_small.png",
+      "group": "content",
+      "answer": "small",
+      "meta": "comp=water temp=ambient range=3 gray=0"
+    },
+    {
+      "path": "tiles/t055_small.png",
+      "group": "content",
+      "answer": "small",
+      "meta": "comp=oil temp=ambient range=3 gray=0"
+    },
+    {
+      "path": "tiles/t056_small.png",
+      "group": "content",
+      "answer": "small",
+      "meta": "comp=acid temp=cold range=3 gray=0"
+    },
+    {
+      "path": "tiles/t057_small.png",
+      "group": "content",
+      "answer": "small",
+      "meta": "comp=blood temp=ambient range=3 gray=0"
+    },
+    {
+      "path": "tiles/t058_empty.png",
+      "group": "content",
+      "answer": "empty",
+      "meta": "comp=water temp=ambient range=3 gray=0"
+    },
+    {
+      "path": "tiles/t059_empty.png",
+      "group": "content",
+      "answer": "empty",
+      "meta": "comp=oil temp=ambient range=3 gray=0"
+    },
+    {
+      "path": "tiles/t060_empty.png",
+      "group": "content",
+      "answer": "empty",
+      "meta": "comp=acid temp=cold range=3 gray=0"
+    },
+    {
+      "path": "tiles/t061_empty.png",
+      "group": "content",
+      "answer": "empty",
+      "meta": "comp=blood temp=ambient range=3 gray=0"
+    },
+    {
+      "path": "tiles/t062_range3.png",
+      "group": "range",
+      "answer": "range3",
+      "meta": "tier=large range=3 gray=0"
+    },
+    {
+      "path": "tiles/t063_range3.png",
+      "group": "range",
+      "answer": "range3",
+      "meta": "tier=mid range=3 gray=0"
+    },
+    {
+      "path": "tiles/t064_range3.png",
+      "group": "range",
+      "answer": "range3",
+      "meta": "tier=small range=3 gray=0"
+    },
+    {
+      "path": "tiles/t065_range3.png",
+      "group": "range",
+      "answer": "range3",
+      "meta": "tier=empty range=3 gray=0"
+    },
+    {
+      "path": "tiles/t066_range2.png",
+      "group": "range",
+      "answer": "range2",
+      "meta": "tier=large range=2 gray=0"
+    },
+    {
+      "path": "tiles/t067_range2.png",
+      "group": "range",
+      "answer": "range2",
+      "meta": "tier=mid range=2 gray=0"
+    },
+    {
+      "path": "tiles/t068_range2.png",
+      "group": "range",
+      "answer": "range2",
+      "meta": "tier=small range=2 gray=0"
+    },
+    {
+      "path": "tiles/t069_range2.png",
+      "group": "range",
+      "answer": "range2",
+      "meta": "tier=empty range=2 gray=0"
+    },
+    {
+      "path": "tiles/t070_range1.png",
+      "group": "range",
+      "answer": "range1",
+      "meta": "tier=large range=1 gray=0"
+    },
+    {
+      "path": "tiles/t071_range1.png",
+      "group": "range",
+      "answer": "range1",
+      "meta": "tier=mid range=1 gray=0"
+    },
+    {
+      "path": "tiles/t072_range1.png",
+      "group": "range",
+      "answer": "range1",
+      "meta": "tier=small range=1 gray=0"
+    },
+    {
+      "path": "tiles/t073_range1.png",
+      "group": "range",
+      "answer": "range1",
+      "meta": "tier=empty range=1 gray=0"
+    },
+    {
+      "path": "tiles/t074_flow.png",
+      "group": "state",
+      "answer": "flow",
+      "meta": "comp=water tier=large range=3 gray=0"
+    },
+    {
+      "path": "tiles/t075_flow.png",
+      "group": "state",
+      "answer": "flow",
+      "meta": "comp=poison tier=large range=3 gray=0"
+    },
+    {
+      "path": "tiles/t076_flow.png",
+      "group": "state",
+      "answer": "flow",
+      "meta": "comp=energy tier=large range=3 gray=0"
+    },
+    {
+      "path": "tiles/t077_blocked.png",
+      "group": "state",
+      "answer": "blocked",
+      "meta": "comp=water tier=large range=3 gray=0"
+    },
+    {
+      "path": "tiles/t078_blocked.png",
+      "group": "state",
+      "answer": "blocked",
+      "meta": "comp=poison tier=large range=3 gray=0"
+    },
+    {
+      "path": "tiles/t079_blocked.png",
+      "group": "state",
+      "answer": "blocked",
+      "meta": "comp=energy tier=large range=3 gray=0"
+    },
+    {
+      "path": "tiles/t080_split.png",
+      "group": "state",
+      "answer": "split",
+      "meta": "comp=water tier=large range=3 gray=0"
+    },
+    {
+      "path": "tiles/t081_split.png",
+      "group": "state",
+      "answer": "split",
+      "meta": "comp=poison tier=large range=3 gray=0"
+    },
+    {
+      "path": "tiles/t082_split.png",
+      "group": "state",
+      "answer": "split",
+      "meta": "comp=energy tier=large range=3 gray=0"
+    },
+    {
+      "path": "tiles/t083_merge.png",
+      "group": "state",
+      "answer": "merge",
+      "meta": "comp=water tier=large range=3 gray=0"
+    },
+    {
+      "path": "tiles/t084_merge.png",
+      "group": "state",
+      "answer": "merge",
+      "meta": "comp=poison tier=large range=3 gray=0"
+    },
+    {
+      "path": "tiles/t085_merge.png",
+      "group": "state",
+      "answer": "merge",
+      "meta": "comp=energy tier=large range=3 gray=0"
+    },
+    {
+      "path": "tiles/t086_collect.png",
+      "group": "state",
+      "answer": "collect",
+      "meta": "comp=water tier=large range=3 gray=0"
+    },
+    {
+      "path": "tiles/t087_collect.png",
+      "group": "state",
+      "answer": "collect",
+      "meta": "comp=poison tier=large range=3 gray=0"
+    },
+    {
+      "path": "tiles/t088_collect.png",
+      "group": "state",
+      "answer": "collect",
+      "meta": "comp=energy tier=large range=3 gray=0"
+    },
+    {
+      "path": "tiles/t089_right.png",
+      "group": "dir",
+      "answer": "right",
+      "meta": "comp=water tier=large gray=0"
+    },
+    {
+      "path": "tiles/t090_right.png",
+      "group": "dir",
+      "answer": "right",
+      "meta": "comp=oil tier=large gray=0"
+    },
+    {
+      "path": "tiles/t091_down.png",
+      "group": "dir",
+      "answer": "down",
+      "meta": "comp=water tier=large gray=0"
+    },
+    {
+      "path": "tiles/t092_down.png",
+      "group": "dir",
+      "answer": "down",
+      "meta": "comp=oil tier=large gray=0"
+    },
+    {
+      "path": "tiles/t093_left.png",
+      "group": "dir",
+      "answer": "left",
+      "meta": "comp=water tier=large gray=0"
+    },
+    {
+      "path": "tiles/t094_left.png",
+      "group": "dir",
+      "answer": "left",
+      "meta": "comp=oil tier=large gray=0"
+    },
+    {
+      "path": "tiles/t095_up.png",
+      "group": "dir",
+      "answer": "up",
+      "meta": "comp=water tier=large gray=0"
+    },
+    {
+      "path": "tiles/t096_up.png",
+      "group": "dir",
+      "answer": "up",
+      "meta": "comp=oil tier=large gray=0"
+    }
+  ]
+}

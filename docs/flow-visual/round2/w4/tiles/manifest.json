@@ -1,0 +1,56 @@
+[
+  {
+    "path": "docs/flow-visual/round2/w4/tiles/dir-right.png",
+    "group": "dir",
+    "answer": "right",
+    "meta": "{\"direction\": \"right\", \"view\": \"4x\", \"comp\": \"water\"}"
+  },
+  {
+    "path": "docs/flow-visual/round2/w4/tiles/dir-down.png",
+    "group": "dir",
+    "answer": "down",
+    "meta": "{\"direction\": \"down\", \"view\": \"4x\", \"comp\": \"water\"}"
+  },
+  {
+    "path": "docs/flow-visual/round2/w4/tiles/dir-left.png",
+    "group": "dir",
+    "answer": "left",
+    "meta": "{\"direction\": \"left\", \"view\": \"4x\", \"comp\": \"water\"}"
+  },
+  {
+    "path": "docs/flow-visual/round2/w4/tiles/dir-up.png",
+    "group": "dir",
+    "answer": "up",
+    "meta": "{\"direction\": \"up\", \"view\": \"4x\", \"comp\": \"water\"}"
+  },
+  {
+    "path": "docs/flow-visual/round2/w4/tiles/state-flow.png",
+    "group": "state",
+    "answer": "flow",
+    "meta": "{\"state\": \"flow\", \"view\": \"4x\", \"comp\": \"water\"}"
+  },
+  {
+    "path": "docs/flow-visual/round2/w4/tiles/state-blocked.png",
+    "group": "state",
+    "answer": "blocked",
+    "meta": "{\"state\": \"blocked\", \"view\": \"4x\", \"comp\": \"water\"}"
+  },
+  {
+    "path": "docs/flow-visual/round2/w4/tiles/state-split.png",
+    "group": "state",
+    "answer": "split",
+    "meta": "{\"state\": \"split\", \"view\": \"4x\", \"comp\": \"water\"}"
+  },
+  {
+    "path": "docs/flow-visual/round2/w4/tiles/state-merge.png",
+    "group": "state",
+    "answer": "merge",
+    "meta": "{\"state\": \"merge\", \"view\": \"4x\", \"comp\": \"water\"}"
+  },
+  {
+    "path": "docs/flow-visual/round2/w4/tiles/state-collect.png",
+    "group": "state",
+    "answer": "collect",
+    "meta": "{\"state\": \"collect\", \"view\": \"4x\", \"comp\": \"water\"}"
+  }
+]

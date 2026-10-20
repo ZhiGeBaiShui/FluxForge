@@ -1,0 +1,134 @@
+[
+  {
+    "path": "docs/flow-visual/round2/blind-b/comp-water.png",
+    "group": "comp",
+    "answer": "water",
+    "meta": "{\"comp\": \"water\"}"
+  },
+  {
+    "path": "docs/flow-visual/round2/blind-b/comp-poison.png",
+    "group": "comp",
+    "answer": "poison",
+    "meta": "{\"comp\": \"poison\"}"
+  },
+  {
+    "path": "docs/flow-visual/round2/blind-b/comp-oil.png",
+    "group": "comp",
+    "answer": "oil",
+    "meta": "{\"comp\": \"oil\"}"
+  },
+  {
+    "path": "docs/flow-visual/round2/blind-b/comp-blood.png",
+    "group": "comp",
+    "answer": "blood",
+    "meta": "{\"comp\": \"blood\"}"
+  },
+  {
+    "path": "docs/flow-visual/round2/blind-b/comp-acid.png",
+    "group": "comp",
+    "answer": "acid",
+    "meta": "{\"comp\": \"acid\"}"
+  },
+  {
+    "path": "docs/flow-visual/round2/blind-b/comp-energy.png",
+    "group": "comp",
+    "answer": "energy",
+    "meta": "{\"comp\": \"energy\"}"
+  },
+  {
+    "path": "docs/flow-visual/round2/blind-b/temp-cold.png",
+    "group": "temp",
+    "answer": "cold",
+    "meta": "{\"temp\": \"cold\"}"
+  },
+  {
+    "path": "docs/flow-visual/round2/blind-b/temp-ambient.png",
+    "group": "temp",
+    "answer": "ambient",
+    "meta": "{\"temp\": \"ambient\"}"
+  },
+  {
+    "path": "docs/flow-visual/round2/blind-b/temp-hot.png",
+    "group": "temp",
+    "answer": "hot",
+    "meta": "{\"temp\": \"hot\"}"
+  },
+  {
+    "path": "docs/flow-visual/round2/blind-b/content-empty.png",
+    "group": "content",
+    "answer": "empty",
+    "meta": "{\"tier\": \"empty\"}"
+  },
+  {
+    "path": "docs/flow-visual/round2/blind-b/content-small.png",
+    "group": "content",
+    "answer": "small",
+    "meta": "{\"tier\": \"small\"}"
+  },
+  {
+    "path": "docs/flow-visual/round2/blind-b/content-mid.png",
+    "group": "content",
+    "answer": "mid",
+    "meta": "{\"tier\": \"mid\"}"
+  },
+  {
+    "path": "docs/flow-visual/round2/blind-b/content-large.png",
+    "group": "content",
+    "answer": "large",
+    "meta": "{\"tier\": \"large\"}"
+  },
+  {
+    "path": "docs/flow-visual/round2/blind-b/dir-up.png",
+    "group": "dir",
+    "answer": "up",
+    "meta": "{\"direction\": \"up\"}"
+  },
+  {
+    "path": "docs/flow-visual/round2/blind-b/dir-right.png",
+    "group": "dir",
+    "answer": "right",
+    "meta": "{\"direction\": \"right\"}"
+  },
+  {
+    "path": "docs/flow-visual/round2/blind-b/dir-down.png",
+    "group": "dir",
+    "answer": "down",
+    "meta": "{\"direction\": \"down\"}"
+  },
+  {
+    "path": "docs/flow-visual/round2/blind-b/dir-left.png",
+    "group": "dir",
+    "answer": "left",
+    "meta": "{\"direction\": \"left\"}"
+  },
+  {
+    "path": "docs/flow-visual/round2/blind-b/state-flow.png",
+    "group": "state",
+    "answer": "flow",
+    "meta": "{\"state\": \"flow\"}"
+  },
+  {
+    "path": "docs/flow-visual/round2/blind-b/state-blocked.png",
+    "group": "state",
+    "answer": "blocked",
+    "meta": "{\"state\": \"blocked\"}"
+  },
+  {
+    "path": "docs/flow-visual/round2/blind-b/state-split.png",
+    "group": "state",
+    "answer": "split",
+    "meta": "{\"state\": \"split\"}"
+  },
+  {
+    "path": "docs/flow-visual/round2/blind-b/state-merge.png",
+    "group": "state",
+    "answer": "merge",
+    "meta": "{\"state\": \"merge\"}"
+  },
+  {
+    "path": "docs/flow-visual/round2/blind-b/state-collect.png",
+    "group": "state",
+    "answer": "collect",
+    "meta": "{\"state\": \"collect\"}"
+  }
+]

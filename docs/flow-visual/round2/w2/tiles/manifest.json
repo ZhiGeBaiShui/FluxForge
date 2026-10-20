@@ -1,0 +1,415 @@
+{
+ "note": "盲测用：文件名不含答案，answer 只在 manifest 里",
+ "grid": 16,
+ "bg": "transparent",
+ "pivot": "格心 (7.5,7.5)",
+ "tiles": [
+  {
+   "file": "t01.png",
+   "group": "comp",
+   "answer": "water",
+   "quads": 21,
+   "px": 83,
+   "meta": {
+    "comp": "water"
+   }
+  },
+  {
+   "file": "t02.png",
+   "group": "comp",
+   "answer": "poison",
+   "quads": 23,
+   "px": 84,
+   "meta": {
+    "comp": "poison"
+   }
+  },
+  {
+   "file": "t03.png",
+   "group": "comp",
+   "answer": "oil",
+   "quads": 22,
+   "px": 83,
+   "meta": {
+    "comp": "oil"
+   }
+  },
+  {
+   "file": "t04.png",
+   "group": "comp",
+   "answer": "blood",
+   "quads": 23,
+   "px": 83,
+   "meta": {
+    "comp": "blood"
+   }
+  },
+  {
+   "file": "t05.png",
+   "group": "comp",
+   "answer": "acid",
+   "quads": 24,
+   "px": 81,
+   "meta": {
+    "comp": "acid"
+   }
+  },
+  {
+   "file": "t06.png",
+   "group": "comp",
+   "answer": "energy",
+   "quads": 29,
+   "px": 83,
+   "meta": {
+    "comp": "energy"
+   }
+  },
+  {
+   "file": "t07.png",
+   "group": "temp",
+   "answer": "cold",
+   "quads": 22,
+   "px": 85,
+   "meta": {
+    "temp": "cold"
+   }
+  },
+  {
+   "file": "t08.png",
+   "group": "temp",
+   "answer": "ambient",
+   "quads": 21,
+   "px": 83,
+   "meta": {
+    "temp": "ambient"
+   }
+  },
+  {
+   "file": "t09.png",
+   "group": "temp",
+   "answer": "hot",
+   "quads": 25,
+   "px": 80,
+   "meta": {
+    "temp": "hot"
+   }
+  },
+  {
+   "file": "t10.png",
+   "group": "content",
+   "answer": "empty",
+   "quads": 3,
+   "px": 6,
+   "meta": {
+    "tier": "empty"
+   }
+  },
+  {
+   "file": "t11.png",
+   "group": "content",
+   "answer": "small",
+   "quads": 13,
+   "px": 29,
+   "meta": {
+    "tier": "small"
+   }
+  },
+  {
+   "file": "t12.png",
+   "group": "content",
+   "answer": "mid",
+   "quads": 18,
+   "px": 46,
+   "meta": {
+    "tier": "mid"
+   }
+  },
+  {
+   "file": "t13.png",
+   "group": "content",
+   "answer": "large",
+   "quads": 21,
+   "px": 83,
+   "meta": {
+    "tier": "large"
+   }
+  },
+  {
+   "file": "t14.png",
+   "group": "range",
+   "answer": "short",
+   "quads": 21,
+   "px": 83,
+   "meta": {
+    "rng": "short"
+   }
+  },
+  {
+   "file": "t15.png",
+   "group": "range",
+   "answer": "mid",
+   "quads": 21,
+   "px": 83,
+   "meta": {
+    "rng": "mid"
+   }
+  },
+  {
+   "file": "t16.png",
+   "group": "range",
+   "answer": "long",
+   "quads": 21,
+   "px": 83,
+   "meta": {
+    "rng": "long"
+   }
+  },
+  {
+   "file": "t17.png",
+   "group": "dir",
+   "answer": "right",
+   "quads": 21,
+   "px": 83,
+   "meta": {
+    "direction": "right"
+   }
+  },
+  {
+   "file": "t18.png",
+   "group": "dir",
+   "answer": "down",
+   "quads": 22,
+   "px": 83,
+   "meta": {
+    "direction": "down"
+   }
+  },
+  {
+   "file": "t19.png",
+   "group": "dir",
+   "answer": "left",
+   "quads": 21,
+   "px": 83,
+   "meta": {
+    "direction": "left"
+   }
+  },
+  {
+   "file": "t20.png",
+   "group": "dir",
+   "answer": "up",
+   "quads": 22,
+   "px": 83,
+   "meta": {
+    "direction": "up"
+   }
+  },
+  {
+   "file": "t21.png",
+   "group": "state",
+   "answer": "flow",
+   "quads": 21,
+   "px": 83,
+   "meta": {
+    "state": "flow"
+   }
+  },
+  {
+   "file": "t22.png",
+   "group": "state",
+   "answer": "blocked",
+   "quads": 25,
+   "px": 82,
+   "meta": {
+    "state": "blocked"
+   }
+  },
+  {
+   "file": "t23.png",
+   "group": "state",
+   "answer": "split",
+   "quads": 22,
+   "px": 78,
+   "meta": {
+    "state": "split"
+   }
+  },
+  {
+   "file": "t24.png",
+   "group": "state",
+   "answer": "merge",
+   "quads": 22,
+   "px": 80,
+   "meta": {
+    "state": "merge"
+   }
+  },
+  {
+   "file": "t25.png",
+   "group": "state",
+   "answer": "collect",
+   "quads": 25,
+   "px": 80,
+   "meta": {
+    "state": "collect"
+   }
+  }
+ ],
+ "atlas": {
+  "core": [
+   {
+    "file": "t26.png",
+    "comp": "water",
+    "temp": "cold",
+    "rect": "4x2 上限",
+    "quads": 1
+   },
+   {
+    "file": "t27.png",
+    "comp": "water",
+    "temp": "ambient",
+    "rect": "4x2 上限",
+    "quads": 1
+   },
+   {
+    "file": "t28.png",
+    "comp": "water",
+    "temp": "hot",
+    "rect": "4x2 上限",
+    "quads": 1
+   },
+   {
+    "file": "t29.png",
+    "comp": "poison",
+    "temp": "cold",
+    "rect": "4x2 上限",
+    "quads": 1
+   },
+   {
+    "file": "t30.png",
+    "comp": "poison",
+    "temp": "ambient",
+    "rect": "4x2 上限",
+    "quads": 1
+   },
+   {
+    "file": "t31.png",
+    "comp": "poison",
+    "temp": "hot",
+    "rect": "4x2 上限",
+    "quads": 1
+   },
+   {
+    "file": "t32.png",
+    "comp": "oil",
+    "temp": "cold",
+    "rect": "4x2 上限",
+    "quads": 1
+   },
+   {
+    "file": "t33.png",
+    "comp": "oil",
+    "temp": "ambient",
+    "rect": "4x2 上限",
+    "quads": 1
+   },
+   {
+    "file": "t34.png",
+    "comp": "oil",
+    "temp": "hot",
+    "rect": "4x2 上限",
+    "quads": 1
+   },
+   {
+    "file": "t35.png",
+    "comp": "blood",
+    "temp": "cold",
+    "rect": "4x2 上限",
+    "quads": 1
+   },
+   {
+    "file": "t36.png",
+    "comp": "blood",
+    "temp": "ambient",
+    "rect": "4x2 上限",
+    "quads": 1
+   },
+   {
+    "file": "t37.png",
+    "comp": "blood",
+    "temp": "hot",
+    "rect": "4x2 上限",
+    "quads": 1
+   },
+   {
+    "file": "t38.png",
+    "comp": "acid",
+    "temp": "cold",
+    "rect": "4x2 上限",
+    "quads": 1
+   },
+   {
+    "file": "t39.png",
+    "comp": "acid",
+    "temp": "ambient",
+    "rect": "4x2 上限",
+    "quads": 1
+   },
+   {
+    "file": "t40.png",
+    "comp": "acid",
+    "temp": "hot",
+    "rect": "4x2 上限",
+    "quads": 1
+   },
+   {
+    "file": "t41.png",
+    "comp": "energy",
+    "temp": "cold",
+    "rect": "4x2 上限",
+    "quads": 1
+   },
+   {
+    "file": "t42.png",
+    "comp": "energy",
+    "temp": "ambient",
+    "rect": "4x2 上限",
+    "quads": 1
+   },
+   {
+    "file": "t43.png",
+    "comp": "energy",
+    "temp": "hot",
+    "rect": "4x2 上限",
+    "quads": 1
+   }
+  ],
+  "ring": [
+   {
+    "file": "t44.png",
+    "range": "short",
+    "rect": "1x11",
+    "quads": 1
+   },
+   {
+    "file": "t45.png",
+    "range": "mid",
+    "rect": "1x11",
+    "quads": 1
+   },
+   {
+    "file": "t46.png",
+    "range": "long",
+    "rect": "1x11",
+    "quads": 1
+   }
+  ],
+  "body": []
+ },
+ "image_fallback": {
+  "layers": 3,
+  "quads": 3,
+  "tiles": "body(16x16) + core(1 tile) + ring(1 tile) = 1 贴图 tile 各 1 张",
+  "atlas_size": "512x512（32x32 槽）= 60 body + 18 core + 3 ring = 81 槽"
+ }
+}

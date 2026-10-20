@@ -1,0 +1,17 @@
+{
+  "1": {
+    "answer": "long",
+    "meta": "{\"rng\": \"long\"}",
+    "path": "E:\\code\\ProbablyBagMod\\docs\\flow-visual\\round2\\w2\\tiles\\t16.png"
+  },
+  "2": {
+    "answer": "short",
+    "meta": "{\"rng\": \"short\"}",
+    "path": "E:\\code\\ProbablyBagMod\\docs\\flow-visual\\round2\\w2\\tiles\\t14.png"
+  },
+  "3": {
+    "answer": "mid",
+    "meta": "{\"rng\": \"mid\"}",
+    "path": "E:\\code\\ProbablyBagMod\\docs\\flow-visual\\round2\\w2\\tiles\\t15.png"
+  }
+}

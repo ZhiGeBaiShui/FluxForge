@@ -1,0 +1,22 @@
+{
+  "1": {
+    "answer": "large",
+    "meta": "water/large/normal/flow/right",
+    "path": "../tiles/content-large.png"
+  },
+  "2": {
+    "answer": "small",
+    "meta": "water/small/normal/flow/right",
+    "path": "../tiles/content-small.png"
+  },
+  "3": {
+    "answer": "empty",
+    "meta": "water/empty/normal/flow/right",
+    "path": "../tiles/content-empty.png"
+  },
+  "4": {
+    "answer": "mid",
+    "meta": "water/mid/normal/flow/right",
+    "path": "../tiles/content-mid.png"
+  }
+}

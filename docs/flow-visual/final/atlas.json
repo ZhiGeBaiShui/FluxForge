@@ -1,0 +1,104 @@
+{
+ "key": {
+  "comp-water": [
+   0,
+   0
+  ],
+  "comp-poison": [
+   16,
+   0
+  ],
+  "comp-oil": [
+   32,
+   0
+  ],
+  "comp-blood": [
+   48,
+   0
+  ],
+  "comp-acid": [
+   64,
+   0
+  ],
+  "comp-energy": [
+   80,
+   0
+  ],
+  "temp-cold": [
+   96,
+   0
+  ],
+  "temp-normal": [
+   112,
+   0
+  ],
+  "temp-hot": [
+   128,
+   0
+  ],
+  "content-empty": [
+   144,
+   0
+  ],
+  "content-small": [
+   160,
+   0
+  ],
+  "content-mid": [
+   176,
+   0
+  ],
+  "content-large": [
+   192,
+   0
+  ],
+  "range-3": [
+   208,
+   0
+  ],
+  "range-2": [
+   224,
+   0
+  ],
+  "range-1": [
+   240,
+   0
+  ],
+  "dir-right": [
+   0,
+   16
+  ],
+  "dir-down": [
+   16,
+   16
+  ],
+  "dir-left": [
+   32,
+   16
+  ],
+  "dir-up": [
+   48,
+   16
+  ],
+  "state-flow": [
+   64,
+   16
+  ],
+  "state-blocked": [
+   80,
+   16
+  ],
+  "state-split": [
+   96,
+   16
+  ],
+  "state-merge": [
+   112,
+   16
+  ],
+  "state-collect": [
+   128,
+   16
+  ]
+ }
+}

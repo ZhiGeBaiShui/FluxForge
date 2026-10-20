@@ -1,0 +1,17 @@
+[
+  {
+    "path": "E:\\code\\ProbablyBagMod\\docs\\flow-visual\\final\\tiles\\temp-cold.png",
+    "group": "temp",
+    "answer": "cold"
+  },
+  {
+    "path": "E:\\code\\ProbablyBagMod\\docs\\flow-visual\\final\\tiles\\temp-normal.png",
+    "group": "temp",
+    "answer": "normal"
+  },
+  {
+    "path": "E:\\code\\ProbablyBagMod\\docs\\flow-visual\\final\\tiles\\temp-hot.png",
+    "group": "temp",
+    "answer": "hot"
+  }
+]

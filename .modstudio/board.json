@@ -1,0 +1,236 @@
+{
+  "schema": 1,
+  "project": {
+    "title": "流源视觉语言 v1",
+    "modId": "ProbablyBagMod",
+    "game": "Probably Stolen",
+    "unityVersion": "2021.3.45f2",
+    "scriptingBackend": "il2cpp",
+    "loader": "MelonLoader 0.7.3",
+    "createdAt": "2026-10-20T12:12:31.898Z",
+    "updatedAt": "2026-10-20T12:43:25.925Z"
+  },
+  "phase": "discovery",
+  "gates": {
+    "design": {
+      "phase": "design",
+      "requiredFiles": [
+        ".modstudio/design/GDD.md",
+        ".modstudio/design/TDD.md",
+        ".modstudio/design/TEST-PLAN.md",
+        ".modstudio/design/ASSET-PLAN.md",
+        ".modstudio/AGENTS.md"
+      ],
+      "requiredEvidenceKinds": [
+        "design"
+      ],
+      "requireAllTasksDone": false,
+      "minDone": 0,
+      "forbidBlocked": false,
+      "forbidStaleClaims": false
+    },
+    "foundation": {
+      "phase": "foundation",
+      "requiredFiles": [],
+      "requiredEvidenceKinds": [
+        "build",
+        "test"
+      ],
+      "requireAllTasksDone": false,
+      "minDone": 0,
+      "forbidBlocked": false,
+      "forbidStaleClaims": false
+    },
+    "feature": {
+      "phase": "production",
+      "requiredFiles": [],
+      "requiredEvidenceKinds": [
+        "build",
+        "test",
+        "review"
+      ],
+      "requireAllTasksDone": false,
+      "minDone": 1,
+      "forbidBlocked": false,
+      "forbidStaleClaims": false
+    },
+    "release": {
+      "phase": "release",
+      "requiredFiles": [
+        ".modstudio/design/GDD.md",
+        ".modstudio/design/TEST-PLAN.md"
+      ],
+      "requiredEvidenceKinds": [
+        "build",
+        "test",
+        "smoke",
+        "review",
+        "perf"
+      ],
+      "requireAllTasksDone": true,
+      "minDone": 1,
+      "forbidBlocked": true,
+      "forbidStaleClaims": true
+    }
+  },
+  "counters": {
+    "task": 0
+  },
+  "tasks": [
+    {
+      "id": "T-VIS-001",
+      "title": "参考解剖 + 引擎约束 + 通道设计（三份研究）",
+      "role": "design",
+      "priority": "P0",
+      "status": "done",
+      "files": [
+        "docs/flow-visual/research/"
+      ],
+      "acceptance": [
+        "reference.md 给出背包英雄像素语法与 5 条可执行借鉴",
+        "engine-constraints.md 的绘制手段表逐条带 file:line 与 quads 成本",
+        "channels.md 给出 3 套 I1–I6 分配并附色盲/对比度数字",
+        "三份文档均回答 BRIEF §8 的开放问题"
+      ],
+      "dependsOn": [],
+      "requiredEvidence": [
+        "design"
+      ],
+      "owner": "",
+      "leaseUntil": "",
+      "createdAt": "2026-10-20T12:13:48.672Z",
+      "updatedAt": "2026-10-20T12:28:18.531Z",
+      "completedAt": "2026-10-20T12:28:18.531Z",
+      "notes": [
+        {
+          "at": "2026-10-20T12:28:07.443Z",
+          "by": "director",
+          "text": "claimed for 120m"
+        },
+        {
+          "at": "2026-10-20T12:28:14.195Z",
+          "by": "director",
+          "text": "handoff to name-scoped owner"
+        },
+        {
+          "at": "2026-10-20T12:28:16.304Z",
+          "by": "director:aa557ffe",
+          "text": "claimed for 120m"
+        }
+      ]
+    },
+    {
+      "id": "T-VIS-002",
+      "title": "三个独立视觉方向的概念稿（实体/流体/符号）",
+      "role": "design",
+      "priority": "P0",
+      "status": "done",
+      "files": [
+        "docs/flow-visual/concepts/"
+      ],
+      "acceptance": [
+        "每个概念有逐像素字符网格构造与 4 向复用规则",
+        "每个概念有 I1–I6 映射表与 quads 预算",
+        "每个概念产出 1x/4x 静态图与 attrs/temp/content/dirs 四张对照图",
+        "每个概念写出自己的失败模式"
+      ],
+      "dependsOn": [],
+      "requiredEvidence": [
+        "design",
+        "visual"
+      ],
+      "owner": "",
+      "leaseUntil": "",
+      "createdAt": "2026-10-20T12:13:48.679Z",
+      "updatedAt": "2026-10-20T12:28:18.539Z",
+      "completedAt": "2026-10-20T12:28:18.539Z",
+      "notes": [
+        {
+          "at": "2026-10-20T12:28:07.449Z",
+          "by": "director",
+          "text": "claimed for 120m"
+        },
+        {
+          "at": "2026-10-20T12:28:14.202Z",
+          "by": "director",
+          "text": "handoff to name-scoped owner"
+        },
+        {
+          "at": "2026-10-20T12:28:16.311Z",
+          "by": "director:aa557ffe",
+          "text": "claimed for 120m"
+        }
+      ]
+    },
+    {
+      "id": "T-VIS-003",
+      "title": "对抗评审 + 方向收敛（第一轮）",
+      "role": "review",
+      "priority": "P0",
+      "status": "done",
+      "files": [
+        "docs/flow-visual/round2/"
+      ],
+      "acceptance": [
+        "三个方向各收到至少 5 条 S0–S3 级问题",
+        "明确选出 1 个主方向与 1 个备选，并写淘汰理由",
+        "主方向的属性通道无冲突矩阵遗留 S0/S1"
+      ],
+      "dependsOn": [
+        "T-VIS-001",
+        "T-VIS-002"
+      ],
+      "requiredEvidence": [
+        "review"
+      ],
+      "owner": "",
+      "leaseUntil": "",
+      "createdAt": "2026-10-20T12:13:48.686Z",
+      "updatedAt": "2026-10-20T12:36:05.604Z",
+      "completedAt": "2026-10-20T12:36:05.604Z",
+      "notes": [
+        {
+          "at": "2026-10-20T12:36:03.134Z",
+          "by": "director:aa557ffe",
+          "text": "claimed for 120m"
+        }
+      ]
+    },
+    {
+      "id": "T-VIS-004",
+      "title": "最终规格 + 交互预览 + 静态渲染矩阵",
+      "role": "tech-art",
+      "priority": "P0",
+      "status": "done",
+      "files": [
+        "docs/flow-visual/final/",
+        "tools/flow-visual/"
+      ],
+      "acceptance": [
+        "final/ 有 GDD、通道表、参数表、运动时间轴、实现契约、验收标准",
+        "preview.html 可切换 6 成分 × 3 温度 × 3 含量 × 3 射程 × 4 向 × 5 状态",
+        "tools/flow-visual 能一键重建全部 PNG 矩阵（1x/4x/灰度/色盲）",
+        "验收判据每条都有可观察证据"
+      ],
+      "dependsOn": [
+        "T-VIS-003"
+      ],
+      "requiredEvidence": [
+        "design",
+        "visual"
+      ],
+      "owner": "",
+      "leaseUntil": "",
+      "createdAt": "2026-10-20T12:13:48.692Z",
+      "updatedAt": "2026-10-20T12:43:25.925Z",
+      "completedAt": "2026-10-20T12:43:25.925Z",
+      "notes": [
+        {
+          "at": "2026-10-20T12:36:07.884Z",
+          "by": "director:aa557ffe",
+          "text": "claimed for 120m"
+        }
+      ]
+    }
+  ]
+}

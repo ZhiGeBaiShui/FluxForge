@@ -1,0 +1,427 @@
+[
+ {
+  "path": "tiles/comp-water.png",
+  "group": "comp",
+  "answer": "water",
+  "meta": "water/large/normal/flow/right",
+  "bbox": [
+   2,
+   4,
+   12,
+   8
+  ],
+  "quads": 24,
+  "quads_runs": [
+   28,
+   49
+  ]
+ },
+ {
+  "path": "tiles/comp-poison.png",
+  "group": "comp",
+  "answer": "poison",
+  "meta": "poison/large/normal/flow/right",
+  "bbox": [
+   2,
+   4,
+   12,
+   8
+  ],
+  "quads": 30,
+  "quads_runs": [
+   33,
+   52
+  ]
+ },
+ {
+  "path": "tiles/comp-oil.png",
+  "group": "comp",
+  "answer": "oil",
+  "meta": "oil/large/normal/flow/right",
+  "bbox": [
+   2,
+   4,
+   12,
+   8
+  ],
+  "quads": 30,
+  "quads_runs": [
+   33,
+   52
+  ]
+ },
+ {
+  "path": "tiles/comp-blood.png",
+  "group": "comp",
+  "answer": "blood",
+  "meta": "blood/large/normal/flow/right",
+  "bbox": [
+   2,
+   4,
+   12,
+   8
+  ],
+  "quads": 26,
+  "quads_runs": [
+   29,
+   52
+  ]
+ },
+ {
+  "path": "tiles/comp-acid.png",
+  "group": "comp",
+  "answer": "acid",
+  "meta": "acid/large/normal/flow/right",
+  "bbox": [
+   2,
+   4,
+   12,
+   8
+  ],
+  "quads": 24,
+  "quads_runs": [
+   28,
+   49
+  ]
+ },
+ {
+  "path": "tiles/comp-energy.png",
+  "group": "comp",
+  "answer": "energy",
+  "meta": "energy/large/normal/flow/right",
+  "bbox": [
+   2,
+   4,
+   12,
+   8
+  ],
+  "quads": 30,
+  "quads_runs": [
+   33,
+   52
+  ]
+ },
+ {
+  "path": "tiles/temp-cold.png",
+  "group": "temp",
+  "answer": "cold",
+  "meta": "water/large/cold/flow/right",
+  "bbox": [
+   2,
+   4,
+   12,
+   8
+  ],
+  "quads": 25,
+  "quads_runs": [
+   29,
+   49
+  ]
+ },
+ {
+  "path": "tiles/temp-normal.png",
+  "group": "temp",
+  "answer": "normal",
+  "meta": "water/large/normal/flow/right",
+  "bbox": [
+   2,
+   4,
+   12,
+   8
+  ],
+  "quads": 24,
+  "quads_runs": [
+   28,
+   49
+  ]
+ },
+ {
+  "path": "tiles/temp-hot.png",
+  "group": "temp",
+  "answer": "hot",
+  "meta": "water/large/hot/flow/right",
+  "bbox": [
+   2,
+   4,
+   12,
+   8
+  ],
+  "quads": 22,
+  "quads_runs": [
+   27,
+   49
+  ]
+ },
+ {
+  "path": "tiles/content-empty.png",
+  "group": "content",
+  "answer": "empty",
+  "meta": "water/empty/normal/flow/right",
+  "bbox": [
+   5,
+   7,
+   6,
+   1
+  ],
+  "quads": 4,
+  "quads_runs": [
+   4,
+   9
+  ]
+ },
+ {
+  "path": "tiles/content-small.png",
+  "group": "content",
+  "answer": "small",
+  "meta": "water/small/normal/flow/right",
+  "bbox": [
+   5,
+   5,
+   6,
+   6
+  ],
+  "quads": 17,
+  "quads_runs": [
+   22,
+   25
+  ]
+ },
+ {
+  "path": "tiles/content-mid.png",
+  "group": "content",
+  "answer": "mid",
+  "meta": "water/mid/normal/flow/right",
+  "bbox": [
+   4,
+   4,
+   8,
+   8
+  ],
+  "quads": 21,
+  "quads_runs": [
+   29,
+   35
+  ]
+ },
+ {
+  "path": "tiles/content-large.png",
+  "group": "content",
+  "answer": "large",
+  "meta": "water/large/normal/flow/right",
+  "bbox": [
+   2,
+   4,
+   12,
+   8
+  ],
+  "quads": 24,
+  "quads_runs": [
+   28,
+   49
+  ]
+ },
+ {
+  "path": "tiles/range-3.png",
+  "group": "range",
+  "answer": "3",
+  "meta": "water/large/normal/flow/right/range3",
+  "bbox": [
+   2,
+   4,
+   12,
+   8
+  ],
+  "quads": 24,
+  "quads_runs": [
+   28,
+   49
+  ]
+ },
+ {
+  "path": "tiles/range-2.png",
+  "group": "range",
+  "answer": "2",
+  "meta": "water/large/normal/flow/right/range2",
+  "bbox": [
+   2,
+   4,
+   12,
+   8
+  ],
+  "quads": 24,
+  "quads_runs": [
+   28,
+   49
+  ]
+ },
+ {
+  "path": "tiles/range-1.png",
+  "group": "range",
+  "answer": "1",
+  "meta": "water/large/normal/flow/right/range1",
+  "bbox": [
+   2,
+   4,
+   12,
+   8
+  ],
+  "quads": 24,
+  "quads_runs": [
+   28,
+   49
+  ]
+ },
+ {
+  "path": "tiles/dir-right.png",
+  "group": "dir",
+  "answer": "right",
+  "meta": "water/large/normal/flow/right",
+  "bbox": [
+   2,
+   4,
+   12,
+   8
+  ],
+  "quads": 24,
+  "quads_runs": [
+   28,
+   49
+  ]
+ },
+ {
+  "path": "tiles/dir-down.png",
+  "group": "dir",
+  "answer": "down",
+  "meta": "water/large/normal/flow/down",
+  "bbox": [
+   4,
+   2,
+   8,
+   12
+  ],
+  "quads": 28,
+  "quads_runs": [
+   40,
+   36
+  ]
+ },
+ {
+  "path": "tiles/dir-left.png",
+  "group": "dir",
+  "answer": "left",
+  "meta": "water/large/normal/flow/left",
+  "bbox": [
+   2,
+   4,
+   12,
+   8
+  ],
+  "quads": 24,
+  "quads_runs": [
+   28,
+   49
+  ]
+ },
+ {
+  "path": "tiles/dir-up.png",
+  "group": "dir",
+  "answer": "up",
+  "meta": "water/large/normal/flow/up",
+  "bbox": [
+   4,
+   2,
+   8,
+   12
+  ],
+  "quads": 27,
+  "quads_runs": [
+   40,
+   36
+  ]
+ },
+ {
+  "path": "tiles/state-flow.png",
+  "group": "state",
+  "answer": "flow",
+  "meta": "water/large/normal/flow/right",
+  "bbox": [
+   2,
+   4,
+   12,
+   8
+  ],
+  "quads": 24,
+  "quads_runs": [
+   28,
+   49
+  ]
+ },
+ {
+  "path": "tiles/state-blocked.png",
+  "group": "state",
+  "answer": "blocked",
+  "meta": "water/large/normal/blocked/right",
+  "bbox": [
+   3,
+   4,
+   11,
+   8
+  ],
+  "quads": 22,
+  "quads_runs": [
+   30,
+   45
+  ]
+ },
+ {
+  "path": "tiles/state-split.png",
+  "group": "state",
+  "answer": "split",
+  "meta": "water/large/normal/split/right",
+  "bbox": [
+   2,
+   3,
+   12,
+   10
+  ],
+  "quads": 23,
+  "quads_runs": [
+   27,
+   53
+  ]
+ },
+ {
+  "path": "tiles/state-merge.png",
+  "group": "state",
+  "answer": "merge",
+  "meta": "water/large/normal/merge/right",
+  "bbox": [
+   2,
+   4,
+   12,
+   8
+  ],
+  "quads": 24,
+  "quads_runs": [
+   29,
+   51
+  ]
+ },
+ {
+  "path": "tiles/state-collect.png",
+  "group": "state",
+  "answer": "collect",
+  "meta": "water/large/normal/collect/right",
+  "bbox": [
+   2,
+   4,
+   11,
+   8
+  ],
+  "quads": 22,
+  "quads_runs": [
+   29,
+   49
+  ]
+ }
+]

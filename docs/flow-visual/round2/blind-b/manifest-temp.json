@@ -1,0 +1,20 @@
+[
+  {
+    "path": "docs/flow-visual/round2/blind-b/temp-cold.png",
+    "group": "temp",
+    "answer": "cold",
+    "meta": "{\"temp\": \"cold\"}"
+  },
+  {
+    "path": "docs/flow-visual/round2/blind-b/temp-ambient.png",
+    "group": "temp",
+    "answer": "ambient",
+    "meta": "{\"temp\": \"ambient\"}"
+  },
+  {
+    "path": "docs/flow-visual/round2/blind-b/temp-hot.png",
+    "group": "temp",
+    "answer": "hot",
+    "meta": "{\"temp\": \"hot\"}"
+  }
+]

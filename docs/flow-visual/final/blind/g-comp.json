@@ -1,0 +1,32 @@
+[
+ {
+  "path": "../tiles/comp-water.png",
+  "answer": "water",
+  "meta": "water/large/normal/flow/right"
+ },
+ {
+  "path": "../tiles/comp-poison.png",
+  "answer": "poison",
+  "meta": "poison/large/normal/flow/right"
+ },
+ {
+  "path": "../tiles/comp-oil.png",
+  "answer": "oil",
+  "meta": "oil/large/normal/flow/right"
+ },
+ {
+  "path": "../tiles/comp-blood.png",
+  "answer": "blood",
+  "meta": "blood/large/normal/flow/right"
+ },
+ {
+  "path": "../tiles/comp-acid.png",
+  "answer": "acid",
+  "meta": "acid/large/normal/flow/right"
+ },
+ {
+  "path": "../tiles/comp-energy.png",
+  "answer": "energy",
+  "meta": "energy/large/normal/flow/right"
+ }
+]

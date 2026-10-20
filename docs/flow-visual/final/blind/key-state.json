@@ -1,0 +1,27 @@
+{
+  "1": {
+    "answer": "collect",
+    "meta": "water/large/normal/collect/right",
+    "path": "../tiles/state-collect.png"
+  },
+  "2": {
+    "answer": "flow",
+    "meta": "water/large/normal/flow/right",
+    "path": "../tiles/state-flow.png"
+  },
+  "3": {
+    "answer": "merge",
+    "meta": "water/large/normal/merge/right",
+    "path": "../tiles/state-merge.png"
+  },
+  "4": {
+    "answer": "blocked",
+    "meta": "water/large/normal/blocked/right",
+    "path": "../tiles/state-blocked.png"
+  },
+  "5": {
+    "answer": "split",
+    "meta": "water/large/normal/split/right",
+    "path": "../tiles/state-split.png"
+  }
+}

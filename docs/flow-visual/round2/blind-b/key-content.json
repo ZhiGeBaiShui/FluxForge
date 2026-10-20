@@ -1,0 +1,22 @@
+{
+  "1": {
+    "answer": "large",
+    "meta": "{\"tier\": \"large\"}",
+    "path": "docs/flow-visual/round2/blind-b/content-large.png"
+  },
+  "2": {
+    "answer": "small",
+    "meta": "{\"tier\": \"small\"}",
+    "path": "docs/flow-visual/round2/blind-b/content-small.png"
+  },
+  "3": {
+    "answer": "empty",
+    "meta": "{\"tier\": \"empty\"}",
+    "path": "docs/flow-visual/round2/blind-b/content-empty.png"
+  },
+  "4": {
+    "answer": "mid",
+    "meta": "{\"tier\": \"mid\"}",
+    "path": "docs/flow-visual/round2/blind-b/content-mid.png"
+  }
+}

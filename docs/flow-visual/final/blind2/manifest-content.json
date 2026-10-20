@@ -1,0 +1,22 @@
+[
+  {
+    "path": "E:\\code\\ProbablyBagMod\\docs\\flow-visual\\final\\tiles\\content-empty.png",
+    "group": "content",
+    "answer": "empty"
+  },
+  {
+    "path": "E:\\code\\ProbablyBagMod\\docs\\flow-visual\\final\\tiles\\content-small.png",
+    "group": "content",
+    "answer": "small"
+  },
+  {
+    "path": "E:\\code\\ProbablyBagMod\\docs\\flow-visual\\final\\tiles\\content-mid.png",
+    "group": "content",
+    "answer": "mid"
+  },
+  {
+    "path": "E:\\code\\ProbablyBagMod\\docs\\flow-visual\\final\\tiles\\content-large.png",
+    "group": "content",
+    "answer": "large"
+  }
+]

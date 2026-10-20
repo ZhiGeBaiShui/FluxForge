@@ -1,0 +1,26 @@
+[
+  {
+    "path": "docs/flow-visual/round2/blind-b/dir-up.png",
+    "group": "dir",
+    "answer": "up",
+    "meta": "{\"direction\": \"up\"}"
+  },
+  {
+    "path": "docs/flow-visual/round2/blind-b/dir-right.png",
+    "group": "dir",
+    "answer": "right",
+    "meta": "{\"direction\": \"right\"}"
+  },
+  {
+    "path": "docs/flow-visual/round2/blind-b/dir-down.png",
+    "group": "dir",
+    "answer": "down",
+    "meta": "{\"direction\": \"down\"}"
+  },
+  {
+    "path": "docs/flow-visual/round2/blind-b/dir-left.png",
+    "group": "dir",
+    "answer": "left",
+    "meta": "{\"direction\": \"left\"}"
+  }
+]

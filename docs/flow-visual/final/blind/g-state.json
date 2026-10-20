@@ -1,0 +1,27 @@
+[
+ {
+  "path": "../tiles/state-flow.png",
+  "answer": "flow",
+  "meta": "water/large/normal/flow/right"
+ },
+ {
+  "path": "../tiles/state-blocked.png",
+  "answer": "blocked",
+  "meta": "water/large/normal/blocked/right"
+ },
+ {
+  "path": "../tiles/state-split.png",
+  "answer": "split",
+  "meta": "water/large/normal/split/right"
+ },
+ {
+  "path": "../tiles/state-merge.png",
+  "answer": "merge",
+  "meta": "water/large/normal/merge/right"
+ },
+ {
+  "path": "../tiles/state-collect.png",
+  "answer": "collect",
+  "meta": "water/large/normal/collect/right"
+ }
+]
