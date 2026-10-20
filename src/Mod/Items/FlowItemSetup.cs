@@ -146,6 +146,8 @@ namespace ProbablyBagMod.Mod
 
             // 每台机器一个视图：自己订阅本机流源的生死广播，自己持有一块蒙版层。
             // 不再有按网格登记的静态表，所以第二台机器落地不会覆盖第一台。
+            // 覆盖字段前先释放旧视图：否则旧视图的订阅与层会永远留在已销毁的网格下。
+            machine.AtlasView?.Dispose();
             machine.AtlasView = new FlowAtlasView(machine.Grid, inventory, machine.Flows);
         }
 

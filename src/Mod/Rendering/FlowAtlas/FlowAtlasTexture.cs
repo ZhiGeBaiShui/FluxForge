@@ -118,6 +118,40 @@ namespace ProbablyBagMod.Mod.Rendering.FlowAtlas
         }
 
         /// <summary>
+        /// 卸载时释放全部缓存：Sprite、四张贴图、状态记忆表一起销毁并清空，
+        /// 同时重置懒加载标记。未加载时调用也安全（全是空表 / null）。
+        ///
+        /// 贴图与 Sprite 都是 <see cref="HideFlags.DontSave"/> 的运行时对象，
+        /// 进程退出不会替我们回收；不主动销毁就会在每次热重载/退出时留下泄漏。
+        /// </summary>
+        public static void Shutdown()
+        {
+            foreach (Sprite sprite in _sprites.Values)
+            {
+                if (sprite != null)
+                {
+                    UnityEngine.Object.Destroy(sprite);
+                }
+            }
+
+            _sprites.Clear();
+            _resolved.Clear();
+
+            DestroyTexture(_bodyTexture);
+            DestroyTexture(_edgeTexture);
+            DestroyTexture(_accentTexture);
+            DestroyTexture(_wallTexture);
+
+            _bodyTexture = null;
+            _edgeTexture = null;
+            _accentTexture = null;
+            _wallTexture = null;
+            _index = null;
+            _initialized = false;
+            _ready = false;
+        }
+
+        /// <summary>
         /// 取一个视觉状态对应的四张蒙版 Sprite；图集不可用 / 该状态彻底没有 tile 时返回全空。
         /// 用 in 传引用，避免每次查询复制整个结构体。
         /// </summary>
@@ -290,6 +324,15 @@ namespace ProbablyBagMod.Mod.Rendering.FlowAtlas
             texture.hideFlags = HideFlags.DontSave;     // 防 Unity 资源管理卸载
             LoadImageMethod.Invoke(null, new object[] { texture, (Il2CppStructArray<byte>)png });
             return texture;
+        }
+
+        /// <summary>销毁一张缓存贴图；null 安全（加载失败时字段就是 null）。</summary>
+        private static void DestroyTexture(Texture2D texture)
+        {
+            if (texture != null)
+            {
+                UnityEngine.Object.Destroy(texture);
+            }
         }
     }
 }

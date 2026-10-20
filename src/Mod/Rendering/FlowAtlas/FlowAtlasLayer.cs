@@ -377,6 +377,20 @@ namespace ProbablyBagMod.Mod.Rendering.FlowAtlas
 
             _destroyed = true;
 
+            // 粒子 sprite 与其 1×1 贴图是 HideFlags.DontSave 的运行时对象，
+            // 不会随后面销毁根节点自动回收；先手动销毁，否则每次面板重建都漏一份。
+            if (_dotSprite != null)
+            {
+                Texture2D texture = _dotSprite.texture;
+                if (texture != null)
+                {
+                    UnityEngine.Object.Destroy(texture);
+                }
+
+                UnityEngine.Object.Destroy(_dotSprite);
+                _dotSprite = null;
+            }
+
             if (_root != null)
             {
                 UnityEngine.Object.Destroy(_root.gameObject);

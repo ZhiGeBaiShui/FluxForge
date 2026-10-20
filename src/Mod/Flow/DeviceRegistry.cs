@@ -50,6 +50,21 @@ namespace ProbablyBagMod.Mod
             _devices.Remove(itemPointer);
         }
 
+        /// <summary>
+        /// 注销一台机器网格里出现过的全部装置。
+        ///
+        /// 入参是 <see cref="ProbablyBagMod.Mod.Flow.Adapters.FlowGridAdapter"/> 在启动扫描时记下的物品指针；
+        /// 退役路径只遍历这些 IntPtr，不再解引用可能已经失效的原生对象。
+        /// 非装置物品的指针也会传进来，<see cref="Unregister"/> 查不到时自然无操作。
+        /// </summary>
+        public static void UnregisterAll(IReadOnlyCollection<IntPtr> itemPointers)
+        {
+            foreach (IntPtr pointer in itemPointers)
+            {
+                Unregister(pointer);
+            }
+        }
+
         /// <summary>读档 / 换场景时整体失效（旧指针可能被复用，不能留着）。</summary>
         public static void Clear()
         {

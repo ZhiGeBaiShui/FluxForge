@@ -1,6 +1,7 @@
 using Il2CppInterop.Runtime;
 using Il2CppInterop.Runtime.InteropTypes.Arrays;
 using MelonLoader;
+using ProbablyBagMod.Mod.Rendering.FlowAtlas;
 
 [assembly: MelonInfo(typeof(ProbablyBagMod.Mod.PBModEntry), "ProbablyBagMod", "0.1.0", "ProbablyBagMod")]
 [assembly: MelonGame(null, null)]
@@ -35,6 +36,26 @@ namespace ProbablyBagMod.Mod
             ItemTypeLocalization.Register(FlowItemSetup.FlowDeviceType, FlowItemSetup.FlowDeviceDisplayName);
 
             LoggerInstance.Msg("ProbablyBagMod 已加载");
+        }
+
+        /// <summary>
+        /// 卸载 mod / 进程退出：撤掉所有全局状态，避免旧委托在原生侧继续被调用。
+        ///
+        /// 顺序：先退役机器（退订流源广播、销毁层），再断开游戏钩子、拆 Harmony 补丁，
+        /// 最后释放图集贴图。反过来做的话，Hook 回调可能落到已经拆掉的补丁/已释放的贴图上。
+        /// </summary>
+        public override void OnDeinitializeMelon()
+        {
+            FlowDriver.Reset();
+
+            // 这两个钩子把我们的托管方法交给了游戏原生侧：不断开的话，
+            // 卸载后原生侧仍持有委托，可能在 mod 程序集已不可用时回调进来
+            Il2Cpp.ModHook.OnModItemDirectoryInit = null;
+            Il2Cpp.ModHook.OnGameLoadedInit = null;
+
+            HarmonyInstance.UnpatchSelf();
+            FlowAtlasTexture.Shutdown();
+            LoggerInstance.Msg("ProbablyBagMod 已卸载");
         }
 
         /// <summary>读档完成：旧物品、旧网格、旧流源全部作废，整体重置。</summary>
@@ -95,6 +116,12 @@ namespace ProbablyBagMod.Mod
             string report = RegisterInto(directory);
             _registered = true;
             LoggerInstance.Msg("[注册] 经场景扫描（钩子未触发）：" + report);
+        }
+
+        /// <summary>场景卸载：旧网格、旧物品、旧流源全部作废，和读档走同一条重置路径。</summary>
+        public override void OnSceneWasUnloaded(int buildIndex, string sceneName)
+        {
+            FlowDriver.Reset();
         }
 
         /// <summary>把配置里的每个物品塞进目录。返回简要报告。</summary>

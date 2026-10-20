@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using ProbablyBagMod.Mod.Flow.View;
 
@@ -27,8 +28,15 @@ namespace ProbablyBagMod.Mod
             = new HashSet<FlowMachine>();
 
         /// <summary>流量机创建时登记。机器物品被销毁后会在下一次 Update 里自动剔除。</summary>
+        /// <exception cref="ArgumentNullException"><paramref name="machine"/> 为 null。</exception>
         public static void Add(FlowMachine machine)
         {
+            // 表里只放非空机器：后续的遍历、重置与退役都不再逐台判空
+            if (machine == null)
+            {
+                throw new ArgumentNullException(nameof(machine));
+            }
+
             _machines.Add(machine);
         }
 
@@ -41,24 +49,26 @@ namespace ProbablyBagMod.Mod
 
                 // 物品被销毁后原生指针失效，再访问就会碰到野指针。
                 // 一台机器出问题不该连累其他机器：这里把它的流源和显示一并撤掉。
-                if (!machine.IsAlive)
-                {
-                    // 先摘出表再退役：退役里的广播会调订阅方，万一它抛异常，
-                    // 已经摘掉的机器不会永远留在表里每帧重试
-                    _machines.RemoveAt(i);
-                    Retire(machine);
-                    continue;
-                }
-
+                // 存活检查本身也要碰原生对象，所以必须放进 try：它抛异常时同样要退役，
+                // 否则这台机器会每帧重试、每次都在 try 外炸掉整个 OnUpdate。
                 try
                 {
+                    if (!machine.IsAlive)
+                    {
+                        // 先摘出表再退役：退役里的广播会调订阅方，万一它抛异常，
+                        // 已经摘掉的机器不会永远留在表里每帧重试
+                        _machines.RemoveAt(i);
+                        Retire(machine);
+                        continue;
+                    }
+
                     machine.Motion.Tick(deltaTime, machine.Flows);
                 }
                 catch (System.Exception e)
                 {
                     // 装置在这条链上会碰原生对象，一旦抛异常而没人兜，
                     // 后面所有机器当帧都不再推进，且下一帧照样复现——等于永久饿死
-                    MelonLoader.MelonLogger.Error("[流量机] 推进失败，已退役该机器：" + e);
+                    MelonLoader.MelonLogger.Error("[流量机] 推进或存活检查失败，已退役该机器：" + e);
                     _machines.RemoveAt(i);
                     Retire(machine);
                 }
@@ -79,7 +89,7 @@ namespace ProbablyBagMod.Mod
             for (int i = 0; i < _machines.Count; i++)
             {
                 FlowMachine machine = _machines[i];
-                FlowAtlasView view = machine == null ? null : machine.AtlasView;
+                FlowAtlasView view = machine.AtlasView;
                 if (view == null)
                 {
                     continue;
@@ -95,13 +105,15 @@ namespace ProbablyBagMod.Mod
                     if (_visualErrorReported.Add(machine))
                     {
                         MelonLoader.MelonLogger.Error(
-                            "[流量机] 视觉推进失败，已释放该机器的视图（其它机器继续绘制）：" + e);
+                            "[流量机] 视觉推进失败，已退役该机器（其它机器继续绘制）：" + e);
                     }
 
-                    // 出错的视图不能留到下一帧再 Tick：同一份坏数据大概率每帧复现，
-                    // 等于每帧抛一次。释放并摘掉后，这台机器退回「无视觉」，逻辑照常推进。
-                    view.Dispose();
-                    machine.AtlasView = null;
+                    // 出错的视图不能留到下一帧再 Tick：同一份坏数据大概率每帧复现。
+                    // 走完整退役路径（摘表 + KillAll + 释放视图 + 注销装置），
+                    // 否则机器会留在 _machines 里，下一帧继续拿坏视图重试。
+                    _machines.RemoveAt(i);
+                    i--;
+                    Retire(machine);
                 }
             }
         }
@@ -110,20 +122,30 @@ namespace ProbablyBagMod.Mod
         /// 撤掉一台作废的机器。
         ///
         /// 走到这里说明机器物品已经失效，所以**不能再读它的网格内容**——
-        /// 那是在解引用已经归零的原生指针。只做两件不依赖原生对象的事：
-        /// 广播流源死亡（视图据此收残影）、释放本机视图（退订 + 销毁层）。
+        /// 那是在解引用已经归零的原生指针。只做不依赖原生对象的事：
+        /// 广播流源死亡（视图据此收残影）、释放本机视图（退订 + 销毁层）、
+        /// 注销本机网格里登记过的装置（只按启动时记下的指针，不再解引用物品）。
         /// </summary>
         private static void Retire(FlowMachine machine)
         {
             // 机器已摘出调度表：它的「已报错」记账也一起丢掉，避免表无限增长
             _visualErrorReported.Remove(machine);
 
+            // KillAll 与视图释放必须各自兜底：前者会调订阅方（可能碰原生对象），
+            // 一旦抛异常，后者若共用同一个 try 就再也不会执行，层和订阅都会泄漏。
             try
             {
                 machine.Flows.KillAll();
+            }
+            catch (System.Exception e)
+            {
+                MelonLoader.MelonLogger.Error("[流量机] 退役时终止流源失败：" + e);
+            }
 
-                // KillAll 之后再 Dispose：订阅还在，死亡广播才会被本视图接住；
-                // Dispose 里退订并销毁层，之后这台机器不可能再往旧网格上画
+            // KillAll 之后再 Dispose：订阅还在，死亡广播才会被本视图接住；
+            // Dispose 里退订并销毁层，之后这台机器不可能再往旧网格上画
+            try
+            {
                 if (machine.AtlasView != null)
                 {
                     machine.AtlasView.Dispose();
@@ -132,9 +154,12 @@ namespace ProbablyBagMod.Mod
             }
             catch (System.Exception e)
             {
-                // 退役本身也在处理原生订阅方，失败只能记下来——机器已摘出表，不会重复
-                MelonLoader.MelonLogger.Error("[流量机] 退役过程出错：" + e);
+                MelonLoader.MelonLogger.Error("[流量机] 退役时释放视图失败：" + e);
             }
+
+            // 装置登记随机器一起失效：网格退役后这些装置指针不该再被查到。
+            // ItemPointers 是启动扫描时留下的 IntPtr，不访问已失效的物品对象。
+            DeviceRegistry.UnregisterAll(machine.Grid.ItemPointers);
 
             MelonLoader.MelonLogger.Msg("[流量机] 已移除失效的机器");
         }
@@ -147,7 +172,7 @@ namespace ProbablyBagMod.Mod
             for (int i = 0; i < _machines.Count; i++)
             {
                 FlowMachine machine = _machines[i];
-                FlowAtlasView view = machine == null ? null : machine.AtlasView;
+                FlowAtlasView view = machine.AtlasView;
                 if (view == null)
                 {
                     continue;

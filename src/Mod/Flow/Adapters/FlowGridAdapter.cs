@@ -20,6 +20,15 @@ namespace ProbablyBagMod.Mod.Flow.Adapters
         private readonly Dictionary<long, Il2Cpp.GameItem> _cells
             = new Dictionary<long, Il2Cpp.GameItem>();
 
+        /// <summary>
+        /// 最近一次 <see cref="Refresh"/> 见到的物品指针。
+        ///
+        /// 只存 IntPtr、不存对象：机器退役时网格里的原生对象可能已经失效，
+        /// 那时只能用这些纯值去注销装置登记，不能再逐件访问 GameItem。
+        /// 布局在启动时锁定（见 <see cref="Refresh"/>），所以这份集合就是本机的装置集合。
+        /// </summary>
+        private readonly HashSet<IntPtr> _itemPointers = new HashSet<IntPtr>();
+
         private int _columns;
         private int _rows;
 
@@ -42,6 +51,12 @@ namespace ProbablyBagMod.Mod.Flow.Adapters
             get { return _inventory != null && _inventory.Pointer != IntPtr.Zero; }
         }
 
+        /// <summary>最近一次 Refresh 见到的本机物品指针（退役时注销装置登记用）。</summary>
+        public IReadOnlyCollection<IntPtr> ItemPointers
+        {
+            get { return _itemPointers; }
+        }
+
         public bool Contains(int cellX, int cellY)
         {
             return cellX >= 0 && cellY >= 0 && cellX < _columns && cellY < _rows;
@@ -51,6 +66,7 @@ namespace ProbablyBagMod.Mod.Flow.Adapters
         public void Refresh()
         {
             _cells.Clear();
+            _itemPointers.Clear();
             if (!IsAlive)
             {
                 return;
@@ -69,6 +85,9 @@ namespace ProbablyBagMod.Mod.Flow.Adapters
                 {
                     continue;
                 }
+
+                // 先记指针再读形状：没有形状的物品也属于本机，退役时同样要注销登记
+                _itemPointers.Add(item.Pointer);
 
                 // ⚠ 用 modifiedShape：shape 是物品的**定义形状**，minX/minY 不随摆放更新。
                 //   玩家把装置拖到哪，只有 modifiedShape 反映真实格位。
