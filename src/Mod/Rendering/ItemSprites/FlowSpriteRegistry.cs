@@ -6,7 +6,7 @@ using Il2CppInterop.Runtime.InteropTypes.Arrays;
 using MelonLoader;
 using UnityEngine;
 
-namespace ProbablyBagMod.Mod
+namespace ProbablyBagMod.Mod.Rendering.ItemSprites
 {
     /// <summary>
     /// 贴图管理者（单例）：读取嵌入的 assets/sprites.json，按 key / atlas 查询贴图（首次加载后缓存）。

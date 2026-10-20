@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using ProbablyBagMod.Mod.Flow.Adapters;
+using ProbablyBagMod.Mod.Flow.View;
 
 namespace ProbablyBagMod.Mod
 {
@@ -46,6 +48,13 @@ namespace ProbablyBagMod.Mod
 
         /// <summary>面板里的那块网格。</summary>
         public Il2Cpp.GameGridInventory Inventory { get; }
+
+        /// <summary>
+        /// 本机专属的视觉视图（REFACTOR-A §5）：持有蒙版层、订阅本机流源的生死广播。
+        /// 由 <see cref="Mod.FlowItemSetup"/> 在创建机器时装配，<see cref="FlowDriver"/> 驱动与释放。
+        /// 为 null 表示视图还没装配（或已退役）——渲染层必须容忍这一点。
+        /// </summary>
+        public FlowAtlasView AtlasView;
 
         /// <summary>物品与网格都还指向有效原生对象。</summary>
         public bool IsAlive

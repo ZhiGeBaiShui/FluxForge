@@ -1,4 +1,4 @@
-﻿#!/usr/bin/env python3
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """render_final.py — 终稿渲染器：钝头液滴 + 物理状态 + 底部射程点。
 
@@ -45,7 +45,7 @@ TEMPS = ("cold", "normal", "hot")
 TCN = {"cold": "冷 ≤5℃", "normal": "常温 21℃", "hot": "热 ≥60℃"}
 CONTENT = ("empty", "small", "mid", "large")
 CCN = {"empty": "空", "small": "少", "mid": "中", "large": "多"}
-CBBOX = {"empty": (5, 7, 6, 1), "small": (5, 5, 6, 6), "mid": (4, 4, 8, 8), "large": (2, 4, 12, 8)}
+CBBOX = {"empty": (5, 7, 6, 1), "small": (4, 5, 8, 6), "mid": (4, 4, 8, 8), "large": (2, 4, 12, 8)}
 STATES = ("flow", "blocked", "split", "merge", "collect")
 SCN = {"flow": "流动", "blocked": "受阻", "split": "分流", "merge": "汇聚", "collect": "被收集"}
 DIRS = ("right", "down", "left", "up")
@@ -136,13 +136,13 @@ def flow_rows(content):
             (10, [(6, 7, "E"), (8, 10, "B"), (11, 11, "E")]),
             (11, [(8, 10, "E")]),
         ]
-    return [  # small
-        (5, [(7, 9, "E")]),
-        (6, [(6, 6, "E"), (7, 9, "B"), (10, 10, "E")]),
-        (7, [(5, 5, "r"), (6, 6, "R"), (7, 7, "B"), (8, 9, "C"), (10, 10, "G")]),
-        (8, [(5, 5, "r"), (6, 6, "R"), (7, 7, "B"), (8, 9, "C"), (10, 10, "G")]),
-        (9, [(6, 6, "E"), (7, 9, "B"), (10, 10, "E")]),
-        (10, [(7, 9, "E")]),
+    return [  # small 8×6：x=4..11，y=5..10；前端 6 行钝口、后缘 2px
+        (5,  [(8, 11, "E")]),
+        (6,  [(6, 6, "E"), (7, 10, "B"), (11, 11, "G")]),
+        (7,  [(4, 4, "r"), (5, 5, "R"), (6, 8, "B"), (9, 10, "C"), (11, 11, "G")]),
+        (8,  [(4, 4, "r"), (5, 5, "R"), (6, 8, "B"), (9, 10, "C"), (11, 11, "G")]),
+        (9,  [(6, 6, "E"), (7, 10, "B"), (11, 11, "G")]),
+        (10, [(8, 11, "E")]),
     ]
 
 
@@ -206,9 +206,9 @@ def grid_state(state, content="large"):
         rows = [
             (4, [(8, 11, "E")]),
             (5, [(6, 7, "E"), (8, 11, "B"), (12, 12, "E")]),
-            (6, [(4, 5, "E"), (6, 11, "B"), (12, 12, "E"), (15, 15, "M")]),
-            (7, [(2, 2, "r"), (3, 3, "R"), (4, 9, "B"), (10, 11, "C"), (12, 15, "~")]),
-            (8, [(2, 2, "r"), (3, 3, "R"), (4, 9, "B"), (10, 11, "C"), (12, 12, "E"), (15, 15, "M")]),
+            (6, [(4, 5, "E"), (6, 11, "B"), (12, 12, "E")]),
+            (7, [(2, 2, "r"), (3, 3, "R"), (4, 9, "B"), (10, 11, "C"), (12, 12, "E")]),
+            (8, [(2, 2, "r"), (3, 3, "R"), (4, 9, "B"), (10, 11, "C"), (12, 12, "E")]),
             (9, [(4, 5, "E"), (6, 11, "B"), (12, 12, "E")]),
             (10, [(6, 7, "E"), (8, 11, "B"), (12, 12, "E")]),
             (11, [(8, 11, "E")]),
@@ -438,7 +438,10 @@ def build_grid(comp, content, state, dirn, temp, frame=None):
     g, is_large = grid_state(state, content)
     bbox = bbox_of(g)
     if frame is not None and state == "flow":
-        g = squeeze(g, FRAMES["top"][frame], FRAMES["bot"][frame], bbox)
+        # 小档 8×6 的极值行 y=5/10 只有 4px 宽（x=8..11）；squeeze 按 bbox 取极值行，
+        # ±1px 会把前/后端推出 bbox（bbox 8→9、中心 7.5→8.0）。小档不做挤压（12 帧静态重复）。
+        if content != "small":
+            g = squeeze(g, FRAMES["top"][frame], FRAMES["bot"][frame], bbox)
         g = tail_fade(g, FRAMES["tail"][frame])
         g = add_textures(g, comp, content)
         g = apply_sheen(g, frame, comp, content)
@@ -693,8 +696,8 @@ def make_temp():
 
 
 def make_content():
-    s = Sheet("I3 含量 · 包围盒体积（空 6×1 / 少 6×6 / 中 8×8 / 多 12×8）",
-              "高光恒 2px、边恒 1px；「少」= 更小更紧的珠子，不是更散。")
+    s = Sheet("I3 含量 · 包围盒体积（空 6×1 / 少 8×6 / 中 8×8 / 多 12×8）",
+              "高光：少 4px / 中·多 2px；边恒 1px；「少」= 更小更紧的珠子，不是更散。")
     tiles = [cell(content=c) for c in CONTENT]
     s.add("水/常温", tiles, [f"{CCN[c]} {CBBOX[c][2]}×{CBBOX[c][3]}" for c in CONTENT])
     im = s.build()

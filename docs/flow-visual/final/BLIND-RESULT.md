@@ -70,3 +70,15 @@ $py = "C:\Users\Administrator\.dsh\dsh-runtimes\dsh-primary-runtime\dependencies
 & $py tools/flow-visual/qa.py blind --manifest docs/flow-visual/final/blind2/manifest-dir.json `
     --out docs/flow-visual/final/png/blind2-dir.png --key docs/flow-visual/final/blind2/key-dir.json --cols 4 --scale 8
 ```
+
+
+## 第四轮：小档改 8×6 后的含量复测（2026-10-21）
+
+改动：`少` 从 6×6（28px²）改为 **8×6（36px²）**，档差 6/36/48/68 = +500% / +33% / +42%。
+独立评审只看 `png/blind-content3.png`（4 格无标注、8×）：
+
+- **CONTENT 4/4**（1=多 2=少 3=空 4=中）；
+- 评审指出最接近的一对是 **少 vs 中**：两者宽度几乎相同，只差高度约 2 格（面积 +30%），靠面积判定；
+- 结论：8×6 在 1× 下仍可区分四档，小档形状（钝头+亮核+后缘）可读。
+
+代价：`少` 的 12 帧动效为静态重复（不再挤压），hot 面积 36→32。

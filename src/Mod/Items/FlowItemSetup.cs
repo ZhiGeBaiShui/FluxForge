@@ -1,5 +1,6 @@
 using System;
 using Il2CppInterop.Runtime;
+using ProbablyBagMod.Mod.Flow.View;
 
 namespace ProbablyBagMod.Mod
 {
@@ -142,7 +143,10 @@ namespace ProbablyBagMod.Mod
             item.SetContentWindow(window);
 
             FlowDriver.Add(machine);
-            FlowVisual.RegisterGrid(machine.Grid, inventory, machine.Flows);
+
+            // 每台机器一个视图：自己订阅本机流源的生死广播，自己持有一块蒙版层。
+            // 不再有按网格登记的静态表，所以第二台机器落地不会覆盖第一台。
+            machine.AtlasView = new FlowAtlasView(machine.Grid, inventory, machine.Flows);
         }
 
         /// <summary>解析 "4x3" 这类尺寸串，格式不对就保留默认值。</summary>

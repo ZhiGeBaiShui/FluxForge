@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using MelonLoader;
+using ProbablyBagMod.Mod.Rendering.ItemSprites;
 
 namespace ProbablyBagMod.Mod
 {

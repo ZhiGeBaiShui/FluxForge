@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace ProbablyBagMod.Mod
+namespace ProbablyBagMod.Mod.Flow.Adapters
 {
     /// <summary>
     /// 把游戏背包网格接到框架的运动层：回答「某格上有什么装置」。

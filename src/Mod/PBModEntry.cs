@@ -55,7 +55,8 @@ namespace ProbablyBagMod.Mod
 
         public override void OnLateUpdate()
         {
-            FlowVisual.LateUpdate();
+            // 视觉归每台机器自己：调度器逐台 Tick，单台失败不连累其它机器
+            FlowDriver.LateUpdateVisuals(UnityEngine.Time.deltaTime);
         }
 
         /// <summary>官方钩子：mod 目录初始化时回调。</summary>

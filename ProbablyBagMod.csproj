@@ -32,6 +32,8 @@
   <ItemGroup>
     <EmbeddedResource Include="assets\*.png" />
     <EmbeddedResource Include="assets\*.json" />
+    <!-- 旧彩色图集只作设计期对拍基准，不进运行时（A 方案改用 flow_mask_*） -->
+    <EmbeddedResource Remove="assets\flow_atlas.*" />
   </ItemGroup>
 
   <ItemGroup>

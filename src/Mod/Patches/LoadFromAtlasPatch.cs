@@ -2,6 +2,7 @@ using System;
 using HarmonyLib;
 using MelonLoader;
 using UnityEngine;
+using ProbablyBagMod.Mod.Rendering.ItemSprites;
 
 namespace ProbablyBagMod.Mod
 {
