@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using ProbablyBagMod.Mod.Flow.Adapters;
-using ProbablyBagMod.Mod.Flow.View;
+using ProbablyBagMod.Mod.Visual;
 
 namespace ProbablyBagMod.Mod
 {
@@ -54,7 +54,7 @@ namespace ProbablyBagMod.Mod
         /// 由 <see cref="Mod.FlowItemSetup"/> 在创建机器时装配，<see cref="FlowDriver"/> 驱动与释放。
         /// 为 null 表示视图还没装配（或已退役）——渲染层必须容忍这一点。
         /// </summary>
-        public FlowAtlasView AtlasView;
+        public FlowVisualLayer Visual;
 
         /// <summary>物品与网格都还指向有效原生对象。</summary>
         public bool IsAlive

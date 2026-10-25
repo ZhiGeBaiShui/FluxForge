@@ -4,13 +4,13 @@ using ProbablyBagMod.Presentation.Flow.Visual;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace ProbablyBagMod.Mod.Rendering.FlowAtlas
+namespace ProbablyBagMod.Mod.Visual.Internal
 {
     /// <summary>
     /// 一帧里一个流源的绘制参数（值类型：放进 List 不产生堆分配）。
-    /// 只由 <see cref="FlowAtlasView"/> 生产、<see cref="FlowAtlasLayer"/> 消费。
+    /// 只由 <see cref="FlowVisualLayer"/> 生产、<see cref="FlowAtlasLayer"/> 消费。
     /// </summary>
-    public readonly struct FlowDrawItem
+    internal readonly struct FlowDrawItem
     {
         /// <summary>
         /// 连续位置 X（格坐标：整数 = 格中心，小数 = 格内/跨格）。
@@ -59,7 +59,7 @@ namespace ProbablyBagMod.Mod.Rendering.FlowAtlas
     /// 射程点已删除（Tier-0 无数据源）：`FlowVisualState.Range` 仍是预留字段，
     /// 在数据源就绪前整条射程点绘制链不再存在。
     /// </summary>
-    public sealed class FlowAtlasLayer
+    internal sealed class FlowAtlasLayer
     {
         /// <summary>每个流源最多 6 层残影：亚格间距叠出连续渐隐的拖尾。</summary>
         private const int GhostsPerSource = 6;
@@ -199,7 +199,7 @@ namespace ProbablyBagMod.Mod.Rendering.FlowAtlas
             go.AddComponent<Canvas>();
         }
 
-        /// <summary>销毁之后不再绘制。供 <see cref="FlowAtlasView"/> 判断旧层是否还能用。</summary>
+        /// <summary>销毁之后不再绘制。供 <see cref="FlowVisualLayer"/> 判断旧层是否还能用。</summary>
         public bool IsAlive
         {
             get { return !_destroyed && _root != null; }
@@ -354,7 +354,7 @@ namespace ProbablyBagMod.Mod.Rendering.FlowAtlas
         }
 
         /// <summary>
-        /// 提交本帧的常驻粒子（由 <see cref="FlowAtlasView"/> 的粒子场汇总）。
+        /// 提交本帧的常驻粒子（由 <see cref="FlowVisualLayer"/> 的粒子场汇总）。
         /// 空列表也要提交——那是清场信号。
         ///
         /// 位置与本体同口径：leftPx = Round((area.xMin + X * 16) * ppu)，

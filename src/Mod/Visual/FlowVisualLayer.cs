@@ -1,11 +1,11 @@
 using System;
 using System.Collections.Generic;
-using ProbablyBagMod.Mod.Rendering.FlowAtlas;
+using ProbablyBagMod.Mod.Visual.Internal;
 using ProbablyBagMod.Presentation.Flow.Particles;
 using ProbablyBagMod.Presentation.Flow.Visual;
 using UnityEngine;
 
-namespace ProbablyBagMod.Mod.Flow.View
+namespace ProbablyBagMod.Mod.Visual
 {
     /// <summary>
     /// **一台机器一个**的视觉视图（REFACTOR-A §5）：把本机 FlowSpawner 里的流源翻译成
@@ -18,7 +18,7 @@ namespace ProbablyBagMod.Mod.Flow.View
     ///   · 层与网格 RectTransform 一一对应：面板重建（rect 变了）就地重建层，网格退役随机器 Dispose。
     ///
     /// 生命周期（由 <see cref="FlowDriver"/> 驱动）：
-    ///   FlowItemSetup 里 new → machine.AtlasView；
+    ///   FlowItemSetup 里 new → machine.Visual；
     ///   FlowDriver.LateUpdateVisuals → Tick(dt)；
     ///   FlowDriver.Retire / Reset → Dispose()。
     ///
@@ -27,7 +27,7 @@ namespace ProbablyBagMod.Mod.Flow.View
     ///   状态只区分 flow/blocked；collect 死亡贴图已删除，死亡改由粒子场原地淡出表达。
     ///   温度/含量/方向/帧号全部来自 FlowEntity 的现有字段。
     /// </summary>
-    public sealed class FlowAtlasView : IDisposable
+    public sealed class FlowVisualLayer : IDisposable
     {
         /// <summary>连续静止多少帧才判定为「被阻挡」（REFACTOR-A §4：2 帧）。</summary>
         private const int BlockedStillFrames = 2;
@@ -116,7 +116,7 @@ namespace ProbablyBagMod.Mod.Flow.View
 
         private bool _disposed;
 
-        public FlowAtlasView(Il2Cpp.GameGridInventory inventory, FlowSpawner flows)
+        public FlowVisualLayer(Il2Cpp.GameGridInventory inventory, FlowSpawner flows)
         {
             _inventory = inventory;
             _flows = flows;
@@ -201,6 +201,15 @@ namespace ProbablyBagMod.Mod.Flow.View
             // 本帧的本体与粒子一次性提交；层在解析处已确认存活
             layer.Submit(_items);
             layer.SubmitDots(_dots);
+        }
+
+        /// <summary>
+        /// 释放整个视觉层的静态资源（图集贴图/Sprite 缓存）。
+        /// 由 <c>PBModEntry.OnDeinitializeMelon</c> 调用；实例的 <see cref="Dispose"/> 只管本机。
+        /// </summary>
+        public static void Shutdown()
+        {
+            FlowAtlasTexture.Shutdown();
         }
 
         /// <summary>

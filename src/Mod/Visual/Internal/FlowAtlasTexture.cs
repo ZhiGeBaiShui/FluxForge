@@ -6,7 +6,7 @@ using ProbablyBagMod.Mod.Rendering.ItemSprites;
 using ProbablyBagMod.Presentation.Flow.Visual;
 using UnityEngine;
 
-namespace ProbablyBagMod.Mod.Rendering.FlowAtlas
+namespace ProbablyBagMod.Mod.Visual.Internal
 {
     /// <summary>
     /// 一个视觉状态对应的**四张蒙版 Sprite**（REFACTOR-A §2/§4）。
@@ -18,7 +18,7 @@ namespace ProbablyBagMod.Mod.Rendering.FlowAtlas
     /// 任何一张缺失都是 null（图集没加载 / 该状态没有 tile / 墙图没随包发布），
     /// 渲染层据此逐层 setActive，不会抛异常。
     /// </summary>
-    public readonly struct FlowSprites
+    internal readonly struct FlowSprites
     {
         /// <summary>本体蒙版（角色 B/R/u/S/~）。</summary>
         public readonly Sprite Body;
@@ -51,13 +51,13 @@ namespace ProbablyBagMod.Mod.Rendering.FlowAtlas
     ///      所以「状态 → 坐标」的记忆表只需要 4 个枚举 + 帧号就能压成 long。
     ///
     /// 这里是全 mod **唯一**共享的可变状态：贴图与 Sprite 缓存。
-    /// 它没有网格、没有实体、没有每帧数据——那些都在各自的 <see cref="FlowAtlasView"/> 里。
+    /// 它没有网格、没有实体、没有每帧数据——那些都在各自的 <see cref="FlowVisualLayer"/> 里。
     ///
     /// 失败策略：整份加载失败只记一条 Warning 并把内部就绪标志置 false，
     /// 之后所有 Get 返回空（渲染层整层空转）；墙图单独缺失只让 <see cref="FlowSprites.Wall"/>
     /// 为 null，不影响本体/边缘/亮核。
     /// </summary>
-    public static class FlowAtlasTexture
+    internal static class FlowAtlasTexture
     {
         /// <summary>tile 的像素边长（与 <see cref="FlowPixelMath.CellPixels"/> 一致）。</summary>
         private const int TilePixels = 16;

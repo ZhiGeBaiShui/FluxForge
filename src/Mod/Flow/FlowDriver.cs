@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using ProbablyBagMod.Mod.Flow.View;
+using ProbablyBagMod.Mod.Visual;
 
 namespace ProbablyBagMod.Mod
 {
@@ -89,7 +89,7 @@ namespace ProbablyBagMod.Mod
             for (int i = 0; i < _machines.Count; i++)
             {
                 FlowMachine machine = _machines[i];
-                FlowAtlasView view = machine.AtlasView;
+                FlowVisualLayer view = machine.Visual;
                 if (view == null)
                 {
                     continue;
@@ -177,9 +177,9 @@ namespace ProbablyBagMod.Mod
         {
             try
             {
-                if (machine.AtlasView != null)
+                if (machine.Visual != null)
                 {
-                    machine.AtlasView.Dispose();
+                    machine.Visual.Dispose();
                 }
             }
             catch (System.Exception e)
@@ -188,7 +188,7 @@ namespace ProbablyBagMod.Mod
             }
 
             // 即使 Dispose 抛异常也断开引用：半销毁的视图不能再被下一帧 Tick。
-            machine.AtlasView = null;
+            machine.Visual = null;
         }
     }
 }

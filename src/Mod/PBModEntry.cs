@@ -1,7 +1,7 @@
 using Il2CppInterop.Runtime;
 using Il2CppInterop.Runtime.InteropTypes.Arrays;
 using MelonLoader;
-using ProbablyBagMod.Mod.Rendering.FlowAtlas;
+using ProbablyBagMod.Mod.Visual;
 
 [assembly: MelonInfo(typeof(ProbablyBagMod.Mod.PBModEntry), "ProbablyBagMod", "0.1.0", "ProbablyBagMod")]
 [assembly: MelonGame(null, null)]
@@ -54,7 +54,7 @@ namespace ProbablyBagMod.Mod
             Il2Cpp.ModHook.OnGameLoadedInit = null;
 
             HarmonyInstance.UnpatchSelf();
-            FlowAtlasTexture.Shutdown();
+            FlowVisualLayer.Shutdown();
             LoggerInstance.Msg("ProbablyBagMod 已卸载");
         }
 
