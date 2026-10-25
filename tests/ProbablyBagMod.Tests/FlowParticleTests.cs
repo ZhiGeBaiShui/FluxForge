@@ -66,7 +66,7 @@ namespace ProbablyBagMod.Tests
         [Fact]
         public void Build_IsRepeatable_AndDoesNotMutateInput()
         {
-            FlowParticleInput input = MakeInput(FlowTemp.Hot);
+            FlowFrameInput input = MakeInput(FlowTemp.Hot);
 
             FlowParticleProfile first = FlowParticleRules.Build(in input);
             FlowParticleProfile second = FlowParticleRules.Build(in input);
@@ -109,7 +109,7 @@ namespace ProbablyBagMod.Tests
         [Fact]
         public void ColorFor_Water_IsBodyMixedTenPercentWhite()
         {
-            FlowParticleInput input = new FlowParticleInput(
+            FlowFrameInput input = Input(
                 FlowComposition.PureWater,
                 FlowTemp.Normal,
                 FlowContent.Large,
@@ -129,7 +129,7 @@ namespace ProbablyBagMod.Tests
         public void ColorFor_HalfPoison_IsBodyMixedTenPercentWhite()
         {
             FlowComposition halfPoison = new FlowComposition(1f, 1f, 0f, 0f, 0f, 0f);
-            FlowParticleInput input = new FlowParticleInput(
+            FlowFrameInput input = Input(
                 halfPoison,
                 FlowTemp.Hot,
                 FlowContent.Mid,
@@ -149,9 +149,9 @@ namespace ProbablyBagMod.Tests
         public void ColorFor_IgnoresTempContentStateAndSpeed()
         {
             FlowComposition water = FlowComposition.PureWater;
-            FlowParticleInput cold = new FlowParticleInput(
+            FlowFrameInput cold = Input(
                 water, FlowTemp.Cold, FlowContent.Empty, FlowState.Blocked, 123f);
-            FlowParticleInput hot = new FlowParticleInput(
+            FlowFrameInput hot = Input(
                 water, FlowTemp.Hot, FlowContent.Large, FlowState.Collect, -456f);
 
             FlowColor coldColor = FlowParticleRules.ColorFor(in cold);
@@ -614,9 +614,9 @@ namespace ProbablyBagMod.Tests
         // ── 辅助 ───────────────────────────────────────────────────
 
         /// <summary>构造 normal 默认输入；哨兵速度用于测试 Register 扩展点。</summary>
-        private static FlowParticleInput MakeInput(FlowTemp temp, float speed = 0f)
+        private static FlowFrameInput MakeInput(FlowTemp temp, float speed = 0f)
         {
-            return new FlowParticleInput(
+            return Input(
                 FlowComposition.PureWater,
                 temp,
                 FlowContent.Large,
@@ -693,7 +693,7 @@ namespace ProbablyBagMod.Tests
             FlowAmbientField field = new FlowAmbientField(512, 20);
             field.SpawnContent = content;
             FlowParticleProfile profile = FlowParticleRules.Build(
-                new FlowParticleInput(
+                Input(
                     FlowComposition.PureWater,
                     FlowTemp.Normal,
                     content,
@@ -757,7 +757,7 @@ namespace ProbablyBagMod.Tests
         public void Spawn_DefaultProfileUsesTuningAlphaAndOnePixel()
         {
             FlowAmbientField field = new FlowAmbientField(8, 7);
-            FlowParticleInput input = new FlowParticleInput(
+            FlowFrameInput input = Input(
                 FlowComposition.PureWater,
                 FlowTemp.Normal,
                 FlowContent.Large,
@@ -771,6 +771,13 @@ namespace ProbablyBagMod.Tests
 
             Assert.Equal((byte)115, particle.Alpha);  // round(0.45 × 255) = 115
             Assert.Equal((byte)1, particle.SizePx);   // 1/16 格 = 1 设计像素
+        }
+
+        /// <summary>测试用输入：位置/方向固定，只变属性与速度。</summary>
+        private static FlowFrameInput Input(
+            FlowComposition composition, FlowTemp temp, FlowContent content, FlowState state, float speed)
+        {
+            return new FlowFrameInput(0d, 0d, 1, speed, composition, temp, content, state);
         }
 
         /// <summary>粒子是否在给定像素 bbox（半开区间）内；允许 1/100 像素的浮点误差。</summary>
@@ -833,7 +840,7 @@ namespace ProbablyBagMod.Tests
         /// </summary>
         private sealed class MarkerModifier : IFlowParticleModifier
         {
-            public void Apply(in FlowParticleInput input, ref FlowParticleProfile profile)
+            public void Apply(in FlowFrameInput input, ref FlowParticleProfile profile)
             {
                 if (input.Speed != MarkerSpeed)
                 {

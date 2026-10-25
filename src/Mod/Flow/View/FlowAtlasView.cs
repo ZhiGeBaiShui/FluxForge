@@ -70,39 +70,6 @@ namespace ProbablyBagMod.Mod.Flow.View
             public float Accum;
         }
 
-        /// <summary>
-        /// 一帧内一条流源的全部视觉输入（位置/方向/速度/成分/温度/含量/状态）。
-        ///
-        /// 为什么要有它：贴图与粒子都需要同一组属性，旧实现是两条路径各算一遍
-        /// （两遍逐实体状态查表、两遍 Temp/Content/State 换算）。现在每帧只读一次，
-        /// 贴图与粒子共用同一份结果，也保证两者的 blocked 判定永远一致。
-        /// </summary>
-        private readonly struct EntitySnapshot
-        {
-            public readonly double X;
-            public readonly double Y;
-            public readonly int Direction;
-            public readonly double Speed;
-            public readonly FlowComposition Composition;
-            public readonly FlowTemp Temp;
-            public readonly FlowContent Content;
-            public readonly FlowState State;
-
-            public EntitySnapshot(
-                double x, double y, int direction, double speed,
-                FlowComposition composition, FlowTemp temp, FlowContent content, FlowState state)
-            {
-                X = x;
-                Y = y;
-                Direction = direction;
-                Speed = speed;
-                Composition = composition;
-                Temp = temp;
-                Content = content;
-                State = state;
-            }
-        }
-
         private readonly Il2Cpp.GameGridInventory _inventory;
         private readonly FlowSpawner _flows;
 
@@ -219,7 +186,7 @@ namespace ProbablyBagMod.Mod.Flow.View
             {
                 FlowEntity entity = _entities[i];
 
-                EntitySnapshot snapshot = ReadSnapshot(entity);
+                FlowFrameInput snapshot = ReadSnapshot(entity);
                 _items.Add(BuildDrawItem(in snapshot, frame));
 
                 // 两张表同生命周期；缺粒子槽说明不变量被破坏，让 KeyNotFound 冒到
@@ -350,7 +317,7 @@ namespace ProbablyBagMod.Mod.Flow.View
         /// blocked 计数只在这里更新，每帧每实体一次；贴图与粒子都吃同一份结果。
         /// 位置判定写在读取属性之前：blocked 只依赖格位与速度，与视觉枚举无关。
         /// </summary>
-        private EntitySnapshot ReadSnapshot(FlowEntity entity)
+        private FlowFrameInput ReadSnapshot(FlowEntity entity)
         {
             // 位置记忆与实体同生命周期；缺条目说明不变量被破坏，让 KeyNotFound 冒到边界 catch。
             EntityState state = _states[entity];
@@ -382,7 +349,7 @@ namespace ProbablyBagMod.Mod.Flow.View
 
             // Tier-0：成分固定纯水（REFACTOR-A §4）；射程暂无数据源，
             // FlowVisualState.Range 保持 0（预留：字段就绪前不渲染射程点）。
-            return new EntitySnapshot(
+            return new FlowFrameInput(
                 positionX,
                 positionY,
                 direction,
@@ -394,7 +361,7 @@ namespace ProbablyBagMod.Mod.Flow.View
         }
 
         /// <summary>把快照翻译成一条绘制指令（纯函数，不查表、不改状态）。</summary>
-        private static FlowDrawItem BuildDrawItem(in EntitySnapshot snapshot, int frame)
+        private static FlowDrawItem BuildDrawItem(in FlowFrameInput snapshot, int frame)
         {
             FlowDir dir = FlowTierMap.DirFrom(snapshot.Direction);
 
@@ -417,11 +384,9 @@ namespace ProbablyBagMod.Mod.Flow.View
         /// 死亡实体的场不会进这里（它们已在 <see cref="_fading"/> 里），
         /// 所以「死亡后停止生成」是由调用方（Tick 的单次遍历）保证的，不靠这里的判断。
         /// </summary>
-        private static void UpdateEmitter(ParticleSlot slot, in EntitySnapshot snapshot, float deltaTime)
+        private static void UpdateEmitter(ParticleSlot slot, in FlowFrameInput snapshot, float deltaTime)
         {
-            FlowParticleInput input = new FlowParticleInput(
-                snapshot.Composition, snapshot.Temp, snapshot.Content, snapshot.State, (float)snapshot.Speed);
-            FlowParticleProfile profile = FlowParticleRules.Build(in input);
+            FlowParticleProfile profile = FlowParticleRules.Build(in snapshot);
 
             slot.Field.SpawnContent = snapshot.Content;
             slot.Field.Advance(deltaTime);
@@ -437,7 +402,7 @@ namespace ProbablyBagMod.Mod.Flow.View
                     snapshot.X,
                     snapshot.Y,
                     snapshot.Direction,
-                    FlowParticleRules.ColorFor(in input));
+                    FlowParticleRules.ColorFor(in snapshot));
             }
         }
 

@@ -21,7 +21,7 @@ namespace ProbablyBagMod.Presentation.Flow.Particles
         }
 
         /// <summary>按温度档原地缩放速度/寿命区间；未知温度按 normal 处理。</summary>
-        public void Apply(in FlowParticleInput input, ref FlowParticleProfile profile)
+        public void Apply(in FlowFrameInput input, ref FlowParticleProfile profile)
         {
             switch (input.Temp)
             {

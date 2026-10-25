@@ -43,7 +43,7 @@ namespace ProbablyBagMod.Presentation.Flow.Particles
         ///
         /// 纯函数：不修改 <paramref name="input"/>，不读写实例字段，稳态 0 分配。
         /// </summary>
-        public static FlowParticleProfile Build(in FlowParticleInput input)
+        public static FlowParticleProfile Build(in FlowFrameInput input)
         {
             // 字段按「速度 → 寿命 → 外观 → 数量/扩散」分组，便于对照 tuning。
             FlowParticleProfile profile = new FlowParticleProfile
@@ -99,7 +99,7 @@ namespace ProbablyBagMod.Presentation.Flow.Particles
         /// 与本体同色但略提亮，避免和贴图本体糊成一块。
         ///
         /// **扩展方式（本轮不实现）**：以后要按成分改色（例如毒物生成暗绿色粒子）时，
-        /// 在返回前按 <see cref="FlowParticleInput.Composition"/> 分支即可，例如：
+        /// 在返回前按 <see cref="FlowFrameInput.Composition"/> 分支即可，例如：
         /// <code>
         /// if (input.Composition.Poison &gt; 0f)
         ///     return new FlowColor(0x3E, 0x7A, 0x2E);
@@ -108,7 +108,7 @@ namespace ProbablyBagMod.Presentation.Flow.Particles
         /// 概率应由调用方在每次 Spawn 前掷骰，再把选好的颜色传给
         /// <see cref="FlowAmbientField.Spawn"/>。这样同一份输入永远得到同一个颜色，测试可重复。
         /// </summary>
-        public static FlowColor ColorFor(in FlowParticleInput input)
+        public static FlowColor ColorFor(in FlowFrameInput input)
         {
             FlowColor body = input.Composition.Blend();
             return FlowColor.Mix(body, White, 0.10d);
