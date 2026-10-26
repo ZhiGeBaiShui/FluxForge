@@ -106,5 +106,17 @@ namespace ProbablyBagMod.Mod
                 MelonLoader.MelonLogger.Error("[流量机] 移除耗尽装置失败：" + e);
             }
         }
+
+        /// <summary>
+        /// 挂上装置的播报事件。
+        ///
+        /// 不需要显式退订：读档时 <see cref="DeviceRegistry.Clear"/> 丢弃全部引用，
+        /// 装置对象再也没有持有者，随后被回收，挂在它身上的订阅列表也一起消失。
+        /// </summary>
+        public static void Subscribe(IFlowNotifier device)
+        {
+            device.Changed += OnChanged;
+            device.Exhausted += OnExhausted;
+        }
     }
 }

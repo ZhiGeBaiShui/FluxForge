@@ -33,7 +33,8 @@ namespace ProbablyBagMod.Mod
                 Il2CppSystem.Action>(OnGameLoaded);
 
             FlowTooltipPatch.LogPatchState();
-            ItemTypeLocalization.Register(FlowItemSetup.FlowDeviceType, FlowItemSetup.FlowDeviceDisplayName);
+            ItemTypeLocalization.Register(ItemSetup.FlowDeviceType, ItemSetup.FlowDeviceDisplayName);
+            ItemSetup.Initialize();
 
             LoggerInstance.Msg("ProbablyBagMod 已加载");
         }
@@ -64,7 +65,7 @@ namespace ProbablyBagMod.Mod
             FlowDriver.Reset();
 
             // 读档会重载本地化表，启动时补的类型名会丢，这里再补一次（AddEntry 是覆盖，幂等）
-            ItemTypeLocalization.Register(FlowItemSetup.FlowDeviceType, FlowItemSetup.FlowDeviceDisplayName);
+            ItemTypeLocalization.Register(ItemSetup.FlowDeviceType, ItemSetup.FlowDeviceDisplayName);
 
             LoggerInstance.Msg("[流源] 读档完成，已重置");
         }
@@ -133,7 +134,7 @@ namespace ProbablyBagMod.Mod
             foreach (string key in registry.Keys)
             {
                 FlowItemDefinition def = registry.Get(key);
-                Func<Il2Cpp.GameItem> factory = () => FlowItemSetup.Create(def);
+                Func<Il2Cpp.GameItem> factory = () => ItemSetup.Create(def);
                 bool added = directory.Add(def.key,
                     DelegateSupport.ConvertDelegate<Il2CppSystem.Func<Il2Cpp.GameItem>>(factory));
 

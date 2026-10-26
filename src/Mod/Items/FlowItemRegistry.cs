@@ -175,6 +175,13 @@ namespace ProbablyBagMod.Mod
         public string grid { get; set; }
 
         /// <summary>
+        /// 行为装配件名列表（对应 <see cref="ItemAttachment.Name"/>），按声明顺序执行。
+        /// 必须是数组；缺失或空数组 = 纯数据物品（合法，且不输出任何日志）。
+        /// 名字未识别记一条 Msg；同一独占槽冲突记 Error 并跳过后者。
+        /// </summary>
+        public string[] attachments { get; set; }
+
+        /// <summary>
         /// 标签声明列表（结构直接镜像游戏的 TagState）：
         /// 每项用 valueName 指定 tag 名，再用 valueInt / valueFloat / valueDouble /
         /// valueBool / valueString 指定要写入哪个槽位。只写 valueName = 仅启用不设值。

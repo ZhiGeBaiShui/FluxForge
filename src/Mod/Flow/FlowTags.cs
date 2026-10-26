@@ -4,7 +4,7 @@ namespace ProbablyBagMod.Mod
     /// 流量装置在物品 tag 上的读写唯一入口。
     ///
     /// 集中原因：tag 名字符串原先散落在 <see cref="FlowRuntime"/>、<see cref="FlowDeviceEvents"/>、
-    /// <see cref="FlowItemSetup"/> 三处，改一个常量要同步改三份副本；
+    /// <see cref="ItemSetup"/> 三处，改一个常量要同步改三份副本；
     /// 而且读/写对 API 的要求不同，很容易写错。
     ///
     /// 读写语义（与游戏 API 一致）：

@@ -13,6 +13,7 @@ obj/
 
 # === 本工具的工作目录 ===
 .workbuddy-ai/
+.superpowers/
 
 # === 工具产物 / 调试中间文件 ===
 *.genie

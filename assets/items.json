@@ -11,6 +11,9 @@
       "grid": "4x3",
       "itemTypes": [
         "MACHINE"
+      ],
+      "attachments": [
+        "machine"
       ]
     },
     {
@@ -22,6 +25,9 @@
       "flavor": "握在手里有股刺骨的凉意。",
       "itemTypes": [
         "FLOW_DEVICE"
+      ],
+      "attachments": [
+        "ice_block"
       ],
       "tags": [
         {
@@ -66,6 +72,9 @@
       "itemTypes": [
         "FLOW_DEVICE"
       ],
+      "attachments": [
+        "emitter"
+      ],
       "tags": [
         {
           "valueName": "FLOW_STOCK",
@@ -105,6 +114,9 @@
       "flavor": "来者不拒。",
       "itemTypes": [
         "FLOW_DEVICE"
+      ],
+      "attachments": [
+        "collector"
       ],
       "tags": [
         {
