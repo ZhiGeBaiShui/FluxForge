@@ -20,7 +20,7 @@
 
 | 节点 | 数量 | 说明 |
 |---|---|---|
-| body / edge / accent / wall | 256 | 每源 4 层（wall 仅 blocked） |
+| body / edge / accent / wall | 256 | 每源 4 层（wall 仅 blocked；该通道 2026-10-27 起无像素，但节点仍按此规模分配） |
 | ghost | ≤384 | 每源 0–6，按含量 |
 | dot（粒子） | ≤298（池 512） | 每源 ≈4.7 |
 | **合计活跃 Image** | **≈938** | 池对象总计 ≤1152 个 GameObject |

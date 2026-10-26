@@ -25,7 +25,7 @@ FlowDriver.Retire/Reset            → machine.AtlasView.Dispose()
 | `assets/flow_mask_body.png` | 本体/后缘/蒸汽/抽吸流亮度蒙版 |
 | `assets/flow_mask_edge.png` | 1px 张力边 + 后缘暗边（染色 = 温度边色） |
 | `assets/flow_mask_accent.png` | 亮核/前脸高光/霜点/白沫（近白） |
-| `assets/flow_mask_wall.png` | 墙（固定 `#C9C2B8`，运行时 tint 必须白） |
+| `assets/flow_mask_wall.png` | **已停用**：整张 alpha=0（2026-10-27 移除墙体，blocked 改由前脸压平表达）。运行时仍按 blocked 取这张图，但画不出像素 |
 | `assets/flow_mask.json` | `{"tiles":{key:[x,y]}}`，1040 key（272 张唯一图 + 非 flow 帧别名） |
 
 key：`content|state|dir`，flow 追加 `|f0..f11`（**无 comp/temp 维度**）。
@@ -45,7 +45,7 @@ Tier-0：`composition = PureWater`，温度/含量/方向/状态照旧映射。
 
 | 节点 | 数量 | 说明 |
 |---|---|---|
-| body / edge / accent / wall | 各 1 | 4 层蒙版，各自 tint；wall 仅 blocked |
+| body / edge / accent / wall | 各 1 | 4 层蒙版，各自 tint；wall 仅 blocked，且该通道已无像素（见 §2） |
 | ghost | 0–6（按含量 1/2/4/6） | 同一 body sprite，alpha 阶梯，只 flow |
 | dot（常驻粒子） | 每流源 ~4–5 个 | 1px 方块，池 512；体内 70% / 边缘 30%，径向 + 30% 后偏，0.4–0.65s 淡出 |
 | 死亡 | 无贴图切换 | 本体立即隐藏，粒子停止生成后自然淡完（~0.6s） |
@@ -70,7 +70,7 @@ verify_mask_atlas.py                       → exit 0；alpha 272/272 key 一致
 1. **成分专属纹理已删**（毒泡/油膜/血絮）：成分只靠混合色区分，边缘只随温度。
 2. **蒙版是近似**：亮核/高光为近白（accent），与旧"成分色高亮核"有色调差；方向仍靠钝头+亮核。
 3. **Linear 色彩空间**下 `Image.color × 蒙版` 与离线 sRGB 可能不逐字节一致。
-4. **墙**只在 `large|blocked` 有像素；小档没有墙图。
+4. **墙已移除**（2026-10-27）：`flow_mask_wall.png` 整张 alpha=0，blocked 只靠「前脸压平为竖平口」表达。本文其余「墙」的描述是 2026-10-21 的旧状态。
 5. 面板关闭期间粒子场清空（不会积压）；重开从零开始，不会闪旧帧。
 6. 常驻粒子参数 = 探针 B 档（8/s、0.6–1.4 格/s、0.40–0.65s、alpha 0.45）；温度只影响扩散速度（cold ×0.6 / hot ×1.6），1× 下 cold↔normal 可辨、hot 略弱。
 7. 扩展点：`IFlowParticleModifier` + `FlowParticleRules.Register`；以后毒物改色/概率只需加一个无状态 modifier。
