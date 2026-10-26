@@ -16,7 +16,7 @@
 ### 目标
 
 1. 新增**无参**装配件 = 新建一个类 + 在注册表加一行，不改任何逻辑；
-2. 一件物品可声明**多个**装配件，按声明顺序执行（同一独占资源至多一个，见 §4 规约 5）；
+2. 一件物品可声明**多个**装配件，按声明顺序执行（组合是否互斥由作者决定，见 §4 规约 5）；
 3. `def.key` 退回唯一职责：存档标识 / 贴图约定。
 
 ### 非目标
@@ -69,10 +69,6 @@ public abstract class ItemAttachment
     /// 装配件名，items.json 用它引用。子类硬编码，全局唯一。
     public abstract string Name { get; }
 
-    /// 独占资源标识："contentWindow"（面板）/ "device"（DeviceRegistry）。
-    /// 不占独占资源返回 null。
-    public virtual string ExclusiveSlot => null;
-
     /// 只挂行为。
     public abstract void Attach(Il2Cpp.GameItem item, FlowItemDefinition def);
 }
@@ -84,7 +80,7 @@ public abstract class ItemAttachment
 2. **无静态可变状态**。禁止缓存 `GameItem` / `IntPtr` / `PixelWindow`；读档后指针会复用。
 3. 顶层 `public sealed class`，public 无参构造，不嵌套。
 4. **不得覆盖 `ItemFactory` 五步写入的内容**（identifier / 贴图 / shape / 文本 / itemTypes / value / 配置声明的 tags）。允许调用游戏原生装配 API（如 `WaterHelper.InitLiquidContainerItem`）建立行为所需状态。
-5. **独占资源**：`ExclusiveSlot` 相同的两个装配件不能挂在同一件物品上（运行期检查，冲突打 Error 并跳过后者）。
+5. **组合由作者负责**：一件物品挂哪些装配件、是否互斥（两个面板 / 两个装置 / 两组激活委托），由作者在 `items.json` 里决定并保证。运行期**不做**检查；同一字段被写两次时后者生效。
 6. **装配件不得互相依赖**；需要依赖就该合并。`def` 是唯一配置入口。
 7. 装配件必须**无参**。需要参数 = 该参数应成为 `def` 的顶层字段，或该装配件应被拆分。
 
@@ -137,7 +133,7 @@ private static void ApplyAttachments(Il2Cpp.GameItem item, FlowItemDefinition de
         attachment = Get(name);
         if (attachment == null) { Msg(未识别 + 已注册清单); continue; }
 
-        独占槽冲突 → Error + 跳过后者
+        独占槽冲突 → 不检查（作者责任，见 §4 规约 5）
 
         try { attachment.Attach(item, def); }
         catch { Error(def.key + name)；物品照常返回 }
@@ -150,7 +146,6 @@ private static void ApplyAttachments(Il2Cpp.GameItem item, FlowItemDefinition de
 - **异常边界只有一个**：`Create` 里包 `ApplyAttachments` 的那一层（原生回调的唯一出口）。方法内部**不再**重复包同粒度的 try；
 - 逐装配件 try/catch 的作用是**隔离**，不是替代外层：一个装配件失败不该让其余装配件也被跳过；
 - 未知名字用 `Msg`，并附"已注册：..."，物品照常产出；
-- 同名只对**同一槽位**报错；不同槽位（machine + emitter）正常共存。
 
 ## 7. 配置
 
@@ -164,7 +159,6 @@ private static void ApplyAttachments(Il2Cpp.GameItem item, FlowItemDefinition de
 | 名字比较 | 读取时 `Trim()`，字典 `OrdinalIgnoreCase` |
 | 字段缺失（null）/ 空数组 | 都不进入循环，**不输出日志**（模板物品是合法产物） |
 | 名字未识别 | 一条 `Msg`（附已注册清单），继续 |
-| 同一槽位冲突 | `Error`，跳过后者 |
 
 命名规约：行为单数名词、不带 `flow_` 前缀、与物品 key 无关：`machine` / `emitter` / `collector` / `ice_block`。
 
@@ -193,7 +187,6 @@ private static void ApplyAttachments(Il2Cpp.GameItem item, FlowItemDefinition de
 
 | 风险 | 对策 |
 |---|---|
-| 独占槽冲突 | `ExclusiveSlot` + 运行期 Error |
 | 共享实例带状态 | 契约 §4 规约 1/2，评审把关 |
 | 配置写错（名字/字段名/裸字符串） | 未识别名字时提示并列出已注册清单；`必须数组` 写进 §7 |
 | 回滚方向 | **只回滚代码安全**（旧 switch 仍工作，新字段被忽略）；**只回滚 JSON 危险**（新代码看到 null → 全纯数据）。同向回滚 |
@@ -215,3 +208,4 @@ private static void ApplyAttachments(Il2Cpp.GameItem item, FlowItemDefinition de
 | 未知名字日志级别 | `Msg`（作者要求"调试信息"），并附已注册清单 |
 | 兼容层 | 不需要（内部类型，JSON 内嵌同一 DLL） |
 | 自动发现 vs 手写注册表 | **手写注册表**（v3 改判：反射引入的失败模式全部是自造的，见 §5） |
+| 独占槽运行期检查 | **删除**（v3 改判：装配件组合是作者写配置时的决定，不是运行时外部输入；而且原方案只覆盖 2 个字段、漏了三个激活委托字段，属于不完整的保护） |

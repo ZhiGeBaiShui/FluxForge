@@ -5,8 +5,6 @@ namespace ProbablyBagMod.Mod
     {
         public override string Name => "collector";
 
-        public override string ExclusiveSlot => "device";
-
         public override void Attach(Il2Cpp.GameItem item, FlowItemDefinition def)
         {
             CollectorDevice device = new CollectorDevice();

@@ -14,8 +14,6 @@ namespace ProbablyBagMod.Mod
     {
         public override string Name => "machine";
 
-        public override string ExclusiveSlot => "contentWindow";
-
         public override void Attach(Il2Cpp.GameItem item, FlowItemDefinition def)
         {
             int columns = 4;

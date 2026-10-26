@@ -20,8 +20,6 @@ namespace ProbablyBagMod.Mod
     {
         public override string Name => "emitter";
 
-        public override string ExclusiveSlot => "device";
-
         public override void Attach(Il2Cpp.GameItem item, FlowItemDefinition def)
         {
             const int CapacityMl = 1000000;

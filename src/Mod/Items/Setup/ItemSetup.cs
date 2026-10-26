@@ -110,8 +110,6 @@ namespace ProbablyBagMod.Mod
                 return;
             }
 
-            HashSet<string> usedSlots = null;
-
             for (int i = 0; i < names.Length; i++)
             {
                 string name = names[i]?.Trim();
@@ -128,18 +126,6 @@ namespace ProbablyBagMod.Mod
                         "[装配]「" + def.key + "」引用了未识别的装配件「" + name
                         + "」，已注册：" + KnownNames());
                     continue;
-                }
-
-                string slot = attachment.ExclusiveSlot;
-                if (slot != null)
-                {
-                    usedSlots = usedSlots ?? new HashSet<string>(StringComparer.Ordinal);
-                    if (!usedSlots.Add(slot))
-                    {
-                        MelonLoader.MelonLogger.Error(
-                            "[装配]「" + def.key + "」独占槽「" + slot + "」已被占用，跳过「" + name + "」");
-                        continue;
-                    }
                 }
 
                 try

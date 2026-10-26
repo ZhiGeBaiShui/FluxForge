@@ -5,8 +5,6 @@ namespace ProbablyBagMod.Mod
     {
         public override string Name => "ice_block";
 
-        public override string ExclusiveSlot => "device";
-
         public override void Attach(Il2Cpp.GameItem item, FlowItemDefinition def)
         {
             double moisture = FlowTags.ReadInt(item.state, FlowTags.Stock, 0);
