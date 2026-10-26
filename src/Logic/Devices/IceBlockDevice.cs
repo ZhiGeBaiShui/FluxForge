@@ -25,7 +25,8 @@ namespace ProbablyBagMod
     ///
     /// 本类不认识 GameItem / TagSystem / 存档——那是 mod / 适配层的事。
     /// </summary>
-    public sealed class IceBlockDevice : IFlowDevice, IFlowNotifier
+    public sealed class IceBlockDevice
+        : IFlowDevice, IFlowNotifier, IMoistureState, ITemperatureState
     {
         /// <summary>流源最多带走自身质量的比例（0.5 = 一半）。</summary>
         private const double MeltRatio = 0.5d;

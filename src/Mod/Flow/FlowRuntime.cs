@@ -114,21 +114,14 @@ namespace ProbablyBagMod.Mod
                 CollectorDevice collector = DeviceRegistry.Get<CollectorDevice>(item.Pointer);
                 if (collector != null)
                 {
-                    Adopt(item, collector.Stock);
+                    Adopt(item, collector);
                     continue;
                 }
 
                 IceBlockDevice iceBlock = DeviceRegistry.Get<IceBlockDevice>(item.Pointer);
                 if (iceBlock != null)
                 {
-                    // 冰块的存量不是 FlowProperties，单独读一次；
-                    // 读档后 tag 才是真相，装置对象只是它的运行时镜像
-                    if (_adopted.Add(item.Pointer))
-                    {
-                        iceBlock.Moisture = FlowTags.ReadInt(item.state, FlowTags.Stock, 0);
-                        iceBlock.Temperature = FlowTags.ReadFloat(
-                            item.state, FlowTags.IceTemperature, 0f);
-                    }
+                    Adopt(item, iceBlock);
                 }
             }
 
@@ -164,25 +157,22 @@ namespace ProbablyBagMod.Mod
 
             double consumed = LiquidStock.Consume(item, available);
             emitter.Stock.Moisture = available - consumed;
-            FlowTags.WriteInt(item.state, FlowTags.Stock, (int)emitter.Stock.Moisture);
-            FlowTags.WriteFloat(
-                item.state, FlowTags.FlowTemperature, (float)emitter.Stock.Temperature);
+            FlowTagMap.Write(item.state, emitter);
             return true;
         }
 
         /// <summary>
         /// 物品第一次被本网格接管时，用 tag 里的值覆盖装置存量。
+        /// 读档后 tag 才是真相，装置对象只是它的运行时镜像。
         /// </summary>
-        private void Adopt(Il2Cpp.GameItem item, FlowProperties stock)
+        private void Adopt(Il2Cpp.GameItem item, object device)
         {
             if (!_adopted.Add(item.Pointer))
             {
                 return;
             }
 
-            stock.Moisture = FlowTags.ReadInt(item.state, FlowTags.Stock, 0);
-            stock.Temperature = FlowTags.ReadFloat(
-                item.state, FlowTags.FlowTemperature, 0f);
+            FlowTagMap.Read(item.state, device);
         }
 
         /// <summary>

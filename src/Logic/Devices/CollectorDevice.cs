@@ -18,7 +18,8 @@ namespace ProbablyBagMod
     /// 属性累积复用 <see cref="FlowProperties.Merge"/>（纯函数），
     /// 所以每收一个都要把返回的新对象存回字段，不能指望原对象被就地修改。
     /// </summary>
-    public sealed class CollectorDevice : IFlowRouter, IFlowNotifier
+    public sealed class CollectorDevice
+        : IFlowRouter, IFlowNotifier, IMoistureState, ITemperatureState
     {
         /// <summary>流源记录的保留上限。超出的从最旧的开始丢。</summary>
         public const int MaxCollected = 64;
@@ -49,6 +50,19 @@ namespace ProbablyBagMod
         public FlowProperties Stock
         {
             get { return _stock; }
+        }
+
+        /// <summary>tag 映射视图：存量就是 <see cref="Stock"/> 的两个字段，不另存一份。</summary>
+        double IMoistureState.Moisture
+        {
+            get { return _stock.Moisture; }
+            set { _stock.Moisture = value; }
+        }
+
+        double ITemperatureState.Temperature
+        {
+            get { return _stock.Temperature; }
+            set { _stock.Temperature = value; }
         }
 
         /// <summary>最近收到的流源（最多 <see cref="MaxCollected"/> 个，已被 Kill，仅作记录）。</summary>

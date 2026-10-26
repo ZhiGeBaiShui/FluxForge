@@ -12,13 +12,26 @@ namespace ProbablyBagMod
     /// <see cref="EmitAll"/>，之后流源归运动层管理。
     /// 存量归零后不再重复发射——要再发一次得重新灌水。
     /// </summary>
-    public sealed class EmitterDevice
+    public sealed class EmitterDevice : IMoistureState, ITemperatureState
     {
         /// <summary>流源速度（格/秒）。</summary>
         private const double Speed = 2d;
 
         /// <summary>存量（水分 / 温度），外部可读写。发射后被清空。</summary>
         public FlowProperties Stock { get; }
+
+        /// <summary>tag 映射视图：存量就是 <see cref="Stock"/> 的两个字段。</summary>
+        double IMoistureState.Moisture
+        {
+            get { return Stock.Moisture; }
+            set { Stock.Moisture = value; }
+        }
+
+        double ITemperatureState.Temperature
+        {
+            get { return Stock.Temperature; }
+            set { Stock.Temperature = value; }
+        }
 
         public EmitterDevice(double moisture, double temperature)
         {

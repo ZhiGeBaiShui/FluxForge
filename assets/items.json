@@ -38,7 +38,7 @@
           "valueInt": 1000000
         },
         {
-          "valueName": "ICE_TEMPERATURE",
+          "valueName": "FLOW_TEMPERATURE",
           "valueFloat": -5.0
         }
       ],
@@ -52,7 +52,7 @@
           "color": "LightBlue"
         },
         {
-          "tag": "ICE_TEMPERATURE",
+          "tag": "FLOW_TEMPERATURE",
           "label": "温度",
           "scale": 1,
           "format": "0.#",

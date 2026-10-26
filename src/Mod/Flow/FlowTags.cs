@@ -19,11 +19,8 @@ namespace ProbablyBagMod.Mod
         /// <summary>存量：int 槽位（收集装置与冰块的液体量）。</summary>
         public const string Stock = "FLOW_STOCK";
 
-        /// <summary>流体温度：float 槽位（收集装置与发射装置）。</summary>
+        /// <summary>流体/装置温度：float 槽位（发射、收集、冰块共用同一个映射）。</summary>
         public const string FlowTemperature = "FLOW_TEMPERATURE";
-
-        /// <summary>冰块温度：float 槽位（与流体温度分开存，避免互相覆盖）。</summary>
-        public const string IceTemperature = "ICE_TEMPERATURE";
 
         /// <summary>读 int 槽位；<paramref name="state"/> 或 tag 槽位缺失时返回 <paramref name="fallback"/>。</summary>
         public static int ReadInt(Il2Cpp.TagSystem state, string tag, int fallback)

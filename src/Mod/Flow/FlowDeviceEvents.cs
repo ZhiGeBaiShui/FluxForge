@@ -34,23 +34,7 @@ namespace ProbablyBagMod.Mod
                     return;
                 }
 
-                CollectorDevice collector = sender as CollectorDevice;
-                if (collector != null)
-                {
-                    FlowTags.WriteInt(
-                        item.state, FlowTags.Stock, (int)collector.Stock.Moisture);
-                    FlowTags.WriteFloat(
-                        item.state, FlowTags.FlowTemperature, (float)collector.Stock.Temperature);
-                    return;
-                }
-
-                IceBlockDevice iceBlock = sender as IceBlockDevice;
-                if (iceBlock != null)
-                {
-                    FlowTags.WriteInt(item.state, FlowTags.Stock, (int)iceBlock.Moisture);
-                    FlowTags.WriteFloat(
-                        item.state, FlowTags.IceTemperature, (float)iceBlock.Temperature);
-                }
+                FlowTagMap.Write(item.state, sender);
             }
             catch (Exception e)
             {

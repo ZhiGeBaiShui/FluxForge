@@ -7,10 +7,9 @@ namespace ProbablyBagMod.Mod
 
         public override void Attach(Il2Cpp.GameItem item, FlowItemDefinition def)
         {
-            double moisture = FlowTags.ReadInt(item.state, FlowTags.Stock, 0);
-            double temperature = FlowTags.ReadFloat(item.state, FlowTags.IceTemperature, 0f);
+            IceBlockDevice device = new IceBlockDevice(0d, 0d);
+            FlowTagMap.Read(item.state, device);   // tag 是存档真相，先灌进装置
 
-            IceBlockDevice device = new IceBlockDevice(moisture, temperature);
             DeviceRegistry.Register(item.Pointer, device, item);
             FlowDeviceEvents.Subscribe(device);
         }
