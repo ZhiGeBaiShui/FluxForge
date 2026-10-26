@@ -13,12 +13,12 @@ namespace ProbablyBagMod.Mod.Visual.Internal
     internal readonly struct FlowDrawItem
     {
         /// <summary>
-        /// 连续位置 X（格坐标：整数 = 格中心，小数 = 格内/跨格）。
+        /// 图块左上角的连续 X（逻辑中心坐标减半格）。
         /// 直接用 <c>PositionX * 16</c> 作 tile 左边缘，流源才是平滑移动而不是整格跳。
         /// </summary>
         public readonly double PositionX;
 
-        /// <summary>连续位置 Y（格坐标：整数 = 格中心，向下增大）。</summary>
+        /// <summary>图块左上角的连续 Y，向下增大。</summary>
         public readonly double PositionY;
 
         /// <summary>完整视觉状态：蒙版 key 与三层颜色都从这里取。</summary>

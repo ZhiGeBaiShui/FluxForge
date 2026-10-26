@@ -112,9 +112,15 @@ namespace ProbablyBagMod.Tests
             EmitterDevice emitter = new EmitterDevice(50d, 20d);
 
             Assert.True(emitter.EmitAll(new FlowPos(0, 0), 0, _flows));
-            Assert.False(emitter.EmitAll(new FlowPos(0, 0), 0, _flows));
+            // 连续调用也不能重复出生，广播与实际名单都只能保留首个流源。
+            for (int i = 0; i < 3; i++)
+            {
+                Assert.False(emitter.EmitAll(new FlowPos(0, 0), 0, _flows));
+            }
 
             Assert.Single(spawned);
+            Assert.Same(spawned[0], Assert.Single(_flows.Active));
+            Assert.False(emitter.HasContent);
         }
 
         [Fact]
@@ -126,6 +132,73 @@ namespace ProbablyBagMod.Tests
             Assert.False(emitter.EmitAll(new FlowPos(0, 0), 0, _flows));
 
             Assert.Empty(spawned);
+            Assert.Empty(_flows.Active);
+            Assert.False(emitter.HasContent);
+        }
+
+        [Fact]
+        public void Emitter_RefilledStock_EmitsAgain()
+        {
+            List<FlowEntity> spawned = CaptureSpawned();
+            EmitterDevice emitter = new EmitterDevice(50d, 20d);
+
+            Assert.True(emitter.EmitAll(new FlowPos(0, 0), 0, _flows));
+            Assert.False(emitter.HasContent);
+
+            // 补入新库存后可再次发射，新载荷不能改写已经发出的那一份。
+            emitter.Stock.Moisture = 75d;
+            emitter.Stock.Temperature = 40d;
+            Assert.True(emitter.HasContent);
+            Assert.True(emitter.EmitAll(new FlowPos(2.5d, 3.5d), 1, _flows));
+
+            Assert.Equal(2, spawned.Count);
+            Assert.Equal(2, _flows.Active.Count);
+            Assert.Same(spawned[0], _flows.Active[0]);
+            Assert.Same(spawned[1], _flows.Active[1]);
+            Assert.NotSame(spawned[0], spawned[1]);
+            Assert.NotSame(spawned[0].Properties, spawned[1].Properties);
+            Assert.Equal(50d, spawned[0].Properties.Moisture);
+            Assert.Equal(20d, spawned[0].Properties.Temperature);
+            Assert.Equal(75d, spawned[1].Properties.Moisture);
+            Assert.Equal(40d, spawned[1].Properties.Temperature);
+            Assert.Equal(2.5d, spawned[1].Position.X);
+            Assert.Equal(3.5d, spawned[1].Position.Y);
+            Assert.Equal(1, spawned[1].Motion.Direction);
+            Assert.Equal(0d, emitter.Stock.Moisture);
+            Assert.False(emitter.HasContent);
+        }
+
+        [Fact]
+        public void Emitter_PropertiesAndPosition_AreIndependentCopies()
+        {
+            List<FlowEntity> spawned = CaptureSpawned();
+            EmitterDevice emitter = new EmitterDevice(100d, 30d);
+            FlowPos origin = new FlowPos(3.5d, 4.5d);
+
+            Assert.True(emitter.EmitAll(origin, 2, _flows));
+            FlowEntity entity = Assert.Single(spawned);
+            Assert.NotSame(emitter.Stock, entity.Properties);
+            Assert.NotSame(origin, entity.Position);
+
+            // 修改库存和传入原点，已发流源仍保留发射时的快照。
+            emitter.Stock.Moisture = 25d;
+            emitter.Stock.Temperature = 10d;
+            origin.Set(8.5d, 9.5d);
+
+            Assert.Equal(100d, entity.Properties.Moisture);
+            Assert.Equal(30d, entity.Properties.Temperature);
+            Assert.Equal(3.5d, entity.Position.X);
+            Assert.Equal(4.5d, entity.Position.Y);
+
+            // 反向修改流源，也不能污染库存或调用方持有的原点。
+            entity.Properties.Moisture = 60d;
+            entity.Properties.Temperature = 50d;
+            entity.Position.Set(1.5d, 2.5d);
+
+            Assert.Equal(25d, emitter.Stock.Moisture);
+            Assert.Equal(10d, emitter.Stock.Temperature);
+            Assert.Equal(8.5d, origin.X);
+            Assert.Equal(9.5d, origin.Y);
         }
 
         [Fact]
@@ -481,6 +554,8 @@ namespace ProbablyBagMod.Tests
             {
                 Assert.Equal(3, (int)Math.Floor(child.Position.X));
                 Assert.Equal(3, (int)Math.Floor(child.Position.Y));
+                Assert.Equal(3.5d, child.Position.X);
+                Assert.Equal(3.5d, child.Position.Y);
                 Assert.Equal(exitDirection, child.Motion.Direction);
             }
         }

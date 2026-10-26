@@ -15,6 +15,12 @@ namespace ProbablyBagMod.Presentation.Flow.Visual
         /// <summary>一格 = 16 像素，与 SPEC §0 的 tile 尺寸一致。</summary>
         public const int CellPixels = 16;
 
+        /// <summary>逻辑中心坐标转为16×16图块的左上坐标，本体与粒子共用。</summary>
+        public static double TileOriginFromCenter(double center)
+        {
+            return center - 0.5d;
+        }
+
         /// <summary>
         /// 格坐标 + 格内像素 → 局部像素坐标：<c>cell * 16 + px</c>。
         /// 不做边界钳制：负格坐标（面板外）是合法输入，由调用方裁剪。

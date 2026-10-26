@@ -1,6 +1,6 @@
 using System;
 using Il2CppInterop.Runtime;
-using ProbablyBagMod.Mod.Visual;
+using Il2CppInterop.Runtime.Injection;
 
 namespace ProbablyBagMod.Mod
 {
@@ -92,7 +92,7 @@ namespace ProbablyBagMod.Mod
         }
 
         /// <summary>
-        /// 流量机面板：一个网格 + 一个启动按钮。
+        /// 流量机面板：仅提供装置网格与窗口，运行环境由装置激活时按需创建。
         ///
         /// ⚠ <see cref="Il2Cpp.PixelWindow"/> 只有**一个**子元素槽——`Attach` 会先 Detach 旧 child。
         ///   如果先 Attach 网格、再 Attach 按钮，网格就被顶掉了，表现为「窗口能开、内容全空」。
@@ -107,9 +107,8 @@ namespace ProbablyBagMod.Mod
             int rows = 3;
             ParseGrid(def.grid, ref columns, ref rows);
 
-            // 根：1 列 × 2 行（第 0 行放网格，第 1 行放按钮）
-            Il2Cpp.GridPixelElement root = new Il2Cpp.GridPixelElement(1, 2, true);
-            root.SetSpacing(0, 8);
+            // 根只保留网格，不再放启动按钮或行间距。
+            Il2Cpp.GridPixelElement root = new Il2Cpp.GridPixelElement(1, 1, true);
 
             Il2Cpp.GameGridInventory inventory = new Il2Cpp.GameGridInventory(columns, rows);
 
@@ -128,27 +127,9 @@ namespace ProbablyBagMod.Mod
             // 再 AllowOnlyTaggedItem(inv, "SEED")。
             Il2Cpp.ContainerHelper.AllowOnlyTaggedItem(inventory, FlowDeviceType);
 
-            FlowMachine machine = new FlowMachine(item, inventory);
-
-            Il2Cpp.ButtonElement button = new Il2Cpp.ButtonElement("启动", 64, 20, null, 0, "interface_click");
-
-            // 按钮回调闭包捕获本机：多台机器的面板同时存在时，点哪台就只管哪台。
-            // 这是「一次性发射」，按下就把装置里的存量整份转成一个流源，不是开关。
-            Action start = () => Start(machine);
-            button.SetCallback(DelegateSupport.ConvertDelegate<Il2CppSystem.Action>(start));
-            root.Attach(button.TryCast<Il2Cpp.PixelElement>(), 0, 1, 64, 20);
-
             Il2Cpp.PixelWindow window = new Il2Cpp.PixelWindow(1, 1, true, 8, 8, "流量机");
             window.Attach(root.TryCast<Il2Cpp.PixelElement>());
             item.SetContentWindow(window);
-
-            FlowDriver.Add(machine);
-
-            // 每台机器一个视图：自己订阅本机流源的生死广播，自己持有一块蒙版层。
-            // 不再有按网格登记的静态表，所以第二台机器落地不会覆盖第一台。
-            // 覆盖字段前先释放旧视图：否则旧视图的订阅与层会永远留在已销毁的网格下。
-            machine.Visual?.Dispose();
-            machine.Visual = new FlowVisualLayer(inventory, machine.Flows);
         }
 
         /// <summary>解析 "4x3" 这类尺寸串，格式不对就保留默认值。</summary>
@@ -179,24 +160,6 @@ namespace ProbablyBagMod.Mod
         }
 
         /// <summary>
-        /// <summary>
-        /// 按钮回调：把本机所有发射装置的存量整份转成流源。
-        /// 一次性动作，不是开关——发完装置就空了，要再发得重新灌水。
-        /// </summary>
-        private static void Start(FlowMachine machine)
-        {
-            // 这是原生按钮的委托回调，异常会顺着原生栈冒出去，必须兜住
-            try
-            {
-                machine.Emit();
-            }
-            catch (Exception e)
-            {
-                MelonLoader.MelonLogger.Error("[流量机] 启动失败：" + e);
-            }
-        }
-
-        /// <summary>
         /// 发射装置：装配成**原版液体容器**，倒水完全交给游戏。
         ///
         /// <c>WaterHelper.InitLiquidContainerItem</c> 会给物品加 LIQUID_CONTAINER_TAG/CAPACITY，
@@ -206,7 +169,7 @@ namespace ProbablyBagMod.Mod
         /// 容量取 100 万 mL（游戏硬上限 2,147,483，超了会 LogError 并钳制）：
         /// 对玩法而言等同于无上限，又不会触发那条错误。
         ///
-        /// 存量初值给 0——真实数值每帧从容器 tag 读取，装置只是它的运行时镜像。
+        /// 存量初值给 0，激活时从容器 tag 读取，装置只是它的运行时镜像。
         /// </summary>
         private static void AttachEmitter(Il2Cpp.GameItem item)
         {
@@ -216,6 +179,90 @@ namespace ProbablyBagMod.Mod
 
             EmitterDevice device = new EmitterDevice(0d, 25d);
             DeviceRegistry.Register(item.Pointer, device, item);
+
+            // 游戏通过 DynamicInvoke 查询激活；ConvertDelegate 的反射方法与桥接目标不匹配。
+            // 使用注入类型的原生实例方法，保证反射和直接 Invoke 都具有正确的目标类型。
+            if (!ClassInjector.IsTypeRegisteredInIl2Cpp<EmitterActivationCallbacks>())
+            {
+                ClassInjector.RegisterTypeInIl2Cpp<EmitterActivationCallbacks>();
+            }
+            EmitterActivationCallbacks callbacks = new EmitterActivationCallbacks();
+            IntPtr callbackClass = Il2CppClassPointerStore<EmitterActivationCallbacks>.NativeClassPtr;
+            item.mayActivateSlotItemFunc =
+                new Il2CppSystem.Func<Il2Cpp.GameItem, Il2Cpp.GameInventory, Il2Cpp.SlotMarker, bool>(
+                    callbacks, IL2CPP.il2cpp_class_get_method_from_name(
+                        callbackClass, nameof(EmitterActivationCallbacks.MayActivate), 3));
+            item.canActivateSlotItemFunc =
+                new Il2CppSystem.Func<Il2Cpp.GameItem, Il2Cpp.GameInventory, Il2Cpp.SlotMarker, bool>(
+                    callbacks, IL2CPP.il2cpp_class_get_method_from_name(
+                        callbackClass, nameof(EmitterActivationCallbacks.CanActivate), 3));
+            item.onActivateSlotItemFunc =
+                new Il2CppSystem.Action<Il2Cpp.GameItem, Il2Cpp.GameInventory, Il2Cpp.SlotMarker>(
+                    callbacks, IL2CPP.il2cpp_class_get_method_from_name(
+                        callbackClass, nameof(EmitterActivationCallbacks.Activate), 3));
+        }
+
+        /// <summary>仅支持已登记的发射装置及其当前直接父网格，不递归查找父容器。</summary>
+        private static Il2Cpp.GameGridInventory GetEmitterInventory(Il2Cpp.GameItem item)
+        {
+            if (item == null || item.Pointer == IntPtr.Zero
+                || DeviceRegistry.Get<EmitterDevice>(item.Pointer) == null)
+            {
+                return null;
+            }
+
+            Il2Cpp.GameGridInventory inventory = item.parentInventory
+                ?.TryCast<Il2Cpp.GameGridInventory>();
+            return inventory != null && inventory.Pointer != IntPtr.Zero ? inventory : null;
+        }
+
+        internal static bool MayActivateEmitter(
+            Il2Cpp.GameItem item, Il2Cpp.GameInventory inventory, Il2Cpp.SlotMarker marker)
+        {
+            try
+            {
+                return GetEmitterInventory(item) != null;
+            }
+            catch
+            {
+                // 菜单查询可反复执行，失效时静默禁用，避免刷日志。
+                return false;
+            }
+        }
+
+        internal static bool CanActivateEmitter(
+            Il2Cpp.GameItem item, Il2Cpp.GameInventory inventory, Il2Cpp.SlotMarker marker)
+        {
+            try
+            {
+                return GetEmitterInventory(item) != null && LiquidStock.Total(item) > 0d;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        internal static void ActivateEmitter(
+            Il2Cpp.GameItem item, Il2Cpp.GameInventory inventory, Il2Cpp.SlotMarker marker)
+        {
+            // 原生执行回调重新读当前物品的父网格，不相信菜单阶段或回调参数里的旧容器。
+            try
+            {
+                Il2Cpp.GameGridInventory currentInventory = GetEmitterInventory(item);
+                if (currentInventory == null)
+                {
+                    MelonLoader.MelonLogger.Warning(
+                        "[发射装置] 激活未执行：物品失效或当前直接父容器不是支持的网格");
+                    return;
+                }
+
+                FlowDriver.GetOrCreate(currentInventory).Emit(item);
+            }
+            catch (Exception e)
+            {
+                MelonLoader.MelonLogger.Error("[发射装置] 激活失败：" + e);
+            }
         }
 
         /// <summary>收集装置：吸收流源并把属性累积起来。</summary>
@@ -247,6 +294,38 @@ namespace ProbablyBagMod.Mod
         {
             device.Changed += FlowDeviceEvents.OnChanged;
             device.Exhausted += FlowDeviceEvents.OnExhausted;
+        }
+    }
+
+    /// <summary>供原生委托反射调用的实例目标；不保存物品或网格归属。</summary>
+    public sealed class EmitterActivationCallbacks : Il2CppSystem.Object
+    {
+        public EmitterActivationCallbacks(IntPtr pointer) : base(pointer)
+        {
+        }
+
+        public EmitterActivationCallbacks()
+            : base(ClassInjector.DerivedConstructorPointer<EmitterActivationCallbacks>())
+        {
+            ClassInjector.DerivedConstructorBody(this);
+        }
+
+        public bool MayActivate(
+            Il2Cpp.GameItem item, Il2Cpp.GameInventory inventory, Il2Cpp.SlotMarker marker)
+        {
+            return FlowItemSetup.MayActivateEmitter(item, inventory, marker);
+        }
+
+        public bool CanActivate(
+            Il2Cpp.GameItem item, Il2Cpp.GameInventory inventory, Il2Cpp.SlotMarker marker)
+        {
+            return FlowItemSetup.CanActivateEmitter(item, inventory, marker);
+        }
+
+        public void Activate(
+            Il2Cpp.GameItem item, Il2Cpp.GameInventory inventory, Il2Cpp.SlotMarker marker)
+        {
+            FlowItemSetup.ActivateEmitter(item, inventory, marker);
         }
     }
 }

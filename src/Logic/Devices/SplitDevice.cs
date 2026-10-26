@@ -132,15 +132,15 @@ namespace ProbablyBagMod
             // 多道：属性按总发射数等分，每道拿一份
             List<FlowProperties> parts = incoming.Properties.Split(total);
 
-            // 新流源直接出生在装置格上，不加任何偏移。
+            // 新流源出生在装置格中心。
             //
             // 为什么不沿用 incoming.Position：它还在装置之前，一帧跨多格时甚至隔了好几格，
             // 子流源下一帧会再走进装置格、再分一次——每帧翻倍。
             //
             // 为什么不加 eps：判定从起点格的**下一格**开始探测（起点格永不参与），
             // 所以生在装置格上下一帧不会再撞同一个装置，偏移纯属多余。
-            double spawnX = cellX;
-            double spawnY = cellY;
+            double spawnX = cellX + 0.5d;
+            double spawnY = cellY + 0.5d;
 
             int index = 0;
             for (int i = 0; i < _rotatedChannelDirs.Length; i++)

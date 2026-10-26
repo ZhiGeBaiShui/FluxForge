@@ -19,7 +19,7 @@ namespace ProbablyBagMod
     /// </summary>
     public class FlowEntity
     {
-        /// <summary>位置（连续坐标，整数点为格中心）。</summary>
+        /// <summary>流源中心的连续坐标，格中心位于格号加0.5处。</summary>
         public FlowPos Position;
 
         /// <summary>运动数据（方向 / 速度）。</summary>

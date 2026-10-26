@@ -15,7 +15,7 @@ namespace ProbablyBagMod.Mod
     ///   ② 发射时按量扣减（游戏只有「加」，没有「扣」，这里补一个）
     ///
     /// 这样框架层 <see cref="EmitterDevice"/> 完全不知道物品的存在，
-    /// 只是每帧被告知「你有多少存量」，耦合点收敛在这一个类里。
+    /// 只在激活时被告知「你有多少存量」，耦合点收敛在这一个类里。
     /// </summary>
     public static class LiquidStock
     {
@@ -30,7 +30,7 @@ namespace ProbablyBagMod.Mod
         /// 扣减指定量的物质，返回实际扣走的量。
         ///
         /// 前置条件：<paramref name="item"/> 非空且 <paramref name="amount"/> &gt; 0。
-        /// 唯一调用点是 <see cref="FlowMachine.EmitFrom"/>：它先确认容器里
+        /// 唯一调用点是 <see cref="FlowRuntime"/> 的发射流程：它先确认容器里
         /// <c>Total(item) &gt; 0</c>，再把同一个非零值传进来，所以这里不必重复检查。
         ///
         /// 直接调原版 <c>WaterHelper.Remove</c>：它按各物质占比分摊、自动钳到 0，
@@ -52,7 +52,7 @@ namespace ProbablyBagMod.Mod
         /// 这个 tag 的槽位类型没有明确文档，先按 double 读、为 0 再试 float，
         /// 都读不到就退回调用方给的默认值。
         ///
-        /// 前置条件：<paramref name="item"/> 非空（唯一调用点已从物品列表里取出非空物品）。
+        /// 前置条件：<paramref name="item"/> 非空（发射入口已确认当前物品有效）。
         /// </summary>
         public static double Temperature(Il2Cpp.GameItem item, double fallback)
         {

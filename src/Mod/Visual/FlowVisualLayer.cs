@@ -8,17 +8,17 @@ using UnityEngine;
 namespace ProbablyBagMod.Mod.Visual
 {
     /// <summary>
-    /// **一台机器一个**的视觉视图（REFACTOR-A §5）：把本机 FlowSpawner 里的流源翻译成
-    /// <see cref="FlowDrawItem"/>，交给本机自己的 <see cref="FlowAtlasLayer"/> 绘制。
+    /// 每块网格一个视觉视图：把本网格 FlowSpawner 里的流源翻译成
+    /// <see cref="FlowDrawItem"/>，交给本网格自己的 <see cref="FlowAtlasLayer"/> 绘制。
     ///
     /// 与旧 <c>FlowAtlasVisual</c>（已删）的区别：
     ///   · 状态全在**实例**里：实体名单、blocked 缓存、每源粒子场、12fps 时钟、层；
-    ///     没有任何 <c>Dictionary&lt;IFlowGrid, ...&gt;</c> 静态表，第二台机器落地不会互相干扰；
-    ///   · 生死广播由本视图直接订阅本机 <see cref="FlowSpawner"/>，委托存字段，Dispose 时退订；
-    ///   · 层与网格 RectTransform 一一对应：面板重建（rect 变了）就地重建层，网格退役随机器 Dispose。
+    ///     不同网格的流源与粒子互不干扰；
+    ///   · 生死广播由本视图直接订阅本网格 <see cref="FlowSpawner"/>，委托存字段，Dispose 时退订；
+    ///   · 层与网格 RectTransform 一一对应：面板重建时就地重建层，环境退役时 Dispose。
     ///
     /// 生命周期（由 <see cref="FlowDriver"/> 驱动）：
-    ///   FlowItemSetup 里 new → machine.Visual；
+    ///   FlowRuntime 构造时 new → runtime.Visual；
     ///   FlowDriver.LateUpdateVisuals → Tick(dt)；
     ///   FlowDriver.Retire / Reset → Dispose()。
     ///
@@ -39,7 +39,7 @@ namespace ProbablyBagMod.Mod.Visual
         private readonly Il2Cpp.GameGridInventory _inventory;
         private readonly FlowSpawner _flows;
 
-        /// <summary>本机当前活着的流源。出生加、死亡删，Tick 只遍历它。</summary>
+        /// <summary>本网格当前活着的流源。出生加、死亡删，Tick 只遍历它。</summary>
         private readonly List<FlowEntity> _entities = new List<FlowEntity>();
 
         /// <summary>受阻事件缓存，与实体名单同生同灭。</summary>
@@ -60,13 +60,13 @@ namespace ProbablyBagMod.Mod.Visual
         private readonly Action<FlowEntity> _removedHandler;
         private readonly Action<FlowEntity, bool> _blockedChangedHandler;
 
-        /// <summary>本机的图集层；面板还没建好时为 null。</summary>
+        /// <summary>本网格的图集层；面板还没建好时为 null。</summary>
         private FlowAtlasLayer _layer;
 
         /// <summary>当前层挂在哪个网格 RectTransform 上（变了就重建层）。</summary>
         private RectTransform _rect;
 
-        /// <summary>本视图自己的 12fps 时钟（每台机器独立相位，互不干扰）。</summary>
+        /// <summary>本视图自己的 12fps 时钟，各网格独立相位。</summary>
         private float _clock;
 
         private bool _disposed;
@@ -147,7 +147,7 @@ namespace ProbablyBagMod.Mod.Visual
                 _items.Add(BuildDrawItem(in snapshot, frame));
 
                 // 两张表同生命周期；缺粒子槽说明不变量被破坏，让 KeyNotFound 冒到
-                // FlowDriver 的边界 catch（退役这台机器），不静默少画粒子。
+                // FlowDriver 的边界 catch（退役本网格环境），不静默少画粒子。
                 _particles.Update(entity, in snapshot, deltaTime);
             }
 
@@ -161,7 +161,7 @@ namespace ProbablyBagMod.Mod.Visual
 
         /// <summary>
         /// 释放整个视觉层的静态资源（图集贴图/Sprite 缓存）。
-        /// 由 <c>PBModEntry.OnDeinitializeMelon</c> 调用；实例的 <see cref="Dispose"/> 只管本机。
+        /// 由 <c>PBModEntry.OnDeinitializeMelon</c> 调用；实例的 <see cref="Dispose"/> 只管本网格。
         /// </summary>
         public static void Shutdown()
         {
@@ -169,8 +169,8 @@ namespace ProbablyBagMod.Mod.Visual
         }
 
         /// <summary>
-        /// 退订广播 + 销毁层 + 清空本机所有表。可重复调用。
-        /// 机器退役（FlowDriver.Retire）与读档（FlowDriver.Reset）走同一条路径，
+        /// 退订广播 + 销毁层 + 清空本网格所有表。可重复调用。
+        /// 环境退役（FlowDriver.Retire）与读档（FlowDriver.Reset）走同一条路径，
         /// 不会留下指向死 FlowSpawner 的订阅，也不会把层留在已经销毁的网格下。
         /// </summary>
         public void Dispose()
@@ -204,7 +204,7 @@ namespace ProbablyBagMod.Mod.Visual
             _items.Clear();
         }
 
-        // ---- 生命周期回调（只来自本机 FlowSpawner） ----
+        // ---- 生命周期回调（只来自本网格 FlowSpawner） ----
 
         private void OnEntityAdded(FlowEntity entity)
         {
@@ -238,7 +238,7 @@ namespace ProbablyBagMod.Mod.Visual
         // ---- 每帧换算 ----
 
         /// <summary>
-        /// 拿本机网格的 RectTransform（缓存；面板重建后 rectTransform 会变，失效就重挂层）。
+        /// 拿本网格的 RectTransform（缓存；面板重建后 rectTransform 会变，失效就重挂层）。
         /// <paramref name="layer"/> 返回本次可用的层；为 null 表示这块网格当前还画不了，整块跳过。
         /// </summary>
         private RectTransform ResolveRect(out FlowAtlasLayer layer)
@@ -285,8 +285,9 @@ namespace ProbablyBagMod.Mod.Visual
             // 缓存与实体同生命周期；缺条目让 KeyNotFound 冒到边界 catch。
             bool blocked = _blockedStates[entity];
 
-            double positionX = entity.Position.X;
-            double positionY = entity.Position.Y;
+            // 图块和粒子场都接收左上坐标，逻辑位置表示流源中心。
+            double positionX = FlowPixelMath.TileOriginFromCenter(entity.Position.X);
+            double positionY = FlowPixelMath.TileOriginFromCenter(entity.Position.Y);
             int direction = entity.Motion == null ? 1 : entity.Motion.Direction;
             double speed = entity.Motion == null ? 0d : entity.Motion.Speed;
 

@@ -1,44 +1,19 @@
-using System;
-using System.Collections.Generic;
 using MelonLoader;
 using ProbablyBagMod.Mod.Rendering.ItemSprites;
 
 namespace ProbablyBagMod.Mod
 {
     /// <summary>
-    /// 物品工厂：把一条配置装配成 GameItem。
+    /// 物品工厂：把一条 <see cref="FlowItemDefinition"/> 装配成 GameItem。
     ///
-    /// 定制优先级：代码注册的工厂 &gt; 数据化装配。
-    /// 数据化装配按 base 决定起点：
+    /// 两步：起点按 base 决定，随后由 <see cref="Initialize"/> 逐段填充内容。
     ///   template（默认）→ 复制原版模板，继承其功能/标签/属性
     ///   empty           → CreateEmptyItem，从零装配（需自己配 type/tags/value）
-    /// 随后统一套用：贴图 + 形状 + 名称 + 说明 + 类型/价值 + 标签值。
     /// </summary>
     public static class ItemFactory
     {
-        private static readonly Dictionary<string, Func<FlowItemDefinition, Il2Cpp.GameItem>> _custom
-            = new Dictionary<string, Func<FlowItemDefinition, Il2Cpp.GameItem>>();
-
-        /// <summary>注册代码工厂（同一 key 后注册覆盖先注册）。</summary>
-        public static void Register(string key, Func<FlowItemDefinition, Il2Cpp.GameItem> factory)
-        {
-            _custom[key] = factory;
-        }
-
-        /// <summary>按配置创建物品：代码工厂优先，否则走数据化装配。</summary>
+        /// <summary>按配置装配物品：造基础物品 → 初始化内容；起点造不出来时返回 null。</summary>
         public static Il2Cpp.GameItem Create(FlowItemDefinition def)
-        {
-            Func<FlowItemDefinition, Il2Cpp.GameItem> custom;
-            if (_custom.TryGetValue(def.key, out custom))
-            {
-                return custom(def);
-            }
-
-            return CreateFromData(def);
-        }
-
-        /// <summary>数据化装配（可单独调用，供代码工厂复用）。</summary>
-        public static Il2Cpp.GameItem CreateFromData(FlowItemDefinition def)
         {
             Il2Cpp.GameItem item = CreateBase(def);
             if (item == null)
@@ -46,12 +21,39 @@ namespace ProbablyBagMod.Mod
                 return null;
             }
 
-            ApplySprite(item, def);
-            ApplyText(item, def);
-            ApplyTypeAndValue(item, def);
-            ApplyTags(item, def);
-
+            Initialize(item, def);
             return item;
+        }
+
+        /// <summary>
+        /// 内容初始化序列。只对「刚造出、尚未被任何 UI 持有」的物品调用一次。
+        ///
+        /// 共同约定：每一步都是**增量覆盖**——配置里没写的字段保持模板原样，不会被清空。
+        /// 所以 base=template 是「改几个字段」而不是「从零重建」；
+        /// 代价是目前没有「显式清空」的表达方式：空串与缺省一样被跳过。
+        ///
+        /// 步骤之间有顺序依赖：④ 必须排在 ③ 之后，原因见各自注释。
+        /// </summary>
+        private static void Initialize(Il2Cpp.GameItem item, FlowItemDefinition def)
+        {
+            // ① 外观：贴图三字段 + 占格形状。没配 sprite 时整步跳过，保留模板外观。
+            ApplySprite(item, def);
+
+            // ② 文本：名称 / 正文 / 风味是三段独立字段，在原版 tooltip 里落在不同位置
+            //    （标题 / 正文段 / 风味段），不是一整块文本，所以逐段判空、逐段覆盖。
+            ApplyText(item, def);
+
+            // ③ 类别：显式配了类型就整体替换，没配则保留模板类型。
+            //    必须先 RemoveAllGameItemType 再 SetGameItemType——后者只加不清。
+            ApplyTypes(item, def);
+
+            //    价值：0 表示沿用模板，所以只在 > 0 时写。
+            ApplyValue(item, def);
+
+            // ④ 标签：启用 tag 并只写声明过的槽位，其余槽位保持默认值。
+            //    必须最后：类型本质就是 tag，③ 会先清掉全部类型 tag，
+            //    提前写的标签可能被那一步清掉。
+            ApplyTags(item, def);
         }
 
         /// <summary>起点物品：模板复制 or 空物品；统一把 identifier 改成配置的 key（存档按它找回）。</summary>
@@ -121,13 +123,16 @@ namespace ProbablyBagMod.Mod
         }
 
         /// <summary>
-        /// 物品类型（可多个，对应 tooltip 的 "[类型]" 段）+ 价值。
+        /// 物品类型（可多个，对应 tooltip 的 "[类型]" 段）。
         ///
         /// 显式配了类型时先 <c>RemoveAllGameItemType</c>：<c>base: template</c> 会把模板的类型
         /// （比如性能模块的 MODULE）一起复制过来，而 <c>SetGameItemType</c> 只加不清，
         /// 不先清掉的话物品会同时属于两个类型，被原版的模块逻辑当成模组处理。
+        ///
+        /// <c>itemTypes</c> 优先于单个 <c>type</c>；两者都没配时保留模板类型。
+        /// 空数组是合法值——表示「显式不要任何类目」，与「没配」语义不同。
         /// </summary>
-        private static void ApplyTypeAndValue(Il2Cpp.GameItem item, FlowItemDefinition def)
+        private static void ApplyTypes(Il2Cpp.GameItem item, FlowItemDefinition def)
         {
             if (def.itemTypes != null)
             {
@@ -141,13 +146,23 @@ namespace ProbablyBagMod.Mod
                         item.SetGameItemType(itemType);
                     }
                 }
+
+                return;
             }
-            else if (!string.IsNullOrEmpty(def.type))
+
+            if (!string.IsNullOrEmpty(def.type))
             {
                 item.RemoveAllGameItemType();
                 item.SetGameItemType(def.type);
             }
+        }
 
+        /// <summary>
+        /// 基础价值。0 表示沿用模板；非 0 时同时写 <c>unitBaseValue</c>，
+        /// 让「总价值」与「单价」两个字段保持一致。
+        /// </summary>
+        private static void ApplyValue(Il2Cpp.GameItem item, FlowItemDefinition def)
+        {
             if (def.value > 0)
             {
                 item.SetValue(def.value);

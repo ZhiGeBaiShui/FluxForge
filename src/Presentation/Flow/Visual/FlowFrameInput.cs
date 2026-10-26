@@ -11,10 +11,10 @@ namespace ProbablyBagMod.Presentation.Flow.Visual
     /// </summary>
     public readonly struct FlowFrameInput
     {
-        /// <summary>格坐标 X（连续坐标，整数点才是格中心）。</summary>
+        /// <summary>图块左上角的连续 X，已由逻辑中心坐标减半格。</summary>
         public readonly double X;
 
-        /// <summary>格坐标 Y（向下为正）。</summary>
+        /// <summary>图块左上角的连续 Y，向下为正。</summary>
         public readonly double Y;
 
         /// <summary>运动方向（0=Up、1=Right、2=Down、3=Left）。</summary>

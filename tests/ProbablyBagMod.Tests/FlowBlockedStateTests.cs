@@ -376,8 +376,8 @@ namespace ProbablyBagMod.Tests
             foreach (FlowEntity child in born)
             {
                 Assert.Contains(child, _flows.Active);
-                Assert.Equal(3d, child.Position.X);
-                Assert.Equal(3d, child.Position.Y);
+                Assert.Equal(3.5d, child.Position.X);
+                Assert.Equal(3.5d, child.Position.Y);
                 Assert.Equal(2, child.Motion.Direction);
                 Assert.Equal(1d, child.Motion.Speed);
             }
