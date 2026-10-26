@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using Il2CppInterop.Runtime;
-using ProbablyBagMod.Mod.Flow.Adapters;
 using ProbablyBagMod.Mod.Visual;
 
 namespace ProbablyBagMod.Mod
