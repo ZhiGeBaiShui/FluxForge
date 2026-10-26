@@ -34,7 +34,6 @@ namespace ProbablyBagMod.Mod
 
             FlowTooltipPatch.LogPatchState();
             ItemTypeLocalization.Register(ItemSetup.FlowDeviceType, ItemSetup.FlowDeviceDisplayName);
-            ItemSetup.Initialize();
 
             LoggerInstance.Msg("ProbablyBagMod 已加载");
         }

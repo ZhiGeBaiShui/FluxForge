@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Reflection;
 
 namespace ProbablyBagMod.Mod
 {
@@ -11,8 +10,8 @@ namespace ProbablyBagMod.Mod
     /// 放在物品目录工厂里而不是 ItemFactory 内部，是为了让 ItemFactory 保持
     /// 「纯数据装配」的职责——行为属于 mod 层的事。
     ///
-    /// 分派不看 def.key：key 只负责存档标识与贴图约定；新增装配件 = 新写一个
-    /// <see cref="ItemAttachment"/> 子类，不改本文件。
+    /// 分派不看 def.key：key 只负责存档标识与贴图约定。
+    /// 新增装配件 = 新建一个 <see cref="ItemAttachment"/> 子类 + 在 <see cref="All"/> 里加一行。
     /// </summary>
     public static class ItemSetup
     {
@@ -25,12 +24,36 @@ namespace ProbablyBagMod.Mod
         /// <summary>该类型的显示名。</summary>
         public const string FlowDeviceDisplayName = "流量装置";
 
-        /// <summary>已发现的装配件：名字 → 全局共享实例。名字比较不区分大小写。</summary>
-        private static readonly Dictionary<string, ItemAttachment> _attachments
-            = new Dictionary<string, ItemAttachment>(StringComparer.OrdinalIgnoreCase);
+        /// <summary>
+        /// 全部装配件。这是唯一的注册点：新增装配件只加一行，不改任何逻辑。
+        ///
+        /// 用显式数组而不是反射扫描：装配件是我们自己写的类，类名写错、漏写公开无参构造
+        /// 这类错误由编译器和评审兜住；把它们变成运行期问题、再写一套扫表与诊断去观测，
+        /// 是净损失。运行期只防御真正的外部输入——items.json 里的字符串。
+        /// </summary>
+        private static readonly ItemAttachment[] All =
+        {
+            new MachineAttachment(),
+            new EmitterAttachment(),
+            new CollectorAttachment(),
+            new IceBlockAttachment(),
+        };
 
-        /// <summary>启动期是否尝试过扫描；为 true 后即使表为空也不再重试（避免每次创建物品都跑反射 + 刷日志）。</summary>
-        private static bool _initAttempted;
+        /// <summary>名字 → 共享实例。名字比较不区分大小写；同名时后者覆盖前者（数组里一眼可见）。</summary>
+        private static readonly Dictionary<string, ItemAttachment> _attachments = BuildTable();
+
+        private static Dictionary<string, ItemAttachment> BuildTable()
+        {
+            Dictionary<string, ItemAttachment> table
+                = new Dictionary<string, ItemAttachment>(All.Length, StringComparer.OrdinalIgnoreCase);
+
+            for (int i = 0; i < All.Length; i++)
+            {
+                table[All[i].Name] = All[i];
+            }
+
+            return table;
+        }
 
         /// <summary>
         /// 物品目录工厂的入口：先按 json 装配，再按 attachments 挂装置。
@@ -73,119 +96,6 @@ namespace ProbablyBagMod.Mod
         }
 
         /// <summary>
-        /// 扫描本程序集里的全部 <see cref="ItemAttachment"/> 实现，建成名字 → 实例的表。
-        ///
-        /// 幂等：重复调用只是重建同一张表。失败不重试——<see cref="_initAttempted"/> 在方法第一行置位。
-        /// 整个方法体包在 try/catch 里：任何未预期异常只记 Error，表保持为空，不向外抛。
-        /// </summary>
-        public static void Initialize()
-        {
-            _initAttempted = true;
-
-            try
-            {
-                _attachments.Clear();
-
-                Type[] types;
-                try
-                {
-                    types = typeof(ItemAttachment).Assembly.GetTypes();
-                }
-                catch (ReflectionTypeLoadException e)
-                {
-                    // 类型加载失败会被误判成「json 拼错了」，这里把真实原因单独记下来
-                    types = e.Types;
-                    LogLoaderExceptions(e);
-                }
-
-                List<Type> candidates = new List<Type>();
-                for (int i = 0; i < types.Length; i++)
-                {
-                    Type type = types[i];
-                    if (type == null || !type.IsClass || type.IsAbstract)
-                    {
-                        continue;
-                    }
-
-                    if (typeof(ItemAttachment).IsAssignableFrom(type))
-                    {
-                        candidates.Add(type);
-                    }
-                }
-
-                // 按 FullName 排序：出现重复 Name 时「保留第一个」必须是确定行为
-                candidates.Sort(CompareByFullName);
-
-                for (int i = 0; i < candidates.Count; i++)
-                {
-                    Type type = candidates[i];
-
-                    ItemAttachment instance;
-                    try
-                    {
-                        // 没有 public 无参构造时 MissingMethodException 也走这里
-                        instance = (ItemAttachment)Activator.CreateInstance(type);
-                    }
-                    catch (Exception e)
-                    {
-                        MelonLoader.MelonLogger.Error("[装配] " + type.FullName + " 实例化失败：" + e);
-                        continue;
-                    }
-
-                    string name;
-                    try
-                    {
-                        name = instance.Name;
-                    }
-                    catch (Exception e)
-                    {
-                        MelonLoader.MelonLogger.Error(
-                            "[装配] " + type.FullName + " 的 Name 读取失败：" + e);
-                        continue;
-                    }
-
-                    name = name?.Trim();
-                    if (string.IsNullOrEmpty(name))
-                    {
-                        MelonLoader.MelonLogger.Error("[装配] " + type.FullName + " 的 Name 为空，已跳过");
-                        continue;
-                    }
-
-                    ItemAttachment existing;
-                    if (_attachments.TryGetValue(name, out existing))
-                    {
-                        MelonLoader.MelonLogger.Error(
-                            "[装配]「" + name + "」重复：" + existing.GetType().FullName + " / " + type.FullName);
-                        continue;
-                    }
-
-                    _attachments[name] = instance;
-
-                    if (HasInstanceFields(type))
-                    {
-                        MelonLoader.MelonLogger.Warning(
-                            "[装配] " + type.FullName + " 声明了实例字段，违反「无实例字段」规约（实例全局共享）");
-                    }
-                }
-
-                if (_attachments.Count == 0)
-                {
-                    MelonLoader.MelonLogger.Error("[装配] 发现 0 个装配件：过滤条件或程序集有误");
-                    return;
-                }
-
-                MelonLoader.MelonLogger.Msg(
-                    "[装配] 已发现 " + _attachments.Count + " 个：" + DescribeNames());
-            }
-            catch (Exception e)
-            {
-                // 半建成的表也不能拿来分派：清空后物品退化成纯数据
-                _attachments.Clear();
-                MelonLoader.MelonLogger.Error("[装配] 扫描装配件失败：" + e);
-            }
-        }
-
-        /// <summary>
         /// 按声明顺序执行一件物品的全部装配件。
         ///
         /// 边界约定：外层 try 是最后的兜底（异常不得冒到原生栈）；逐装配件的 try 只隔离单个装配件，
@@ -195,13 +105,6 @@ namespace ProbablyBagMod.Mod
         {
             try
             {
-                if (!_initAttempted)
-                {
-                    MelonLoader.MelonLogger.Warning(
-                        "[装配] 装配件表未在启动期初始化，已在物品创建时补建");
-                    Initialize();
-                }
-
                 string[] names = def.attachments;
                 if (names == null || names.Length == 0)
                 {
@@ -222,7 +125,8 @@ namespace ProbablyBagMod.Mod
                     if (attachment == null)
                     {
                         MelonLoader.MelonLogger.Msg(
-                            "[装配]「" + def.key + "」引用了未识别的装配件「" + name + "」");
+                            "[装配]「" + def.key + "」引用了未识别的装配件「" + name
+                            + "」，已注册：" + KnownNames());
                         continue;
                     }
 
@@ -261,63 +165,12 @@ namespace ProbablyBagMod.Mod
             return _attachments.TryGetValue(name, out attachment) ? attachment : null;
         }
 
-        /// <summary>日志用的清单，例如 machine(MachineAttachment), emitter(EmitterAttachment)。</summary>
-        private static string DescribeNames()
+        /// <summary>日志用：已注册的装配件名，逗号分隔（只在配置写错时调用）。</summary>
+        private static string KnownNames()
         {
             List<string> names = new List<string>(_attachments.Keys);
             names.Sort(StringComparer.Ordinal);
-
-            string report = string.Empty;
-            for (int i = 0; i < names.Count; i++)
-            {
-                if (i > 0)
-                {
-                    report += ", ";
-                }
-
-                report += names[i] + "(" + _attachments[names[i]].GetType().Name + ")";
-            }
-
-            return report;
-        }
-
-        /// <summary>逐个记录类型加载失败的原因（去重），否则只会看到「发现 0 个」这种误导性结论。</summary>
-        private static void LogLoaderExceptions(ReflectionTypeLoadException e)
-        {
-            HashSet<string> reported = new HashSet<string>(StringComparer.Ordinal);
-            Exception[] loaderExceptions = e.LoaderExceptions;
-            if (loaderExceptions == null)
-            {
-                return;
-            }
-
-            for (int i = 0; i < loaderExceptions.Length; i++)
-            {
-                Exception loaderException = loaderExceptions[i];
-                if (loaderException == null)
-                {
-                    continue;
-                }
-
-                string message = loaderException.Message;
-                if (reported.Add(message))
-                {
-                    MelonLoader.MelonLogger.Error("[装配] 类型加载失败：" + message);
-                }
-            }
-        }
-
-        /// <summary>规约 1：装配件不得有实例字段（实例全局共享，带状态会串物品）。</summary>
-        private static bool HasInstanceFields(Type type)
-        {
-            return type.GetFields(
-                BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic
-                | BindingFlags.DeclaredOnly).Length > 0;
-        }
-
-        private static int CompareByFullName(Type left, Type right)
-        {
-            return string.CompareOrdinal(left.FullName, right.FullName);
+            return string.Join(", ", names);
         }
     }
 }
