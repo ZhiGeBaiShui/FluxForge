@@ -72,16 +72,21 @@ namespace ProbablyBagMod.Mod
             _items.Clear();
         }
 
-        /// <summary>装置挂在哪件物品上。查不到返回 false，item 为 null。</summary>
-        public static bool TryGetItem(object device, out Il2Cpp.GameItem item)
+        /// <summary>
+        /// 装置挂在哪件物品上；查不到返回 null。
+        ///
+        /// 调用方按「装置与物品生命周期一致」的前提使用它，前提被打破时由调用链上层暴露，
+        /// 而不是在这里静默吞掉。
+        /// </summary>
+        public static Il2Cpp.GameItem GetItem(object device)
         {
             if (device == null)
             {
-                item = null;
-                return false;
+                return null;
             }
 
-            return _items.TryGetValue(device, out item);
+            Il2Cpp.GameItem item;
+            return _items.TryGetValue(device, out item) ? item : null;
         }
 
         /// <summary>取实现了 IFlowDevice 的装置（反应类），没有返回 null。</summary>

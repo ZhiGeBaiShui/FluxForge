@@ -8,23 +8,20 @@ namespace ProbablyBagMod.Mod
     ///   · <c>Changed</c>   → 把装置状态写进物品 tag（<see cref="FlowTagMap"/>）
     ///   · <c>Exhausted</c> → 把它从当前容器里摘掉
     ///
-    /// 职责边界：这里只做「查物品 → 执行副作用」，不做决策、不掩盖失败。
-    /// 两个处理器都不吞异常——异常顺着 <c>FlowManager.Tick</c> 上浮到
-    /// <c>FlowDriver.Update</c> 的网格级边界，由那里退役整个运行环境。
-    /// 容器拒绝移除（<c>Expel</c> 返回 false）属于游戏自己的状态：不重试、不报告。
+    /// 前提：装置与物品的生命周期一致——装置只在装配时登记、在耗尽时注销，没有第三种入口，
+    /// 且 <c>Changed</c> 永远先于 <c>Exhausted</c>。所以这里不判断"能不能查到物品"：
+    /// 查不到意味着前提被打破，留给调用链上层暴露，而不是在这里静默跳过。
+    ///
+    /// 已知窗口（见 <c>FlowGridAdapter</c> 的 TODO）：物品先被卖掉 / 销毁时登记不会清理，
+    /// 在途流源仍会调到这里，写到已释放的原生对象上。等网格改为按「拿起 / 放下 / 移出」
+    /// 增量维护后，这类物品不会残留在格子表里，窗口自然关闭。
     /// </summary>
     public static class FlowDeviceEvents
     {
         /// <summary>存量变化：把最新数值写进物品 tag，tooltip 下一次重建时读到新值。</summary>
         public static void OnChanged(IFlowNotifier sender)
         {
-            Il2Cpp.GameItem item;
-            if (!DeviceRegistry.TryGetItem(sender, out item))
-            {
-                return;
-            }
-
-            FlowTagMap.Write(item.state, sender);
+            FlowTagMap.Write(DeviceRegistry.GetItem(sender).state, sender);
         }
 
         /// <summary>
@@ -35,11 +32,7 @@ namespace ProbablyBagMod.Mod
         /// </summary>
         public static void OnExhausted(IFlowNotifier sender)
         {
-            Il2Cpp.GameItem item;
-            if (!DeviceRegistry.TryGetItem(sender, out item))
-            {
-                return;
-            }
+            Il2Cpp.GameItem item = DeviceRegistry.GetItem(sender);
 
             // Expel 成功时物品可能已经被销毁，之后再读 item.Pointer 不再安全；
             // 所以「先注销再移除」，顺序不能反。

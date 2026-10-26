@@ -13,6 +13,15 @@ namespace ProbablyBagMod.Mod.Flow.Adapters
     /// ⚠ childItems 每次访问都会 new 一个 List，所以只在 Refresh 里取一次。
     ///   而 Refresh 只在有效发射尝试（FlowRuntime.Emit）时调，之后使用布局快照，
     ///   运行中拖动装置不会反映到这张表里。
+    ///
+    /// TODO(网格增量维护) 下面三条是当前"发射时全量刷新"造成的已知缺陷，改造后一并消除：
+    ///   1. 玩家拿起 / 放下物品后 _cells 仍指向旧格位 → 流源会撞上"已经不在那儿"的装置：
+    ///      装置被凭空融化、tag 被写、流源停在空格上；
+    ///   2. 物品被卖掉（原生对象已销毁）时条目仍在 → TryReact 会写到已释放的对象上，
+    ///      在 IL2CPP 下可能不是托管异常而是访问违例；
+    ///   3. 运行中新拖入的装置不被识别，要重新激活一次才生效。
+    /// 计划：改为在「拿起」「放下」「移出网格」三个时机增量维护 _cells；
+    ///      届时不再需要发射时的全量 Refresh，FlowDeviceEvents 里的"物品先死"窗口也随之关闭。
     /// </summary>
     public sealed class FlowGridAdapter : IFlowGrid
     {
