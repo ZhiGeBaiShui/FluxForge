@@ -98,64 +98,59 @@ namespace ProbablyBagMod.Mod
         /// <summary>
         /// 按声明顺序执行一件物品的全部装配件。
         ///
-        /// 边界约定：外层 try 是最后的兜底（异常不得冒到原生栈）；逐装配件的 try 只隔离单个装配件，
-        /// 不能替代外层。未识别的名字用 Msg 级——配置笔误不该刷 Error，物品照常产出。
+        /// 异常边界只在 <see cref="Create"/>（原生回调的唯一出口），这里不重复包一层。
+        /// 逐装配件的 try 只负责隔离：一个装配件失败不该让其余装配件也被跳过。
+        /// 未识别的名字用 Msg 级——配置笔误不该刷 Error，物品照常产出。
         /// </summary>
         private static void ApplyAttachments(Il2Cpp.GameItem item, FlowItemDefinition def)
         {
-            try
+            string[] names = def.attachments;
+            if (names == null || names.Length == 0)
             {
-                string[] names = def.attachments;
-                if (names == null || names.Length == 0)
+                return;
+            }
+
+            HashSet<string> usedSlots = null;
+
+            for (int i = 0; i < names.Length; i++)
+            {
+                string name = names[i]?.Trim();
+                if (string.IsNullOrEmpty(name))
                 {
-                    return;
+                    // TryGetValue(null) 会抛；空名字也不该被当成一次「未识别」刷日志
+                    continue;
                 }
 
-                HashSet<string> usedSlots = null;
-
-                for (int i = 0; i < names.Length; i++)
+                ItemAttachment attachment = Get(name);
+                if (attachment == null)
                 {
-                    string name = names[i]?.Trim();
-                    if (string.IsNullOrEmpty(name))
-                    {
-                        continue;
-                    }
+                    MelonLoader.MelonLogger.Msg(
+                        "[装配]「" + def.key + "」引用了未识别的装配件「" + name
+                        + "」，已注册：" + KnownNames());
+                    continue;
+                }
 
-                    ItemAttachment attachment = Get(name);
-                    if (attachment == null)
-                    {
-                        MelonLoader.MelonLogger.Msg(
-                            "[装配]「" + def.key + "」引用了未识别的装配件「" + name
-                            + "」，已注册：" + KnownNames());
-                        continue;
-                    }
-
-                    string slot = attachment.ExclusiveSlot;
-                    if (slot != null)
-                    {
-                        usedSlots = usedSlots ?? new HashSet<string>(StringComparer.Ordinal);
-                        if (!usedSlots.Add(slot))
-                        {
-                            MelonLoader.MelonLogger.Error(
-                                "[装配]「" + def.key + "」独占槽「" + slot + "」已被占用，跳过「" + name + "」");
-                            continue;
-                        }
-                    }
-
-                    try
-                    {
-                        attachment.Attach(item, def);
-                    }
-                    catch (Exception e)
+                string slot = attachment.ExclusiveSlot;
+                if (slot != null)
+                {
+                    usedSlots = usedSlots ?? new HashSet<string>(StringComparer.Ordinal);
+                    if (!usedSlots.Add(slot))
                     {
                         MelonLoader.MelonLogger.Error(
-                            "[装配]「" + def.key + "」" + name + " 失败：" + e);
+                            "[装配]「" + def.key + "」独占槽「" + slot + "」已被占用，跳过「" + name + "」");
+                        continue;
                     }
                 }
-            }
-            catch (Exception e)
-            {
-                MelonLoader.MelonLogger.Error("[装配]「" + def.key + "」装配流程异常：" + e);
+
+                try
+                {
+                    attachment.Attach(item, def);
+                }
+                catch (Exception e)
+                {
+                    MelonLoader.MelonLogger.Error(
+                        "[装配]「" + def.key + "」" + name + " 失败：" + e);
+                }
             }
         }
 

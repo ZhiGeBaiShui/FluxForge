@@ -128,31 +128,27 @@ v2 曾实现反射扫描（`Assembly.GetTypes()` + 逐个 `Activator.CreateInsta
 ```csharp
 private static void ApplyAttachments(Il2Cpp.GameItem item, FlowItemDefinition def)
 {
-    try                                          // ① 整体边界，异常不得冒到原生栈
+    if (def.attachments == null || def.attachments.Length == 0) return;   // 合法，静默
+
+    HashSet<string> usedSlots = null;
+    for (...)
     {
-        if (def.attachments == null || def.attachments.Length == 0) return;   // ② 合法，静默
+        name = names[i]?.Trim();             // 外部输入：trim + 忽略大小写
+        attachment = Get(name);
+        if (attachment == null) { Msg(未识别 + 已注册清单); continue; }
 
-        HashSet<string> usedSlots = null;
-        for (...)
-        {
-            name = names[i]?.Trim();             // ③ 外部输入：trim + 忽略大小写
-            attachment = Get(name);
-            if (attachment == null) { Msg(未识别 + 已注册清单); continue; }
+        独占槽冲突 → Error + 跳过后者
 
-            独占槽冲突 → Error + 跳过后者
-
-            try { attachment.Attach(item, def); }
-            catch { Error(def.key + name)；物品照常返回 }
-        }
+        try { attachment.Attach(item, def); }
+        catch { Error(def.key + name)；物品照常返回 }
     }
-    catch { Error(装配流程异常) }
 }
 ```
 
 要点：
 
-- **保留 `Create` 原有的两层 try/catch**；
-- 逐装配件 try/catch 只隔离单个装配件，不能替代外层；
+- **异常边界只有一个**：`Create` 里包 `ApplyAttachments` 的那一层（原生回调的唯一出口）。方法内部**不再**重复包同粒度的 try；
+- 逐装配件 try/catch 的作用是**隔离**，不是替代外层：一个装配件失败不该让其余装配件也被跳过；
 - 未知名字用 `Msg`，并附"已注册：..."，物品照常产出；
 - 同名只对**同一槽位**报错；不同槽位（machine + emitter）正常共存。
 
