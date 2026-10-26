@@ -53,9 +53,8 @@ namespace ProbablyBagMod.Mod.Visual.Internal
     ///   · wall   —— 墙图整张白 tint（贴图自带 #C9C2B8），只在 blocked 显示。
     /// 四张蒙版来自同一份索引、同一组坐标，所以一次 Get 就能拿全。
     ///
-    /// 池化：本体 4 通道各 64、残影 384、常驻粒子 512；懒创建、SetActive 复用，
-    /// 永不 Instantiate/Destroy。Submit / SubmitDots 只读传入的 List，稳态下 0 托管分配。
-    /// 粒子用 1×1 白 sprite + 每颗自己的 RGB/寿命 alpha，池对象永远排在 body/edge/accent 之上。
+    /// 本层管理本体 4 通道各 64、残影 384 的池；粒子池与白图由每层独立的
+    /// FlowParticleRenderer 管理。本层保留粒子提交守卫及本体新建后的重排请求。
     /// 射程点已删除（Tier-0 无数据源）：`FlowVisualState.Range` 仍是预留字段，
     /// 在数据源就绪前整条射程点绘制链不再存在。
     /// </summary>
@@ -133,12 +132,6 @@ namespace ProbablyBagMod.Mod.Visual.Internal
         /// <summary>残影池：一个流源 6 个 Image，下标 = 本体下标 * 6 + k。</summary>
         private readonly Image[] _ghosts = new Image[GhostCapacity];
 
-        /// <summary>
-        /// 常驻粒子池：每颗一个 1×1 白 Image，位置/颜色每帧写。
-        /// 512 上限：每源最多 32 颗，够十几条流源同时存在；超出部分按提交顺序截断。
-        /// </summary>
-        private readonly Image[] _dots = new Image[512];
-
         // 每槽位上次写入的 sprite/color：位置每帧都写，但 sprite/color 只在变化时写，
         // 避免每帧触发 Canvas 的材质/网格重建。
         private readonly QuadCache[] _bodyCache = new QuadCache[SourceCapacity];
@@ -150,14 +143,11 @@ namespace ProbablyBagMod.Mod.Visual.Internal
         private readonly RectTransform _gridRect;
         private readonly RectTransform _root;
 
+        /// <summary>借用本层根节点，独立管理粒子池与运行时白图。</summary>
+        private readonly FlowParticleRenderer _particleRenderer;
+
         /// <summary>上一帧用到第几个流源（用于把多出来的池对象关掉）。</summary>
         private int _activeSources;
-
-        /// <summary>上一帧用到第几颗粒子（用于把多出来的池对象关掉）。</summary>
-        private int _activeDots;
-
-        /// <summary>1×1 白 sprite，实例字段懒创建；不 static，层销毁后随实例一起失去引用。</summary>
-        private Sprite _dotSprite;
 
         /// <summary>
         /// 新建 body/edge/accent 后为 true：这些节点会追加在粒子池之后，
@@ -197,6 +187,8 @@ namespace ProbablyBagMod.Mod.Visual.Internal
             // 每帧都会把背包网格所在的 Canvas 整体标脏（重建范围含全部物品）。
             // 只挂 Canvas，不挂 GraphicRaycaster——本层不接收点击。
             go.AddComponent<Canvas>();
+
+            _particleRenderer = new FlowParticleRenderer(_root);
         }
 
         /// <summary>销毁之后不再绘制。供 <see cref="FlowVisualLayer"/> 判断旧层是否还能用。</summary>
@@ -235,7 +227,7 @@ namespace ProbablyBagMod.Mod.Visual.Internal
         /// 这里的位置是连续 double（流源在格内平滑移动），
         /// 所以不能套 <see cref="FlowPixelMath.CellToLocal"/>（它只接受整数格 + 整数像素）。
         /// </summary>
-        private static Vector2 PositionFor(Rect area, float ppu, double cellX, double cellY)
+        internal static Vector2 PositionFor(Rect area, float ppu, double cellX, double cellY)
         {
             float left = FlowPixelMath.Snap(
                 area.xMin + (float)cellX * FlowPixelMath.CellPixels, ppu);
@@ -257,21 +249,6 @@ namespace ProbablyBagMod.Mod.Visual.Internal
             }
 
             return sizePx;
-        }
-
-        /// <summary>
-        /// 粒子边长（屏幕像素）：<c>round(设计像素 * ppu)</c>，最小 1。
-        /// 设计像素来自粒子出生时的 profile（1–4），不能套用本体的固定 16。
-        /// </summary>
-        private static float ParticleSizePx(byte sizePx, float ppu)
-        {
-            float scaledPx = Mathf.Round(sizePx * ppu);
-            if (scaledPx < 1f)
-            {
-                scaledPx = 1f;
-            }
-
-            return scaledPx;
         }
 
         /// <summary>
@@ -356,11 +333,7 @@ namespace ProbablyBagMod.Mod.Visual.Internal
         /// <summary>
         /// 提交本帧的常驻粒子（由 <see cref="FlowVisualLayer"/> 的粒子场汇总）。
         /// 空列表也要提交——那是清场信号。
-        ///
-        /// 位置与本体同口径：leftPx = Round((area.xMin + X * 16) * ppu)，
-        /// topPx = Round((area.yMax - Y * 16) * ppu)；尺寸 = SizeCells 设计像素（最小 1）。
-        /// alpha = Life / MaxLife × (粒子自带 Alpha / 255)，RGB 直接用粒子自带的 8 位通道。
-        /// 粒子排在 body/edge/accent 之后，散开的粒子不会被本体盖住。
+        /// 本层完成前置检查，绘制器正常返回后才消费重排请求。
         /// </summary>
         /// <param name="dots">本帧要画的粒子；调用方保证非空（可以是空列表）。</param>
         public void SubmitDots(List<FlowAmbientParticle> dots)
@@ -370,56 +343,8 @@ namespace ProbablyBagMod.Mod.Visual.Internal
                 return;
             }
 
-            int count = ClampCount(dots.Count, _dots.Length);
-
-            for (int i = 0; i < count; i++)
-            {
-                Image dot = _dots[i];
-                if (dot == null)
-                {
-                    dot = CreateImage("FlowAtlasDot");
-                    dot.sprite = DotSprite;
-                    dot.color = Color.white;
-                    _dots[i] = dot;
-                }
-
-                Activate(dot);
-
-                FlowAmbientParticle particle = dots[i];
-
-                dot.rectTransform.anchoredPosition = PositionFor(area, ppu, particle.X, particle.Y);
-
-                // 尺寸/alpha 用粒子自带的出生值（modifier 改 profile 后会落到这里），
-                // 不再读 FlowParticleTuning 常量，否则属性 modifier 对粒子外观无效。
-                float sizePx = ParticleSizePx(particle.SizePx, ppu);
-                dot.rectTransform.sizeDelta = new Vector2(sizePx / ppu, sizePx / ppu);
-
-                float lifeRatio = particle.MaxLife > 0f
-                    ? particle.Life / particle.MaxLife
-                    : 0f;
-                float alpha = Mathf.Clamp01(lifeRatio * (particle.Alpha / 255f));
-                dot.color = new Color32(
-                    particle.R,
-                    particle.G,
-                    particle.B,
-                    (byte)Mathf.RoundToInt(alpha * 255f));
-            }
-
-            // 粒子数变少：把上一帧多出来的池对象关掉（不销毁，下一波复用）
-            for (int i = count; i < _activeDots; i++)
-            {
-                Deactivate(_dots[i]);
-            }
-
-            _activeDots = count;
-
-            // 新建的本体节点会追加在粒子池之后：结构变化时把池对象重新提到最后。
-            // 只在有新建节点的那一帧做，稳态完全不碰层级。
-            if (_dotOrderDirty)
-            {
-                PromoteDots();
-                _dotOrderDirty = false;
-            }
+            _particleRenderer.Submit(dots, area, ppu, _dotOrderDirty);
+            _dotOrderDirty = false;
         }
 
         /// <summary>销毁整层（面板重建 / 网格退役 / 读档）。可重复调用。</summary>
@@ -432,19 +357,8 @@ namespace ProbablyBagMod.Mod.Visual.Internal
 
             _destroyed = true;
 
-            // 粒子 sprite 与其 1×1 贴图是 HideFlags.DontSave 的运行时对象，
-            // 不会随后面销毁根节点自动回收；先手动销毁，否则每次面板重建都漏一份。
-            if (_dotSprite != null)
-            {
-                Texture2D texture = _dotSprite.texture;
-                if (texture != null)
-                {
-                    UnityEngine.Object.Destroy(texture);
-                }
-
-                UnityEngine.Object.Destroy(_dotSprite);
-                _dotSprite = null;
-            }
+            // 先释放绘制器拥有的白图，再销毁本层拥有的根及其子 Image。
+            _particleRenderer.DestroyResources();
 
             if (_root != null)
             {
@@ -462,61 +376,24 @@ namespace ProbablyBagMod.Mod.Visual.Internal
             }
         }
 
-        /// <summary>
-        /// 1×1 白 sprite（懒创建，实例字段）。粒子用白图 + Image.color 染色：
-        /// 颜色/透明度每帧不同，烘焙贴图没有意义，还会按颜色数量膨胀资源。
-        /// </summary>
-        private Sprite DotSprite
-        {
-            get
-            {
-                if (_dotSprite == null)
-                {
-                    Texture2D texture = new Texture2D(1, 1, TextureFormat.RGBA32, false);
-                    texture.SetPixel(0, 0, Color.white);
-                    texture.Apply();
-                    texture.hideFlags = HideFlags.DontSave;
-
-                    _dotSprite = Sprite.Create(
-                        texture, new Rect(0f, 0f, 1f, 1f), new Vector2(0.5f, 0.5f), 1f);
-                    _dotSprite.hideFlags = HideFlags.DontSave;
-                }
-
-                return _dotSprite;
-            }
-        }
-
-        /// <summary>把现有粒子池对象重新排到所有本体/残影/墙之后（只在结构变化时调用）。</summary>
-        private void PromoteDots()
-        {
-            for (int i = 0; i < _dots.Length; i++)
-            {
-                Image dot = _dots[i];
-                if (dot != null)
-                {
-                    dot.rectTransform.SetAsLastSibling();
-                }
-            }
-        }
-
         /// <summary>确保某个流源的 body/edge/accent 三个 Image 已创建（懒创建，顺序即叠放顺序）。</summary>
         private void EnsureQuad(int index)
         {
             if (_bodies[index] == null)
             {
-                _bodies[index] = CreateImage("FlowAtlasBody");
+                _bodies[index] = CreateImage(_root, "FlowAtlasBody");
                 _dotOrderDirty = true;
             }
 
             if (_edges[index] == null)
             {
-                _edges[index] = CreateImage("FlowAtlasEdge");
+                _edges[index] = CreateImage(_root, "FlowAtlasEdge");
                 _dotOrderDirty = true;
             }
 
             if (_accents[index] == null)
             {
-                _accents[index] = CreateImage("FlowAtlasAccent");
+                _accents[index] = CreateImage(_root, "FlowAtlasAccent");
                 _dotOrderDirty = true;
             }
         }
@@ -556,7 +433,7 @@ namespace ProbablyBagMod.Mod.Visual.Internal
 
             if (wall == null)
             {
-                wall = CreateImage("FlowAtlasWall");
+                wall = CreateImage(_root, "FlowAtlasWall");
                 // 墙色恒白（贴图自带 #C9C2B8），缓存里不需要颜色比较
                 wall.color = Color.white;
                 // 后创建的节点会在上面：把墙挪到这一组的最底层（body 之前）
@@ -574,7 +451,7 @@ namespace ProbablyBagMod.Mod.Visual.Internal
         }
 
         /// <summary>点亮一个池对象（与 <see cref="Deactivate"/> 对称；null 安全）。</summary>
-        private static void Activate(Image image)
+        internal static void Activate(Image image)
         {
             if (image != null && !image.gameObject.activeSelf)
             {
@@ -583,7 +460,7 @@ namespace ProbablyBagMod.Mod.Visual.Internal
         }
 
         /// <summary>隐掉一个池对象（null 安全；不销毁，留待复用）。</summary>
-        private static void Deactivate(Image image)
+        internal static void Deactivate(Image image)
         {
             if (image != null && image.gameObject.activeSelf)
             {
@@ -592,7 +469,7 @@ namespace ProbablyBagMod.Mod.Visual.Internal
         }
 
         /// <summary>提交数量钳到池容量：超出部分按提交顺序截断，永不越界。</summary>
-        private static int ClampCount(int count, int capacity)
+        internal static int ClampCount(int count, int capacity)
         {
             return count > capacity ? capacity : count;
         }
@@ -633,7 +510,7 @@ namespace ProbablyBagMod.Mod.Visual.Internal
 
                 if (ghost == null)
                 {
-                    ghost = CreateImage("FlowAtlasGhost");
+                    ghost = CreateImage(_root, "FlowAtlasGhost");
                     // 拖尾压到最底：后创建的本体自然叠在它上面
                     ghost.rectTransform.SetAsFirstSibling();
                     _ghosts[ghostIndex] = ghost;
@@ -669,13 +546,13 @@ namespace ProbablyBagMod.Mod.Visual.Internal
         }
 
         /// <summary>创建一个像素对齐的 Image（锚点/pivot 左上角，不接收点击，Simple 拉伸）。</summary>
-        private Image CreateImage(string name)
+        internal static Image CreateImage(RectTransform root, string name)
         {
             GameObject go = new GameObject(name);
-            go.layer = _root.gameObject.layer;
+            go.layer = root.gameObject.layer;
 
             RectTransform rect = go.AddComponent<RectTransform>();
-            rect.SetParent(_root, false);
+            rect.SetParent(root, false);
             rect.anchorMin = new Vector2(0f, 1f);
             rect.anchorMax = new Vector2(0f, 1f);
             rect.pivot = new Vector2(0f, 1f);

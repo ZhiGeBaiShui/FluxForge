@@ -31,7 +31,7 @@ namespace ProbablyBagMod.Mod
             Inventory = inventory;
             Grid = new FlowGridAdapter(inventory);
             Flows = new FlowSpawner();
-            Motion = new FlowManager(Grid);
+            Motion = new FlowManager(Grid, Flows);
         }
 
         /// <summary>本机网格的运动层代理（流源靠它查装置、判越界）。</summary>
@@ -40,7 +40,7 @@ namespace ProbablyBagMod.Mod
         /// <summary>本机的流源名单与生死广播。</summary>
         public FlowSpawner Flows { get; }
 
-        /// <summary>本机的流源推进器。与 <see cref="Flows"/> 互不隶属，由本类接线。</summary>
+        /// <summary>本机的流源推进器，订阅 <see cref="Flows"/> 生死事件维护采样记录。</summary>
         public FlowManager Motion { get; }
 
         /// <summary>流量机物品本身。物品被销毁（读档 / 删除）即本机作废。</summary>

@@ -7,7 +7,7 @@ namespace ProbablyBagMod
     /// 流源的生命周期：谁还活着、什么时候生、什么时候死。
     ///
     /// 与运动层是**并行的两件事**，互不隶属：
-    ///   · 本类只维护「活着的流源」这一份名单，并在进出时广播；
+    ///   · 本类维护「活着的流源」名单，广播生死与受阻变化；
     ///   · 怎么动、撞到谁，全由 <see cref="FlowManager"/> 负责。
     /// 两者由持有它们的上层（每台流量机）接线，彼此不持有对方的引用。
     ///
@@ -25,6 +25,9 @@ namespace ProbablyBagMod
         /// <summary>流源消失时触发（mod 层订阅 → 毁灭外壳）。</summary>
         public event Action<FlowEntity> OnEntityRemoved;
 
+        /// <summary>受阻变化时同步通知；参数是本次变化快照，回调异常不回滚。</summary>
+        public event Action<FlowEntity, bool> OnEntityBlockedChanged;
+
         /// <summary>当前活着的流源（运动层遍历它来推进）。</summary>
         public IReadOnlyList<FlowEntity> Active
         {
@@ -41,6 +44,11 @@ namespace ProbablyBagMod
 
             _active.Add(entity);
             OnEntityAdded?.Invoke(entity);
+        }
+
+        internal void ReportBlockedState(FlowEntity entity, bool blocked)
+        {
+            OnEntityBlockedChanged?.Invoke(entity, blocked);
         }
 
         /// <summary>

@@ -7,8 +7,8 @@ namespace ProbablyBagMod
     /// 流源的运动：一帧推进多少、撞上谁、被谁拦住。
     ///
     /// 与生命周期是**并行的两件事**：名单和生死广播在 <see cref="FlowSpawner"/>，
-    /// 本类只负责「怎么动」，既不持有名单，也不知道谁在订阅生死。
-    /// 两者由持有它们的上层（每台流量机）接线。
+    /// 本类负责运动和受阻采样，通过生死事件维护本机的采样记录。
+    /// 不持有名单，也不依赖视觉层。
     ///
     /// 网格由构造注入：一台机器一块网格，所以不需要每个流源再自带一份。
     ///
@@ -18,6 +18,12 @@ namespace ProbablyBagMod
     /// </summary>
     public sealed class FlowManager
     {
+        /// <summary>连续静止两次有效采样才判定受阻。</summary>
+        private const int BlockedStillFrames = 2;
+
+        /// <summary>速度高于该值却连续不动，才算受阻。</summary>
+        private const double BlockedMinSpeed = 0.01d;
+
         /// <summary>
         /// 撞上装置时停在装置格内的偏移量（沿运动方向前进一点点）。
         /// 让位置明确落在装置格内部、不压在格边界上：
@@ -26,11 +32,64 @@ namespace ProbablyBagMod
         /// </summary>
         private const double StopEpsilon = 1e-3;
 
-        private readonly IFlowGrid _grid;
+        private sealed class BlockedState
+        {
+            public double LastX;
+            public double LastY;
+            public int StillFrames;
+            public bool IsBlocked;
+        }
 
-        public FlowManager(IFlowGrid grid)
+        private readonly IFlowGrid _grid;
+        private readonly Dictionary<FlowEntity, BlockedState> _blockedStates
+            = new Dictionary<FlowEntity, BlockedState>();
+        private FlowSpawner _flows;
+
+        public FlowManager(IFlowGrid grid, FlowSpawner flows = null)
         {
             _grid = grid ?? throw new ArgumentNullException(nameof(grid));
+            if (flows != null)
+            {
+                BindFlows(flows);
+            }
+        }
+
+        private void BindFlows(FlowSpawner flows)
+        {
+            if (_flows == flows)
+            {
+                return;
+            }
+
+            if (_flows != null)
+            {
+                _flows.OnEntityAdded -= OnEntityAdded;
+                _flows.OnEntityRemoved -= OnEntityRemoved;
+            }
+
+            _blockedStates.Clear();
+            _flows = flows;
+            _flows.OnEntityAdded += OnEntityAdded;
+            _flows.OnEntityRemoved += OnEntityRemoved;
+
+            foreach (FlowEntity entity in _flows.Active)
+            {
+                OnEntityAdded(entity);
+            }
+        }
+
+        private void OnEntityAdded(FlowEntity entity)
+        {
+            _blockedStates[entity] = new BlockedState
+            {
+                LastX = entity.Position.X,
+                LastY = entity.Position.Y
+            };
+        }
+
+        private void OnEntityRemoved(FlowEntity entity)
+        {
+            _blockedStates.Remove(entity);
         }
 
         /// <summary>
@@ -41,6 +100,8 @@ namespace ProbablyBagMod
         /// </summary>
         public void Tick(double deltaTime, FlowSpawner flows)
         {
+            // 保留原 Tick 接口；旧调用方首次推进时绑定，换名单时退订旧事件。
+            BindFlows(flows);
             IReadOnlyList<FlowEntity> active = flows.Active;
 
             for (int i = active.Count - 1; i >= 0; i--)
@@ -56,6 +117,48 @@ namespace ProbablyBagMod
 
                 // 位置直接写进 entity.Position，视觉层在 LateUpdate 里自己读
                 MoveFlowEntity(entity, deltaTime, flows);
+            }
+
+            UpdateBlockedStates(deltaTime, flows);
+        }
+
+        private void UpdateBlockedStates(double deltaTime, FlowSpawner flows)
+        {
+            if (!(deltaTime > 0d))
+            {
+                return;
+            }
+
+            IReadOnlyList<FlowEntity> active = flows.Active;
+            for (int i = active.Count - 1; i >= 0; i--)
+            {
+                FlowEntity entity = active[i];
+                BlockedState state = _blockedStates[entity];
+                double positionX = entity.Position.X;
+                double positionY = entity.Position.Y;
+                double speed = entity.Motion == null ? 0d : entity.Motion.Speed;
+
+                // 比较原始 double 坐标，不按格号或容差判断。
+                if (positionX == state.LastX && positionY == state.LastY
+                    && speed > BlockedMinSpeed)
+                {
+                    state.StillFrames++;
+                }
+                else
+                {
+                    state.StillFrames = 0;
+                }
+
+                state.LastX = positionX;
+                state.LastY = positionY;
+
+                // 先写历史再通知，回调终结当前源后不再写回。
+                bool blocked = state.StillFrames >= BlockedStillFrames;
+                if (state.IsBlocked != blocked)
+                {
+                    state.IsBlocked = blocked;
+                    flows.ReportBlockedState(entity, blocked);
+                }
             }
         }
 
