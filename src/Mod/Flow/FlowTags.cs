@@ -16,8 +16,18 @@ namespace ProbablyBagMod.Mod
     /// </summary>
     internal static class FlowTags
     {
-        /// <summary>存量：int 槽位（收集装置与冰块的液体量）。</summary>
-        public const string Stock = "FLOW_STOCK";
+        /// <summary>
+        /// 存量：int 槽位，直接绑定**原版的水分 tag**（`CURRENT_PART_` + WATER）。
+        ///
+        /// 理由：水分本来就是游戏的概念，没必要自造一套同义的 tag。
+        /// 已实测：**非容器物品**上的这个 tag 不会被原版处理（tooltip、容器逻辑、水质都不触发），
+        /// 因为原版先看 `LIQUID_CONTAINER_TAG` 判定身份。以后原版若改变这一行为，
+        /// 再换回自有 tag —— 兼容性留给那时处理。
+        ///
+        /// 注意：物品真的是原版容器时（旧的接水路径），这个 tag 由原版自己维护，
+        /// 我们的写入与 `WaterHelper.Remove` 会作用于同一份数据。
+        /// </summary>
+        public const string Stock = "CURRENT_PART_WATER";
 
         /// <summary>流体/装置温度：float 槽位（发射、收集、冰块共用同一个映射）。</summary>
         public const string FlowTemperature = "FLOW_TEMPERATURE";

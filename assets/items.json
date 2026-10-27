@@ -34,7 +34,7 @@
           "valueName": "ICE_BLOCK_TAG"
         },
         {
-          "valueName": "FLOW_STOCK",
+          "valueName": "CURRENT_PART_WATER",
           "valueInt": 1000000
         },
         {
@@ -44,7 +44,7 @@
       ],
       "statusLines": [
         {
-          "tag": "FLOW_STOCK",
+          "tag": "CURRENT_PART_WATER",
           "label": "含冰量",
           "scale": 0.001,
           "format": "0.#",
@@ -78,7 +78,7 @@
       ],
       "tags": [
         {
-          "valueName": "FLOW_STOCK",
+          "valueName": "CURRENT_PART_WATER",
           "valueInt": 0
         },
         {
@@ -88,7 +88,7 @@
       ],
       "statusLines": [
         {
-          "tag": "FLOW_STOCK",
+          "tag": "CURRENT_PART_WATER",
           "label": "存量",
           "scale": 0.001,
           "format": "0.#",
@@ -121,7 +121,7 @@
       ],
       "tags": [
         {
-          "valueName": "FLOW_STOCK",
+          "valueName": "CURRENT_PART_WATER",
           "valueInt": 0
         },
         {
@@ -131,7 +131,7 @@
       ],
       "statusLines": [
         {
-          "tag": "FLOW_STOCK",
+          "tag": "CURRENT_PART_WATER",
           "label": "已收集",
           "scale": 0.001,
           "format": "0.#",
