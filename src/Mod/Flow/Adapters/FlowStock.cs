@@ -35,7 +35,7 @@ namespace ProbablyBagMod.Mod
             {
                 double value = container
                     ? binding.FromContainer(item)
-                    : ReadTag(item.state, binding);
+                    : ReadTag(item, binding);
                 binding.Set(properties, value);
             }
 
@@ -68,22 +68,21 @@ namespace ProbablyBagMod.Mod
             {
                 if (binding.IntSlot)
                 {
-                    FlowTags.WriteInt(item.state, binding.Tag, 0);
+                    item.state.GetTag(binding.Tag).valueInt = 0;
                 }
                 else
                 {
-                    FlowTags.WriteFloat(item.state, binding.Tag, 0f);
+                    item.state.GetTag(binding.Tag).valueFloat = 0f;
                 }
             }
 
             return properties;
         }
 
-        private static double ReadTag(Il2Cpp.TagSystem state, FlowTagMap.AttributeBinding binding)
+        private static double ReadTag(Il2Cpp.GameItem item, FlowTagMap.AttributeBinding binding)
         {
-            return binding.IntSlot
-                ? FlowTags.ReadInt(state, binding.Tag, 0)
-                : FlowTags.ReadFloat(state, binding.Tag, 0f);
+            Il2Cpp.TagState state = item.GetTagReadonly(binding.Tag);
+            return binding.IntSlot ? state.valueInt : state.valueFloat;
         }
     }
 }

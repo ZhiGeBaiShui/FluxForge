@@ -154,7 +154,7 @@ namespace ProbablyBagMod.Mod
 
             // 取走物品里的全部存量，再把装置剩余状态写回 tag
             FlowStock.Take(item);
-            FlowTagMap.Write(item.state, emitter);
+            FlowTagMap.Write(item, emitter);
             return true;
         }
 
@@ -169,7 +169,7 @@ namespace ProbablyBagMod.Mod
                 return;
             }
 
-            FlowTagMap.Read(item.state, device);
+            FlowTagMap.Read(item, device);
         }
 
         /// <summary>

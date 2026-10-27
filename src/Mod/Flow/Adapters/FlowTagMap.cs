@@ -74,8 +74,13 @@ namespace ProbablyBagMod.Mod
             get { return _bindings; }
         }
 
-        /// <summary>target → tag：只写 target 实现了接口的那些行。</summary>
-        public static void Write(Il2Cpp.TagSystem state, object target)
+        /// <summary>
+        /// target → tag：只写 target 实现了接口的那些行。
+        ///
+        /// 写必须用 <c>state.GetTag</c>（活引用）；<c>GetTagReadonly</c> 返回的是
+        /// <c>TagState.Clone()</c> 副本，改它不会影响存档——这个坑踩过两次。
+        /// </summary>
+        public static void Write(Il2Cpp.GameItem item, object target)
         {
             foreach (AttributeBinding binding in _bindings)
             {
@@ -86,17 +91,17 @@ namespace ProbablyBagMod.Mod
 
                 if (binding.IntSlot)
                 {
-                    FlowTags.WriteInt(state, binding.Tag, (int)binding.Get(target));
+                    item.state.GetTag(binding.Tag).valueInt = (int)binding.Get(target);
                 }
                 else
                 {
-                    FlowTags.WriteFloat(state, binding.Tag, (float)binding.Get(target));
+                    item.state.GetTag(binding.Tag).valueFloat = (float)binding.Get(target);
                 }
             }
         }
 
-        /// <summary>tag → target：只写 target 实现了接口的那些行；tag 缺失按 0 读。</summary>
-        public static void Read(Il2Cpp.TagSystem state, object target)
+        /// <summary>tag → target：只写 target 实现了接口的那些行。</summary>
+        public static void Read(Il2Cpp.GameItem item, object target)
         {
             foreach (AttributeBinding binding in _bindings)
             {
@@ -105,10 +110,10 @@ namespace ProbablyBagMod.Mod
                     continue;
                 }
 
-                double value = binding.IntSlot
-                    ? FlowTags.ReadInt(state, binding.Tag, 0)
-                    : FlowTags.ReadFloat(state, binding.Tag, 0f);
-                binding.Set(target, value);
+                Il2Cpp.TagState state = item.GetTagReadonly(binding.Tag);
+                binding.Set(
+                    target,
+                    binding.IntSlot ? state.valueInt : state.valueFloat);
             }
         }
 
