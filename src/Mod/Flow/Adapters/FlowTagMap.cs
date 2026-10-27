@@ -113,24 +113,14 @@ namespace ProbablyBagMod.Mod
         }
 
         /// <summary>
-        /// 原版容器温度：槽位类型未文档化，先按 double 再按 float；都读不到用默认温度。
+        /// 原版容器温度。读 <c>TagState.valueDouble</c>（+0x40）——ISIL 转储里
+        /// ChemicalHelper 三处读取都是 <c>Move xmm6, [rax+64]</c>，原版自己只认 double 槽。
+        /// tag 不存在（容器没有液体温度）时用默认温度。
         /// </summary>
         private static double ReadContainerTemp(Il2Cpp.GameItem container)
         {
             Il2Cpp.TagState state = container.GetTagReadonly(ContainerTempTag);
-            if (state == null)
-            {
-                return FlowStock.DefaultTemperature;
-            }
-
-            double value = state.valueDouble;
-            if (value != 0d)
-            {
-                return value;
-            }
-
-            value = state.valueFloat;
-            return value != 0d ? value : FlowStock.DefaultTemperature;
+            return state == null ? FlowStock.DefaultTemperature : state.valueDouble;
         }
     }
 }
