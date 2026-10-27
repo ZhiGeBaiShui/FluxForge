@@ -8,7 +8,7 @@ namespace ProbablyBagMod.Mod
         public override void Attach(Il2Cpp.GameItem item, FlowItemDefinition def)
         {
             IceBlockDevice device = new IceBlockDevice(0d, 0d);
-            FlowTagMap.Read(item, device);   // tag 是存档真相，先灌进装置
+            FlowStock.ReadInto(item, device);   // tag 是存档真相，先灌进装置
 
             DeviceRegistry.Register(item.Pointer, device, item);
             FlowDeviceEvents.Subscribe(device);

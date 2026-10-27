@@ -48,18 +48,64 @@ namespace ProbablyBagMod.Mod
         /// <summary>按表读出一份属性：容器逐行 <c>FromContainer</c>，自己的存量逐行读 tag。</summary>
         public static FlowProperties Read(Il2Cpp.GameItem item)
         {
-            bool container = IsContainer(item);
             FlowProperties properties = new FlowProperties(0d, 0d);
 
-            foreach (FlowTagMap.AttributeBinding binding in FlowTagMap.Bindings)
+            if (IsContainer(item))
             {
-                double value = container
-                    ? binding.FromContainer(item)
-                    : ReadTag(item, binding);
-                binding.Set(properties, value);
+                foreach (FlowTagMap.AttributeBinding binding in FlowTagMap.Bindings)
+                {
+                    binding.Set(properties, binding.FromContainer(item));
+                }
+
+                return properties;
             }
 
+            ReadInto(item, properties);
             return properties;
+        }
+
+        /// <summary>
+        /// 把物品 tag 里的值读进 <paramref name="target"/>（装置或一份属性）。
+        /// 只碰自有存量；容器请用 <see cref="Read"/>。
+        /// </summary>
+        public static void ReadInto(Il2Cpp.GameItem item, object target)
+        {
+            foreach (FlowTagMap.AttributeBinding binding in FlowTagMap.Bindings)
+            {
+                if (!binding.Required.IsInstanceOfType(target))
+                {
+                    continue;
+                }
+
+                Il2Cpp.TagState state = item.GetTagReadonly(binding.Tag);
+                binding.Set(target, binding.IntSlot ? state.valueInt : state.valueFloat);
+            }
+        }
+
+        /// <summary>
+        /// 把 <paramref name="target"/>（装置或一份属性）的值写进物品 tag。
+        ///
+        /// 写必须用 <c>state.GetTag</c>（活引用）；<c>GetTagReadonly</c> 返回的是
+        /// <c>TagState.Clone()</c> 副本，改它不会影响存档——这个坑踩过两次。
+        /// </summary>
+        public static void Write(Il2Cpp.GameItem item, object target)
+        {
+            foreach (FlowTagMap.AttributeBinding binding in FlowTagMap.Bindings)
+            {
+                if (!binding.Required.IsInstanceOfType(target))
+                {
+                    continue;
+                }
+
+                if (binding.IntSlot)
+                {
+                    item.state.GetTag(binding.Tag).valueInt = (int)binding.Get(target);
+                }
+                else
+                {
+                    item.state.GetTag(binding.Tag).valueFloat = (float)binding.Get(target);
+                }
+            }
         }
 
         /// <summary>总存量 = 一份属性里所有"相加类"属性之和。</summary>
@@ -99,10 +145,5 @@ namespace ProbablyBagMod.Mod
             return properties;
         }
 
-        private static double ReadTag(Il2Cpp.GameItem item, FlowTagMap.AttributeBinding binding)
-        {
-            Il2Cpp.TagState state = item.GetTagReadonly(binding.Tag);
-            return binding.IntSlot ? state.valueInt : state.valueFloat;
-        }
     }
 }

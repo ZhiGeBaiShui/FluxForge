@@ -21,7 +21,7 @@ namespace ProbablyBagMod.Mod
         /// <summary>存量变化：把最新数值写进物品 tag，tooltip 下一次重建时读到新值。</summary>
         public static void OnChanged(IFlowNotifier sender)
         {
-            FlowTagMap.Write(DeviceRegistry.GetItem(sender), sender);
+            FlowStock.Write(DeviceRegistry.GetItem(sender), sender);
         }
 
         /// <summary>

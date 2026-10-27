@@ -27,7 +27,7 @@ namespace ProbablyBagMod.Mod
 
             // 只写 tag：装置侧在下一次发射时会用 FlowStock 重新读一遍，
             // 不需要在这里反向同步任何装置镜像。
-            FlowTagMap.Write(self, merged);
+            FlowStock.Write(self, merged);
 
             // 抽干来源。容器走原版 Remove：按物质占比分摊、自动钳到 0，并刷新容器外观
             FlowStock.Take(source);
@@ -45,7 +45,7 @@ namespace ProbablyBagMod.Mod
         private static FlowProperties ReadStock(Il2Cpp.GameItem self)
         {
             FlowProperties stock = new FlowProperties(0d, 0d);
-            FlowTagMap.Read(self, stock);
+            FlowStock.ReadInto(self, stock);
             return stock;
         }
     }
