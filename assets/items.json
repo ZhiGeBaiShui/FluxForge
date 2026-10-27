@@ -19,6 +19,7 @@
     {
       "key": "ice_block",
       "base": "empty",
+      "capacityMl": 1000000,
       "sprite": "ice_block",
       "name": "冰块",
       "desc": "吸收流源的热量，自身逐渐融化。\n融化后水分随流源带走。",
@@ -27,6 +28,7 @@
         "FLOW_DEVICE"
       ],
       "attachments": [
+        "flow_intake",
         "ice_block"
       ],
       "tags": [
@@ -65,6 +67,7 @@
     {
       "key": "flow_emitter",
       "base": "empty",
+      "capacityMl": 1000000,
       "sprite": "flow_emitter",
       "name": "发射装置",
       "desc": "从水容器接收水分，启动后持续向上发射流源。",
@@ -109,6 +112,7 @@
     {
       "key": "flow_collector",
       "base": "empty",
+      "capacityMl": 1000000,
       "sprite": "flow_collector",
       "name": "收集装置",
       "desc": "接收流源，把其中的水分与温度累积存储。",
@@ -117,6 +121,7 @@
         "FLOW_DEVICE"
       ],
       "attachments": [
+        "flow_intake",
         "collector"
       ],
       "tags": [

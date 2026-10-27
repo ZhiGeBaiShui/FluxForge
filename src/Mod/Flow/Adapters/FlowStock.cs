@@ -25,7 +25,7 @@ namespace ProbablyBagMod.Mod
         {
             return item != null
                 && item.Pointer != IntPtr.Zero
-                && item.IsTag(FlowIntakeAttachment.ContainerTag);
+                && item.IsTag(FlowTags.Container);
         }
 
         /// <summary>原版容器的存量 = 所有物质之和。</summary>
