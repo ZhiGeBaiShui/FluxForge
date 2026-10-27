@@ -1,10 +1,9 @@
-using System;
 using System.Collections.Generic;
 
 namespace ProbablyBagMod.Mod
 {
     /// <summary>
-    /// 从原版液体容器取液，并入自己的存量（<see cref="FlowProperties"/>）。
+    /// 把来源液体容器的内容整份并入目标物品自己的存量。
     ///
     /// 泛化点：合并不是逐字段手写，而是交给 <see cref="FlowProperties.Merge"/> 按
     /// <c>PropertyRule</c> 处理（水分 = 相加、温度 = 按质量加权）。
@@ -14,19 +13,6 @@ namespace ProbablyBagMod.Mod
     /// </summary>
     internal static class LiquidTransfer
     {
-        /// <summary>来源没有温度信息时的假定温度。</summary>
-        public const double DefaultTemperature = 25d;
-
-        private const string LiquidContainerTag = "LIQUID_CONTAINER_TAG";
-
-        /// <summary>原版液体容器判定（按 tag，不看具体物品 id）。</summary>
-        public static bool IsLiquidContainer(Il2Cpp.GameItem item)
-        {
-            return item != null
-                && item.Pointer != IntPtr.Zero
-                && item.IsTag(LiquidContainerTag);
-        }
-
         /// <summary>把来源容器整份并入 <paramref name="self"/>，并抽干来源。</summary>
         public static void Accept(Il2Cpp.GameItem self, Il2Cpp.GameItem source)
         {
@@ -39,11 +25,12 @@ namespace ProbablyBagMod.Mod
             FlowProperties stock = ReadStock(self);
             FlowProperties merged = stock.Merge(new List<FlowProperties> { incoming });
 
+            // 只写 tag：装置侧在下一次发射时会用 LiquidStock 重新读一遍，
+            // 不需要在这里反向同步任何装置镜像。
             FlowTagMap.Write(self.state, merged);
-            SyncDevice(self, merged);
 
-            // 抽干来源。用原版 Remove：它按物质占比分摊、自动钳到 0，并刷新容器外观
-            Il2Cpp.WaterHelper.Remove(source, (int)incoming.Moisture);
+            // 抽干来源。用原版 Remove：按物质占比分摊、自动钳到 0，并刷新容器外观
+            LiquidStock.Consume(source, incoming.Moisture);
         }
 
         /// <summary>
@@ -53,36 +40,23 @@ namespace ProbablyBagMod.Mod
         private static FlowProperties ReadSource(Il2Cpp.GameItem container)
         {
             return new FlowProperties(
-                Il2Cpp.WaterHelper.GetTotalVolume(container),
-                LiquidStock.Temperature(container, DefaultTemperature));
+                LiquidStock.Total(container),
+                LiquidStock.Temperature(container, LiquidStock.DefaultTemperature));
         }
 
         /// <summary>tag → 属性。经 <see cref="FlowTagMap"/> 批量读，不认识具体字段。</summary>
         private static FlowProperties ReadStock(Il2Cpp.GameItem self)
         {
-            FlowProperties stock = new FlowProperties(0d, DefaultTemperature);
+            FlowProperties stock = new FlowProperties(0d, LiquidStock.DefaultTemperature);
             FlowTagMap.Read(self.state, stock);
 
             // tag 不存在时 FlowTagMap 会写 0；存量温度 0 没有实际意义，回落到常温
             if (stock.Temperature == 0d)
             {
-                stock.Temperature = DefaultTemperature;
+                stock.Temperature = LiquidStock.DefaultTemperature;
             }
 
             return stock;
-        }
-
-        /// <summary>让装置镜像跟上 tag，否则下一次接管会把旧值灌回去。</summary>
-        private static void SyncDevice(Il2Cpp.GameItem self, FlowProperties merged)
-        {
-            EmitterDevice device = DeviceRegistry.Get<EmitterDevice>(self.Pointer);
-            if (device == null)
-            {
-                return;
-            }
-
-            device.Stock.Moisture = merged.Moisture;
-            device.Stock.Temperature = merged.Temperature;
         }
     }
 }

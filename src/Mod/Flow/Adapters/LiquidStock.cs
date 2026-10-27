@@ -1,62 +1,76 @@
 using System;
 
-
 namespace ProbablyBagMod.Mod
 {
     /// <summary>
-    /// 液体容器存量的读写适配器。
+    /// 物品液体存量的唯一适配点。存量有两种形态，对调用方透明：
     ///
-    /// 发射装置本身就是一个**原版液体容器**（由 <c>WaterHelper.InitLiquidContainerItem</c> 装配），
-    /// 所以「水从哪里来」这件事完全交给游戏：玩家把水瓶拖上去，原版挂在该物品上的
-    /// target 委托会自己把每种物质的数量倒进来，温度也一并处理。
+    ///   ① **原版液体容器**：游戏用 <c>CURRENT_PART_*</c> / <c>CONTAINER_TEMP_TAG</c> 维护
+    ///      （由 <see cref="LiquidIntakeAttachment"/> 调 <c>InitLiquidContainerItem</c> 建立）；
+    ///   ② **我们自己的存量**：<c>FLOW_STOCK</c> / <c>FLOW_TEMPERATURE</c>
+    ///      （由 <see cref="LiquidTransfer"/> 写入）。
     ///
-    /// 本类只负责两件游戏没提供的事：
-    ///   ① 读总存量（游戏给了 <c>WaterHelper.GetTotalVolume</c>，直接用）
-    ///   ② 发射时按量扣减（游戏只有「加」，没有「扣」，这里补一个）
-    ///
-    /// 这样框架层 <see cref="EmitterDevice"/> 完全不知道物品的存在，
-    /// 只在激活时被告知「你有多少存量」，耦合点收敛在这一个类里。
+    /// 所以发射流程只问 Total / Temperature / Consume，不需要知道这件物品是哪一种。
     /// </summary>
     public static class LiquidStock
     {
+        /// <summary>没有温度信息时的假定温度。</summary>
+        public const double DefaultTemperature = 25d;
 
-        /// <summary>容器里所有物质的总量（单位与游戏内部一致，1/1000 mL）。</summary>
+        private const string ContainerTemperatureTag = "CONTAINER_TEMP_TAG";
+
+        /// <summary>这件物品是不是原版液体容器（按 tag 判定，与具体物品 id 无关）。</summary>
+        public static bool IsContainer(Il2Cpp.GameItem item)
+        {
+            return item != null
+                && item.Pointer != IntPtr.Zero
+                && item.IsTag(LiquidIntakeAttachment.ContainerTag);
+        }
+
+        /// <summary>总存量。容器 = 各物质之和；自己的存量 = FLOW_STOCK。</summary>
         public static double Total(Il2Cpp.GameItem item)
         {
-            return Il2Cpp.WaterHelper.GetTotalVolume(item);
+            return IsContainer(item)
+                ? Il2Cpp.WaterHelper.GetTotalVolume(item)
+                : FlowTags.ReadInt(item.state, FlowTags.Stock, 0);
         }
 
         /// <summary>
-        /// 扣减指定量的物质，返回实际扣走的量。
+        /// 扣减指定量，返回实际扣走的量。
         ///
-        /// 前置条件：<paramref name="item"/> 非空且 <paramref name="amount"/> &gt; 0。
-        /// 唯一调用点是 <see cref="FlowRuntime"/> 的发射流程：它先确认容器里
-        /// <c>Total(item) &gt; 0</c>，再把同一个非零值传进来，所以这里不必重复检查。
-        ///
-        /// 直接调原版 <c>WaterHelper.Remove</c>：它按各物质占比分摊、自动钳到 0，
-        /// 并刷新水质与容器贴图。自己遍历 tag 改数值是错的——
-        /// <c>GameItem.GetTagReadonly</c> 返回的是 <c>TagState.Clone()</c> 出来的副本，
-        /// 改副本对活 tag 没有任何影响（这就是水量一直不掉的原因）。
+        /// 容器走原版 <c>WaterHelper.Remove</c>：按物质占比分摊、自动钳到 0，并刷新水质与贴图。
+        /// 自己的存量直接改活 tag 的 int 槽（<c>GetTagReadonly</c> 拿到的是副本，改它无效）。
         /// </summary>
         public static double Consume(Il2Cpp.GameItem item, double amount)
         {
-            int before = Il2Cpp.WaterHelper.GetTotalVolume(item);
-            int take = (int)Math.Min(before, amount);
+            if (IsContainer(item))
+            {
+                int before = Il2Cpp.WaterHelper.GetTotalVolume(item);
+                int take = (int)Math.Min(before, amount);
 
-            Il2Cpp.WaterHelper.Remove(item, take);
-            return before - Il2Cpp.WaterHelper.GetTotalVolume(item);
+                Il2Cpp.WaterHelper.Remove(item, take);
+                return before - Il2Cpp.WaterHelper.GetTotalVolume(item);
+            }
+
+            int stored = FlowTags.ReadInt(item.state, FlowTags.Stock, 0);
+            int taken = (int)Math.Min(stored, amount);
+
+            FlowTags.WriteInt(item.state, FlowTags.Stock, stored - taken);
+            return taken;
         }
 
         /// <summary>
-        /// 容器当前温度。原版写在 <c>CONTAINER_TEMP_TAG</c> 上（由 HandleReceiveLiquidTemp 维护），
-        /// 这个 tag 的槽位类型没有明确文档，先按 double 读、为 0 再试 float，
-        /// 都读不到就退回调用方给的默认值。
-        ///
-        /// 前置条件：<paramref name="item"/> 非空（发射入口已确认当前物品有效）。
+        /// 当前温度。容器读 <c>CONTAINER_TEMP_TAG</c>（槽位类型未文档化，先按 double 再按 float）；
+        /// 自己的存量读 <c>FLOW_TEMPERATURE</c>。都读不到就用调用方给的 fallback。
         /// </summary>
         public static double Temperature(Il2Cpp.GameItem item, double fallback)
         {
-            Il2Cpp.TagState state = item.GetTagReadonly("CONTAINER_TEMP_TAG");
+            if (!IsContainer(item))
+            {
+                return FlowTags.ReadFloat(item.state, FlowTags.FlowTemperature, (float)fallback);
+            }
+
+            Il2Cpp.TagState state = item.GetTagReadonly(ContainerTemperatureTag);
             if (state == null)
             {
                 return fallback;

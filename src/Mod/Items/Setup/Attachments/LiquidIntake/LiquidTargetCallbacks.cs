@@ -8,19 +8,19 @@ namespace ProbablyBagMod.Mod
     /// 落点回调：别人把物品拖到"我们"身上时，由游戏调用。
     ///
     /// ⚠ 这三个委托是否真的被当前游戏版本调用**尚未验证**。
-    ///   在 <see cref="EmitterAttachment.UseOwnLiquidTarget"/> 翻成 true 之前，
+    ///   在 <see cref="LiquidIntakeAttachment"/> 的 <c>UseOwnTarget</c> 翻成 true 之前，
     ///   必须先确认拖拽水瓶时 <c>OnTarget</c> 会被触发。
     ///
     /// 无状态：实例只作为原生委托的 target，逻辑全部转发给 <see cref="LiquidTransfer"/>。
     /// </summary>
-    public sealed class EmitterTargetCallbacks : Il2CppSystem.Object
+    public sealed class LiquidTargetCallbacks : Il2CppSystem.Object
     {
-        public EmitterTargetCallbacks(IntPtr pointer) : base(pointer)
+        public LiquidTargetCallbacks(IntPtr pointer) : base(pointer)
         {
         }
 
-        public EmitterTargetCallbacks()
-            : base(ClassInjector.DerivedConstructorPointer<EmitterTargetCallbacks>())
+        public LiquidTargetCallbacks()
+            : base(ClassInjector.DerivedConstructorPointer<LiquidTargetCallbacks>())
         {
             ClassInjector.DerivedConstructorBody(this);
         }
@@ -30,7 +30,7 @@ namespace ProbablyBagMod.Mod
         {
             try
             {
-                return LiquidTransfer.IsLiquidContainer(other);
+                return LiquidStock.IsContainer(other);
             }
             catch
             {
@@ -43,8 +43,7 @@ namespace ProbablyBagMod.Mod
         {
             try
             {
-                return LiquidTransfer.IsLiquidContainer(other)
-                    && Il2Cpp.WaterHelper.GetTotalVolume(other) > 0;
+                return LiquidStock.IsContainer(other) && LiquidStock.Total(other) > 0d;
             }
             catch
             {
@@ -61,7 +60,7 @@ namespace ProbablyBagMod.Mod
             }
             catch (Exception e)
             {
-                MelonLoader.MelonLogger.Error("[发射装置] 接水失败：" + e);
+                MelonLoader.MelonLogger.Error("[接液] 接收失败：" + e);
             }
         }
     }
