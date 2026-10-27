@@ -25,31 +25,50 @@ namespace ProbablyBagMod.Mod
         public const string FlowDeviceDisplayName = "流量装置";
 
         /// <summary>
-        /// 全部装配件。这是唯一的注册点：新增装配件只加一行，不改任何逻辑。
+        /// 名字 → 共享实例，**自动发现**：扫描本程序集里所有 <see cref="ItemAttachment"/> 子类，
+        /// 每个实例化一次，按 <see cref="ItemAttachment.Name"/> 建表。
         ///
-        /// 用显式数组而不是反射扫描：装配件是我们自己写的类，类名写错、漏写公开无参构造
-        /// 这类错误由编译器和评审兜住；把它们变成运行期问题、再写一套扫表与诊断去观测，
-        /// 是净损失。运行期只防御真正的外部输入——items.json 里的字符串。
+        /// 所以新增装配件只需要写一个类，不用在别处登记。漏写公开无参构造、名字重复
+        /// 这类结构性问题在这里一次性报出来（每条 Error 指名类型），不会拖到装配物品时才发现。
+        ///
+        /// 名字比较不区分大小写——items.json 写成 Flow_Container 也能命中。
         /// </summary>
-        private static readonly ItemAttachment[] All =
-        {
-            new MachineAttachment(),
-            new EmitterAttachment(),
-            new CollectorAttachment(),
-            new IceBlockAttachment(),
-        };
+        private static readonly Dictionary<string, ItemAttachment> _attachments = Discover();
 
-        /// <summary>名字 → 共享实例。名字比较不区分大小写；同名时后者覆盖前者（数组里一眼可见）。</summary>
-        private static readonly Dictionary<string, ItemAttachment> _attachments = BuildTable();
-
-        private static Dictionary<string, ItemAttachment> BuildTable()
+        private static Dictionary<string, ItemAttachment> Discover()
         {
             Dictionary<string, ItemAttachment> table
-                = new Dictionary<string, ItemAttachment>(All.Length, StringComparer.OrdinalIgnoreCase);
+                = new Dictionary<string, ItemAttachment>(StringComparer.OrdinalIgnoreCase);
 
-            for (int i = 0; i < All.Length; i++)
+            Type[] types = typeof(ItemSetup).Assembly.GetTypes();
+            for (int i = 0; i < types.Length; i++)
             {
-                table[All[i].Name] = All[i];
+                Type type = types[i];
+                if (type.IsAbstract || !typeof(ItemAttachment).IsAssignableFrom(type))
+                {
+                    continue;
+                }
+
+                ItemAttachment attachment;
+                try
+                {
+                    attachment = (ItemAttachment)Activator.CreateInstance(type);
+                }
+                catch (Exception e)
+                {
+                    MelonLoader.MelonLogger.Error(
+                        "[装配] " + type.Name + " 无法实例化（需要公开无参构造）：" + e.Message);
+                    continue;
+                }
+
+                if (table.ContainsKey(attachment.Name))
+                {
+                    MelonLoader.MelonLogger.Error(
+                        "[装配] 装配件名重复：「" + attachment.Name + "」(" + type.Name + ")");
+                    continue;
+                }
+
+                table.Add(attachment.Name, attachment);
             }
 
             return table;
