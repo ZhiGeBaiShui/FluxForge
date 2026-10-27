@@ -21,7 +21,7 @@ namespace ProbablyBagMod.Mod
             IMoistureState moisture = device as IMoistureState;
             if (moisture != null)
             {
-                FlowTags.WriteInt(state, FlowTags.Stock, (int)moisture.Moisture);
+                FlowTags.WriteInt(state, FlowTags.Stock, ToStockUnits(moisture.Moisture));
             }
 
             ITemperatureState temperature = device as ITemperatureState;
@@ -30,6 +30,30 @@ namespace ProbablyBagMod.Mod
                 FlowTags.WriteFloat(
                     state, FlowTags.FlowTemperature, (float)temperature.Temperature);
             }
+        }
+
+        /// <summary>
+        /// 存量 double → tag 的 int 槽位。
+        ///
+        /// 这里**不是**容量上限（我们不设上限，原版倒多少收多少），而是 int 的物理边界：
+        /// 单位是 1/1000 mL，int 上限约 2,147,483 mL。越界后强转在 unchecked 下结果未定义
+        /// （通常是负数），所以钳住并留一条日志——真到这一步说明已经灌了两千多升。
+        /// </summary>
+        private static int ToStockUnits(double moisture)
+        {
+            if (moisture <= 0d)
+            {
+                return 0;
+            }
+
+            if (moisture < int.MaxValue)
+            {
+                return (int)moisture;
+            }
+
+            MelonLoader.MelonLogger.Warning(
+                "[流源] 存量超过 int 槽位上限（约 2147 L），已钳到上限");
+            return int.MaxValue;
         }
 
         /// <summary>tag → 装置状态。只在读档接管时调用一次。</summary>
