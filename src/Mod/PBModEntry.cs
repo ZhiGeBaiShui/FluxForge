@@ -35,6 +35,9 @@ namespace ProbablyBagMod.Mod
             FlowTooltipPatch.LogPatchState();
             ItemTypeLocalization.Register(ItemSetup.FlowDeviceType, ItemSetup.FlowDeviceDisplayName);
 
+            // 装配件靠反射自动发现：启动时装一次，之后创建物品只查表
+            ItemSetup.Initialize();
+
             LoggerInstance.Msg("ProbablyBagMod 已加载");
         }
 

@@ -24,22 +24,19 @@ namespace ProbablyBagMod.Mod
         /// <summary>该类型的显示名。</summary>
         public const string FlowDeviceDisplayName = "流量装置";
 
+        /// <summary>已发现的装配件：名字 → 全局共享实例。名字比较不区分大小写。</summary>
+        private static readonly Dictionary<string, ItemAttachment> _attachments
+            = new Dictionary<string, ItemAttachment>(StringComparer.OrdinalIgnoreCase);
+
         /// <summary>
-        /// 名字 → 共享实例，**自动发现**：扫描本程序集里所有 <see cref="ItemAttachment"/> 子类，
-        /// 每个实例化一次，按 <see cref="ItemAttachment.Name"/> 建表。
+        /// 启动时调用一次：扫描本程序集里的全部 <see cref="ItemAttachment"/> 子类，
+        /// 各实例化一份，按 <see cref="ItemAttachment.Name"/> 建成"名字 → 实例"的表。
         ///
-        /// 所以新增装配件只需要写一个类，不用在别处登记。漏写公开无参构造、名字重复
-        /// 这类结构性问题在这里一次性报出来（每条 Error 指名类型），不会拖到装配物品时才发现。
-        ///
-        /// 名字比较不区分大小写——items.json 写成 Flow_Container 也能命中。
+        /// 所以新增装配件只需要写一个类，不用在任何地方登记。名字重复会让
+        /// <c>Dictionary.Add</c> 直接抛出——启动期就炸，比运行期静默覆盖好。
         /// </summary>
-        private static readonly Dictionary<string, ItemAttachment> _attachments = Discover();
-
-        private static Dictionary<string, ItemAttachment> Discover()
+        public static void Initialize()
         {
-            Dictionary<string, ItemAttachment> table
-                = new Dictionary<string, ItemAttachment>(StringComparer.OrdinalIgnoreCase);
-
             Type[] types = typeof(ItemSetup).Assembly.GetTypes();
             for (int i = 0; i < types.Length; i++)
             {
@@ -49,29 +46,9 @@ namespace ProbablyBagMod.Mod
                     continue;
                 }
 
-                ItemAttachment attachment;
-                try
-                {
-                    attachment = (ItemAttachment)Activator.CreateInstance(type);
-                }
-                catch (Exception e)
-                {
-                    MelonLoader.MelonLogger.Error(
-                        "[装配] " + type.Name + " 无法实例化（需要公开无参构造）：" + e.Message);
-                    continue;
-                }
-
-                if (table.ContainsKey(attachment.Name))
-                {
-                    MelonLoader.MelonLogger.Error(
-                        "[装配] 装配件名重复：「" + attachment.Name + "」(" + type.Name + ")");
-                    continue;
-                }
-
-                table.Add(attachment.Name, attachment);
+                ItemAttachment attachment = (ItemAttachment)Activator.CreateInstance(type);
+                _attachments.Add(attachment.Name, attachment);
             }
-
-            return table;
         }
 
         /// <summary>
