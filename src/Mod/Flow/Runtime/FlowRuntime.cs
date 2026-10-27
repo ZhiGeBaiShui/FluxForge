@@ -86,7 +86,7 @@ namespace ProbablyBagMod.Mod
                 return false;
             }
 
-            double available = LiquidStock.Total(emitterItem);
+            double available = FlowStock.Total(emitterItem);
             if (available <= 0d)
             {
                 return false;
@@ -147,14 +147,14 @@ namespace ProbablyBagMod.Mod
 
             // 容器 tag 是唯一真相：发射前读一次，发射后按实扣量对账
             emitter.Stock.Moisture = available;
-            emitter.Stock.Temperature = LiquidStock.Temperature(item, emitter.Stock.Temperature);
+            emitter.Stock.Temperature = FlowStock.Temperature(item, emitter.Stock.Temperature);
 
             if (!emitter.EmitAll(origin, direction, Flows))
             {
                 return false;
             }
 
-            double consumed = LiquidStock.Consume(item, available);
+            double consumed = FlowStock.Consume(item, available);
             emitter.Stock.Moisture = available - consumed;
             FlowTagMap.Write(item.state, emitter);
             return true;

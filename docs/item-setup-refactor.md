@@ -22,7 +22,7 @@
 ### 非目标
 
 - 不改 `ItemFactory` 的数据装配五步；
-- 不改任何装置运行时（`FlowRuntime` / `FlowDriver` / `DeviceRegistry` / `LiquidStock` / 视觉层）；
+- 不改任何装置运行时（`FlowRuntime` / `FlowDriver` / `DeviceRegistry` / `FlowStock` / 视觉层）；
 - 不改 UI 结构；
 - 不改存档格式；
 - **不引入装配件参数通道**（`grid` 这类配置仍由 `def` 顶层字段提供）；

@@ -3,16 +3,16 @@ using System;
 namespace ProbablyBagMod.Mod
 {
     /// <summary>
-    /// 物品液体存量的唯一适配点。存量有两种形态，对调用方透明：
+    /// 物品流源存量的唯一适配点。存量有两种形态，对调用方透明：
     ///
     ///   ① **原版液体容器**：游戏用 <c>CURRENT_PART_*</c> / <c>CONTAINER_TEMP_TAG</c> 维护
-    ///      （由 <see cref="LiquidIntakeAttachment"/> 调 <c>InitLiquidContainerItem</c> 建立）；
+    ///      （由 <see cref="FlowIntakeAttachment"/> 调 <c>InitLiquidContainerItem</c> 建立）；
     ///   ② **我们自己的存量**：<c>FLOW_STOCK</c> / <c>FLOW_TEMPERATURE</c>
-    ///      （由 <see cref="LiquidTransfer"/> 写入）。
+    ///      （由 <see cref="FlowTransfer"/> 写入）。
     ///
     /// 所以发射流程只问 Total / Temperature / Consume，不需要知道这件物品是哪一种。
     /// </summary>
-    public static class LiquidStock
+    public static class FlowStock
     {
         /// <summary>没有温度信息时的假定温度。</summary>
         public const double DefaultTemperature = 25d;
@@ -24,7 +24,7 @@ namespace ProbablyBagMod.Mod
         {
             return item != null
                 && item.Pointer != IntPtr.Zero
-                && item.IsTag(LiquidIntakeAttachment.ContainerTag);
+                && item.IsTag(FlowIntakeAttachment.ContainerTag);
         }
 
         /// <summary>总存量。容器 = 各物质之和；自己的存量 = FLOW_STOCK。</summary>

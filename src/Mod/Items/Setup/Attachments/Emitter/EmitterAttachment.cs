@@ -6,12 +6,12 @@ namespace ProbablyBagMod.Mod
     /// <summary>
     /// "能发射"这一项能力：把物品里的存量整份转成一个流源。
     ///
-    /// 它**不管液体从哪来**——那是 <see cref="LiquidIntakeAttachment"/> 的职责。
+    /// 它**不管液体从哪来**——那是 <see cref="FlowIntakeAttachment"/> 的职责。
     /// 两样都想要就在 items.json 里声明两个装配件：
     ///
-    ///     "attachments": ["liquid_intake", "emitter"]
+    ///     "attachments": ["flow_intake", "emitter"]
     ///
-    /// 存量统一走 <see cref="LiquidStock"/>，所以无论物品是原版液体容器
+    /// 存量统一走 <see cref="FlowStock"/>，所以无论物品是原版液体容器
     /// 还是自己存量的罐子，发射流程都不需要知道。
     ///
     /// 触发点是游戏原生的"激活"菜单（三个 <c>*ActivateSlotItemFunc</c> 委托）：
@@ -25,7 +25,7 @@ namespace ProbablyBagMod.Mod
         {
             // 发射装置不播报：tag 在发射后由 FlowRuntime.EmitFrom 对账写入，
             // 所以不订阅 FlowDeviceEvents（EmitterDevice 也没实现 IFlowNotifier）。
-            EmitterDevice device = new EmitterDevice(0d, LiquidStock.DefaultTemperature);
+            EmitterDevice device = new EmitterDevice(0d, FlowStock.DefaultTemperature);
             DeviceRegistry.Register(item.Pointer, device, item);
 
             WireActivation(item);
@@ -84,7 +84,7 @@ namespace ProbablyBagMod.Mod
         {
             try
             {
-                return GetEmitterInventory(item) != null && LiquidStock.Total(item) > 0d;
+                return GetEmitterInventory(item) != null && FlowStock.Total(item) > 0d;
             }
             catch
             {

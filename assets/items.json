@@ -73,7 +73,7 @@
         "FLOW_DEVICE"
       ],
       "attachments": [
-        "liquid_intake",
+        "flow_intake",
         "emitter"
       ],
       "tags": [

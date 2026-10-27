@@ -11,7 +11,7 @@ namespace ProbablyBagMod.Mod
     ///   · 加字段 + 加分合规则 + 加 tag 绑定 → 本类零改动；
     ///   · 只有当新属性**来自原版容器**时，才需要补 <see cref="ReadSource"/>。
     /// </summary>
-    internal static class LiquidTransfer
+    internal static class FlowTransfer
     {
         /// <summary>把来源容器整份并入 <paramref name="self"/>，并抽干来源。</summary>
         public static void Accept(Il2Cpp.GameItem self, Il2Cpp.GameItem source)
@@ -25,12 +25,12 @@ namespace ProbablyBagMod.Mod
             FlowProperties stock = ReadStock(self);
             FlowProperties merged = stock.Merge(new List<FlowProperties> { incoming });
 
-            // 只写 tag：装置侧在下一次发射时会用 LiquidStock 重新读一遍，
+            // 只写 tag：装置侧在下一次发射时会用 FlowStock 重新读一遍，
             // 不需要在这里反向同步任何装置镜像。
             FlowTagMap.Write(self.state, merged);
 
             // 抽干来源。用原版 Remove：按物质占比分摊、自动钳到 0，并刷新容器外观
-            LiquidStock.Consume(source, incoming.Moisture);
+            FlowStock.Consume(source, incoming.Moisture);
         }
 
         /// <summary>
@@ -40,20 +40,20 @@ namespace ProbablyBagMod.Mod
         private static FlowProperties ReadSource(Il2Cpp.GameItem container)
         {
             return new FlowProperties(
-                LiquidStock.Total(container),
-                LiquidStock.Temperature(container, LiquidStock.DefaultTemperature));
+                FlowStock.Total(container),
+                FlowStock.Temperature(container, FlowStock.DefaultTemperature));
         }
 
         /// <summary>tag → 属性。经 <see cref="FlowTagMap"/> 批量读，不认识具体字段。</summary>
         private static FlowProperties ReadStock(Il2Cpp.GameItem self)
         {
-            FlowProperties stock = new FlowProperties(0d, LiquidStock.DefaultTemperature);
+            FlowProperties stock = new FlowProperties(0d, FlowStock.DefaultTemperature);
             FlowTagMap.Read(self.state, stock);
 
             // tag 不存在时 FlowTagMap 会写 0；存量温度 0 没有实际意义，回落到常温
             if (stock.Temperature == 0d)
             {
-                stock.Temperature = LiquidStock.DefaultTemperature;
+                stock.Temperature = FlowStock.DefaultTemperature;
             }
 
             return stock;

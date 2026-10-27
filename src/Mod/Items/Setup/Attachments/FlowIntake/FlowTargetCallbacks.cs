@@ -8,19 +8,19 @@ namespace ProbablyBagMod.Mod
     /// 落点回调：别人把物品拖到"我们"身上时，由游戏调用。
     ///
     /// ⚠ 这三个委托是否真的被当前游戏版本调用**尚未验证**。
-    ///   在 <see cref="LiquidIntakeAttachment"/> 的 <c>UseOwnTarget</c> 翻成 true 之前，
+    ///   在 <see cref="FlowIntakeAttachment"/> 的 <c>UseOwnTarget</c> 翻成 true 之前，
     ///   必须先确认拖拽水瓶时 <c>OnTarget</c> 会被触发。
     ///
-    /// 无状态：实例只作为原生委托的 target，逻辑全部转发给 <see cref="LiquidTransfer"/>。
+    /// 无状态：实例只作为原生委托的 target，逻辑全部转发给 <see cref="FlowTransfer"/>。
     /// </summary>
-    public sealed class LiquidTargetCallbacks : Il2CppSystem.Object
+    public sealed class FlowTargetCallbacks : Il2CppSystem.Object
     {
-        public LiquidTargetCallbacks(IntPtr pointer) : base(pointer)
+        public FlowTargetCallbacks(IntPtr pointer) : base(pointer)
         {
         }
 
-        public LiquidTargetCallbacks()
-            : base(ClassInjector.DerivedConstructorPointer<LiquidTargetCallbacks>())
+        public FlowTargetCallbacks()
+            : base(ClassInjector.DerivedConstructorPointer<FlowTargetCallbacks>())
         {
             ClassInjector.DerivedConstructorBody(this);
         }
@@ -30,7 +30,7 @@ namespace ProbablyBagMod.Mod
         {
             try
             {
-                return LiquidStock.IsContainer(other);
+                return FlowStock.IsContainer(other);
             }
             catch
             {
@@ -43,7 +43,7 @@ namespace ProbablyBagMod.Mod
         {
             try
             {
-                return LiquidStock.IsContainer(other) && LiquidStock.Total(other) > 0d;
+                return FlowStock.IsContainer(other) && FlowStock.Total(other) > 0d;
             }
             catch
             {
@@ -56,7 +56,7 @@ namespace ProbablyBagMod.Mod
         {
             try
             {
-                LiquidTransfer.Accept(self, other);
+                FlowTransfer.Accept(self, other);
             }
             catch (Exception e)
             {
