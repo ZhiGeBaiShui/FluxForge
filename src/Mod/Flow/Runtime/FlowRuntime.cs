@@ -86,8 +86,7 @@ namespace ProbablyBagMod.Mod
                 return false;
             }
 
-            double available = FlowStock.Total(emitterItem);
-            if (available <= 0d)
+            if (FlowStock.Total(emitterItem) <= 0d)
             {
                 return false;
             }
@@ -124,14 +123,14 @@ namespace ProbablyBagMod.Mod
                 }
             }
 
-            return EmitFrom(emitterItem, emitter, available);
+            return EmitFrom(emitterItem, emitter);
         }
 
         /// <summary>
         /// 把一件发射装置里的存量整份转成一个流源，并从容器里扣掉。
         /// 返回是否真的发出了流源。
         /// </summary>
-        private bool EmitFrom(Il2Cpp.GameItem item, EmitterDevice emitter, double available)
+        private bool EmitFrom(Il2Cpp.GameItem item, EmitterDevice emitter)
         {
             FlowPos origin;
             int direction;
@@ -145,17 +144,16 @@ namespace ProbablyBagMod.Mod
                 return false;
             }
 
-            // 容器 tag 是唯一真相：发射前读一次，发射后按实扣量对账
-            emitter.Stock.Moisture = available;
-            emitter.Stock.Temperature = FlowStock.Temperature(item, emitter.Stock.Temperature);
+            // 容器 tag 是唯一真相：发射前按表读一份完整属性
+            emitter.Stock = FlowStock.Read(item);
 
             if (!emitter.EmitAll(origin, direction, Flows))
             {
                 return false;
             }
 
-            double consumed = FlowStock.Consume(item, available);
-            emitter.Stock.Moisture = available - consumed;
+            // 取走物品里的全部存量，再把装置剩余状态写回 tag
+            FlowStock.Take(item);
             FlowTagMap.Write(item.state, emitter);
             return true;
         }

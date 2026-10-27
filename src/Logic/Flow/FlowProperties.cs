@@ -148,6 +148,12 @@ namespace ProbablyBagMod
             return result;
         }
 
+        /// <summary>物质总量：所有 Merge=Add 的字段之和（现算，不缓存）。</summary>
+        public double SubstanceTotal
+        {
+            get { return SumSubstances(this); }
+        }
+
         /// <summary>现算一份的物质总量：所有 Merge=Add 的字段之和。</summary>
         private static double SumSubstances(FlowProperties p)
         {

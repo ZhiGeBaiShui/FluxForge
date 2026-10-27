@@ -1,54 +1,134 @@
+using System;
+using System.Collections.Generic;
+
 namespace ProbablyBagMod.Mod
 {
     /// <summary>
-    /// 装置状态 ↔ 物品 tag 的唯一映射。
+    /// 装置状态 ↔ 物品 tag 的唯一映射表。
     ///
-    /// 按**属性**分派（<see cref="IMoistureState"/> / <see cref="ITemperatureState"/>），
-    /// 不按装置类型：加一种新装置只要实现对应的接口，本文件一行都不用改。
+    /// 表按**属性**分行（水分 / 温度 / ...）。加一种新流源属性只需要：
+    ///   ① 在 <see cref="FlowProperties"/> 加字段并声明分合规则；
+    ///   ② 在 <see cref="Bindings"/> 加一行（tag / 槽位 / 接口 / 读写 / 容器侧取值）。
+    /// 读写入口与 <see cref="FlowStock"/> 都只遍历这张表，不认识具体属性名，
+    /// 也不按装置类型分支——所以新增装置仍然只要实现对应接口，本文件不用动。
     ///
     /// 不在这里做显示换算（µL → g 之类）——那是 items.json 的 statusLines 的事。
     /// </summary>
     internal static class FlowTagMap
     {
-        /// <summary>装置状态 → tag。存量写 int 槽、温度写 float 槽。</summary>
-        public static void Write(Il2Cpp.TagSystem state, object device)
+        /// <summary>表的一行：一个流源属性在物品 tag 上的落点，以及容器侧的取值方式。</summary>
+        internal sealed class AttributeBinding
         {
-            if (state == null || device == null)
-            {
-                return;
-            }
+            /// <summary>落在物品上的 tag 名。</summary>
+            public string Tag;
 
-            IMoistureState moisture = device as IMoistureState;
-            if (moisture != null)
-            {
-                FlowTags.WriteInt(state, FlowTags.Stock, ToStockUnits(moisture.Moisture));
-            }
+            /// <summary>true = int 槽，false = float 槽。</summary>
+            public bool IntSlot;
 
-            ITemperatureState temperature = device as ITemperatureState;
-            if (temperature != null)
+            /// <summary>需要实现的接口：装置与一份 <see cref="FlowProperties"/> 都要实现它。</summary>
+            public Type Required;
+
+            /// <summary>从装置或 <see cref="FlowProperties"/> 读数。</summary>
+            public Func<object, double> Get;
+
+            /// <summary>写回装置或 <see cref="FlowProperties"/>。</summary>
+            public Action<object, double> Set;
+
+            /// <summary>原版容器侧怎么取这个值。</summary>
+            public Func<Il2Cpp.GameItem, double> FromContainer;
+        }
+
+        /// <summary>原版液体容器的温度 tag（槽位类型未文档化，读时先 double 再 float）。</summary>
+        private const string ContainerTempTag = "CONTAINER_TEMP_TAG";
+
+        /// <summary>
+        /// 唯一的表。容器侧取值失败时的兜底由各自的 <see cref="AttributeBinding.FromContainer"/> 负责。
+        /// </summary>
+        private static readonly AttributeBinding[] _bindings =
+        {
+            new AttributeBinding
             {
-                FlowTags.WriteFloat(
-                    state, FlowTags.FlowTemperature, (float)temperature.Temperature);
+                Tag = FlowTags.Stock,
+                IntSlot = true,
+                Required = typeof(IMoistureState),
+                Get = target => ((IMoistureState)target).Moisture,
+                Set = (target, value) => ((IMoistureState)target).Moisture = value,
+                // 容器存量 = 所有物质之和。它和上面的 Tag 是同一个概念，但容器可能装多种物质，
+                // 只读 CURRENT_PART_WATER 会漏掉非水液体，也会和 Take 的"按物质清空"对不上。
+                FromContainer = container => Il2Cpp.WaterHelper.GetTotalVolume(container),
+            },
+            new AttributeBinding
+            {
+                Tag = FlowTags.FlowTemperature,
+                IntSlot = false,
+                Required = typeof(ITemperatureState),
+                Get = target => ((ITemperatureState)target).Temperature,
+                Set = (target, value) => ((ITemperatureState)target).Temperature = value,
+                FromContainer = ReadContainerTemp,
+            },
+        };
+
+        /// <summary>只读视图：<see cref="FlowStock"/> 逐行读写时用，不要在外部改写。</summary>
+        internal static IReadOnlyList<AttributeBinding> Bindings
+        {
+            get { return _bindings; }
+        }
+
+        /// <summary>target → tag：只写 target 实现了接口的那些行。</summary>
+        public static void Write(Il2Cpp.TagSystem state, object target)
+        {
+            foreach (AttributeBinding binding in _bindings)
+            {
+                if (!binding.Required.IsInstanceOfType(target))
+                {
+                    continue;
+                }
+
+                if (binding.IntSlot)
+                {
+                    FlowTags.WriteInt(state, binding.Tag, ToIntSlot(binding.Get(target)));
+                }
+                else
+                {
+                    FlowTags.WriteFloat(state, binding.Tag, (float)binding.Get(target));
+                }
+            }
+        }
+
+        /// <summary>tag → target：只写 target 实现了接口的那些行；tag 缺失按 0 读。</summary>
+        public static void Read(Il2Cpp.TagSystem state, object target)
+        {
+            foreach (AttributeBinding binding in _bindings)
+            {
+                if (!binding.Required.IsInstanceOfType(target))
+                {
+                    continue;
+                }
+
+                double value = binding.IntSlot
+                    ? FlowTags.ReadInt(state, binding.Tag, 0)
+                    : FlowTags.ReadFloat(state, binding.Tag, 0f);
+                binding.Set(target, value);
             }
         }
 
         /// <summary>
-        /// 存量 double → tag 的 int 槽位。
+        /// double → int 槽位。
         ///
         /// 这里**不是**容量上限（我们不设上限，原版倒多少收多少），而是 int 的物理边界：
         /// 单位是 1/1000 mL，int 上限约 2,147,483 mL。越界后强转在 unchecked 下结果未定义
         /// （通常是负数），所以钳住并留一条日志——真到这一步说明已经灌了两千多升。
         /// </summary>
-        private static int ToStockUnits(double moisture)
+        internal static int ToIntSlot(double value)
         {
-            if (moisture <= 0d)
+            if (value <= 0d)
             {
                 return 0;
             }
 
-            if (moisture < int.MaxValue)
+            if (value < int.MaxValue)
             {
-                return (int)moisture;
+                return (int)value;
             }
 
             MelonLoader.MelonLogger.Warning(
@@ -56,25 +136,25 @@ namespace ProbablyBagMod.Mod
             return int.MaxValue;
         }
 
-        /// <summary>tag → 装置状态。只在读档接管时调用一次。</summary>
-        public static void Read(Il2Cpp.TagSystem state, object device)
+        /// <summary>
+        /// 原版容器温度：槽位类型未文档化，先按 double 再按 float；都读不到用默认温度。
+        /// </summary>
+        private static double ReadContainerTemp(Il2Cpp.GameItem container)
         {
-            if (state == null || device == null)
+            Il2Cpp.TagState state = container.GetTagReadonly(ContainerTempTag);
+            if (state == null)
             {
-                return;
+                return FlowStock.DefaultTemperature;
             }
 
-            IMoistureState moisture = device as IMoistureState;
-            if (moisture != null)
+            double value = state.valueDouble;
+            if (value != 0d)
             {
-                moisture.Moisture = FlowTags.ReadInt(state, FlowTags.Stock, 0);
+                return value;
             }
 
-            ITemperatureState temperature = device as ITemperatureState;
-            if (temperature != null)
-            {
-                temperature.Temperature = FlowTags.ReadFloat(state, FlowTags.FlowTemperature, 0f);
-            }
+            value = state.valueFloat;
+            return value != 0d ? value : FlowStock.DefaultTemperature;
         }
     }
 }

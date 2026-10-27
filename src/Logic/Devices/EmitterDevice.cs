@@ -17,8 +17,8 @@ namespace ProbablyBagMod
         /// <summary>流源速度（格/秒）。</summary>
         private const double Speed = 2d;
 
-        /// <summary>存量（水分 / 温度），外部可读写。发射后被清空。</summary>
-        public FlowProperties Stock { get; }
+        /// <summary>存量（水分 / 温度），外部可整体读写。发射后被清空。</summary>
+        public FlowProperties Stock { get; set; }
 
         /// <summary>tag 映射视图：存量就是 <see cref="Stock"/> 的两个字段。</summary>
         double IMoistureState.Moisture

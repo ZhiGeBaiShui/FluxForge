@@ -17,7 +17,7 @@ namespace ProbablyBagMod.Mod
         public static void Accept(Il2Cpp.GameItem self, Il2Cpp.GameItem source)
         {
             FlowProperties incoming = ReadSource(source);
-            if (incoming.Moisture <= 0d)
+            if (incoming.SubstanceTotal <= 0d)
             {
                 return;
             }
@@ -29,33 +29,23 @@ namespace ProbablyBagMod.Mod
             // 不需要在这里反向同步任何装置镜像。
             FlowTagMap.Write(self.state, merged);
 
-            // 抽干来源。用原版 Remove：按物质占比分摊、自动钳到 0，并刷新容器外观
-            FlowStock.Consume(source, incoming.Moisture);
+            // 抽干来源。容器走原版 Remove：按物质占比分摊、自动钳到 0，并刷新容器外观
+            FlowStock.Take(source);
         }
 
         /// <summary>
-        /// 原版容器 → 属性。**新增"来自容器的属性"时只改这里。**
-        /// 目前容器只提供两个量：总量（1/1000 mL）与温度。
+        /// 原版容器 → 属性。容器侧每一行怎么取由 <see cref="FlowTagMap"/> 的表决定。
         /// </summary>
         private static FlowProperties ReadSource(Il2Cpp.GameItem container)
         {
-            return new FlowProperties(
-                FlowStock.Total(container),
-                FlowStock.Temperature(container, FlowStock.DefaultTemperature));
+            return FlowStock.Read(container);
         }
 
         /// <summary>tag → 属性。经 <see cref="FlowTagMap"/> 批量读，不认识具体字段。</summary>
         private static FlowProperties ReadStock(Il2Cpp.GameItem self)
         {
-            FlowProperties stock = new FlowProperties(0d, FlowStock.DefaultTemperature);
+            FlowProperties stock = new FlowProperties(0d, 0d);
             FlowTagMap.Read(self.state, stock);
-
-            // tag 不存在时 FlowTagMap 会写 0；存量温度 0 没有实际意义，回落到常温
-            if (stock.Temperature == 0d)
-            {
-                stock.Temperature = FlowStock.DefaultTemperature;
-            }
-
             return stock;
         }
     }
