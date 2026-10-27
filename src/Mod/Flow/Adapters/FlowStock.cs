@@ -60,7 +60,7 @@ namespace ProbablyBagMod.Mod
 
             if (IsContainer(item))
             {
-                Il2Cpp.WaterHelper.Remove(item, FlowTagMap.ToIntSlot(properties.SubstanceTotal));
+                Il2Cpp.WaterHelper.Remove(item, (int)properties.SubstanceTotal);
                 return properties;
             }
 
