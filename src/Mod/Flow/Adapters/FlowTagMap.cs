@@ -38,11 +38,9 @@ namespace ProbablyBagMod.Mod
             public Func<Il2Cpp.GameItem, double> FromContainer;
         }
 
-        /// <summary>原版液体容器的温度 tag（槽位类型未文档化，读时先 double 再 float）。</summary>
-        private const string ContainerTempTag = "CONTAINER_TEMP_TAG";
-
         /// <summary>
-        /// 唯一的表。容器侧取值失败时的兜底由各自的 <see cref="AttributeBinding.FromContainer"/> 负责。
+        /// 唯一的表。容器侧取值由各自的 <see cref="AttributeBinding.FromContainer"/> 负责，
+        /// 具体实现放在 <see cref="FlowStock"/>（它才是"存量从哪来"的适配点）。
         /// </summary>
         private static readonly AttributeBinding[] _bindings =
         {
@@ -55,7 +53,7 @@ namespace ProbablyBagMod.Mod
                 Set = (target, value) => ((IMoistureState)target).Moisture = value,
                 // 容器存量 = 所有物质之和。它和上面的 Tag 是同一个概念，但容器可能装多种物质，
                 // 只读 CURRENT_PART_WATER 会漏掉非水液体，也会和 Take 的"按物质清空"对不上。
-                FromContainer = container => Il2Cpp.WaterHelper.GetTotalVolume(container),
+                FromContainer = FlowStock.ReadContainerVolume,
             },
             new AttributeBinding
             {
@@ -64,7 +62,7 @@ namespace ProbablyBagMod.Mod
                 Required = typeof(ITemperatureState),
                 Get = target => ((ITemperatureState)target).Temperature,
                 Set = (target, value) => ((ITemperatureState)target).Temperature = value,
-                FromContainer = ReadContainerTemp,
+                FromContainer = FlowStock.ReadContainerTemperature,
             },
         };
 
@@ -115,17 +113,6 @@ namespace ProbablyBagMod.Mod
                     target,
                     binding.IntSlot ? state.valueInt : state.valueFloat);
             }
-        }
-
-        /// <summary>
-        /// 原版容器温度。读 <c>TagState.valueDouble</c>（+0x40）——ISIL 转储里
-        /// ChemicalHelper 三处读取都是 <c>Move xmm6, [rax+64]</c>，原版自己只认 double 槽。
-        /// tag 不存在（容器没有液体温度）时用默认温度。
-        /// </summary>
-        private static double ReadContainerTemp(Il2Cpp.GameItem container)
-        {
-            Il2Cpp.TagState state = container.GetTagReadonly(ContainerTempTag);
-            return state == null ? FlowStock.DefaultTemperature : state.valueDouble;
         }
     }
 }

@@ -17,12 +17,32 @@ namespace ProbablyBagMod.Mod
         /// <summary>没有温度信息时的假定温度。</summary>
         public const double DefaultTemperature = 25d;
 
+        /// <summary>原版液体容器的温度 tag。</summary>
+        private const string ContainerTempTag = "CONTAINER_TEMP_TAG";
+
         /// <summary>这件物品是不是原版液体容器（按 tag 判定，与具体物品 id 无关）。</summary>
         public static bool IsContainer(Il2Cpp.GameItem item)
         {
             return item != null
                 && item.Pointer != IntPtr.Zero
                 && item.IsTag(FlowIntakeAttachment.ContainerTag);
+        }
+
+        /// <summary>原版容器的存量 = 所有物质之和。</summary>
+        internal static double ReadContainerVolume(Il2Cpp.GameItem container)
+        {
+            return Il2Cpp.WaterHelper.GetTotalVolume(container);
+        }
+
+        /// <summary>
+        /// 原版容器的温度。读 <c>TagState.valueDouble</c>（+0x40）——ISIL 转储里
+        /// ChemicalHelper 三处读取都是 <c>Move xmm6, [rax+64]</c>，原版自己只认 double 槽。
+        /// tag 不存在（容器没有液体温度）时用默认温度。
+        /// </summary>
+        internal static double ReadContainerTemperature(Il2Cpp.GameItem container)
+        {
+            Il2Cpp.TagState state = container.GetTagReadonly(ContainerTempTag);
+            return state == null ? DefaultTemperature : state.valueDouble;
         }
 
         /// <summary>按表读出一份属性：容器逐行 <c>FromContainer</c>，自己的存量逐行读 tag。</summary>
