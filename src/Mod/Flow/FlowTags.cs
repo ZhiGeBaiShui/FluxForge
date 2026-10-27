@@ -12,7 +12,7 @@ namespace ProbablyBagMod.Mod
         /// <summary>存量。绑定原版的水分 tag —— 水分本来就是游戏的概念，不自造同义 tag。</summary>
         public const string Stock = "CURRENT_PART_WATER";
 
-        /// <summary>原版液体容器的身份 tag（由 flow_intake 装配件建立）。</summary>
+        /// <summary>原版液体容器的身份 tag（由 flow_container 装配件建立）。</summary>
         public const string Container = "LIQUID_CONTAINER_TAG";
 
         /// <summary>装置/流体温度。</summary>

@@ -17,10 +17,24 @@ namespace ProbablyBagMod.Mod
     /// </summary>
     internal static class FlowTagMap
     {
-        /// <summary>表的一行：一个流源属性在物品 tag 上的落点，以及容器侧的取值方式。</summary>
+        /// <summary>
+        /// 表的一行：一个流源属性在物品 tag 上的落点。
+        ///
+        /// 属性分两类，区别在 <see cref="PartId"/>：
+        ///   · **物质属性**（水、有机废物…）：<c>PartId</c> 非空，落在原版
+        ///     <c>CURRENT_PART_&lt;ID&gt;</c> 上，可分、可相加、可转移；
+        ///   · **扩展属性**（温度…）：<c>PartId</c> 为空，用自己的 tag，是整件物品的单一值，
+        ///     不按物质拆分——温度不能"取走一半"。
+        /// </summary>
         internal sealed class AttributeBinding
         {
-            /// <summary>落在物品上的 tag 名。</summary>
+            /// <summary>物质 id（如 "water"）。非空 = 物质属性；空 = 扩展属性。</summary>
+            public string PartId;
+
+            /// <summary>
+            /// 落在物品上的 tag 名。物质属性必须等于 <c>CURRENT_PART_&lt;PartId&gt;</c>；
+            /// 扩展属性用 <see cref="FlowTags"/> 里自己的名字。
+            /// </summary>
             public string Tag;
 
             /// <summary>true = int 槽，false = float 槽。</summary>
@@ -44,17 +58,19 @@ namespace ProbablyBagMod.Mod
         {
             new AttributeBinding
             {
+                PartId = "water",
                 Tag = FlowTags.Stock,
                 IntSlot = true,
                 Required = typeof(IMoistureState),
                 Get = target => ((IMoistureState)target).Moisture,
                 Set = (target, value) => ((IMoistureState)target).Moisture = value,
-                // 容器存量 = 所有物质之和。和 Tag 是同一个概念，但容器可能装多种物质，
-                // 只读 CURRENT_PART_WATER 会漏掉非水液体。
+                // 容器里可能还有未建模的物质，总量口径 = 全部物质之和
                 FromContainer = FlowStock.ReadContainerVolume,
             },
             new AttributeBinding
             {
+                // 温度不是物质：整件物品一个值，不参与"按物质分配"
+                PartId = null,
                 Tag = FlowTags.FlowTemperature,
                 IntSlot = false,
                 Required = typeof(ITemperatureState),

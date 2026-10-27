@@ -175,7 +175,7 @@ namespace ProbablyBagMod.Mod
         public string grid { get; set; }
 
         /// <summary>
-        /// 液体容器容量（毫升）。由 flow_intake 装配件翻译成
+        /// 液体容器容量（毫升）。由 flow_container 装配件翻译成
         /// <c>WaterHelper.InitLiquidContainerItem(item, capacityMl, 0)</c>；
         /// 不声明 = 0，即不给这件物品容器身份。
         /// </summary>

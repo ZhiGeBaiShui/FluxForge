@@ -6,7 +6,7 @@ namespace ProbablyBagMod.Mod
     /// 物品流源存量的唯一适配点。存量有两种形态，对调用方透明：
     ///
     ///   ① **原版液体容器**：游戏用 <c>CURRENT_PART_*</c> / <c>CONTAINER_TEMP_TAG</c> 维护
-    ///      （由 <see cref="FlowIntakeAttachment"/> 调 <c>InitLiquidContainerItem</c> 建立）；
+    ///      （由 <see cref="FlowContainerAttachment"/> 调 <c>InitLiquidContainerItem</c> 建立）；
     ///   ② **我们自己的存量**：物品 tag（由 <see cref="FlowTransfer"/> 写入）。
     ///
     /// 属性名字、tag 落点、槽位类型、容器侧取值全部来自 <see cref="FlowTagMap"/> 的表。

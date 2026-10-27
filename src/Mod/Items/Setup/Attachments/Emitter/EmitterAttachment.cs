@@ -6,10 +6,10 @@ namespace ProbablyBagMod.Mod
     /// <summary>
     /// "能发射"这一项能力：把物品里的存量整份转成一个流源。
     ///
-    /// 它**不管液体从哪来**——那是 <see cref="FlowIntakeAttachment"/> 的职责。
+    /// 它**不管液体从哪来**——那是 <see cref="FlowContainerAttachment"/> 的职责。
     /// 两样都想要就在 items.json 里声明两个装配件：
     ///
-    ///     "attachments": ["flow_intake", "emitter"]
+    ///     "attachments": ["flow_container", "emitter"]
     ///
     /// 存量统一走 <see cref="FlowStock"/>，所以无论物品是原版液体容器
     /// 还是自己存量的罐子，发射流程都不需要知道。

@@ -28,7 +28,7 @@
         "FLOW_DEVICE"
       ],
       "attachments": [
-        "flow_intake",
+        "flow_container",
         "ice_block"
       ],
       "tags": [
@@ -76,7 +76,7 @@
         "FLOW_DEVICE"
       ],
       "attachments": [
-        "flow_intake",
+        "flow_container",
         "emitter"
       ],
       "tags": [
@@ -121,7 +121,7 @@
         "FLOW_DEVICE"
       ],
       "attachments": [
-        "flow_intake",
+        "flow_container",
         "collector"
       ],
       "tags": [
