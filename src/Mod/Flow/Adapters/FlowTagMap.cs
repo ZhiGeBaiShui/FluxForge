@@ -37,9 +37,6 @@ namespace ProbablyBagMod.Mod
             /// </summary>
             public string Tag;
 
-            /// <summary>槽位：int / float / double。</summary>
-            public SlotKind Slot;
-
             /// <summary>需要实现的接口：装置与一份 <see cref="FlowProperties"/> 都要实现它。</summary>
             public Type Required;
 
@@ -53,14 +50,6 @@ namespace ProbablyBagMod.Mod
             public Func<Il2Cpp.GameItem, double> FromContainer;
         }
 
-        /// <summary>TagState 的三个数值槽位。</summary>
-        internal enum SlotKind
-        {
-            Int,
-            Float,
-            Double,
-        }
-
         /// <summary>所有装置的同名属性共用一个 tag。</summary>
         private static readonly AttributeBinding[] _bindings =
         {
@@ -68,7 +57,6 @@ namespace ProbablyBagMod.Mod
             {
                 PartId = "water",
                 Tag = FlowTags.Stock,
-                Slot = SlotKind.Int,
                 Required = typeof(IMoistureState),
                 Get = target => ((IMoistureState)target).Moisture,
                 Set = (target, value) => ((IMoistureState)target).Moisture = value,
@@ -78,10 +66,9 @@ namespace ProbablyBagMod.Mod
             new AttributeBinding
             {
                 // 温度不是物质：整件物品一个值，不参与"按物质分配"。
-                // 直接落原版的容器温度 tag（double 槽），原版倒水、环境降温、冰箱制冷都写它。
+                // 直接落原版的容器温度 tag，原版倒水、环境降温、冰箱制冷都写它。
                 PartId = null,
                 Tag = FlowTags.ContainerTemperature,
-                Slot = SlotKind.Double,
                 Required = typeof(ITemperatureState),
                 Get = target => ((ITemperatureState)target).Temperature,
                 Set = (target, value) => ((ITemperatureState)target).Temperature = value,

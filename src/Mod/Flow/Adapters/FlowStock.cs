@@ -78,7 +78,7 @@ namespace ProbablyBagMod.Mod
                 }
 
                 Il2Cpp.TagState state = item.GetTagReadonly(binding.Tag);
-                binding.Set(target, ReadSlot(state, binding.Slot));
+                binding.Set(target, ReadNumber(state));
             }
         }
 
@@ -97,7 +97,7 @@ namespace ProbablyBagMod.Mod
                     continue;
                 }
 
-                WriteSlot(item.state.GetTag(binding.Tag), binding.Slot, binding.Get(target));
+                WriteNumber(item.state.GetTag(binding.Tag), binding, binding.Get(target));
             }
         }
 
@@ -125,38 +125,42 @@ namespace ProbablyBagMod.Mod
 
             foreach (FlowTagMap.AttributeBinding binding in FlowTagMap.Bindings)
             {
-                WriteSlot(item.state.GetTag(binding.Tag), binding.Slot, 0d);
+                WriteNumber(item.state.GetTag(binding.Tag), binding, 0d);
             }
 
             return properties;
         }
 
-        private static double ReadSlot(Il2Cpp.TagState state, FlowTagMap.SlotKind slot)
+        /// <summary>
+        /// 读 tag 的数值：哪个数值槽有值就用哪个。
+        /// 我们从不往同一个 tag 的两个槽写值，所以"非 0 的那个"就是真值，全为 0 时返回 int 槽。
+        /// </summary>
+        private static double ReadNumber(Il2Cpp.TagState state)
         {
-            switch (slot)
+            if (state.valueDouble != 0d)
             {
-                case FlowTagMap.SlotKind.Double:
-                    return state.valueDouble;
-                case FlowTagMap.SlotKind.Float:
-                    return state.valueFloat;
-                default:
-                    return state.valueInt;
+                return state.valueDouble;
             }
+
+            if (state.valueFloat != 0f)
+            {
+                return state.valueFloat;
+            }
+
+            return state.valueInt;
         }
 
-        private static void WriteSlot(Il2Cpp.TagState state, FlowTagMap.SlotKind slot, double value)
+        /// <summary>写 tag 的数值：物质属性写 int 槽，扩展属性写 double 槽。</summary>
+        private static void WriteNumber(
+            Il2Cpp.TagState state, FlowTagMap.AttributeBinding binding, double value)
         {
-            switch (slot)
+            if (binding.PartId != null)
             {
-                case FlowTagMap.SlotKind.Double:
-                    state.valueDouble = value;
-                    break;
-                case FlowTagMap.SlotKind.Float:
-                    state.valueFloat = (float)value;
-                    break;
-                default:
-                    state.valueInt = (int)value;
-                    break;
+                state.valueInt = (int)value;
+            }
+            else
+            {
+                state.valueDouble = value;
             }
         }
     }
