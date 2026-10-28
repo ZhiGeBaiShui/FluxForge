@@ -78,7 +78,7 @@ namespace ProbablyBagMod.Mod
                 }
 
                 Il2Cpp.TagState state = item.GetTagReadonly(binding.Tag);
-                binding.Set(target, binding.IntSlot ? state.valueInt : state.valueFloat);
+                binding.Set(target, ReadSlot(state, binding.Slot));
             }
         }
 
@@ -97,14 +97,7 @@ namespace ProbablyBagMod.Mod
                     continue;
                 }
 
-                if (binding.IntSlot)
-                {
-                    item.state.GetTag(binding.Tag).valueInt = (int)binding.Get(target);
-                }
-                else
-                {
-                    item.state.GetTag(binding.Tag).valueFloat = (float)binding.Get(target);
-                }
+                WriteSlot(item.state.GetTag(binding.Tag), binding.Slot, binding.Get(target));
             }
         }
 
@@ -132,18 +125,39 @@ namespace ProbablyBagMod.Mod
 
             foreach (FlowTagMap.AttributeBinding binding in FlowTagMap.Bindings)
             {
-                if (binding.IntSlot)
-                {
-                    item.state.GetTag(binding.Tag).valueInt = 0;
-                }
-                else
-                {
-                    item.state.GetTag(binding.Tag).valueFloat = 0f;
-                }
+                WriteSlot(item.state.GetTag(binding.Tag), binding.Slot, 0d);
             }
 
             return properties;
         }
 
+        private static double ReadSlot(Il2Cpp.TagState state, FlowTagMap.SlotKind slot)
+        {
+            switch (slot)
+            {
+                case FlowTagMap.SlotKind.Double:
+                    return state.valueDouble;
+                case FlowTagMap.SlotKind.Float:
+                    return state.valueFloat;
+                default:
+                    return state.valueInt;
+            }
+        }
+
+        private static void WriteSlot(Il2Cpp.TagState state, FlowTagMap.SlotKind slot, double value)
+        {
+            switch (slot)
+            {
+                case FlowTagMap.SlotKind.Double:
+                    state.valueDouble = value;
+                    break;
+                case FlowTagMap.SlotKind.Float:
+                    state.valueFloat = (float)value;
+                    break;
+                default:
+                    state.valueInt = (int)value;
+                    break;
+            }
+        }
     }
 }

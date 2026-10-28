@@ -42,8 +42,8 @@
           "valueInt": 1000000
         },
         {
-          "valueName": "FLOW_TEMPERATURE",
-          "valueFloat": -5.0
+          "valueName": "CONTAINER_TEMP_TAG",
+          "valueDouble": -5.0
         }
       ],
       "statusLines": [
@@ -56,13 +56,13 @@
           "color": "LightBlue"
         },
         {
-          "tag": "FLOW_TEMPERATURE",
+          "tag": "CONTAINER_TEMP_TAG",
           "label": "温度",
           "scale": 1,
           "format": "0.#",
           "unit": "℃",
           "color": "LightCyan",
-          "valueType": "float"
+          "valueType": "double"
         }
       ]
     },
@@ -87,8 +87,8 @@
           "valueInt": 0
         },
         {
-          "valueName": "FLOW_TEMPERATURE",
-          "valueFloat": 25.0
+          "valueName": "CONTAINER_TEMP_TAG",
+          "valueDouble": 25.0
         }
       ],
       "statusLines": [
@@ -101,13 +101,13 @@
           "color": "LightBlue"
         },
         {
-          "tag": "FLOW_TEMPERATURE",
+          "tag": "CONTAINER_TEMP_TAG",
           "label": "温度",
           "scale": 1,
           "format": "0.#",
           "unit": "℃",
           "color": "LightCyan",
-          "valueType": "float"
+          "valueType": "double"
         }
       ]
     },
@@ -130,8 +130,8 @@
           "valueInt": 0
         },
         {
-          "valueName": "FLOW_TEMPERATURE",
-          "valueFloat": 25.0
+          "valueName": "CONTAINER_TEMP_TAG",
+          "valueDouble": 25.0
         }
       ],
       "statusLines": [
@@ -144,13 +144,13 @@
           "color": "LightGreen"
         },
         {
-          "tag": "FLOW_TEMPERATURE",
+          "tag": "CONTAINER_TEMP_TAG",
           "label": "温度",
           "scale": 1,
           "format": "0.#",
           "unit": "℃",
           "color": "LightCyan",
-          "valueType": "float"
+          "valueType": "double"
         }
       ]
     }

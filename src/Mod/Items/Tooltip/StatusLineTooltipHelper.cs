@@ -91,6 +91,11 @@ namespace ProbablyBagMod.Mod
                 return (state.valueFloat * scale).ToString(format, CultureInfo.InvariantCulture);
             }
 
+            if (string.Equals(line.valueType, "double", StringComparison.OrdinalIgnoreCase))
+            {
+                return (state.valueDouble * scale).ToString(format, CultureInfo.InvariantCulture);
+            }
+
             return (state.valueInt * scale).ToString(format, CultureInfo.InvariantCulture);
         }
 

@@ -15,7 +15,11 @@ namespace ProbablyBagMod.Mod
         /// <summary>原版液体容器的身份 tag（由 flow_container 装配件建立）。</summary>
         public const string Container = "LIQUID_CONTAINER_TAG";
 
-        /// <summary>装置/流体温度。</summary>
-        public const string FlowTemperature = "FLOW_TEMPERATURE";
+        /// <summary>
+        /// 温度：直接绑定原版的容器温度 tag（double 槽）。
+        /// 原版在倒水（TransferLiquid/AddLiquid）、环境降温、冰箱制冷时都会写它，
+        /// 我们只读不写——写温度是原版的职责。
+        /// </summary>
+        public const string ContainerTemperature = "CONTAINER_TEMP_TAG";
     }
 }
