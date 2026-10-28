@@ -3,102 +3,41 @@ using System;
 namespace ProbablyBagMod.Mod
 {
     /// <summary>
-    /// 物品流源存量的唯一适配点。存量有两种形态，对调用方透明：
+    /// 物品 tag ↔ 流源属性的唯一读写点。
     ///
-    ///   ① **原版液体容器**：游戏用 <c>CURRENT_PART_*</c> / <c>CONTAINER_TEMP_TAG</c> 维护
-    ///      （由 <see cref="FlowContainerAttachment"/> 调 <c>InitLiquidContainerItem</c> 建立）；
-    ///   ② **我们自己的存量**：物品 tag（由 <see cref="FlowTransfer"/> 写入）。
-    ///
-    /// 属性名字、tag 落点、槽位类型、容器侧取值全部来自 <see cref="FlowTagMap"/> 的表。
-    /// 本类只负责"遍历表 + 在容器/物品两种来源之间选择"，不认识任何具体属性。
+    /// 属性清单、槽位规则全部来自 <see cref="FlowTagMap"/>；
+    /// 本类只做三件事：按 tag 遍历、按 tag 读写成员、按 tag 决定槽位。
+    /// 不认识任何具体属性，也不区分"容器物品"与"普通物品"。
     /// </summary>
     public static class FlowStock
     {
-        /// <summary>没有温度信息时的假定温度。</summary>
-        public const double DefaultTemperature = 25d;
 
-        /// <summary>原版液体容器的温度 tag。</summary>
-        private const string ContainerTempTag = "CONTAINER_TEMP_TAG";
-
-        /// <summary>这件物品是不是原版液体容器（按 tag 判定，与具体物品 id 无关）。</summary>
-        public static bool IsContainer(Il2Cpp.GameItem item)
-        {
-            return item != null
-                && item.Pointer != IntPtr.Zero
-                && item.IsTag(FlowTags.Container);
-        }
-
-        /// <summary>原版容器的存量 = 所有物质之和。</summary>
-        internal static double ReadContainerVolume(Il2Cpp.GameItem container)
-        {
-            return Il2Cpp.WaterHelper.GetTotalVolume(container);
-        }
-
-        /// <summary>
-        /// 原版容器的温度。读 <c>TagState.valueDouble</c>（+0x40）——ISIL 转储里
-        /// ChemicalHelper 三处读取都是 <c>Move xmm6, [rax+64]</c>，原版自己只认 double 槽。
-        /// tag 不存在（容器没有液体温度）时用默认温度。
-        /// </summary>
-        internal static double ReadContainerTemperature(Il2Cpp.GameItem container)
-        {
-            Il2Cpp.TagState state = container.GetTagReadonly(ContainerTempTag);
-            return state == null ? DefaultTemperature : state.GetDouble();
-        }
-
-        /// <summary>按表读出一份属性：容器逐行 <c>FromContainer</c>，自己的存量逐行读 tag。</summary>
+        /// <summary>读出一份完整属性。</summary>
         public static FlowProperties Read(Il2Cpp.GameItem item)
         {
             FlowProperties properties = new FlowProperties(0d, 0d);
-
-            if (IsContainer(item))
-            {
-                foreach (FlowTagMap.AttributeBinding binding in FlowTagMap.Bindings)
-                {
-                    binding.Set(properties, binding.FromContainer(item));
-                }
-
-                return properties;
-            }
-
             ReadInto(item, properties);
             return properties;
         }
 
-        /// <summary>
-        /// 把物品 tag 里的值读进 <paramref name="target"/>（装置或一份属性）。
-        /// 只碰自有存量；容器请用 <see cref="Read"/>。
-        /// </summary>
+        /// <summary>把 tag 里的值读进 <paramref name="target"/>（装置或一份属性）。</summary>
         public static void ReadInto(Il2Cpp.GameItem item, object target)
         {
-            foreach (FlowTagMap.AttributeBinding binding in FlowTagMap.Bindings)
+            foreach (FlowTagMap.Binding binding in FlowTagMap.Bindings)
             {
-                if (!binding.Required.IsInstanceOfType(target))
-                {
-                    continue;
-                }
-
-                Il2Cpp.TagState state = item.GetTagReadonly(binding.Tag);
-                binding.Set(target, ReadNumber(state, FlowTagMap.SlotOf(binding.Tag)));
+                FlowTagMap.Set(target, binding.Tag, ReadNumber(item, binding));
             }
         }
 
-        /// <summary>
-        /// 把 <paramref name="target"/>（装置或一份属性）的值写进物品 tag。
-        ///
-        /// 写必须用 <c>state.GetTag</c>（活引用）；<c>GetTagReadonly</c> 返回的是
-        /// <c>TagState.Clone()</c> 副本，改它不会影响存档——这个坑踩过两次。
-        /// </summary>
+        /// <summary>把 <paramref name="target"/> 的值写进物品 tag。</summary>
         public static void Write(Il2Cpp.GameItem item, object target)
         {
-            foreach (FlowTagMap.AttributeBinding binding in FlowTagMap.Bindings)
+            foreach (FlowTagMap.Binding binding in FlowTagMap.Bindings)
             {
-                if (!binding.Required.IsInstanceOfType(target))
-                {
-                    continue;
-                }
-
-                WriteNumber(item.state.GetTag(binding.Tag), FlowTagMap.SlotOf(binding.Tag), binding.Get(target));
+                WriteNumber(item, binding, FlowTagMap.Get(target, binding.Tag));
             }
+
+            Refresh(item);
         }
 
         /// <summary>总存量 = 一份属性里所有"相加类"属性之和。</summary>
@@ -108,32 +47,51 @@ namespace ProbablyBagMod.Mod
         }
 
         /// <summary>
-        /// 取走全部，返回取走前的属性。
-        ///
-        /// 容器走原版 <c>WaterHelper.Remove</c>：按物质占比分摊、自动钳到 0，并刷新水质与贴图。
-        /// 自己的存量逐行写 0；温度等非存量属性随后由调用方按表写回。
+        /// 取走全部：按映射表把每个属性对应的 tag 写 0，返回取走前的属性。
+        /// 容器与普通物品走同一条路——tag 就是唯一真相。
         /// </summary>
         public static FlowProperties Take(Il2Cpp.GameItem item)
         {
             FlowProperties properties = Read(item);
 
-            if (IsContainer(item))
+            foreach (FlowTagMap.Binding binding in FlowTagMap.Bindings)
             {
-                Il2Cpp.WaterHelper.Remove(item, (int)properties.SubstanceTotal);
-                return properties;
+                WriteNumber(item, binding, 0d);
             }
 
-            foreach (FlowTagMap.AttributeBinding binding in FlowTagMap.Bindings)
-            {
-                WriteNumber(item.state.GetTag(binding.Tag), FlowTagMap.SlotOf(binding.Tag), 0d);
-            }
-
+            Refresh(item);
             return properties;
         }
 
-        private static double ReadNumber(Il2Cpp.TagState state, FlowTagMap.SlotKind slot)
+        /// <summary>
+        /// tag 改完之后统一刷新一次外部表现。
+        ///
+        /// 容器：原版会按当前内容重算水质特性（纯度、显示名、价格、扫描结果、暴露状态）并刷新贴图；
+        /// 我们的物品不在原版贴图白名单里时，贴图那步自然什么都不做。
+        /// 普通物品：只标记贴图需要重取。
+        /// </summary>
+        private static void Refresh(Il2Cpp.GameItem item)
         {
-            switch (slot)
+            if (item.IsTag(FlowTags.LiquidContainerTag))
+            {
+                Il2Cpp.WaterFeatureHelper.OnLiquidContainerPourOutOf(item);
+                Il2Cpp.SpriteHelper.UpdateWaterContainerSprite(item);
+                return;
+            }
+
+            item.spriteChanged = true;
+        }
+
+        /// <summary>读一个 tag 的数值；tag 不存在时按 0 处理（如新容器还没写过温度）。</summary>
+        private static double ReadNumber(Il2Cpp.GameItem item, FlowTagMap.Binding binding)
+        {
+            Il2Cpp.TagState state = item.GetTagReadonly(binding.Tag);
+            if (state == null)
+            {
+                return 0d;
+            }
+
+            switch (binding.Slot)
             {
                 case FlowTagMap.SlotKind.Double:
                     return state.GetDouble();
@@ -144,10 +102,12 @@ namespace ProbablyBagMod.Mod
             }
         }
 
-        private static void WriteNumber(
-            Il2Cpp.TagState state, FlowTagMap.SlotKind slot, double value)
+        /// <summary>按 tag 决定写哪个槽位；tag 是活的 TagState，写它才生效。</summary>
+        private static void WriteNumber(Il2Cpp.GameItem item, FlowTagMap.Binding binding, double value)
         {
-            switch (slot)
+            Il2Cpp.TagState state = item.state.GetTag(binding.Tag);
+
+            switch (binding.Slot)
             {
                 case FlowTagMap.SlotKind.Double:
                     state.SetDouble(value);

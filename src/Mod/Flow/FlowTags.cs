@@ -1,25 +1,24 @@
 namespace ProbablyBagMod.Mod
 {
     /// <summary>
-    /// 流源属性在物品 tag 上的名字。读写直接用原版 API：
-    ///   · 读：<c>item.GetTagReadonly(name)</c>（返回副本，只读用）
-    ///   · 写：<c>item.state.GetTag(name)</c>（活的 TagState，改字段才生效）
+    /// 我们使用的 tag 名，常量名与 tag 英文名一一对应，方便按名字搜到落点。
     ///
-    /// 名字集中在这里，是因为 items.json 里也写着同样的字符串，两边必须一致。
+    /// 这些字符串在 items.json 里也会出现（创建时的初始值、tooltip 的取值），
+    /// 两边必须一致。
     /// </summary>
     internal static class FlowTags
     {
-        /// <summary>存量。绑定原版的水分 tag —— 水分本来就是游戏的概念，不自造同义 tag。</summary>
-        public const string Stock = "CURRENT_PART_WATER";
+        /// <summary>水分 / 含量。原版按物质存储液体含量用的就是这一套 tag。</summary>
+        public const string CurrentPartWater = "CURRENT_PART_WATER";
+
 
         /// <summary>原版液体容器的身份 tag（由 flow_container 装配件建立）。</summary>
-        public const string Container = "LIQUID_CONTAINER_TAG";
+        public const string LiquidContainerTag = "LIQUID_CONTAINER_TAG";
 
         /// <summary>
-        /// 温度：直接绑定原版的容器温度 tag（double 槽）。
-        /// 原版在倒水（TransferLiquid/AddLiquid）、环境降温、冰箱制冷时都会写它，
-        /// 我们只读不写——写温度是原版的职责。
+        /// 容器内容物的温度（double 槽）。原版在倒水（TransferLiquid / AddLiquid）、
+        /// 环境降温、冰箱制冷时都会写它。
         /// </summary>
-        public const string ContainerTemperature = "CONTAINER_TEMP_TAG";
+        public const string ContainerTempTag = "CONTAINER_TEMP_TAG";
     }
 }

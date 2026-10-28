@@ -19,13 +19,16 @@ namespace ProbablyBagMod.Mod
     /// </summary>
     public sealed class EmitterAttachment : ItemAttachment
     {
+        /// <summary>首次读到 tag 之前的初始温度（常温）。</summary>
+        private const double InitialTemperature = 25d;
+
         public override string Name => "emitter";
 
         public override void Attach(Il2Cpp.GameItem item, FlowItemDefinition def)
         {
             // 发射装置不播报：tag 在发射后由 FlowRuntime.EmitFrom 对账写入，
             // 所以不订阅 FlowDeviceEvents（EmitterDevice 也没实现 IFlowNotifier）。
-            EmitterDevice device = new EmitterDevice(0d, FlowStock.DefaultTemperature);
+            EmitterDevice device = new EmitterDevice(0d, InitialTemperature);
             DeviceRegistry.Register(item.Pointer, device, item);
 
             WireActivation(item);
