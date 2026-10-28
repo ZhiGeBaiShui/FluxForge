@@ -152,9 +152,10 @@ namespace ProbablyBagMod.Mod
                 return false;
             }
 
-            // 取走物品里的全部存量，再把装置剩余状态写回 tag
+            // 取走物品里的全部存量。容器物品由 WaterHelper.Remove 负责：
+            // 它会改 tag 并同步启用状态与显示，所以这里不再自己写 tag——
+            // 裸写只会写成"数值在、IsTag 为 false"的禁用态。
             FlowStock.Take(item);
-            FlowStock.Write(item, emitter);
             return true;
         }
 
