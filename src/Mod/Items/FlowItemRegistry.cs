@@ -9,7 +9,7 @@ namespace ProbablyBagMod.Mod
 {
     /// <summary>
     /// 物品定义管理者（单例）：配置驱动（嵌入 assets/items.json），
-    /// 描述每个自定义物品（identifier / 原版模板 / 贴图 key / 显示名）。
+    /// 描述每个自定义物品（identifier / 贴图 key / 显示名 / 类型 / 标签 / 装配件）。
     ///
     /// 新增物品 = items.json 加一条 + 配好贴图（sprites.json）+ 重编译——零 C# 改动。
     /// </summary>
@@ -154,23 +154,16 @@ namespace ProbablyBagMod.Mod
         /// <summary>物品 identifier（= 贴图 key 约定；存档按它找回）。</summary>
         public string key { get; set; }
 
-        /// <summary>装配起点："template"（默认，复制模板）或 "empty"（从零装配）。</summary>
-        [JsonPropertyName("base")]
-        public string baseType { get; set; }
-
-        /// <summary>原版模板物品 id（功能/标签/属性来源）。base=empty 时忽略。</summary>
-        public string template { get; set; }
-
         /// <summary>贴图 key（空则回退用 key 本身）。</summary>
         public string sprite { get; set; }
 
-        /// <summary>显示名（空则沿用原版模板的名称）。</summary>
+        /// <summary>显示名（空则留空）。</summary>
         public string name { get; set; }
 
-        /// <summary>正文说明（写入 shortDescription；空则沿用模板）。支持 \n 换行与富文本标签。</summary>
+        /// <summary>正文说明（写入 shortDescription；空则留空）。支持 \n 换行与富文本标签。</summary>
         public string desc { get; set; }
 
-        /// <summary>风味文本（写入 flavorText，灰绿斜体；空则沿用模板）。</summary>
+        /// <summary>风味文本（写入 flavorText，灰绿斜体；空则留空）。</summary>
         public string flavor { get; set; }
 
         /// <summary>物品类型（MODULE / STORAGE / TOOL / MACHINE / FOOD / WEAPON / MEDICAL / ARMOR …）。</summary>
@@ -183,7 +176,7 @@ namespace ProbablyBagMod.Mod
         /// </summary>
         public string[] itemTypes { get; set; }
 
-        /// <summary>基础价值（0 = 沿用模板）。</summary>
+        /// <summary>基础价值（0 = 无价）。</summary>
         public long value { get; set; }
 
         /// <summary>
@@ -224,12 +217,6 @@ namespace ProbablyBagMod.Mod
         /// 由 <see cref="StatusLineTooltipHelper"/> 通用渲染，新增装置不用写代码。
         /// </summary>
         public StatusLine[] statusLines { get; set; }
-
-        /// <summary>是否从零装配（base=empty）。</summary>
-        public bool IsEmptyBase
-        {
-            get { return string.Equals(baseType, "empty", StringComparison.OrdinalIgnoreCase); }
-        }
 
         /// <summary>贴图查找键（sprite 为空时回退 key）。</summary>
         public string SpriteKey
