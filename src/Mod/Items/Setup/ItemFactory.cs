@@ -206,27 +206,27 @@ namespace ProbablyBagMod.Mod
 
             if (entry.valueInt.HasValue)
             {
-                state.valueInt = entry.valueInt.Value;
+                state.SetInt(entry.valueInt.Value);
             }
 
             if (entry.valueFloat.HasValue)
             {
-                state.valueFloat = entry.valueFloat.Value;
+                state.SetFloat(entry.valueFloat.Value);
             }
 
             if (entry.valueDouble.HasValue)
             {
-                state.valueDouble = entry.valueDouble.Value;
+                state.SetDouble(entry.valueDouble.Value);
             }
 
             if (entry.valueBool.HasValue)
             {
-                state.valueBool = entry.valueBool.Value;
+                state.SetBool(entry.valueBool.Value);
             }
 
             if (entry.valueString != null)
             {
-                state.valueString = entry.valueString;
+                state.SetString(entry.valueString);
             }
         }
     }

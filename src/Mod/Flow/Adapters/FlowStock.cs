@@ -42,7 +42,7 @@ namespace ProbablyBagMod.Mod
         internal static double ReadContainerTemperature(Il2Cpp.GameItem container)
         {
             Il2Cpp.TagState state = container.GetTagReadonly(ContainerTempTag);
-            return state == null ? DefaultTemperature : state.valueDouble;
+            return state == null ? DefaultTemperature : state.GetDouble();
         }
 
         /// <summary>按表读出一份属性：容器逐行 <c>FromContainer</c>，自己的存量逐行读 tag。</summary>
@@ -137,17 +137,19 @@ namespace ProbablyBagMod.Mod
         /// </summary>
         private static double ReadNumber(Il2Cpp.TagState state)
         {
-            if (state.valueDouble != 0d)
+            double asDouble = state.GetDouble();
+            if (asDouble != 0d)
             {
-                return state.valueDouble;
+                return asDouble;
             }
 
-            if (state.valueFloat != 0f)
+            float asFloat = state.GetFloat();
+            if (asFloat != 0f)
             {
-                return state.valueFloat;
+                return asFloat;
             }
 
-            return state.valueInt;
+            return state.GetInt();
         }
 
         /// <summary>写 tag 的数值：物质属性写 int 槽，扩展属性写 double 槽。</summary>
@@ -156,11 +158,11 @@ namespace ProbablyBagMod.Mod
         {
             if (binding.PartId != null)
             {
-                state.valueInt = (int)value;
+                state.SetInt((int)value);
             }
             else
             {
-                state.valueDouble = value;
+                state.SetDouble(value);
             }
         }
     }

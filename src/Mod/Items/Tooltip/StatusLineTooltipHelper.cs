@@ -83,20 +83,20 @@ namespace ProbablyBagMod.Mod
             // 每次 ToLowerInvariant 会多一次分配，而这里在 tooltip 热路径上。
             if (string.Equals(line.valueType, "string", StringComparison.OrdinalIgnoreCase))
             {
-                return state.valueString ?? string.Empty;
+                return state.GetString() ?? string.Empty;
             }
 
             if (string.Equals(line.valueType, "float", StringComparison.OrdinalIgnoreCase))
             {
-                return (state.valueFloat * scale).ToString(format, CultureInfo.InvariantCulture);
+                return (state.GetFloat() * scale).ToString(format, CultureInfo.InvariantCulture);
             }
 
             if (string.Equals(line.valueType, "double", StringComparison.OrdinalIgnoreCase))
             {
-                return (state.valueDouble * scale).ToString(format, CultureInfo.InvariantCulture);
+                return (state.GetDouble() * scale).ToString(format, CultureInfo.InvariantCulture);
             }
 
-            return (state.valueInt * scale).ToString(format, CultureInfo.InvariantCulture);
+            return (state.GetInt() * scale).ToString(format, CultureInfo.InvariantCulture);
         }
 
         private static Il2Cpp.RenderHandler.ColorPalette ParseColor(string name)
