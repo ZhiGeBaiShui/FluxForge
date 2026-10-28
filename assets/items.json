@@ -1,4 +1,7 @@
 {
+  "itemTypes": {
+    "FLOW_DEVICE": "流量装置"
+  },
   "items": [
     {
       "key": "flow_machine",
@@ -9,6 +12,7 @@
       "desc": "打开后是一块可自定义大小的网格，把流量装置放进去即可驱动流源。",
       "flavor": "它嗡嗡作响，像在抱怨自己被降级了。",
       "grid": "4x3",
+      "acceptsType": "FLOW_DEVICE",
       "itemTypes": [
         "MACHINE"
       ],

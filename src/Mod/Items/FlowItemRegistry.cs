@@ -19,6 +19,8 @@ namespace ProbablyBagMod.Mod
 
         private readonly Dictionary<string, FlowItemDefinition> _definitions
             = new Dictionary<string, FlowItemDefinition>();
+        private readonly Dictionary<string, string> _itemTypes
+            = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         private readonly string _resourcePrefix;
 
         private FlowItemRegistry()
@@ -26,6 +28,12 @@ namespace ProbablyBagMod.Mod
             Assembly assembly = Assembly.GetExecutingAssembly();
             _resourcePrefix = EmbeddedResources.FindPrefix(assembly, "items.json");
             LoadConfig();
+        }
+
+        /// <summary>物品类型 key → tooltip 里显示的名字（来自 items.json 的 itemTypes 对象）。</summary>
+        public IReadOnlyDictionary<string, string> ItemTypes
+        {
+            get { return _itemTypes; }
         }
 
         /// <summary>已配置的物品 key 列表。</summary>
@@ -69,6 +77,16 @@ namespace ProbablyBagMod.Mod
 
             using (document)
             {
+                JsonElement itemTypes;
+                if (document.RootElement.TryGetProperty("itemTypes", out itemTypes)
+                    && itemTypes.ValueKind == JsonValueKind.Object)
+                {
+                    foreach (JsonProperty pair in itemTypes.EnumerateObject())
+                    {
+                        _itemTypes[pair.Name] = pair.Value.GetString();
+                    }
+                }
+
                 JsonElement items;
                 if (!document.RootElement.TryGetProperty("items", out items)
                     || items.ValueKind != JsonValueKind.Array)
@@ -173,6 +191,12 @@ namespace ProbablyBagMod.Mod
         /// 空则用默认 4x3。
         /// </summary>
         public string grid { get; set; }
+
+        /// <summary>
+        /// 该网格接受哪个物品类型（类型名即 tag）。仅带网格的物品用；
+        /// 由 <c>ContainerHelper.AllowOnlyTaggedItem</c> 实施白名单。
+        /// </summary>
+        public string acceptsType { get; set; }
 
         /// <summary>
         /// 液体容器容量（毫升）。由 flow_container 装配件翻译成

@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Il2CppInterop.Runtime;
 using Il2CppInterop.Runtime.InteropTypes.Arrays;
 using MelonLoader;
@@ -33,7 +34,7 @@ namespace ProbablyBagMod.Mod
                 Il2CppSystem.Action>(OnGameLoaded);
 
             FlowTooltipPatch.LogPatchState();
-            ItemTypeLocalization.Register(ItemSetup.FlowDeviceType, ItemSetup.FlowDeviceDisplayName);
+            RegisterItemTypeNames();
 
             // 装配件靠反射自动发现：启动时装一次，之后创建物品只查表
             ItemSetup.Initialize();
@@ -67,9 +68,18 @@ namespace ProbablyBagMod.Mod
             FlowDriver.Reset();
 
             // 读档会重载本地化表，启动时补的类型名会丢，这里再补一次（AddEntry 是覆盖，幂等）
-            ItemTypeLocalization.Register(ItemSetup.FlowDeviceType, ItemSetup.FlowDeviceDisplayName);
+            RegisterItemTypeNames();
 
             LoggerInstance.Msg("[流源] 读档完成，已重置");
+        }
+
+        /// <summary>把 items.json 里声明的物品类型显示名补进本地化表（读档后本地化会重载，需再补）。</summary>
+        private static void RegisterItemTypeNames()
+        {
+            foreach (KeyValuePair<string, string> pair in FlowItemRegistry.Instance.ItemTypes)
+            {
+                ItemTypeLocalization.Register(pair.Key, pair.Value);
+            }
         }
 
         public override void OnUpdate()

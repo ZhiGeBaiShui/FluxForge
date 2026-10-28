@@ -38,9 +38,9 @@ namespace ProbablyBagMod.Mod
             // 类型在 SetGameItemType 里就是 tag（EnableTag），所以这里传类型名即可。
             // 原版也是这样用的：nutrifruit_seed_packet 先 SetGameItemType("SEED")，
             // 再 AllowOnlyTaggedItem(inv, "SEED")。
-            Il2Cpp.ContainerHelper.AllowOnlyTaggedItem(inventory, ItemSetup.FlowDeviceType);
+            Il2Cpp.ContainerHelper.AllowOnlyTaggedItem(inventory, def.acceptsType);
 
-            Il2Cpp.PixelWindow window = new Il2Cpp.PixelWindow(1, 1, true, 8, 8, "流量机");
+            Il2Cpp.PixelWindow window = new Il2Cpp.PixelWindow(1, 1, true, 8, 8, def.name);
             window.Attach(root.TryCast<Il2Cpp.PixelElement>());
             item.SetContentWindow(window);
         }

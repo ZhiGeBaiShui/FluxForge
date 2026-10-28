@@ -11,19 +11,10 @@ namespace ProbablyBagMod.Mod
     /// 「纯数据装配」的职责——行为属于 mod 层的事。
     ///
     /// 分派不看 def.key：key 只负责存档标识与贴图约定。
-    /// 新增装配件 = 新建一个 <see cref="ItemAttachment"/> 子类 + 在 <see cref="All"/> 里加一行。
+    /// 新增装配件 = 新建一个 <see cref="ItemAttachment"/> 子类，本文件不用改。
     /// </summary>
     public static class ItemSetup
     {
-        /// <summary>
-        /// 我们的物品类型。在 <c>GameItem.SetGameItemType</c> 内部它就是 tag（EnableTag），
-        /// 所以同一个标识既用于 tooltip 显示，也用于容器白名单。
-        /// </summary>
-        public const string FlowDeviceType = "FLOW_DEVICE";
-
-        /// <summary>该类型的显示名。</summary>
-        public const string FlowDeviceDisplayName = "流量装置";
-
         /// <summary>已发现的装配件：名字 → 全局共享实例。名字比较不区分大小写。</summary>
         private static readonly Dictionary<string, ItemAttachment> _attachments
             = new Dictionary<string, ItemAttachment>(StringComparer.OrdinalIgnoreCase);
