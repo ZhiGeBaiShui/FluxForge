@@ -18,24 +18,16 @@ namespace ProbablyBagMod.Mod
     internal static class FlowTagMap
     {
         /// <summary>
-        /// 表的一行：一个流源属性在物品 tag 上的落点。
-        ///
-        /// 属性分两类，区别在 <see cref="PartId"/>：
-        ///   · **物质属性**（水、有机废物…）：<c>PartId</c> 非空，落在原版
-        ///     <c>CURRENT_PART_&lt;ID&gt;</c> 上，可分、可相加、可转移；
-        ///   · **扩展属性**（温度…）：<c>PartId</c> 为空，用自己的 tag，是整件物品的单一值，
-        ///     不按物质拆分——温度不能"取走一半"。
+        /// 表的一行：一个流源属性落在哪个 tag、读写哪个槽位。
+        /// 只有这两件事是这张表必须记住的——属性语义由它实现的接口决定。
         /// </summary>
         internal sealed class AttributeBinding
         {
-            /// <summary>物质 id（如 "water"）。非空 = 物质属性；空 = 扩展属性。</summary>
-            public string PartId;
-
-            /// <summary>
-            /// 落在物品上的 tag 名。物质属性必须等于 <c>CURRENT_PART_&lt;PartId&gt;</c>；
-            /// 扩展属性用 <see cref="FlowTags"/> 里自己的名字。
-            /// </summary>
+            /// <summary>落在物品上的 tag 名。</summary>
             public string Tag;
+
+            /// <summary>读写哪个数值槽（原版 TagState 没有类型信息，只能由调用方约定）。</summary>
+            public SlotKind Slot;
 
             /// <summary>需要实现的接口：装置与一份 <see cref="FlowProperties"/> 都要实现它。</summary>
             public Type Required;
@@ -50,13 +42,21 @@ namespace ProbablyBagMod.Mod
             public Func<Il2Cpp.GameItem, double> FromContainer;
         }
 
+        /// <summary>TagState 的数值槽位。原版不留类型元数据，槽位由写入方约定。</summary>
+        internal enum SlotKind
+        {
+            Int,
+            Float,
+            Double,
+        }
+
         /// <summary>所有装置的同名属性共用一个 tag。</summary>
         private static readonly AttributeBinding[] _bindings =
         {
             new AttributeBinding
             {
-                PartId = "water",
                 Tag = FlowTags.Stock,
+                Slot = SlotKind.Int,
                 Required = typeof(IMoistureState),
                 Get = target => ((IMoistureState)target).Moisture,
                 Set = (target, value) => ((IMoistureState)target).Moisture = value,
@@ -65,10 +65,10 @@ namespace ProbablyBagMod.Mod
             },
             new AttributeBinding
             {
-                // 温度不是物质：整件物品一个值，不参与"按物质分配"。
-                // 直接落原版的容器温度 tag，原版倒水、环境降温、冰箱制冷都写它。
-                PartId = null,
+                // 温度：整件物品一个值，直接落原版的容器温度 tag（double 槽），
+                // 原版倒水、环境降温、冰箱制冷都写它。
                 Tag = FlowTags.ContainerTemperature,
+                Slot = SlotKind.Double,
                 Required = typeof(ITemperatureState),
                 Get = target => ((ITemperatureState)target).Temperature,
                 Set = (target, value) => ((ITemperatureState)target).Temperature = value,
