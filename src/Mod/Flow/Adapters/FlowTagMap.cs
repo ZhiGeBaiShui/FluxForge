@@ -18,16 +18,13 @@ namespace ProbablyBagMod.Mod
     internal static class FlowTagMap
     {
         /// <summary>
-        /// 表的一行：一个流源属性落在哪个 tag、读写哪个槽位。
-        /// 只有这两件事是这张表必须记住的——属性语义由它实现的接口决定。
+        /// 表的一行：一个流源属性落在哪个 tag，以及怎么在对象上取/放它。
+        /// 槽位不在这里——它按 tag 集中登记（见 <see cref="SlotOf"/>），默认 int。
         /// </summary>
         internal sealed class AttributeBinding
         {
             /// <summary>落在物品上的 tag 名。</summary>
             public string Tag;
-
-            /// <summary>读写哪个数值槽（原版 TagState 没有类型信息，只能由调用方约定）。</summary>
-            public SlotKind Slot;
 
             /// <summary>需要实现的接口：装置与一份 <see cref="FlowProperties"/> 都要实现它。</summary>
             public Type Required;
@@ -50,13 +47,30 @@ namespace ProbablyBagMod.Mod
             Double,
         }
 
+        /// <summary>
+        /// 非 int 槽的 tag。游戏里数值型 tag 绝大多数是 int（计数、容量、含量），
+        /// 需要别的槽位时在这里登记一行，没登记的一律按 int 读写。
+        /// </summary>
+        private static readonly Dictionary<string, SlotKind> _slots
+            = new Dictionary<string, SlotKind>(StringComparer.Ordinal)
+            {
+                // 原版在 HandleReceiveLiquidTemp / 冰箱制冷里用 double 写它
+                { FlowTags.ContainerTemperature, SlotKind.Double },
+            };
+
+        /// <summary>这个 tag 读写哪个槽位；没登记就是 int。</summary>
+        public static SlotKind SlotOf(string tag)
+        {
+            SlotKind slot;
+            return _slots.TryGetValue(tag, out slot) ? slot : SlotKind.Int;
+        }
+
         /// <summary>所有装置的同名属性共用一个 tag。</summary>
         private static readonly AttributeBinding[] _bindings =
         {
             new AttributeBinding
             {
                 Tag = FlowTags.Stock,
-                Slot = SlotKind.Int,
                 Required = typeof(IMoistureState),
                 Get = target => ((IMoistureState)target).Moisture,
                 Set = (target, value) => ((IMoistureState)target).Moisture = value,
@@ -68,7 +82,6 @@ namespace ProbablyBagMod.Mod
                 // 温度：整件物品一个值，直接落原版的容器温度 tag（double 槽），
                 // 原版倒水、环境降温、冰箱制冷都写它。
                 Tag = FlowTags.ContainerTemperature,
-                Slot = SlotKind.Double,
                 Required = typeof(ITemperatureState),
                 Get = target => ((ITemperatureState)target).Temperature,
                 Set = (target, value) => ((ITemperatureState)target).Temperature = value,

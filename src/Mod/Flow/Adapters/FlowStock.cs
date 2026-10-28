@@ -78,7 +78,7 @@ namespace ProbablyBagMod.Mod
                 }
 
                 Il2Cpp.TagState state = item.GetTagReadonly(binding.Tag);
-                binding.Set(target, ReadNumber(state, binding.Slot));
+                binding.Set(target, ReadNumber(state, FlowTagMap.SlotOf(binding.Tag)));
             }
         }
 
@@ -97,7 +97,7 @@ namespace ProbablyBagMod.Mod
                     continue;
                 }
 
-                WriteNumber(item.state.GetTag(binding.Tag), binding.Slot, binding.Get(target));
+                WriteNumber(item.state.GetTag(binding.Tag), FlowTagMap.SlotOf(binding.Tag), binding.Get(target));
             }
         }
 
@@ -125,7 +125,7 @@ namespace ProbablyBagMod.Mod
 
             foreach (FlowTagMap.AttributeBinding binding in FlowTagMap.Bindings)
             {
-                WriteNumber(item.state.GetTag(binding.Tag), binding.Slot, 0d);
+                WriteNumber(item.state.GetTag(binding.Tag), FlowTagMap.SlotOf(binding.Tag), 0d);
             }
 
             return properties;
