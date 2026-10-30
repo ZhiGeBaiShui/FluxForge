@@ -33,7 +33,7 @@ namespace ProbablyBagMod.Tests
         {
             FlowProperties p = new FlowProperties(100, 20);
             TemperatureChangeReaction.React(p, 30);
-            Assert.Equal(100, p.Moisture);
+            Assert.Equal(100, p.Water);
         }
     }
 }

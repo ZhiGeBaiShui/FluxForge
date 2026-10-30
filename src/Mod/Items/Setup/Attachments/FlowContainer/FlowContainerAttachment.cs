@@ -11,9 +11,9 @@ namespace ProbablyBagMod.Mod
     {
         public override string Name => "flow_container";
 
-        public override void Attach(Il2Cpp.GameItem item, FlowItemDefinition def)
+        public override void Attach(GameItem item, FlowItemDefinition def)
         {
-            Il2Cpp.WaterHelper.InitLiquidContainerItem(item, def.capacityMl, 0);
+            WaterHelper.InitLiquidContainerItem(item, def.capacityMl, 0);
         }
     }
 }

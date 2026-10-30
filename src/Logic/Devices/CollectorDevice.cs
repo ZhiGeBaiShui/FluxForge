@@ -19,7 +19,7 @@ namespace ProbablyBagMod
     /// 所以每收一个都要把返回的新对象存回字段，不能指望原对象被就地修改。
     /// </summary>
     public sealed class CollectorDevice
-        : IFlowRouter, IFlowNotifier, IMoistureState, ITemperatureState
+        : IFlowRouter, IFlowNotifier, IWaterState, ITemperatureState
     {
         /// <summary>流源记录的保留上限。超出的从最旧的开始丢。</summary>
         public const int MaxCollected = 64;
@@ -53,10 +53,10 @@ namespace ProbablyBagMod
         }
 
         /// <summary>tag 映射视图：存量就是 <see cref="Stock"/> 的两个字段，不另存一份。</summary>
-        double IMoistureState.Moisture
+        double IWaterState.Water
         {
-            get { return _stock.Moisture; }
-            set { _stock.Moisture = value; }
+            get { return _stock.Water; }
+            set { _stock.Water = value; }
         }
 
         double ITemperatureState.Temperature

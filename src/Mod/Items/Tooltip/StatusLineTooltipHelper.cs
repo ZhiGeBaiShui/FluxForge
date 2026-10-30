@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using MelonLoader;
 
 namespace ProbablyBagMod.Mod
 {
@@ -15,15 +14,15 @@ namespace ProbablyBagMod.Mod
     public sealed class StatusLineTooltipHelper : IFlowTooltipHelper
     {
         private const string DefaultFormat = "0.#";
-        private const Il2Cpp.RenderHandler.ColorPalette DefaultColor
-            = Il2Cpp.RenderHandler.ColorPalette.LightBlue;
+        private const RenderHandler.ColorPalette DefaultColor
+            = RenderHandler.ColorPalette.LightBlue;
 
         /// <summary>
         /// 颜色名 → 调色板缓存。tooltip 每帧全量重建，Enum.Parse + try/catch 不能放在热路径上；
         /// 缓存键只来自 items.json 的 statusLines，数量有界。
         /// </summary>
-        private static readonly Dictionary<string, Il2Cpp.RenderHandler.ColorPalette> ColorCache
-            = new Dictionary<string, Il2Cpp.RenderHandler.ColorPalette>(StringComparer.Ordinal);
+        private static readonly Dictionary<string, RenderHandler.ColorPalette> ColorCache
+            = new Dictionary<string, RenderHandler.ColorPalette>(StringComparer.Ordinal);
 
         /// <summary>已经警告过的未知颜色名，避免每帧刷日志。</summary>
         private static readonly HashSet<string> WarnedColors
@@ -36,7 +35,7 @@ namespace ProbablyBagMod.Mod
         /// 唯一调用入口 <see cref="FlowTooltipPatch.Postfix"/> 在分派前已经判过，
         /// 所以这里不再重复检查。
         /// </summary>
-        public void Append(Il2Cpp.RichTextBuilder builder, Il2Cpp.GameItemElement item)
+        public void Append(RichTextBuilder builder, GameItemElement item)
         {
             // 自判：配置里没声明状态行 → 不归我管
             FlowItemDefinition def = FlowItemRegistry.Instance.Get(item.identifier);
@@ -51,7 +50,7 @@ namespace ProbablyBagMod.Mod
             }
         }
 
-        private static void AppendLine(Il2Cpp.RichTextBuilder builder, Il2Cpp.GameItemElement item, StatusLine line)
+        private static void AppendLine(RichTextBuilder builder, GameItemElement item, StatusLine line)
         {
             if (line == null || string.IsNullOrEmpty(line.tag) || string.IsNullOrEmpty(line.label))
             {
@@ -64,7 +63,7 @@ namespace ProbablyBagMod.Mod
                 return;
             }
 
-            Il2Cpp.TagState state = item.GetTagReadonly(line.tag);
+            TagState state = item.GetTagReadonly(line.tag);
             if (state == null)
             {
                 return;
@@ -74,7 +73,7 @@ namespace ProbablyBagMod.Mod
             builder.AddLine(text, true, ParseColor(line.color));
         }
 
-        private static string FormatValue(Il2Cpp.TagState state, StatusLine line)
+        private static string FormatValue(TagState state, StatusLine line)
         {
             string format = string.IsNullOrEmpty(line.format) ? DefaultFormat : line.format;
             double scale = line.scale > 0d ? line.scale : 1d;
@@ -99,30 +98,30 @@ namespace ProbablyBagMod.Mod
             return (state.GetInt() * scale).ToString(format, CultureInfo.InvariantCulture);
         }
 
-        private static Il2Cpp.RenderHandler.ColorPalette ParseColor(string name)
+        private static RenderHandler.ColorPalette ParseColor(string name)
         {
             if (string.IsNullOrEmpty(name))
             {
                 return DefaultColor;
             }
 
-            Il2Cpp.RenderHandler.ColorPalette cached;
+            RenderHandler.ColorPalette cached;
             if (ColorCache.TryGetValue(name, out cached))
             {
                 return cached;
             }
 
-            Il2Cpp.RenderHandler.ColorPalette parsed;
+            RenderHandler.ColorPalette parsed;
             try
             {
-                parsed = (Il2Cpp.RenderHandler.ColorPalette)Enum.Parse(
-                    typeof(Il2Cpp.RenderHandler.ColorPalette), name, true);
+                parsed = (RenderHandler.ColorPalette)Enum.Parse(
+                    typeof(RenderHandler.ColorPalette), name, true);
             }
             catch
             {
                 if (WarnedColors.Add(name))
                 {
-                    MelonLogger.Warning("[tooltip] 未知颜色名：" + name + "（用默认 LightBlue）");
+                    PBModEntry.Log.Warning("[tooltip] 未知颜色名：" + name + "（用默认 LightBlue）");
                 }
 
                 parsed = DefaultColor;

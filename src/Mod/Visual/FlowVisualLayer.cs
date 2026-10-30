@@ -36,7 +36,7 @@ namespace ProbablyBagMod.Mod.Visual
         /// </summary>
         private const float FrameRate = 12f;
 
-        private readonly Il2Cpp.GameGridInventory _inventory;
+        private readonly GameGridInventory _inventory;
         private readonly FlowSpawner _flows;
 
         /// <summary>本网格当前活着的流源。出生加、死亡删，Tick 只遍历它。</summary>
@@ -71,7 +71,7 @@ namespace ProbablyBagMod.Mod.Visual
 
         private bool _disposed;
 
-        public FlowVisualLayer(Il2Cpp.GameGridInventory inventory, FlowSpawner flows)
+        public FlowVisualLayer(GameGridInventory inventory, FlowSpawner flows)
         {
             _inventory = inventory;
             _flows = flows;
@@ -117,7 +117,7 @@ namespace ProbablyBagMod.Mod.Visual
                 frame += FlowVisualState.FrameCount;
             }
 
-            // 层为 null 表示这块网格当前还画不了（原生对象已失效 / RectTransform 还没建好），
+            // 层为 null 表示这块网格当前还画不了（网格/ RectTransform 已失效 / 还没建好），
             // 此时整块跳过；能走到下面说明 rect 与 layer 都有效。
             RectTransform rect = ResolveRect(out FlowAtlasLayer layer);
             if (layer == null)
@@ -161,7 +161,7 @@ namespace ProbablyBagMod.Mod.Visual
 
         /// <summary>
         /// 释放整个视觉层的静态资源（图集贴图/Sprite 缓存）。
-        /// 由 <c>PBModEntry.OnDeinitializeMelon</c> 调用；实例的 <see cref="Dispose"/> 只管本网格。
+        /// 由 <c>PBModEntry.OnDisable</c> 调用；实例的 <see cref="Dispose"/> 只管本网格。
         /// </summary>
         public static void Shutdown()
         {
@@ -245,7 +245,7 @@ namespace ProbablyBagMod.Mod.Visual
         {
             layer = null;
 
-            if (_inventory == null || _inventory.Pointer == IntPtr.Zero)
+            if (_inventory == null)
             {
                 return null;
             }
@@ -300,7 +300,7 @@ namespace ProbablyBagMod.Mod.Visual
                 speed,
                 FlowComposition.PureWater,
                 FlowTierMap.TempFrom((float)entity.Properties.Temperature),
-                FlowTierMap.ContentFromMoisture(entity.Properties.Moisture),
+                FlowTierMap.ContentFromWater(entity.Properties.Water),
                 FlowTierMap.StateFrom(blocked));
         }
 

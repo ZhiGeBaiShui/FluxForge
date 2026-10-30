@@ -35,7 +35,7 @@ namespace ProbablyBagMod.Mod
             catch (Exception e)
             {
                 // 表还没加载完是正常情况（启动早期），读档后会再补一次
-                MelonLoader.MelonLogger.Warning(
+                PBModEntry.Log.Warning(
                     "[本地化] 补充类型名失败（tooltip 会显示缺翻译提示）：" + e.Message);
             }
         }

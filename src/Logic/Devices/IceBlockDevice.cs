@@ -6,7 +6,7 @@ namespace ProbablyBagMod
     /// 冰块装置：控制反应的装置类（反应 = 改变流源属性，不改变流源去向）。
     ///
     /// 自身持有两个存量属性（与流源属性同名同义，但彼此独立）：
-    ///   · <see cref="Moisture"/>    冰含量，同时用作物质量（1 mL 水 ↔ 1 g 冰）
+    ///   · <see cref="Water"/>    冰含量，同时用作物质量（1 mL 水 ↔ 1 g 冰）
     ///   · <see cref="Temperature"/> 温度（单位：摄氏度；原版无温度系统，本 mod 自定）
     ///
     /// 与运动层的关系：
@@ -16,7 +16,7 @@ namespace ProbablyBagMod
     ///
     /// 融化模型：流源能带走多少冰，取决于**流源自己携带的水量**——
     ///   最多带走自身质量的一半（<see cref="MeltRatio"/>），且不超过冰块剩余量。
-    ///   拿走的冰计入流源水分（1:1），温度按两者混合前的质量配比加权。
+    ///   拿走的冰计入流源水量（1:1），温度按两者混合前的质量配比加权。
     ///   冰被拿空则播报 <see cref="Exhausted"/>，由订阅方把物品从载体上移除。
     ///
     /// 为什么按流源的质量而不是按冰块剩余量的比例：冰是有限的，水是流动的。
@@ -26,7 +26,7 @@ namespace ProbablyBagMod
     /// 本类不认识 GameItem / TagSystem / 存档——那是 mod / 适配层的事。
     /// </summary>
     public sealed class IceBlockDevice
-        : IFlowDevice, IFlowNotifier, IMoistureState, ITemperatureState
+        : IFlowDevice, IFlowNotifier, IWaterState, ITemperatureState
     {
         /// <summary>流源最多带走自身质量的比例（0.5 = 一半）。</summary>
         private const double MeltRatio = 0.5d;
@@ -38,14 +38,14 @@ namespace ProbablyBagMod
         public event Action<IFlowNotifier> Exhausted;
 
         /// <summary>冰含量。1 mL 水对应 1 g 冰，所以它同时也是质量。</summary>
-        public double Moisture { get; set; }
+        public double Water { get; set; }
 
         /// <summary>温度（摄氏度）。</summary>
         public double Temperature { get; set; }
 
-        public IceBlockDevice(double moisture, double temperature)
+        public IceBlockDevice(double water, double temperature)
         {
-            Moisture = moisture;
+            Water = water;
             Temperature = temperature;
         }
 
@@ -54,33 +54,33 @@ namespace ProbablyBagMod
         /// <returns>是否真的发生了反应（true → 该帧阻挡）。</returns>
         public bool TryReact(FlowProperties properties)
         {
-            if (Moisture <= 0d)
+            if (Water <= 0d)
             {
                 return false;
             }
 
             // 两者用同一单位存储（µL），1 mL ↔ 1 g 的换算系数就是 1，
-            // 所以「自身质量的一半」直接是 Moisture * 0.5
-            double capacity = properties.Moisture * MeltRatio;
-            double melted = Math.Min(Moisture, capacity);
+            // 所以「自身质量的一半」直接是 Water * 0.5
+            double capacity = properties.Water * MeltRatio;
+            double melted = Math.Min(Water, capacity);
             if (melted <= 0d)
             {
                 return false;
             }
 
             // 先留下流源反应前的质量与温度：混合温度要按「混合前」的配比算
-            double flowMoisture = properties.Moisture;
+            double flowWater = properties.Water;
             double flowTemperature = properties.Temperature;
 
-            Moisture -= melted;
-            properties.Moisture = flowMoisture + melted;
+            Water -= melted;
+            properties.Water = flowWater + melted;
 
             // 化掉的冰以冰水身份进入流源，温度按质量加权
-            double totalMoisture = flowMoisture + melted;
-            if (totalMoisture > 0d)
+            double totalWater = flowWater + melted;
+            if (totalWater > 0d)
             {
                 properties.Temperature =
-                    (flowMoisture * flowTemperature + melted * Temperature) / totalMoisture;
+                    (flowWater * flowTemperature + melted * Temperature) / totalWater;
             }
             else
             {
@@ -92,7 +92,7 @@ namespace ProbablyBagMod
             Changed?.Invoke(this);
 
             // 只有真的化完了才请求销毁；没化完就留在原地等下一个流源
-            if (Moisture <= 0d)
+            if (Water <= 0d)
             {
                 Exhausted?.Invoke(this);
             }

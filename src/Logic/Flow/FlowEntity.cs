@@ -25,7 +25,7 @@ namespace ProbablyBagMod
         /// <summary>运动数据（方向 / 速度）。</summary>
         public FlowMotionData Motion;
 
-        /// <summary>流源属性（水分 / 温度……）。</summary>
+        /// <summary>流源属性（水量 / 温度……）。</summary>
         public FlowProperties Properties;
 
         public FlowEntity(FlowPos position, FlowMotionData motion, FlowProperties properties)

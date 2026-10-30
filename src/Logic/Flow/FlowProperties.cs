@@ -15,20 +15,20 @@ namespace ProbablyBagMod
     ///   - 新增 public double 字段时，必须在 <c>_ruleTable</c> 声明分合规则，
     ///     否则静态构造函数直接抛异常点名
     /// </summary>
-    public sealed class FlowProperties : IMoistureState, ITemperatureState
+    public sealed class FlowProperties : IWaterState, ITemperatureState
     {
-        /// <summary>水分含量。</summary>
-        public double Moisture;
+        /// <summary>水量。</summary>
+        public double Water;
 
         /// <summary>温度。单位与刻度由上层约定，框架不解释。</summary>
         public double Temperature;
 
         // 显式实现：让 FlowTagMap 能把一份 FlowProperties 当成"有存量/有温度的东西"直接读写，
         // 不必为它单独再写一套 tag 映射。字段本身保持 public 供现有代码直接访问。
-        double IMoistureState.Moisture
+        double IWaterState.Water
         {
-            get { return Moisture; }
-            set { Moisture = value; }
+            get { return Water; }
+            set { Water = value; }
         }
 
         double ITemperatureState.Temperature
@@ -39,7 +39,7 @@ namespace ProbablyBagMod
 
         private static readonly PropertyRule[] _ruleTable = new[]
         {
-            new PropertyRule(nameof(Moisture),    SplitRule.Divide, MergeRule.Add),
+            new PropertyRule(nameof(Water),    SplitRule.Divide, MergeRule.Add),
             new PropertyRule(nameof(Temperature), SplitRule.Keep,    MergeRule.WeightedAverage),
         };
 
@@ -50,9 +50,9 @@ namespace ProbablyBagMod
             Validate();
         }
 
-        public FlowProperties(double moisture, double temperature)
+        public FlowProperties(double water, double temperature)
         {
-            Moisture = moisture;
+            Water = water;
             Temperature = temperature;
         }
 

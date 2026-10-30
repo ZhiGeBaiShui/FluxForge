@@ -99,10 +99,10 @@ namespace ProbablyBagMod.Tests
 
             Assert.True(emitted);
             Assert.Single(spawned);                       // 整份存量 → 一个流源
-            Assert.Equal(100d, spawned[0].Properties.Moisture);
+            Assert.Equal(100d, spawned[0].Properties.Water);
             Assert.Equal(30d, spawned[0].Properties.Temperature);
             Assert.Equal(2, spawned[0].Motion.Direction);
-            Assert.Equal(0d, emitter.Stock.Moisture);     // 发完清空
+            Assert.Equal(0d, emitter.Stock.Water);     // 发完清空
         }
 
         [Fact]
@@ -146,7 +146,7 @@ namespace ProbablyBagMod.Tests
             Assert.False(emitter.HasContent);
 
             // 补入新库存后可再次发射，新载荷不能改写已经发出的那一份。
-            emitter.Stock.Moisture = 75d;
+            emitter.Stock.Water = 75d;
             emitter.Stock.Temperature = 40d;
             Assert.True(emitter.HasContent);
             Assert.True(emitter.EmitAll(new FlowPos(2.5d, 3.5d), 1, _flows));
@@ -157,14 +157,14 @@ namespace ProbablyBagMod.Tests
             Assert.Same(spawned[1], _flows.Active[1]);
             Assert.NotSame(spawned[0], spawned[1]);
             Assert.NotSame(spawned[0].Properties, spawned[1].Properties);
-            Assert.Equal(50d, spawned[0].Properties.Moisture);
+            Assert.Equal(50d, spawned[0].Properties.Water);
             Assert.Equal(20d, spawned[0].Properties.Temperature);
-            Assert.Equal(75d, spawned[1].Properties.Moisture);
+            Assert.Equal(75d, spawned[1].Properties.Water);
             Assert.Equal(40d, spawned[1].Properties.Temperature);
             Assert.Equal(2.5d, spawned[1].Position.X);
             Assert.Equal(3.5d, spawned[1].Position.Y);
             Assert.Equal(1, spawned[1].Motion.Direction);
-            Assert.Equal(0d, emitter.Stock.Moisture);
+            Assert.Equal(0d, emitter.Stock.Water);
             Assert.False(emitter.HasContent);
         }
 
@@ -181,21 +181,21 @@ namespace ProbablyBagMod.Tests
             Assert.NotSame(origin, entity.Position);
 
             // 修改库存和传入原点，已发流源仍保留发射时的快照。
-            emitter.Stock.Moisture = 25d;
+            emitter.Stock.Water = 25d;
             emitter.Stock.Temperature = 10d;
             origin.Set(8.5d, 9.5d);
 
-            Assert.Equal(100d, entity.Properties.Moisture);
+            Assert.Equal(100d, entity.Properties.Water);
             Assert.Equal(30d, entity.Properties.Temperature);
             Assert.Equal(3.5d, entity.Position.X);
             Assert.Equal(4.5d, entity.Position.Y);
 
             // 反向修改流源，也不能污染库存或调用方持有的原点。
-            entity.Properties.Moisture = 60d;
+            entity.Properties.Water = 60d;
             entity.Properties.Temperature = 50d;
             entity.Position.Set(1.5d, 2.5d);
 
-            Assert.Equal(25d, emitter.Stock.Moisture);
+            Assert.Equal(25d, emitter.Stock.Water);
             Assert.Equal(10d, emitter.Stock.Temperature);
             Assert.Equal(8.5d, origin.X);
             Assert.Equal(9.5d, origin.Y);
@@ -211,7 +211,7 @@ namespace ProbablyBagMod.Tests
             Assert.False(emitter.EmitAll(new FlowPos(0, 0), 0, null));
 
             Assert.Empty(spawned);
-            Assert.Equal(100d, emitter.Stock.Moisture);
+            Assert.Equal(100d, emitter.Stock.Water);
         }
 
         [Fact]
@@ -222,13 +222,13 @@ namespace ProbablyBagMod.Tests
             collector.Route(new FlowEntity(new FlowPos(0, 0), new FlowMotionData(0, 1), new FlowProperties(40, 10)), _flows, 0, 0);
             collector.Route(new FlowEntity(new FlowPos(0, 0), new FlowMotionData(0, 1), new FlowProperties(60, 20)), _flows, 0, 0);
 
-            Assert.Equal(100d, collector.Stock.Moisture);
+            Assert.Equal(100d, collector.Stock.Water);
             Assert.Equal(2, collector.Collected.Count);
             // 加权平均：(40×10 + 60×20) / 100 = 16
             Assert.Equal(16d, collector.Stock.Temperature, 3);
 
             collector.Clear();
-            Assert.Equal(0d, collector.Stock.Moisture);
+            Assert.Equal(0d, collector.Stock.Water);
             Assert.Empty(collector.Collected);
         }
 
@@ -237,12 +237,12 @@ namespace ProbablyBagMod.Tests
         {
             CollectorDevice collector = new CollectorDevice();
             int changedCount = 0;
-            double moistureAtEvent = -1d;
+            double waterAtEvent = -1d;
 
             collector.Changed += sender =>
             {
                 changedCount++;
-                moistureAtEvent = ((CollectorDevice)sender).Stock.Moisture;
+                waterAtEvent = ((CollectorDevice)sender).Stock.Water;
             };
 
             collector.Route(new FlowEntity(
@@ -252,7 +252,7 @@ namespace ProbablyBagMod.Tests
 
             Assert.Equal(1, changedCount);
             // 播报时库存已经合并完成，订阅方读到的是一次完整的吸收结果
-            Assert.Equal(40d, moistureAtEvent);
+            Assert.Equal(40d, waterAtEvent);
         }
 
         [Fact]
@@ -295,7 +295,7 @@ namespace ProbablyBagMod.Tests
         }
 
         [Fact]
-        public void IceBlock_TransfersMoistureAndMixesTemperature()
+        public void IceBlock_TransfersWaterAndMixesTemperature()
         {
             IceBlockDevice ice = new IceBlockDevice(10d, -5d);
             FlowProperties flow = new FlowProperties(100d, 25d);
@@ -304,8 +304,8 @@ namespace ProbablyBagMod.Tests
 
             Assert.True(reacted);
             // 流源能带走自身质量的一半（50），远大于冰块剩余的 10，所以一次化完
-            Assert.Equal(0d, ice.Moisture);
-            Assert.Equal(110d, flow.Moisture);
+            Assert.Equal(0d, ice.Water);
+            Assert.Equal(110d, flow.Water);
             // (100×25 + 10×(-5)) / 110 ≈ 22.273
             Assert.Equal(22.273d, flow.Temperature, 3);
         }
@@ -322,8 +322,8 @@ namespace ProbablyBagMod.Tests
 
             Assert.True(ice.TryReact(flow));
 
-            Assert.Equal(950d, ice.Moisture);
-            Assert.Equal(150d, flow.Moisture);
+            Assert.Equal(950d, ice.Water);
+            Assert.Equal(150d, flow.Water);
             // (100×20 + 50×(-10)) / 150 = 10
             Assert.Equal(10d, flow.Temperature, 3);
             Assert.False(exhausted);          // 没化完就不该请求销毁
@@ -338,13 +338,13 @@ namespace ProbablyBagMod.Tests
             ice.Exhausted += sender => exhaustedCount++;
 
             int rounds = 0;
-            while (ice.Moisture > 0d && rounds < 100)
+            while (ice.Water > 0d && rounds < 100)
             {
                 ice.TryReact(new FlowProperties(100d, 20d));
                 rounds++;
             }
 
-            Assert.Equal(0d, ice.Moisture);
+            Assert.Equal(0d, ice.Water);
             Assert.Equal(1, exhaustedCount);   // 只在真正归零的那一次触发
             Assert.True(rounds < 100);         // 不会无限循环
         }
@@ -354,20 +354,20 @@ namespace ProbablyBagMod.Tests
         {
             IceBlockDevice ice = new IceBlockDevice(10d, -5d);
             List<string> order = new List<string>();
-            double moistureWhenChanged = -1d;
-            double moistureWhenExhausted = -1d;
+            double waterWhenChanged = -1d;
+            double waterWhenExhausted = -1d;
 
             ice.Changed += sender =>
             {
                 order.Add("Changed");
                 // Changed 必须已经能读到最终值：订阅方就是靠它把 tag 写成 0 的。
-                // 如果哪天把播报挪到 Moisture = 0 之前，这条断言会立刻失败。
-                moistureWhenChanged = ((IceBlockDevice)sender).Moisture;
+                // 如果哪天把播报挪到 Water = 0 之前，这条断言会立刻失败。
+                waterWhenChanged = ((IceBlockDevice)sender).Water;
             };
             ice.Exhausted += sender =>
             {
                 order.Add("Exhausted");
-                moistureWhenExhausted = ((IceBlockDevice)sender).Moisture;
+                waterWhenExhausted = ((IceBlockDevice)sender).Water;
             };
 
             Assert.True(ice.TryReact(new FlowProperties(100d, 25d)));
@@ -375,8 +375,8 @@ namespace ProbablyBagMod.Tests
             // 顺序不可调换：Exhausted 的订阅方会把物品从网格摘掉，
             // Changed 必须先把「存量归零」同步出去
             Assert.Equal(new[] { "Changed", "Exhausted" }, order);
-            Assert.Equal(0d, moistureWhenChanged);
-            Assert.Equal(0d, moistureWhenExhausted);
+            Assert.Equal(0d, waterWhenChanged);
+            Assert.Equal(0d, waterWhenExhausted);
         }
 
         [Fact]
@@ -386,7 +386,7 @@ namespace ProbablyBagMod.Tests
             FlowProperties flow = new FlowProperties(100d, 25d);
 
             Assert.False(ice.TryReact(flow));
-            Assert.Equal(100d, flow.Moisture);   // 没反应就不该动流源
+            Assert.Equal(100d, flow.Water);   // 没反应就不该动流源
             Assert.Equal(25d, flow.Temperature);
         }
 
@@ -499,7 +499,7 @@ namespace ProbablyBagMod.Tests
 
             Assert.Equal(CollectorDevice.MaxCollected, collector.Collected.Count);
             // 存量照旧全量累积，不受记录上限影响
-            Assert.Equal(total, collector.Stock.Moisture, 3);
+            Assert.Equal(total, collector.Stock.Water, 3);
         }
 
         [Fact]

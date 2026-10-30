@@ -1,8 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
-using MelonLoader;
-using ProbablyBagMod.Mod.Rendering.ItemSprites;
 using ProbablyBagMod.Presentation.Flow.Visual;
 using UnityEngine;
 
@@ -237,7 +235,7 @@ namespace ProbablyBagMod.Mod.Visual.Internal
 
                 if (json == null)
                 {
-                    MelonLogger.Warning("[流源] 蒙版图集索引缺失，图集层停用");
+                    PBModEntry.Log.Warning("[流源] 蒙版图集索引缺失，图集层停用");
                     return;
                 }
 
@@ -247,7 +245,7 @@ namespace ProbablyBagMod.Mod.Visual.Internal
 
                 if (body == null || edge == null || accent == null)
                 {
-                    MelonLogger.Warning("[流源] 蒙版图集缺少 body/edge/accent，图集层停用");
+                    PBModEntry.Log.Warning("[流源] 蒙版图集缺少 body/edge/accent，图集层停用");
                     return;
                 }
 
@@ -255,7 +253,7 @@ namespace ProbablyBagMod.Mod.Visual.Internal
                 Texture2D wall = EmbeddedResources.LoadTexture(prefix, "flow_mask_wall.png");
                 if (wall == null)
                 {
-                    MelonLogger.Warning("[流源] 缺少 flow_mask_wall.png，墙体将不显示");
+                    PBModEntry.Log.Warning("[流源] 缺少 flow_mask_wall.png，墙体将不显示");
                 }
 
                 FlowAtlasIndex index = FlowAtlasIndex.Parse(json);
@@ -266,7 +264,7 @@ namespace ProbablyBagMod.Mod.Visual.Internal
                 _wallTexture = wall;
                 _index = index;
                 _ready = true;
-                MelonLogger.Msg("[流源] 蒙版图集就绪：" + index.Count + " tiles × 4 通道");
+                PBModEntry.Log.Log("[流源] 蒙版图集就绪：" + index.Count + " tiles × 4 通道");
             }
             catch (Exception e)
             {
@@ -277,7 +275,7 @@ namespace ProbablyBagMod.Mod.Visual.Internal
                 _accentTexture = null;
                 _wallTexture = null;
                 _index = null;
-                MelonLogger.Warning("[流源] 蒙版图集加载失败，图集层停用：" + e.Message);
+                PBModEntry.Log.Warning("[流源] 蒙版图集加载失败，图集层停用：" + e.Message);
             }
         }
 

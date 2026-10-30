@@ -14,7 +14,7 @@ namespace ProbablyBagMod.Mod
         /// <summary>
         /// 尝试为物品追加 tooltip 段。不属于自己负责的范围就直接返回。
         /// </summary>
-        void Append(Il2Cpp.RichTextBuilder builder, Il2Cpp.GameItemElement item);
+        void Append(RichTextBuilder builder, GameItemElement item);
     }
 
     /// <summary>
@@ -48,7 +48,7 @@ namespace ProbablyBagMod.Mod
         }
 
         /// <summary>分派：逐个 helper 追加（各自判断是否处理）。</summary>
-        public static void AppendAll(Il2Cpp.RichTextBuilder builder, Il2Cpp.GameItemElement item)
+        public static void AppendAll(RichTextBuilder builder, GameItemElement item)
         {
             EnsureInitialized();
 

@@ -5,32 +5,26 @@ using ProbablyBagMod.Mod.Visual;
 namespace ProbablyBagMod.Mod
 {
     /// <summary>
-    /// 按原生网格指针管理唯一运行环境，逐环境隔离逻辑与视觉异常。
+    /// 按网格对象引用管理唯一运行环境，逐环境隔离逻辑与视觉异常。
     /// 装置登记属于物品，运行环境只拥有自己的流源与视图。
     /// </summary>
     public static class FlowDriver
     {
         private static readonly List<FlowRuntime> _runtimes = new List<FlowRuntime>();
-        private static readonly Dictionary<IntPtr, FlowRuntime> _runtimesByGrid
-            = new Dictionary<IntPtr, FlowRuntime>();
+        private static readonly Dictionary<GameGridInventory, FlowRuntime> _runtimesByGrid
+            = new Dictionary<GameGridInventory, FlowRuntime>();
         private static readonly HashSet<FlowRuntime> _visualErrorReported
             = new HashSet<FlowRuntime>();
 
         /// <summary>首次激活时按网格创建，同一网格的所有发射装置共用环境。</summary>
-        public static FlowRuntime GetOrCreate(Il2Cpp.GameGridInventory inventory)
+        public static FlowRuntime GetOrCreate(GameGridInventory inventory)
         {
             if (inventory == null)
             {
                 throw new ArgumentNullException(nameof(inventory));
             }
 
-            IntPtr pointer = inventory.Pointer;
-            if (pointer == IntPtr.Zero)
-            {
-                throw new ArgumentException("网格原生指针已失效", nameof(inventory));
-            }
-
-            if (_runtimesByGrid.TryGetValue(pointer, out FlowRuntime existing))
+            if (_runtimesByGrid.TryGetValue(inventory, out FlowRuntime existing))
             {
                 try
                 {
@@ -41,7 +35,7 @@ namespace ProbablyBagMod.Mod
                 }
                 catch (Exception e)
                 {
-                    MelonLoader.MelonLogger.Error("[流源] 网格存活检查失败，已退役旧环境：" + e);
+                    PBModEntry.Log.Error("[流源] 网格存活检查失败，已退役旧环境：" + e);
                 }
 
                 // 同键失效项必须先从双表摘除并释放，才能创建替代环境。
@@ -52,7 +46,7 @@ namespace ProbablyBagMod.Mod
             FlowRuntime runtime = new FlowRuntime(inventory);
             try
             {
-                _runtimesByGrid.Add(pointer, runtime);
+                _runtimesByGrid.Add(inventory, runtime);
                 _runtimes.Add(runtime);
             }
             catch
@@ -64,7 +58,7 @@ namespace ProbablyBagMod.Mod
             return runtime;
         }
 
-        /// <summary>由 MelonMod.OnUpdate 每帧调用。</summary>
+        /// <summary>由 <see cref="ModHost"/> 每帧调用。</summary>
         public static void Update(double deltaTime)
         {
             for (int i = _runtimes.Count - 1; i >= 0; i--)
@@ -84,14 +78,14 @@ namespace ProbablyBagMod.Mod
                 }
                 catch (Exception e)
                 {
-                    MelonLoader.MelonLogger.Error("[流源] 推进或存活检查失败，已退役该环境：" + e);
+                    PBModEntry.Log.Error("[流源] 推进或存活检查失败，已退役该环境：" + e);
                     Retire(runtime);
                 }
             }
         }
 
         /// <summary>
-        /// 由 MelonMod.OnLateUpdate 逐环境推进纯视觉，保留游戏 UI 排版后的调用顺序。
+        /// 由 <see cref="ModHost"/> 每帧在游戏 UI 排版后调用，逐环境推进纯视觉。
         /// </summary>
         public static void LateUpdateVisuals(float deltaTime)
         {
@@ -112,7 +106,7 @@ namespace ProbablyBagMod.Mod
                 {
                     if (_visualErrorReported.Add(runtime))
                     {
-                        MelonLoader.MelonLogger.Error(
+                        PBModEntry.Log.Error(
                             "[流源] 视觉推进失败，已退役该环境（其它网格继续绘制）：" + e);
                     }
 
@@ -128,15 +122,15 @@ namespace ProbablyBagMod.Mod
         private static void Retire(FlowRuntime runtime)
         {
             _runtimes.Remove(runtime);
-            if (_runtimesByGrid.TryGetValue(runtime.InventoryPointer, out FlowRuntime registered)
+            if (_runtimesByGrid.TryGetValue(runtime.Inventory, out FlowRuntime registered)
                 && ReferenceEquals(registered, runtime))
             {
-                _runtimesByGrid.Remove(runtime.InventoryPointer);
+                _runtimesByGrid.Remove(runtime.Inventory);
             }
 
             _visualErrorReported.Remove(runtime);
 
-            // KillAll 与视图释放必须各自兜底：前者会调订阅方（可能碰原生对象），
+            // KillAll 与视图释放必须各自兜底：前者会调订阅方（可能碰 Unity 对象），
             // 一旦抛异常，后者若共用同一个 try 就再也不会执行，层和订阅都会泄漏。
             try
             {
@@ -144,13 +138,13 @@ namespace ProbablyBagMod.Mod
             }
             catch (Exception e)
             {
-                MelonLoader.MelonLogger.Error("[流源] 退役时终止流源失败：" + e);
+                PBModEntry.Log.Error("[流源] 退役时终止流源失败：" + e);
             }
 
             // 死亡广播先由仍订阅的视图接收，再退订并销毁绘制层。
             DisposeView(runtime);
 
-            MelonLoader.MelonLogger.Msg("[流源] 已移除失效的网格环境");
+            PBModEntry.Log.Log("[流源] 已移除失效的网格环境");
         }
 
         /// <summary>读档 / 换场景整体归零，沿用原语义，不逐流源广播死亡。</summary>
@@ -172,7 +166,7 @@ namespace ProbablyBagMod.Mod
         /// <summary>
         /// 释放一个环境的视觉视图（退订生死广播 + 销毁层 + 清空表），并把引用置空。
         /// <see cref="Retire"/> 与 <see cref="Reset"/> 共用同一条路径；
-        /// 释放在这里兜底：视图的 Dispose 会碰原生对象，抛异常不能打断其它环境的清理。
+        /// 释放在这里兜底：视图的 Dispose 会碰 Unity 对象，抛异常不能打断其它环境的清理。
         /// </summary>
         private static void DisposeView(FlowRuntime runtime)
         {
@@ -185,7 +179,7 @@ namespace ProbablyBagMod.Mod
             }
             catch (Exception e)
             {
-                MelonLoader.MelonLogger.Error("[流源] 释放视图失败：" + e);
+                PBModEntry.Log.Error("[流源] 释放视图失败：" + e);
             }
 
             // 即使 Dispose 抛异常也断开引用：半销毁的视图不能再被下一帧 Tick。

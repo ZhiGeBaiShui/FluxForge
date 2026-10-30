@@ -61,19 +61,19 @@ namespace ProbablyBagMod.Presentation.Flow.Visual
         /// NaN 是脏数据，按 empty 处理：把它画成 large 会凭空出现一大滴液体，
         /// 比「看不见」更容易误导玩家。
         /// </summary>
-        public static FlowContent ContentFromMoisture(double microliters)
+        public static FlowContent ContentFromWater(double waterAmount)
         {
-            if (double.IsNaN(microliters) || microliters < EmptyMaxMicroliters)
+            if (double.IsNaN(waterAmount) || waterAmount < EmptyMaxMicroliters)
             {
                 return FlowContent.Empty;
             }
 
-            if (microliters < SmallMaxMicroliters)
+            if (waterAmount < SmallMaxMicroliters)
             {
                 return FlowContent.Small;
             }
 
-            if (microliters < MidMaxMicroliters)
+            if (waterAmount < MidMaxMicroliters)
             {
                 return FlowContent.Mid;
             }

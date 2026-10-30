@@ -1,4 +1,3 @@
-using MelonLoader;
 using ProbablyBagMod.Mod.Rendering.ItemSprites;
 
 namespace ProbablyBagMod.Mod
@@ -10,6 +9,9 @@ namespace ProbablyBagMod.Mod
     /// </summary>
     public static class ItemFactory
     {
+        /// <summary>manifest.xml 的 &lt;ID&gt;；贴图管理者按它从 ModLoader 找到本模组的 Textures/Items。</summary>
+        internal const string ModId = "probably_bag_mod";
+
         /// <summary>
         /// 按配置装配物品：从空物品开始，按 items.json 逐项加工；造不出来时返回 null。
         ///
@@ -17,12 +19,12 @@ namespace ProbablyBagMod.Mod
         /// CreateEmptyItem → SetSpriteAndShape → SetName → SetGameItemType → InitModuleItem），
         /// 所以这里不复制任何模板，一切外观 / 文本 / 类型 / 价值 / 标签都由配置决定。
         /// </summary>
-        public static Il2Cpp.GameItem Create(FlowItemDefinition def)
+        public static GameItem Create(FlowItemDefinition def)
         {
-            Il2Cpp.GameItem item = Il2Cpp.ItemDirectory.CreateEmptyItem(null);
+            GameItem item = ItemDirectory.CreateEmptyItem(null);
             if (item == null)
             {
-                MelonLogger.Error("[工厂] 「" + def.key + "」空物品创建失败");
+                PBModEntry.Log.Error("[工厂] 「" + def.key + "」空物品创建失败");
                 return null;
             }
 
@@ -38,9 +40,9 @@ namespace ProbablyBagMod.Mod
         ///
         /// 步骤之间有顺序依赖：④ 必须排在 ③ 之后，原因见各自注释。
         /// </summary>
-        private static void Initialize(Il2Cpp.GameItem item, FlowItemDefinition def)
+        private static void Initialize(GameItem item, FlowItemDefinition def)
         {
-            // ① 外观：贴图三字段 + 占格形状。没配 sprite 时保持空物品外观。
+            // ① 外观：自定义图集贴图（sprites.json）+ 声明的占格形状。没配 sprite 时保持空物品外观。
             ApplySprite(item, def);
 
             // ② 文本：名称 / 正文 / 风味是三段独立字段，在原版 tooltip 里落在不同位置
@@ -60,8 +62,13 @@ namespace ProbablyBagMod.Mod
             ApplyTags(item, def);
         }
 
-        /// <summary>贴图三字段 + shape 占位。</summary>
-        private static void ApplySprite(Il2Cpp.GameItem item, FlowItemDefinition def)
+        /// <summary>
+        /// 贴图三字段 + shape 占位。
+        ///
+        /// 形如 spriteAtlasPath=flow_machine_atlas / spritePath=flow_machine / spriteChanged=true，
+        /// 游戏解析贴图时由 <see cref="LoadFromAtlasPatch"/> 命中我们自建的 Sprite。
+        /// </summary>
+        private static void ApplySprite(GameItem item, FlowItemDefinition def)
         {
             SpriteEntry sprite = FlowSpriteRegistry.Instance.GetEntry(def.SpriteKey);
             if (sprite == null)
@@ -69,17 +76,16 @@ namespace ProbablyBagMod.Mod
                 return;
             }
 
-            item.spriteAtlasPath = sprite.atlas;
-            item.spritePath = sprite.key;
-            item.spriteChanged = true;
+            // spriteChanged 是 protected；SetSprite 是公开的“设两字段 + 标记重取”入口，语义相同。
+            item.SetSprite(sprite.atlas, sprite.key);
 
-            Il2Cpp.GridShapeBuilder shapeBuilder = new Il2Cpp.GridShapeBuilder();
+            GridShapeBuilder shapeBuilder = new GridShapeBuilder();
             shapeBuilder.SetData(sprite.shape, sprite.shapeWidth);
             item.shape = shapeBuilder.shape;
         }
 
         /// <summary>名称 + 正文说明 + 风味文本（空值跳过）。</summary>
-        private static void ApplyText(Il2Cpp.GameItem item, FlowItemDefinition def)
+        private static void ApplyText(GameItem item, FlowItemDefinition def)
         {
             if (!string.IsNullOrEmpty(def.name))
             {
@@ -102,7 +108,7 @@ namespace ProbablyBagMod.Mod
         ///
         /// 显式配了类型时先 <c>RemoveAllGameItemType</c>：<c>SetGameItemType</c> 只加不清，
         /// 不先清掉的话，空物品可能带着默认类型被当成别的物品处理。
-        private static void ApplyTypes(Il2Cpp.GameItem item, FlowItemDefinition def)
+        private static void ApplyTypes(GameItem item, FlowItemDefinition def)
         {
             if (def.itemTypes != null)
             {
@@ -131,7 +137,7 @@ namespace ProbablyBagMod.Mod
         /// 基础价值。0 表示无价；非 0 时同时写 <c>unitBaseValue</c>，
         /// 让「总价值」与「单价」两个字段保持一致。
         /// </summary>
-        private static void ApplyValue(Il2Cpp.GameItem item, FlowItemDefinition def)
+        private static void ApplyValue(GameItem item, FlowItemDefinition def)
         {
             if (def.value > 0)
             {
@@ -141,7 +147,7 @@ namespace ProbablyBagMod.Mod
         }
 
         /// <summary>按配置声明写入 tag（GetTag 会自动创建；直接改槽位字段，避开自定义委托）。</summary>
-        private static void ApplyTags(Il2Cpp.GameItem item, FlowItemDefinition def)
+        private static void ApplyTags(GameItem item, FlowItemDefinition def)
         {
             if (def.tags == null)
             {
@@ -158,7 +164,7 @@ namespace ProbablyBagMod.Mod
         /// 写一条 tag：先启用，再按声明的字段名写入对应槽位。
         /// 声明了哪些槽位就写哪些，没声明的保持默认值（0 / null），互不影响。
         /// </summary>
-        private static void SetTag(Il2Cpp.GameItem item, TagConfigEntry entry)
+        private static void SetTag(GameItem item, TagConfigEntry entry)
         {
             if (entry == null || string.IsNullOrEmpty(entry.valueName))
             {
@@ -167,10 +173,10 @@ namespace ProbablyBagMod.Mod
 
             item.EnableTag(entry.valueName, true);
 
-            Il2Cpp.TagState state = item.state.GetTag(entry.valueName);
+            TagState state = item.state.GetTag(entry.valueName);
             if (state == null)
             {
-                MelonLogger.Warning("[工厂] tag 创建失败：" + entry.valueName);
+                PBModEntry.Log.Warning("[工厂] tag 创建失败：" + entry.valueName);
                 return;
             }
 

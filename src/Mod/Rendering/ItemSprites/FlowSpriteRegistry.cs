@@ -1,14 +1,17 @@
 using System.Collections.Generic;
+using System.IO;
 using System.Reflection;
 using System.Text.Json;
-using MelonLoader;
 using UnityEngine;
 
 namespace ProbablyBagMod.Mod.Rendering.ItemSprites
 {
     /// <summary>
     /// 贴图管理者（单例）：读取嵌入的 assets/sprites.json，按 key / atlas 查询贴图（首次加载后缓存）。
-    /// 新增贴图 = 放 png 进 assets/ + sprites.json 加一条 + 重编译。
+    /// 新增贴图 = 放 png 进 assets/ 与 mod/Textures/Items/ + sprites.json 加一条 + 重编译。
+    ///
+    /// PNG 本身由官方 ModLoader 从 Textures/Items/ 读进内存（LoadedMod.Sprites），
+    /// 这里只按旧版 ppu 公式为它另建 Sprite，保持原始像素密度。
     /// </summary>
     public sealed class FlowSpriteRegistry
     {
@@ -49,7 +52,7 @@ namespace ProbablyBagMod.Mod.Rendering.ItemSprites
             SpriteEntry entry = GetEntry(key);
             if (entry == null)
             {
-                MelonLogger.Warning("[贴图] 未配置的 key：" + key);
+                PBModEntry.Log.Warning("[贴图] 未配置的 key：" + key);
                 return null;
             }
 
@@ -100,13 +103,13 @@ namespace ProbablyBagMod.Mod.Rendering.ItemSprites
             }
             catch (Exception e)
             {
-                MelonLogger.Error("[贴图] sprites.json 解析失败：" + e.Message);
+                PBModEntry.Log.Error("[贴图] sprites.json 解析失败：" + e.Message);
                 return;
             }
 
             if (config == null || config.sprites == null)
             {
-                MelonLogger.Error("[贴图] 配置读取失败（sprites.json）");
+                PBModEntry.Log.Error("[贴图] 配置读取失败（sprites.json）");
                 return;
             }
 
@@ -119,7 +122,7 @@ namespace ProbablyBagMod.Mod.Rendering.ItemSprites
                 }
             }
 
-            MelonLogger.Msg("[贴图] 配置加载完成，共 " + _entries.Count + " 项");
+            PBModEntry.Log.Log("[贴图] 配置加载完成，共 " + _entries.Count + " 项");
         }
 
         /// <summary>字段齐全 + shape 全为 0/1 + 长度能被 shapeWidth 整除。</summary>
@@ -136,7 +139,7 @@ namespace ProbablyBagMod.Mod.Rendering.ItemSprites
 
             if (!ok)
             {
-                MelonLogger.Warning("[贴图] 配置项无效，已跳过："
+                PBModEntry.Log.Warning("[贴图] 配置项无效，已跳过："
                     + (entry == null ? "<null>" : entry.key));
             }
 
@@ -147,12 +150,15 @@ namespace ProbablyBagMod.Mod.Rendering.ItemSprites
 
         private Sprite LoadPng(SpriteEntry entry)
         {
-            Texture2D texture = EmbeddedResources.LoadTexture(_resourcePrefix, entry.file);
-            if (texture == null)
+            LoadedMod mod = ModLoader.Mods.Find(m => m.Manifest.ID == ItemFactory.ModId);
+            if (mod == null
+                || !mod.Sprites.TryGetValue(Path.GetFileNameWithoutExtension(entry.file), out Sprite baseSprite))
             {
-                MelonLogger.Error("[贴图] 图片读取失败：" + entry.file);
+                PBModEntry.Log.Error("[贴图] 图片读取失败：" + entry.file);
                 return null;
             }
+
+            Texture2D texture = baseSprite.texture;
 
             // 这段可能跑在 RenderHandler.LoadFromAtlas 的 Prefix 里（原生 UI 调用链），
             // 异常不拦就会把进程带走，所以整段兜住、失败即返回 null 走原生贴图
@@ -165,13 +171,13 @@ namespace ProbablyBagMod.Mod.Rendering.ItemSprites
                     texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0.5f, 0.5f), ppu);
                 sprite.hideFlags = HideFlags.DontSave;
 
-                MelonLogger.Msg("[贴图] 已加载 " + entry.key + " → "
+                PBModEntry.Log.Log("[贴图] 已加载 " + entry.key + " → "
                     + texture.width + "x" + texture.height + " ppu=" + ppu);
                 return sprite;
             }
             catch (Exception e)
             {
-                MelonLogger.Error("[贴图] 解码失败 " + entry.file + "：" + e);
+                PBModEntry.Log.Error("[贴图] 解码失败 " + entry.file + "：" + e);
                 return null;
             }
         }

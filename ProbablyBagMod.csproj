@@ -1,32 +1,58 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>netstandard2.1</TargetFramework>
     <AssemblyName>ProbablyBagMod</AssemblyName>
     <RootNamespace>ProbablyBagMod</RootNamespace>
     <PlatformTarget>x64</PlatformTarget>
     <LangVersion>10.0</LangVersion>
     <Nullable>disable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <DebugType>none</DebugType>
     <Optimize>true</Optimize>
     <Deterministic>true</Deterministic>
     <NoWarn>$(NoWarn);CS0108;CS0109;CS0114;CS0169;CS0414;CS0649;CS1591</NoWarn>
+    <GameManagedDir>E:\SteamLibrary\steamapps\common\Probably Stolen\Probably Stolen_Data\Managed</GameManagedDir>
+    <!-- 开发参考资料/ 里有同名的 Assembly-CSharp.dll；SDK 会把项目内 None/Content 里的
+         DLL 当作候选引用并优先于 HintPath，必须把这套本地资料排除出默认项。 -->
+    <DefaultItemExcludes>$(DefaultItemExcludes);开发参考资料/**</DefaultItemExcludes>
   </PropertyGroup>
 
   <ItemGroup>
-    <Il2CppRef Include="E:\SteamLibrary\steamapps\common\Probably Stolen Demo\MelonLoader\Il2CppAssemblies\*.dll"
-                 Exclude="E:\SteamLibrary\steamapps\common\Probably Stolen Demo\MelonLoader\Il2CppAssemblies\Il2Cpp0Harmony.dll" />
-    <MelonRef Include="E:\SteamLibrary\steamapps\common\Probably Stolen Demo\MelonLoader\net6\*.dll"
-                Exclude="E:\SteamLibrary\steamapps\common\Probably Stolen Demo\MelonLoader\net6\MelonLoader.NativeHost.dll;E:\SteamLibrary\steamapps\common\Probably Stolen Demo\MelonLoader\net6\Il2CppInterop.Generator.dll;E:\SteamLibrary\steamapps\common\Probably Stolen Demo\MelonLoader\net6\AsmResolver*.dll;E:\SteamLibrary\steamapps\common\Probably Stolen Demo\MelonLoader\net6\Mono.Cecil*.dll;E:\SteamLibrary\steamapps\common\Probably Stolen Demo\MelonLoader\net6\Iced.dll" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Reference Include="@(Il2CppRef)"><Private>false</Private></Reference>
-    <Reference Include="@(MelonRef)"><Private>false</Private></Reference>
+    <Reference Include="Assembly-CSharp">
+      <HintPath>$(GameManagedDir)\Assembly-CSharp.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityEngine.CoreModule">
+      <HintPath>$(GameManagedDir)\UnityEngine.CoreModule.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityEngine.UI">
+      <HintPath>$(GameManagedDir)\UnityEngine.UI.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityEngine.UIModule">
+      <HintPath>$(GameManagedDir)\UnityEngine.UIModule.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityEngine.ImageConversionModule">
+      <HintPath>$(GameManagedDir)\UnityEngine.ImageConversionModule.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="Unity.Localization">
+      <HintPath>$(GameManagedDir)\Unity.Localization.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="0Harmony">
+      <HintPath>$(GameManagedDir)\0Harmony.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>$(GameManagedDir)\Newtonsoft.Json.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
   </ItemGroup>
 
   <ItemGroup>
@@ -34,6 +60,16 @@
     <EmbeddedResource Include="assets\*.json" />
     <!-- 旧彩色图集只作设计期对拍基准，不进运行时（A 方案改用 flow_mask_*） -->
     <EmbeddedResource Remove="assets\flow_atlas.*" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="manifest.xml" CopyToOutputDirectory="PreserveNewest" />
+    <!-- 官方模组资源约定：Textures/Items/<key>.png 必须与 DLL / manifest 同级。
+         源文件放在 mod/ 下，构建时用 Link 去掉 mod\ 前缀。 -->
+    <None Update="mod\Textures\Items\*.png">
+      <Link>Textures\Items\%(Filename)%(Extension)</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
   <ItemGroup>

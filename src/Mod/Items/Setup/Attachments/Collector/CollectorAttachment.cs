@@ -5,10 +5,10 @@ namespace ProbablyBagMod.Mod
     {
         public override string Name => "collector";
 
-        public override void Attach(Il2Cpp.GameItem item, FlowItemDefinition def)
+        public override void Attach(GameItem item, FlowItemDefinition def)
         {
             CollectorDevice device = new CollectorDevice();
-            DeviceRegistry.Register(item.Pointer, device, item);
+            DeviceRegistry.Register(item, device);
             FlowDeviceEvents.Subscribe(device);
         }
     }

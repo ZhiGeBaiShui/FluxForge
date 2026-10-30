@@ -46,12 +46,12 @@ namespace ProbablyBagMod.Mod
         /// 物品目录工厂的入口：先按 json 装配，再按 attachments 挂装置。
         ///
         /// 挂装置单独包一层 try/catch：这段代码是**在游戏的物品创建回调内部**执行的，
-        /// 异常会顺着 IL2CPP 的原生调用栈往上抛，轻则这个物品没行为、重则整次读档失败。
+        /// 异常会顺着游戏调用栈往上抛，轻则这个物品没行为、重则整次读档失败。
         /// 出问题时留下 Error 日志、物品照常返回，比让存档加载中断要好。
         /// </summary>
-        public static Il2Cpp.GameItem Create(FlowItemDefinition def)
+        public static GameItem Create(FlowItemDefinition def)
         {
-            Il2Cpp.GameItem item;
+            GameItem item;
 
             try
             {
@@ -59,8 +59,8 @@ namespace ProbablyBagMod.Mod
             }
             catch (Exception e)
             {
-                // 这一段是游戏物品创建链直接调用的，异常会顺着原生栈冒出去
-                MelonLoader.MelonLogger.Error("[物品] 「" + def.key + "」装配失败：" + e);
+                // 这一段是游戏物品创建链直接调用的，异常会顺着游戏调用栈冒出去
+                PBModEntry.Log.Error("[物品] 「" + def.key + "」装配失败：" + e);
                 return null;
             }
 
@@ -75,7 +75,7 @@ namespace ProbablyBagMod.Mod
             }
             catch (Exception e)
             {
-                MelonLoader.MelonLogger.Error(
+                PBModEntry.Log.Error(
                     "[物品] 「" + def.key + "」装置挂接失败，物品将以无行为状态存在：" + e);
             }
 
@@ -89,7 +89,7 @@ namespace ProbablyBagMod.Mod
         /// 逐装配件的 try 只负责隔离：一个装配件失败不该让其余装配件也被跳过。
         /// 未识别的名字用 Msg 级——配置笔误不该刷 Error，物品照常产出。
         /// </summary>
-        private static void ApplyAttachments(Il2Cpp.GameItem item, FlowItemDefinition def)
+        private static void ApplyAttachments(GameItem item, FlowItemDefinition def)
         {
             string[] names = def.attachments;
             if (names == null || names.Length == 0)
@@ -109,7 +109,7 @@ namespace ProbablyBagMod.Mod
                 ItemAttachment attachment = Get(name);
                 if (attachment == null)
                 {
-                    MelonLoader.MelonLogger.Msg(
+                    PBModEntry.Log.Log(
                         "[装配]「" + def.key + "」引用了未识别的装配件「" + name
                         + "」，已注册：" + KnownNames());
                     continue;
@@ -121,7 +121,7 @@ namespace ProbablyBagMod.Mod
                 }
                 catch (Exception e)
                 {
-                    MelonLoader.MelonLogger.Error(
+                    PBModEntry.Log.Error(
                         "[装配]「" + def.key + "」" + name + " 失败：" + e);
                 }
             }

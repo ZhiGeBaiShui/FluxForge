@@ -1,5 +1,3 @@
-using System;
-
 namespace ProbablyBagMod.Mod
 {
     /// <summary>
@@ -12,8 +10,8 @@ namespace ProbablyBagMod.Mod
     /// 且 <c>Changed</c> 永远先于 <c>Exhausted</c>。所以这里不判断"能不能查到物品"：
     /// 查不到意味着前提被打破，留给调用链上层暴露，而不是在这里静默跳过。
     ///
-    /// 已知窗口（见 <c>FlowGridAdapter</c> 的 TODO）：物品先被卖掉 / 销毁时登记不会清理，
-    /// 在途流源仍会调到这里，写到已释放的原生对象上。等网格改为按「拿起 / 放下 / 移出」
+    /// 已知窗口（见 <c>FlowGridAdapter</c> 的 TODO）：物品先被卖掉 / 移除时登记不会清理，
+    /// 在途流源仍会调到这里，写到已离场物品的 tag 上。等网格改为按「拿起 / 放下 / 移出」
     /// 增量维护后，这类物品不会残留在格子表里，窗口自然关闭。
     /// </summary>
     public static class FlowDeviceEvents
@@ -32,12 +30,11 @@ namespace ProbablyBagMod.Mod
         /// </summary>
         public static void OnExhausted(IFlowNotifier sender)
         {
-            Il2Cpp.GameItem item = DeviceRegistry.GetItem(sender);
+            GameItem item = DeviceRegistry.GetItem(sender);
 
-            // Expel 成功时物品可能已经被销毁，之后再读 item.Pointer 不再安全；
-            // 所以「先注销再移除」，顺序不能反。
-            IntPtr pointer = item.Pointer;
-            DeviceRegistry.Unregister(pointer);
+            // 先注销再移除：Expel 成功时物品可能从容器里消失，
+            // 注销查的是登记表，不依赖物品当前是否还能被容器解析。
+            DeviceRegistry.Unregister(item);
 
             item.parentInventory?.Expel(item);
         }

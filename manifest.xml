@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Manifest>
+  <ID>probably_bag_mod</ID>
+  <Name>ProbablyBagMod</Name>
+  <Author>ProbablyBagMod</Author>
+  <ModVersion>0.1.0</ModVersion>
+  <Description>Adds flow machines, emitters, collectors and liquid containers driven by configurable flow tags.</Description>
+  <GameVersions>
+    <Version>0.46</Version>
+  </GameVersions>
+  <Prerequisites />
+  <Assemblies>
+    <Assembly>ProbablyBagMod.dll</Assembly>
+  </Assemblies>
+  <Capabilities />
+</Manifest>

@@ -1,5 +1,4 @@
 using System;
-using Il2CppInterop.Runtime;
 
 namespace ProbablyBagMod.Mod
 {
@@ -24,52 +23,39 @@ namespace ProbablyBagMod.Mod
 
         public override string Name => "emitter";
 
-        public override void Attach(Il2Cpp.GameItem item, FlowItemDefinition def)
+        public override void Attach(GameItem item, FlowItemDefinition def)
         {
             // 发射装置不播报：tag 在发射后由 FlowRuntime.EmitFrom 对账写入，
             // 所以不订阅 FlowDeviceEvents（EmitterDevice 也没实现 IFlowNotifier）。
             EmitterDevice device = new EmitterDevice(0d, InitialTemperature);
-            DeviceRegistry.Register(item.Pointer, device, item);
+            DeviceRegistry.Register(item, device);
 
             WireActivation(item);
         }
 
         /// <summary>把"激活"菜单接到三个原生委托上。谓词只读，执行时才动状态。</summary>
-        private static void WireActivation(Il2Cpp.GameItem item)
+        private static void WireActivation(GameItem item)
         {
-            CallbackWiring.EnsureRegistered<EmitterActivationCallbacks>();
-            EmitterActivationCallbacks callbacks = new EmitterActivationCallbacks();
-
-            item.mayActivateSlotItemFunc =
-                new Il2CppSystem.Func<Il2Cpp.GameItem, Il2Cpp.GameInventory, Il2Cpp.SlotMarker, bool>(
-                    callbacks, CallbackWiring.Method<EmitterActivationCallbacks>(
-                        nameof(EmitterActivationCallbacks.MayActivate), 3));
-            item.canActivateSlotItemFunc =
-                new Il2CppSystem.Func<Il2Cpp.GameItem, Il2Cpp.GameInventory, Il2Cpp.SlotMarker, bool>(
-                    callbacks, CallbackWiring.Method<EmitterActivationCallbacks>(
-                        nameof(EmitterActivationCallbacks.CanActivate), 3));
-            item.onActivateSlotItemFunc =
-                new Il2CppSystem.Action<Il2Cpp.GameItem, Il2Cpp.GameInventory, Il2Cpp.SlotMarker>(
-                    callbacks, CallbackWiring.Method<EmitterActivationCallbacks>(
-                        nameof(EmitterActivationCallbacks.Activate), 3));
+            // Mono 下这些字段就是普通的 Func / Action，直接给方法组即可，
+            // 不再需要 ClassInjector + 原生方法指针。
+            item.mayActivateSlotItemFunc = MayActivateEmitter;
+            item.canActivateSlotItemFunc = CanActivateEmitter;
+            item.onActivateSlotItemFunc = ActivateEmitter;
         }
 
         /// <summary>仅支持已登记的发射装置及其当前直接父网格，不递归查找父容器。</summary>
-        internal static Il2Cpp.GameGridInventory GetEmitterInventory(Il2Cpp.GameItem item)
+        internal static GameGridInventory GetEmitterInventory(GameItem item)
         {
-            if (item == null || item.Pointer == IntPtr.Zero
-                || DeviceRegistry.Get<EmitterDevice>(item.Pointer) == null)
+            if (item == null || DeviceRegistry.Get<EmitterDevice>(item) == null)
             {
                 return null;
             }
 
-            Il2Cpp.GameGridInventory inventory = item.parentInventory
-                ?.TryCast<Il2Cpp.GameGridInventory>();
-            return inventory != null && inventory.Pointer != IntPtr.Zero ? inventory : null;
+            return item.parentInventory as GameGridInventory;
         }
 
         internal static bool MayActivateEmitter(
-            Il2Cpp.GameItem item, Il2Cpp.GameInventory inventory, Il2Cpp.SlotMarker marker)
+            GameItem item, GameInventory inventory, SlotMarker marker)
         {
             try
             {
@@ -83,7 +69,7 @@ namespace ProbablyBagMod.Mod
         }
 
         internal static bool CanActivateEmitter(
-            Il2Cpp.GameItem item, Il2Cpp.GameInventory inventory, Il2Cpp.SlotMarker marker)
+            GameItem item, GameInventory inventory, SlotMarker marker)
         {
             try
             {
@@ -96,15 +82,15 @@ namespace ProbablyBagMod.Mod
         }
 
         internal static void ActivateEmitter(
-            Il2Cpp.GameItem item, Il2Cpp.GameInventory inventory, Il2Cpp.SlotMarker marker)
+            GameItem item, GameInventory inventory, SlotMarker marker)
         {
             // 原生执行回调重新读当前物品的父网格，不相信菜单阶段或回调参数里的旧容器。
             try
             {
-                Il2Cpp.GameGridInventory currentInventory = GetEmitterInventory(item);
+                GameGridInventory currentInventory = GetEmitterInventory(item);
                 if (currentInventory == null)
                 {
-                    MelonLoader.MelonLogger.Warning(
+                    PBModEntry.Log.Warning(
                         "[发射装置] 激活未执行：物品失效或当前直接父容器不是支持的网格");
                     return;
                 }
@@ -113,7 +99,7 @@ namespace ProbablyBagMod.Mod
             }
             catch (Exception e)
             {
-                MelonLoader.MelonLogger.Error("[发射装置] 激活失败：" + e);
+                PBModEntry.Log.Error("[发射装置] 激活失败：" + e);
             }
         }
     }

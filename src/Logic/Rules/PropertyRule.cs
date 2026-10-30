@@ -15,7 +15,7 @@ namespace ProbablyBagMod
     /// <summary>汇聚时该字段如何处理。</summary>
     public enum MergeRule
     {
-        /// <summary>相加：合并结果为各份之和（例：水分）。</summary>
+        /// <summary>相加：合并结果为各份之和（例：水量）。</summary>
         Add,
 
         /// <summary>

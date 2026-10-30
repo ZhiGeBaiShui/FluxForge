@@ -5,7 +5,7 @@ namespace ProbablyBagMod.Mod
     ///
     /// 硬性规约（实施新装配件时逐条遵守）：
     ///   1. 无实例字段——实例启动时创建、全局共享；
-    ///   2. 无静态可变状态——不要缓存 GameItem / IntPtr / PixelWindow，读档后原生指针会复用；
+    ///   2. 无静态可变状态——不要缓存 GameItem / PixelWindow，读档后游戏会按目录重建物品；
     ///   3. 顶层 public sealed class，public 无参构造，不嵌套；
     ///   4. 不得覆盖 <see cref="ItemFactory"/> 五步写入的内容（identifier / 贴图 / shape /
     ///      名称 / 说明 / 风味 / itemTypes / value / 配置声明的 tags）；调用游戏原生装配 API
@@ -21,6 +21,6 @@ namespace ProbablyBagMod.Mod
         public abstract string Name { get; }
 
         /// <summary>只挂行为。</summary>
-        public abstract void Attach(Il2Cpp.GameItem item, FlowItemDefinition def);
+        public abstract void Attach(GameItem item, FlowItemDefinition def);
     }
 }

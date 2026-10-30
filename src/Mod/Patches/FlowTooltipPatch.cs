@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using HarmonyLib;
-using MelonLoader;
 
 namespace ProbablyBagMod.Mod
 {
@@ -12,16 +11,16 @@ namespace ProbablyBagMod.Mod
     /// 遍历自己的 helper 登记表。<b>判断逻辑全部在 helper 内部</b>，这里只负责分派，
     /// 与「新增功能 = 新增 helper」的原版结构一致。
     /// </summary>
-    [HarmonyPatch(typeof(Il2Cpp.GameItemElement), "GetTooltipBasic")]
+    [HarmonyPatch(typeof(GameItemElement), "GetTooltipBasic")]
     public static class FlowTooltipPatch
     {
-        /// <summary>已处理过的 builder 指针（同一 builder 只追加一次）。</summary>
-        private static readonly HashSet<System.IntPtr> _seen = new HashSet<System.IntPtr>();
+        /// <summary>已处理过的 builder（同一 builder 只追加一次）。</summary>
+        private static readonly HashSet<RichTextBuilder> _seen = new HashSet<RichTextBuilder>();
 
         /// <summary>首次触发标记（确认 patch 真的挂上了）。</summary>
         private static bool _firstHitLogged;
 
-        public static void Postfix(Il2Cpp.GameItemElement __instance, ref Il2Cpp.RichTextBuilder __result)
+        public static void Postfix(GameItemElement __instance, ref RichTextBuilder __result)
         {
             if (__instance == null || __result == null)
             {
@@ -29,10 +28,10 @@ namespace ProbablyBagMod.Mod
             }
 
             // 实测 GetTooltipBasic 每帧被调两次（GetTooltip / GetTooltipAdvanced 各一次），
-            // 各自 new 一个 builder。按 builder 指针去重：
+            // 各自 new 一个 builder。按 builder 引用去重：
             //   不同 builder → 各自追加（两个 tooltip 都完整）
             //   同一 builder → 只追加一次（不重复）
-            if (!_seen.Add(__result.Pointer))
+            if (!_seen.Add(__result))
             {
                 return;
             }
@@ -42,11 +41,11 @@ namespace ProbablyBagMod.Mod
             if (!_firstHitLogged)
             {
                 _firstHitLogged = true;
-                MelonLogger.Msg("[tooltip] 首次触发 patch=ok id=" + __instance.identifier
+                PBModEntry.Log.Log("[tooltip] 首次触发 patch=ok id=" + __instance.identifier
                     + " helper=" + FlowTooltipHelpers.Count);
             }
 
-            // 这是原生 tooltip 链上的回调，异常冒出去会直接杀进程；
+            // 这是游戏 tooltip 链上的回调，异常冒出去会破坏本次 UI 刷新；
             // 追加失败最多是这个物品少两行状态，不该让游戏陪葬
             try
             {
@@ -54,11 +53,11 @@ namespace ProbablyBagMod.Mod
             }
             catch (System.Exception e)
             {
-                MelonLogger.Error("[tooltip] 追加状态行失败：" + e);
+                PBModEntry.Log.Error("[tooltip] 追加状态行失败：" + e);
             }
         }
 
-        /// <summary>防止 _seen 无限增长（builder 是临时对象，指针会复用/失效）。</summary>
+        /// <summary>防止 _seen 无限增长（builder 是临时对象，引用会失效）。</summary>
         private static void TrimSeen()
         {
             if (_seen.Count >= 4096)
@@ -72,7 +71,7 @@ namespace ProbablyBagMod.Mod
         {
             FlowTooltipHelpers.EnsureInitialized();
 
-            MelonLogger.Msg("[tooltip] 分派器就绪，已注册 helper=" + FlowTooltipHelpers.Count
+            PBModEntry.Log.Log("[tooltip] 分派器就绪，已注册 helper=" + FlowTooltipHelpers.Count
                 + "（首次悬停时会打印 [tooltip] 首次触发）");
         }
     }

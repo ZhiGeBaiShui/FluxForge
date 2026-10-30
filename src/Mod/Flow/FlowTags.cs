@@ -8,7 +8,7 @@ namespace ProbablyBagMod.Mod
     /// </summary>
     internal static class FlowTags
     {
-        /// <summary>水分 / 含量。原版按物质存储液体含量用的就是这一套 tag。</summary>
+        /// <summary>水量 / 含量。原版按物质存储液体含量用的就是这一套 tag。</summary>
         public const string CurrentPartWater = "CURRENT_PART_WATER";
 
 

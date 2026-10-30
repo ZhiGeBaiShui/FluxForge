@@ -2,8 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Text.Json;
-using System.Text.Json.Serialization;
-using MelonLoader;
 
 namespace ProbablyBagMod.Mod
 {
@@ -11,7 +9,7 @@ namespace ProbablyBagMod.Mod
     /// 物品定义管理者（单例）：配置驱动（嵌入 assets/items.json），
     /// 描述每个自定义物品（identifier / 贴图 key / 显示名 / 类型 / 标签 / 装配件）。
     ///
-    /// 新增物品 = items.json 加一条 + 配好贴图（sprites.json）+ 重编译——零 C# 改动。
+    /// 新增物品 = items.json 加一条 + 放一张 mod/Textures/Items/&lt;sprite&gt;.png + 重编译——零 C# 改动。
     /// </summary>
     public sealed class FlowItemRegistry
     {
@@ -60,7 +58,7 @@ namespace ProbablyBagMod.Mod
             byte[] json = EmbeddedResources.Read(_resourcePrefix, "items.json");
             if (json == null)
             {
-                MelonLogger.Error("[物品] 配置读取失败（items.json 不存在）");
+                PBModEntry.Log.Error("[物品] 配置读取失败（items.json 不存在）");
                 return;
             }
 
@@ -71,7 +69,7 @@ namespace ProbablyBagMod.Mod
             }
             catch (Exception e)
             {
-                MelonLogger.Error("[物品] items.json 数据有误：" + e.Message);
+                PBModEntry.Log.Error("[物品] items.json 数据有误：" + e.Message);
                 return;
             }
 
@@ -91,7 +89,7 @@ namespace ProbablyBagMod.Mod
                 if (!document.RootElement.TryGetProperty("items", out items)
                     || items.ValueKind != JsonValueKind.Array)
                 {
-                    MelonLogger.Error("[物品] items.json 数据有误：缺少 items 数组");
+                    PBModEntry.Log.Error("[物品] items.json 数据有误：缺少 items 数组");
                     return;
                 }
 
@@ -103,7 +101,7 @@ namespace ProbablyBagMod.Mod
                 }
             }
 
-            MelonLogger.Msg("[物品] 定义加载完成，共 " + _definitions.Count + " 项");
+            PBModEntry.Log.Log("[物品] 定义加载完成，共 " + _definitions.Count + " 项");
         }
 
         /// <summary>逐项解析：某一条数据非法只跳过它，其余物品照常加载。</summary>
@@ -120,13 +118,13 @@ namespace ProbablyBagMod.Mod
             catch (Exception e)
             {
                 // 数据非法（如 valueInt 写了浮点 / 类型不匹配），异常消息自带出错的路径
-                MelonLogger.Error("[物品] " + label + "的 json 数据有误：" + e.Message);
+                PBModEntry.Log.Error("[物品] " + label + "的 json 数据有误：" + e.Message);
                 return;
             }
 
             if (def == null || string.IsNullOrEmpty(def.key))
             {
-                MelonLogger.Error("[物品] " + label + "的 json 数据有误：key 为空");
+                PBModEntry.Log.Error("[物品] " + label + "的 json 数据有误：key 为空");
                 return;
             }
 
@@ -154,7 +152,7 @@ namespace ProbablyBagMod.Mod
         /// <summary>物品 identifier（= 贴图 key 约定；存档按它找回）。</summary>
         public string key { get; set; }
 
-        /// <summary>贴图 key（空则回退用 key 本身）。</summary>
+        /// <summary>模组物品精灵图 key（Textures/Items/&lt;key&gt;.png；空则回退用 key 本身）。</summary>
         public string sprite { get; set; }
 
         /// <summary>显示名（空则留空）。</summary>
