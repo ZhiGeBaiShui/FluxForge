@@ -5,7 +5,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 // ---------------------------------------------------------------------------
-// 只在 ProbablyBagMod 程序集内使用的 System.Text.Json 兼容层。
+// 只在 FluxForge 程序集内使用的 System.Text.Json 兼容层。
 //
 // 迁移到官方 Mono 框架后目标框架固定为 netstandard2.1，而 System.Text.Json
 // 不是 netstandard2.1 的一部分；游戏自身只带 Newtonsoft.Json。为了同时满足

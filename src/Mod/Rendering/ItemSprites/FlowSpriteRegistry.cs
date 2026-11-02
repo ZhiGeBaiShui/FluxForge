@@ -4,7 +4,7 @@ using System.Reflection;
 using System.Text.Json;
 using UnityEngine;
 
-namespace ProbablyBagMod.Mod.Rendering.ItemSprites
+namespace FluxForge.Mod.Rendering.ItemSprites
 {
     /// <summary>
     /// 贴图管理者（单例）：读取嵌入的 assets/sprites.json，按 key / atlas 查询贴图（首次加载后缓存）。
@@ -52,7 +52,7 @@ namespace ProbablyBagMod.Mod.Rendering.ItemSprites
             SpriteEntry entry = GetEntry(key);
             if (entry == null)
             {
-                PBModEntry.Log.Warning("[贴图] 未配置的 key：" + key);
+                FFModEntry.Log.Warning("[贴图] 未配置的 key：" + key);
                 return null;
             }
 
@@ -103,13 +103,13 @@ namespace ProbablyBagMod.Mod.Rendering.ItemSprites
             }
             catch (Exception e)
             {
-                PBModEntry.Log.Error("[贴图] sprites.json 解析失败：" + e.Message);
+                FFModEntry.Log.Error("[贴图] sprites.json 解析失败：" + e.Message);
                 return;
             }
 
             if (config == null || config.sprites == null)
             {
-                PBModEntry.Log.Error("[贴图] 配置读取失败（sprites.json）");
+                FFModEntry.Log.Error("[贴图] 配置读取失败（sprites.json）");
                 return;
             }
 
@@ -122,7 +122,7 @@ namespace ProbablyBagMod.Mod.Rendering.ItemSprites
                 }
             }
 
-            PBModEntry.Log.Log("[贴图] 配置加载完成，共 " + _entries.Count + " 项");
+            FFModEntry.Log.Log("[贴图] 配置加载完成，共 " + _entries.Count + " 项");
         }
 
         /// <summary>字段齐全 + shape 全为 0/1 + 长度能被 shapeWidth 整除。</summary>
@@ -139,7 +139,7 @@ namespace ProbablyBagMod.Mod.Rendering.ItemSprites
 
             if (!ok)
             {
-                PBModEntry.Log.Warning("[贴图] 配置项无效，已跳过："
+                FFModEntry.Log.Warning("[贴图] 配置项无效，已跳过："
                     + (entry == null ? "<null>" : entry.key));
             }
 
@@ -154,7 +154,7 @@ namespace ProbablyBagMod.Mod.Rendering.ItemSprites
             if (mod == null
                 || !mod.Sprites.TryGetValue(Path.GetFileNameWithoutExtension(entry.file), out Sprite baseSprite))
             {
-                PBModEntry.Log.Error("[贴图] 图片读取失败：" + entry.file);
+                FFModEntry.Log.Error("[贴图] 图片读取失败：" + entry.file);
                 return null;
             }
 
@@ -171,13 +171,13 @@ namespace ProbablyBagMod.Mod.Rendering.ItemSprites
                     texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0.5f, 0.5f), ppu);
                 sprite.hideFlags = HideFlags.DontSave;
 
-                PBModEntry.Log.Log("[贴图] 已加载 " + entry.key + " → "
+                FFModEntry.Log.Log("[贴图] 已加载 " + entry.key + " → "
                     + texture.width + "x" + texture.height + " ppu=" + ppu);
                 return sprite;
             }
             catch (Exception e)
             {
-                PBModEntry.Log.Error("[贴图] 解码失败 " + entry.file + "：" + e);
+                FFModEntry.Log.Error("[贴图] 解码失败 " + entry.file + "：" + e);
                 return null;
             }
         }

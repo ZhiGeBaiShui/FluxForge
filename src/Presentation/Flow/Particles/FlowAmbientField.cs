@@ -1,7 +1,7 @@
 using System;
-using ProbablyBagMod.Presentation.Flow.Visual;
+using FluxForge.Presentation.Flow.Visual;
 
-namespace ProbablyBagMod.Presentation.Flow.Particles
+namespace FluxForge.Presentation.Flow.Particles
 {
     /// <summary>
     /// 一颗常驻环境粒子的渲染快照。**纯值类型、零 Unity 依赖**。

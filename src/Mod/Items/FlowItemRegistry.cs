@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Text.Json;
 
-namespace ProbablyBagMod.Mod
+namespace FluxForge.Mod
 {
     /// <summary>
     /// 物品定义管理者（单例）：配置驱动（嵌入 assets/items.json），
@@ -58,7 +58,7 @@ namespace ProbablyBagMod.Mod
             byte[] json = EmbeddedResources.Read(_resourcePrefix, "items.json");
             if (json == null)
             {
-                PBModEntry.Log.Error("[物品] 配置读取失败（items.json 不存在）");
+                FFModEntry.Log.Error("[物品] 配置读取失败（items.json 不存在）");
                 return;
             }
 
@@ -69,7 +69,7 @@ namespace ProbablyBagMod.Mod
             }
             catch (Exception e)
             {
-                PBModEntry.Log.Error("[物品] items.json 数据有误：" + e.Message);
+                FFModEntry.Log.Error("[物品] items.json 数据有误：" + e.Message);
                 return;
             }
 
@@ -89,7 +89,7 @@ namespace ProbablyBagMod.Mod
                 if (!document.RootElement.TryGetProperty("items", out items)
                     || items.ValueKind != JsonValueKind.Array)
                 {
-                    PBModEntry.Log.Error("[物品] items.json 数据有误：缺少 items 数组");
+                    FFModEntry.Log.Error("[物品] items.json 数据有误：缺少 items 数组");
                     return;
                 }
 
@@ -101,7 +101,7 @@ namespace ProbablyBagMod.Mod
                 }
             }
 
-            PBModEntry.Log.Log("[物品] 定义加载完成，共 " + _definitions.Count + " 项");
+            FFModEntry.Log.Log("[物品] 定义加载完成，共 " + _definitions.Count + " 项");
         }
 
         /// <summary>逐项解析：某一条数据非法只跳过它，其余物品照常加载。</summary>
@@ -118,13 +118,13 @@ namespace ProbablyBagMod.Mod
             catch (Exception e)
             {
                 // 数据非法（如 valueInt 写了浮点 / 类型不匹配），异常消息自带出错的路径
-                PBModEntry.Log.Error("[物品] " + label + "的 json 数据有误：" + e.Message);
+                FFModEntry.Log.Error("[物品] " + label + "的 json 数据有误：" + e.Message);
                 return;
             }
 
             if (def == null || string.IsNullOrEmpty(def.key))
             {
-                PBModEntry.Log.Error("[物品] " + label + "的 json 数据有误：key 为空");
+                FFModEntry.Log.Error("[物品] " + label + "的 json 数据有误：key 为空");
                 return;
             }
 
@@ -204,8 +204,25 @@ namespace ProbablyBagMod.Mod
         public string[] attachments { get; set; }
 
         /// <summary>
+        /// Logic 装置目录 key（<c>FlowDeviceCatalog</c>）；空 = 纯数据物品。
+        ///
+        /// 只给 "device" 附件用：它按这个 key 取一台新装置并登记。key 本身不进 tag，
+        /// 读档时 tag 会被旧档覆盖，构造/类型信息只能留在 items.json。
+        /// </summary>
+        public string device { get; set; }
+
+        /// <summary>
+        /// 装置中心格的 X 局部坐标（基础形状坐标，0 起）。
+        /// 只有需要中心格的分流装置才声明；缺失 = 该物品不写 anchor tag。
+        /// </summary>
+        public int? anchorX { get; set; }
+
+        /// <summary>装置中心格的 Y 局部坐标；与 <see cref="anchorX"/> 成对使用。</summary>
+        public int? anchorY { get; set; }
+
+        /// <summary>
         /// 标签声明列表（结构直接镜像游戏的 TagState）：
-        /// 每项用 valueName 指定 tag 名，再用 valueInt / valueFloat / valueDouble /
+        /// 每项用 valueName 指定 tag 名，再用 valueInt / valueDouble /
         /// valueBool / valueString 指定要写入哪个槽位。只写 valueName = 仅启用不设值。
         /// </summary>
         public TagConfigEntry[] tags { get; set; }
@@ -227,7 +244,7 @@ namespace ProbablyBagMod.Mod
     /// 一条 tag 声明，字段名与游戏的 <c>TagState</c> 槽位一一对应。
     ///
     /// 写入哪个槽位由**字段名**决定，与 JSON 数字的字面形态无关——
-    /// 所以不会再出现「写成 -5 却声明 float，结果读到 0」这类错配。
+    /// 所以不会再出现「写成 -5 却声明 int，结果读到 0」这类错配。
     /// 各槽位用可空类型，以区分「没写」和「写了 0」。
     /// </summary>
     public sealed class TagConfigEntry
@@ -237,9 +254,6 @@ namespace ProbablyBagMod.Mod
 
         /// <summary>整数槽位（TagState.valueInt，偏移 +0x30）。</summary>
         public int? valueInt { get; set; }
-
-        /// <summary>单精度槽位（TagState.valueFloat，偏移 +0x34）。</summary>
-        public float? valueFloat { get; set; }
 
         /// <summary>双精度槽位（TagState.valueDouble，偏移 +0x40）。</summary>
         public double? valueDouble { get; set; }

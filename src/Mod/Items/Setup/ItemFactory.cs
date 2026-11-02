@@ -1,6 +1,6 @@
-using ProbablyBagMod.Mod.Rendering.ItemSprites;
+using FluxForge.Mod.Rendering.ItemSprites;
 
-namespace ProbablyBagMod.Mod
+namespace FluxForge.Mod
 {
     /// <summary>
     /// 物品工厂：把一条 <see cref="FlowItemDefinition"/> 装配成 GameItem。
@@ -10,7 +10,7 @@ namespace ProbablyBagMod.Mod
     public static class ItemFactory
     {
         /// <summary>manifest.xml 的 &lt;ID&gt;；贴图管理者按它从 ModLoader 找到本模组的 Textures/Items。</summary>
-        internal const string ModId = "probably_bag_mod";
+        internal const string ModId = "fluxforge";
 
         /// <summary>
         /// 按配置装配物品：从空物品开始，按 items.json 逐项加工；造不出来时返回 null。
@@ -24,7 +24,7 @@ namespace ProbablyBagMod.Mod
             GameItem item = ItemDirectory.CreateEmptyItem(null);
             if (item == null)
             {
-                PBModEntry.Log.Error("[工厂] 「" + def.key + "」空物品创建失败");
+                FFModEntry.Log.Error("[工厂] 「" + def.key + "」空物品创建失败");
                 return null;
             }
 
@@ -60,6 +60,10 @@ namespace ProbablyBagMod.Mod
             //    必须最后：类型本质就是 tag，③ 会先清掉全部类型 tag，
             //    提前写的标签可能被那一步清掉。
             ApplyTags(item, def);
+
+            // ApplyTags 用 skipValidate: true 批量写 state，不会走 ValidateShapeState，
+            // 这里统一刷新 modifiedState，保证交给目录的物品快照是完整的。
+            item.SyncModifiedState();
         }
 
         /// <summary>
@@ -176,18 +180,13 @@ namespace ProbablyBagMod.Mod
             TagState state = item.state.GetTag(entry.valueName);
             if (state == null)
             {
-                PBModEntry.Log.Warning("[工厂] tag 创建失败：" + entry.valueName);
+                FFModEntry.Log.Warning("[工厂] tag 创建失败：" + entry.valueName);
                 return;
             }
 
             if (entry.valueInt.HasValue)
             {
                 state.SetInt(entry.valueInt.Value);
-            }
-
-            if (entry.valueFloat.HasValue)
-            {
-                state.SetFloat(entry.valueFloat.Value);
             }
 
             if (entry.valueDouble.HasValue)

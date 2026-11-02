@@ -1,8 +1,7 @@
 using System;
-using System.Collections.Generic;
-using ProbablyBagMod.Mod.Visual;
+using FluxForge.Mod.Visual;
 
-namespace ProbablyBagMod.Mod
+namespace FluxForge.Mod
 {
     /// <summary>
     /// 一块网格的运行环境：借用游戏网格，拥有流源、运动采样与视觉视图。
@@ -10,14 +9,6 @@ namespace ProbablyBagMod.Mod
     /// </summary>
     public sealed class FlowRuntime
     {
-        /// <summary>
-        /// 已做过「从 tag 载入」的物品。
-        ///
-        /// 装置对象是 tag 的运行时镜像，而 tag 才是存档的真实来源。
-        /// 物品第一次被接管时先反向读一次，之后才单向写。
-        /// </summary>
-        private readonly HashSet<GameItem> _adopted = new HashSet<GameItem>();
-
         public FlowRuntime(GameGridInventory inventory)
         {
             Inventory = inventory ?? throw new ArgumentNullException(nameof(inventory));
@@ -81,35 +72,6 @@ namespace ProbablyBagMod.Mod
             // 每次有库存的有效尝试仅刷新一次，之后运动只查询布局快照。
             Grid.Refresh();
 
-            List<GameItem> items = Inventory.childItems;
-            if (items == null)
-            {
-                return false;
-            }
-
-            // 完整接管先于 Accept，避免同步出生事件读到尚未载入的装置镜像。
-            for (int i = 0; i < items.Count; i++)
-            {
-                GameItem item = items[i];
-                if (item == null)
-                {
-                    continue;
-                }
-
-                CollectorDevice collector = DeviceRegistry.Get<CollectorDevice>(item);
-                if (collector != null)
-                {
-                    Adopt(item, collector);
-                    continue;
-                }
-
-                IceBlockDevice iceBlock = DeviceRegistry.Get<IceBlockDevice>(item);
-                if (iceBlock != null)
-                {
-                    Adopt(item, iceBlock);
-                }
-            }
-
             return EmitFrom(emitterItem, emitter);
         }
 
@@ -131,31 +93,17 @@ namespace ProbablyBagMod.Mod
                 return false;
             }
 
-            // 容器 tag 是唯一真相：发射前按表读一份完整属性
-            emitter.Stock = FlowStock.Read(item);
+            // 发射前重读一次：游戏会直接改液体 tag（WaterHelper.Add / Remove、倒水等），
+            // 不经过装置的 Changed 事件，装置里的存量可能已经过期。
+            // 发射后的写回由 EmitterDevice.Changed → FlowDeviceEvents 统一完成。
+            FlowStock.ReadInto(item, emitter);
 
             if (!emitter.EmitAll(origin, direction, Flows))
             {
                 return false;
             }
 
-            // 取走存量：按映射表把各属性对应的 tag 写 0
-            FlowStock.Take(item);
             return true;
-        }
-
-        /// <summary>
-        /// 物品第一次被本网格接管时，用 tag 里的值覆盖装置存量。
-        /// 读档后 tag 才是真相，装置对象只是它的运行时镜像。
-        /// </summary>
-        private void Adopt(GameItem item, object device)
-        {
-            if (!_adopted.Add(item))
-            {
-                return;
-            }
-
-            FlowStock.ReadInto(item, device);
         }
 
         /// <summary>
@@ -166,7 +114,7 @@ namespace ProbablyBagMod.Mod
         ///   拖放落点写的是 modifiedShape。
         ///
         /// 朝向同样在 modifiedShape 上：orientation 0..3 表示 0°/逆90°/180°/顺90°，
-        ///   物品原图朝上，所以方向码 = (4 - orientation) &amp; 3 → 0上 1右 2下 3左。
+        ///   物品原图朝上，方向码 = <see cref="FlowFacing.FromOrientation"/>（0上 1右 2下 3左）。
         /// </summary>
         private static bool ResolveEmit(GameItem item, out FlowPos origin, out int direction)
         {
@@ -180,10 +128,11 @@ namespace ProbablyBagMod.Mod
                 return false;
             }
 
-            direction = (4 - (shape.orientation & 3)) & 3;
+            direction = FlowFacing.FromOrientation(shape.orientation);
 
-            // Floor 判格，中心位于格左上边界向右下各半格处。
-            origin = new FlowPos(shape.minX + 0.5d, shape.minY + 0.5d);
+            // 游戏侧格坐标以左上角为 1.00；Logic 中心也以该点为 1.00，
+            // 不再额外加 0.5。
+            origin = new FlowPos(shape.minX, shape.minY);
             return true;
         }
     }

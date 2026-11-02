@@ -31,8 +31,8 @@ src/Mod/Flow/FlowVisual.cs             ← 删除
 src/Mod/Flow/FlowMachine.cs            改：+ public FlowAtlasView AtlasView
 src/Mod/Flow/FlowDriver.cs             改：+ LateUpdateVisuals(dt)；Retire/Reset 里 Dispose 视图
 src/Mod/Items/FlowItemSetup.cs         改：创建机器时 new FlowAtlasView(...)
-src/Mod/PBModEntry.cs                  改：OnLateUpdate → FlowDriver.LateUpdateVisuals(dt)
-tests/ProbablyBagMod.Tests/*           改：删粒子测试；新增 FlowTint/Composition/Key 测试
+src/Mod/FFModEntry.cs                  改：OnLateUpdate → FlowDriver.LateUpdateVisuals(dt)
+tests/FluxForge.Tests/*           改：删粒子测试；新增 FlowTint/Composition/Key 测试
 ```
 
 ## 2. 蒙版图集（构建期，Python）
@@ -116,7 +116,7 @@ public readonly struct FlowVisualState
 FlowItemSetup            new FlowAtlasView(grid, inventory, flows)  → machine.AtlasView
 FlowDriver.Update        （逻辑推进，不变）
 FlowDriver.LateUpdateVisuals(dt)   逐台 machine.AtlasView.Tick(dt)
-PBModEntry.OnLateUpdate  FlowDriver.LateUpdateVisuals(Time.deltaTime)
+FFModEntry.OnLateUpdate  FlowDriver.LateUpdateVisuals(Time.deltaTime)
 FlowDriver.Retire/Reset  machine.AtlasView.Dispose()
 ```
 

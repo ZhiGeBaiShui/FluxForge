@@ -27,6 +27,20 @@
       "file": "flow_collector.png",
       "shape": "1",
       "shapeWidth": 1
+    },
+    {
+      "key": "l_turn_device",
+      "atlas": "l_turn_device_atlas",
+      "file": "l_turn_device.png",
+      "shape": "1110",
+      "shapeWidth": 2
+    },
+    {
+      "key": "chem_reactor_top",
+      "atlas": "chem_reactor_top_atlas",
+      "file": "chem_reactor_top.png",
+      "shape": "010111010",
+      "shapeWidth": 3
     }
   ]
 }

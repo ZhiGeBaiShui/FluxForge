@@ -10,7 +10,7 @@
 FlowItemSetup          机器创建时 new FlowAtlasView(grid, inventory, flows) → machine.AtlasView
 FlowDriver.Update      逻辑推进（不变）
 FlowDriver.LateUpdateVisuals(dt)   逐台 machine.AtlasView.Tick(dt)（单台 try/catch）
-PBModEntry.OnLateUpdate            → FlowDriver.LateUpdateVisuals(Time.deltaTime)
+FFModEntry.OnLateUpdate            → FlowDriver.LateUpdateVisuals(Time.deltaTime)
 FlowDriver.Retire/Reset            → machine.AtlasView.Dispose()
 ```
 
@@ -82,5 +82,5 @@ $py = "C:\Users\Administrator\.dsh\dsh-runtimes\dsh-primary-runtime\dependencies
 & $py tools/flow-visual/build_mask_atlas.py
 & $py tools/flow-visual/verify_mask_atlas.py
 dotnet build -c Release
-dotnet test tests\ProbablyBagMod.Tests\ProbablyBagMod.Tests.csproj -c Release
+dotnet test tests\FluxForge.Tests\FluxForge.Tests.csproj -c Release
 ```

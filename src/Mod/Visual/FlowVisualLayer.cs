@@ -1,11 +1,11 @@
 using System;
 using System.Collections.Generic;
-using ProbablyBagMod.Mod.Visual.Internal;
-using ProbablyBagMod.Presentation.Flow.Particles;
-using ProbablyBagMod.Presentation.Flow.Visual;
+using FluxForge.Mod.Visual.Internal;
+using FluxForge.Presentation.Flow.Particles;
+using FluxForge.Presentation.Flow.Visual;
 using UnityEngine;
 
-namespace ProbablyBagMod.Mod.Visual
+namespace FluxForge.Mod.Visual
 {
     /// <summary>
     /// 每块网格一个视觉视图：把本网格 FlowSpawner 里的流源翻译成
@@ -46,6 +46,10 @@ namespace ProbablyBagMod.Mod.Visual
         private readonly Dictionary<FlowEntity, bool> _blockedStates
             = new Dictionary<FlowEntity, bool>();
 
+        /// <summary>诊断：每个流源上一次记录过的方向，方向变化时打一条位置日志。</summary>
+        private readonly Dictionary<FlowEntity, int> _loggedDirections
+            = new Dictionary<FlowEntity, int>();
+
         /// <summary>本视图独立的粒子系统。</summary>
         private readonly FlowParticleSystem _particles = new FlowParticleSystem();
 
@@ -62,6 +66,13 @@ namespace ProbablyBagMod.Mod.Visual
 
         /// <summary>本网格的图集层；面板还没建好时为 null。</summary>
         private FlowAtlasLayer _layer;
+
+        /// <summary>
+        /// 本网格的物品顶层覆盖层（网格构造时已挂好，不随流源懒创建）。
+        /// 只用于提交流源之后把它压回最后一位，保证覆盖层不被流源盖住；
+        /// 内容刷新由覆盖层自己的 LateUpdate 负责。
+        /// </summary>
+        private readonly FlowItemOverlayLayer _overlay;
 
         /// <summary>当前层挂在哪个网格 RectTransform 上（变了就重建层）。</summary>
         private RectTransform _rect;
@@ -86,6 +97,8 @@ namespace ProbablyBagMod.Mod.Visual
                 _flows.OnEntityRemoved += _removedHandler;
                 _flows.OnEntityBlockedChanged += _blockedChangedHandler;
             }
+
+            _overlay = FlowItemOverlayLayer.Find(inventory.rectTransform);
         }
 
         /// <summary>
@@ -154,14 +167,17 @@ namespace ProbablyBagMod.Mod.Visual
             // 死亡实体的场只积分、不发射；粒子清空即移出队列。
             _particles.CompleteFrame(deltaTime, _dots);
 
-            // 本帧的本体与粒子一次性提交；层在解析处已确认存活
+            // 本帧的本体与粒子一次性提交；层在解析处已确认存活。
+            // 流源层的构造/周期检查会把自己排到网格子节点最后，覆盖层必须在这一帧
+            // 的流源提交之后再压回去，否则它会被流源盖住。
             layer.Submit(_items);
             layer.SubmitDots(_dots);
+            _overlay.BringToFront();
         }
 
         /// <summary>
         /// 释放整个视觉层的静态资源（图集贴图/Sprite 缓存）。
-        /// 由 <c>PBModEntry.OnDisable</c> 调用；实例的 <see cref="Dispose"/> 只管本网格。
+        /// 由 <c>FFModEntry.OnDisable</c> 调用；实例的 <see cref="Dispose"/> 只管本网格。
         /// </summary>
         public static void Shutdown()
         {
@@ -199,6 +215,7 @@ namespace ProbablyBagMod.Mod.Visual
             _clock = 0f;
             _entities.Clear();
             _blockedStates.Clear();
+            _loggedDirections.Clear();
             _particles.Reset();
             _dots.Clear();
             _items.Clear();
@@ -220,6 +237,7 @@ namespace ProbablyBagMod.Mod.Visual
         {
             _entities.Remove(entity);
             _blockedStates.Remove(entity);
+            _loggedDirections.Remove(entity);
 
             // 死亡后只把粒子场转入淡出队列：已经存在的粒子留在原地自然衰减，
             // 视觉上就是「散掉」而不是「换一张图」。
@@ -285,11 +303,28 @@ namespace ProbablyBagMod.Mod.Visual
             // 缓存与实体同生命周期；缺条目让 KeyNotFound 冒到边界 catch。
             bool blocked = _blockedStates[entity];
 
-            // 图块和粒子场都接收左上坐标，逻辑位置表示流源中心。
-            double positionX = FlowPixelMath.TileOriginFromCenter(entity.Position.X);
-            double positionY = FlowPixelMath.TileOriginFromCenter(entity.Position.Y);
+            // Logic 中心先换算成游戏格中心，再把游戏格中心绑定到贴图中心。
+            // 贴图左上 = 游戏中心 - 0.5，因此贴图中心与游戏中心重合。
+            double gameCenterX = FlowGameSpace.ToGameCenter(entity.Position.X);
+            double gameCenterY = FlowGameSpace.ToGameCenter(entity.Position.Y);
+            double positionX = FlowPixelMath.TileLeftFromGameCenter(gameCenterX);
+            double positionY = FlowPixelMath.TileLeftFromGameCenter(gameCenterY);
+
             int direction = entity.Motion == null ? 1 : entity.Motion.Direction;
             double speed = entity.Motion == null ? 0d : entity.Motion.Speed;
+
+            int loggedDirection;
+            if (!_loggedDirections.TryGetValue(entity, out loggedDirection)
+                || loggedDirection != direction)
+            {
+                _loggedDirections[entity] = direction;
+                FFModEntry.Log.Log(
+                    "[FlowVisual] id=" + entity.GetHashCode()
+                    + " dir=" + direction
+                    + " logic=(" + entity.Position.X + "," + entity.Position.Y + ")"
+                    + " game=(" + gameCenterX + "," + gameCenterY + ")"
+                    + " tile=(" + positionX + "," + positionY + ")");
+            }
 
             // Tier-0：成分固定纯水（REFACTOR-A §4）；射程暂无数据源，
             // FlowVisualState.Range 保持 0（预留：字段就绪前不渲染射程点）。
@@ -299,8 +334,8 @@ namespace ProbablyBagMod.Mod.Visual
                 direction,
                 speed,
                 FlowComposition.PureWater,
-                FlowTierMap.TempFrom((float)entity.Properties.Temperature),
-                FlowTierMap.ContentFromWater(entity.Properties.Water),
+                FlowTierMap.TempFrom((float)entity.Properties.Get(FlowProps.Temperature)),
+                FlowTierMap.ContentFromWater(entity.Properties.SubstanceTotal),
                 FlowTierMap.StateFrom(blocked));
         }
 
@@ -321,6 +356,5 @@ namespace ProbablyBagMod.Mod.Visual
                 visual,
                 FlowTierMap.TrailLayersFromContent(snapshot.Content));
         }
-
     }
 }

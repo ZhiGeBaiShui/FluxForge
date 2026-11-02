@@ -1,6 +1,6 @@
 using System;
 
-namespace ProbablyBagMod.Presentation.Flow.Visual
+namespace FluxForge.Presentation.Flow.Visual
 {
     /// <summary>
     /// 纯逻辑层的 8 位 RGB 颜色（0–255）。

@@ -20,6 +20,9 @@
     },
     {
       "key": "ice_block",
+      "device": "ice_block",
+      "anchorX": 0,
+      "anchorY": 0,
       "sprite": "ice_block",
       "name": "冰块",
       "desc": "吸收流源的热量，自身逐渐融化。\n融化后水分随流源带走。",
@@ -28,7 +31,7 @@
         "FLOW_DEVICE"
       ],
       "attachments": [
-        "ice_block"
+        "device"
       ],
       "tags": [
         {
@@ -65,6 +68,9 @@
     },
     {
       "key": "flow_emitter",
+      "device": "emitter",
+      "anchorX": 0,
+      "anchorY": 0,
       "capacityMl": 1000000,
       "sprite": "flow_emitter",
       "name": "发射装置",
@@ -75,6 +81,7 @@
       ],
       "attachments": [
         "flow_container",
+        "device",
         "emitter"
       ],
       "tags": [
@@ -109,6 +116,9 @@
     },
     {
       "key": "flow_collector",
+      "device": "collector",
+      "anchorX": 0,
+      "anchorY": 0,
       "sprite": "flow_collector",
       "name": "收集装置",
       "desc": "接收流源，把其中的水分与温度累积存储。",
@@ -117,7 +127,7 @@
         "FLOW_DEVICE"
       ],
       "attachments": [
-        "collector"
+        "device"
       ],
       "tags": [
         {
@@ -146,6 +156,44 @@
           "unit": "℃",
           "color": "LightCyan",
           "valueType": "double"
+        }
+      ]
+    },
+    {
+      "key": "l_turn_device",
+      "device": "l_right_down",
+      "anchorX": 0,
+      "anchorY": 0,
+      "sprite": "l_turn_device",
+      "name": "L 型转向装置",
+      "desc": "测试用 L 型转向装置。",
+      "itemTypes": [
+        "FLOW_DEVICE"
+      ],
+      "attachments": [
+        "device"
+      ],
+      "tags": [
+        {
+          "valueName": "FLUXFORGE_RENDER_ABOVE_FLOW",
+          "valueInt": 1
+        }
+      ]
+    },
+    {
+      "key": "chem_reactor_top",
+      "sprite": "chem_reactor_top",
+      "name": "化学反应装置（预览）",
+      "desc": "无 attachment 的视觉测试物品，用来观察流源经过通道时的透明覆盖效果。",
+      "flavor": "玻璃后面好像有什么在流动。",
+      "itemTypes": [
+        "FLOW_DEVICE"
+      ],
+      "attachments": [],
+      "tags": [
+        {
+          "valueName": "FLUXFORGE_RENDER_ABOVE_FLOW",
+          "valueInt": 1
         }
       ]
     }

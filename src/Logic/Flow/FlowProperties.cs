@@ -1,67 +1,76 @@
 using System;
 using System.Collections.Generic;
-using System.Reflection;
 
-namespace ProbablyBagMod
+namespace FluxForge
 {
     /// <summary>
-    /// 流源属性：流源携带的全部性质 / 成分。对外提供公开成员，由反应框架直接读写。
+    /// 流源属性：流源携带的全部性质 / 成分。
     ///
-    /// 不含价值——价值由外部工具类根据属性动态算出，不存储。
+    /// 槽位、种类与分合规则全部来自 <see cref="FlowPropertyRegistry"/>：
+    /// 本类只持有一个按注册表顺序排列的数值数组，不写死任何属性名。
     ///
     /// 设计约定：
-    ///   - 只提供带参构造，外部无法 <c>new FlowProperties()</c> 造出半空对象
+    ///   - 调用方用无参构造 + <see cref="Set"/> 按键写槽，不写死任何属性名
+    ///   - <see cref="Split"/> / <see cref="Merge"/> / <see cref="SubstanceTotal"/> 只按注册表
+    ///     里的种类与规则计算
     ///   - <see cref="Split"/> / <see cref="Merge"/> 均为纯函数：返回新对象，不修改本对象与入参
-    ///   - 新增 public double 字段时，必须在 <c>_ruleTable</c> 声明分合规则，
-    ///     否则静态构造函数直接抛异常点名
+    ///   - <see cref="Clone"/> 深拷贝数组，克隆体可独立修改
+    ///   - 不含价值——价值由外部工具类根据属性动态算出，不存储
     /// </summary>
-    public sealed class FlowProperties : IWaterState, ITemperatureState
+    public sealed class FlowProperties : IFlowState
     {
-        /// <summary>水量。</summary>
-        public double Water;
+        private readonly double[] _values = new double[FlowPropertyRegistry.Count];
 
-        /// <summary>温度。单位与刻度由上层约定，框架不解释。</summary>
-        public double Temperature;
-
-        // 显式实现：让 FlowTagMap 能把一份 FlowProperties 当成"有存量/有温度的东西"直接读写，
-        // 不必为它单独再写一套 tag 映射。字段本身保持 public 供现有代码直接访问。
-        double IWaterState.Water
+        /// <summary>全零属性。</summary>
+        public FlowProperties()
         {
-            get { return Water; }
-            set { Water = value; }
         }
 
-        double ITemperatureState.Temperature
+        /// <summary>流源属性拥有注册表里的全部槽位。</summary>
+        public IReadOnlyList<FlowPropertyKey> Keys
         {
-            get { return Temperature; }
-            set { Temperature = value; }
+            get { return FlowPropertyRegistry.AllKeys; }
         }
 
-        private static readonly PropertyRule[] _ruleTable = new[]
+        /// <summary>读一个属性槽。默认键（Index=0）自然越界。</summary>
+        public double Get(FlowPropertyKey key)
         {
-            new PropertyRule(nameof(Water),    SplitRule.Divide, MergeRule.Add),
-            new PropertyRule(nameof(Temperature), SplitRule.Keep,    MergeRule.WeightedAverage),
-        };
-
-        private static readonly Dictionary<string, FieldInfo> _fieldMap = BuildFieldMap();
-
-        static FlowProperties()
-        {
-            Validate();
+            return _values[key.Index - 1];
         }
 
-        public FlowProperties(double water, double temperature)
+        /// <summary>写一个属性槽。默认键（Index=0）自然越界。</summary>
+        public void Set(FlowPropertyKey key, double value)
         {
-            Water = water;
-            Temperature = temperature;
+            _values[key.Index - 1] = value;
+        }
+
+        /// <summary>物质总量：所有 <see cref="FlowPropertyKind.Liquid"/> 属性之和（现算，不缓存）。</summary>
+        public double SubstanceTotal
+        {
+            get
+            {
+                double total = 0d;
+                IReadOnlyList<FlowPropertyDef> defs = FlowPropertyRegistry.All;
+                for (int i = 0; i < defs.Count; i++)
+                {
+                    FlowPropertyDef def = defs[i];
+                    if (def.Kind != FlowPropertyKind.Liquid)
+                    {
+                        continue;
+                    }
+
+                    total += _values[def.Key.Index - 1];
+                }
+                return total;
+            }
         }
 
         /// <summary>
-        /// 等分成 count 份。总量守恒——不是复制，每份得到原值的 1/count。
-        /// Keep 规则的字段（温度）每份保留原值。
+        /// 等分成 count 份。总量守恒——不是复制，Divide 属性每份得到原值的 1/count。
+        /// Keep 属性（标量）每份保留原值。
         /// <para>
-        /// 实现：先算出「一份」应有的样子，再复制 count 遍。
-        /// 每份内容彼此等价但相互独立（引用不同），可各自被单独修改。
+        /// 实现：先算出「一份」应有的样子，再深拷贝 count 遍。
+        /// 每份内容彼此等价但数组相互独立，可各自被单独修改。
         /// </para>
         /// </summary>
         public List<FlowProperties> Split(int count)
@@ -72,25 +81,25 @@ namespace ProbablyBagMod
             }
 
             // ① 算出「一份」
-            FlowProperties template = (FlowProperties)MemberwiseClone();
-
-            foreach (PropertyRule rule in _ruleTable)
+            FlowProperties template = Clone();
+            IReadOnlyList<FlowPropertyDef> defs = FlowPropertyRegistry.All;
+            for (int i = 0; i < defs.Count; i++)
             {
-                if (rule.Split != SplitRule.Divide)
+                FlowPropertyDef def = defs[i];
+                if (def.Split != SplitRule.Divide)
                 {
                     continue;   // Keep：原样保留
                 }
 
-                FieldInfo field = _fieldMap[rule.FieldName];
-                double value = (double)field.GetValue(this);
-                field.SetValue(template, value / count);
+                int slot = def.Key.Index - 1;
+                template._values[slot] /= count;
             }
 
-            // ② 复制 count 份（MemberwiseClone 不走构造函数，故可反复复制）
+            // ② 深拷贝 count 份
             List<FlowProperties> result = new List<FlowProperties>(count);
             for (int i = 0; i < count; i++)
             {
-                result.Add((FlowProperties)template.MemberwiseClone());
+                result.Add(template.Clone());
             }
             return result;
         }
@@ -98,6 +107,7 @@ namespace ProbablyBagMod
         /// <summary>
         /// 汇聚：以 this 为第一份，把 others 逐份合并进来，返回新对象。
         /// <para>
+        /// Add 属性直接相加；WeightedAverage 属性按各份的物质总量加权。
         /// 注意 others 不应包含 this 自身，否则 this 会被计算两次。
         /// </para>
         /// </summary>
@@ -108,112 +118,71 @@ namespace ProbablyBagMod
                 throw new ArgumentNullException(nameof(others));
             }
 
-            FlowProperties result = (FlowProperties)MemberwiseClone();
+            return MergeAll(others);
+        }
 
-            foreach (PropertyRule rule in _ruleTable)
+        /// <summary>
+        /// 汇聚单份属性：等价于 <c>Merge(只含 other 的列表)</c>。
+        /// 供"收到一个就并一个"的调用方使用，不需要为一次合并准备列表。
+        /// </summary>
+        public FlowProperties Merge(FlowProperties other)
+        {
+            if (other == null)
             {
-                FieldInfo field = _fieldMap[rule.FieldName];
+                throw new ArgumentNullException(nameof(other));
+            }
 
-                if (rule.Merge == MergeRule.Add)
+            return MergeAll(new FlowProperties[] { other });
+        }
+
+        private FlowProperties MergeAll(IReadOnlyList<FlowProperties> others)
+        {
+            FlowProperties result = Clone();
+            IReadOnlyList<FlowPropertyDef> defs = FlowPropertyRegistry.All;
+            for (int i = 0; i < defs.Count; i++)
+            {
+                FlowPropertyDef def = defs[i];
+                int slot = def.Key.Index - 1;
+
+                if (def.Merge == MergeRule.Add)
                 {
-                    double sum = (double)field.GetValue(this);
-                    foreach (FlowProperties other in others)
+                    double sum = _values[slot];
+                    for (int j = 0; j < others.Count; j++)
                     {
-                        sum += (double)field.GetValue(other);
+                        sum += others[j]._values[slot];
                     }
-                    field.SetValue(result, sum);
+                    result._values[slot] = sum;
                 }
                 else
                 {
                     // 加权平均：按各份的物质总量加权（现算，不信任何缓存状态）
-                    double weight = SumSubstances(this);
-                    double weightedSum = (double)field.GetValue(this) * weight;
+                    double weight = SubstanceTotal;
+                    double weightedSum = _values[slot] * weight;
 
-                    foreach (FlowProperties other in others)
+                    for (int j = 0; j < others.Count; j++)
                     {
-                        double otherWeight = SumSubstances(other);
-                        weightedSum += (double)field.GetValue(other) * otherWeight;
+                        FlowProperties other = others[j];
+                        double otherWeight = other.SubstanceTotal;
+                        weightedSum += other._values[slot] * otherWeight;
                         weight += otherWeight;
                     }
 
                     // 分母为 0（几份都没有物质）时保留 this 的值，避免算出 NaN
-                    double averaged = weight > 0d
+                    result._values[slot] = weight > 0d
                         ? weightedSum / weight
-                        : (double)field.GetValue(this);
-
-                    field.SetValue(result, averaged);
+                        : _values[slot];
                 }
             }
 
             return result;
         }
 
-        /// <summary>物质总量：所有 Merge=Add 的字段之和（现算，不缓存）。</summary>
-        public double SubstanceTotal
+        /// <summary>深拷贝：数组独立，克隆体与本体互不影响。</summary>
+        public FlowProperties Clone()
         {
-            get { return SumSubstances(this); }
-        }
-
-        /// <summary>现算一份的物质总量：所有 Merge=Add 的字段之和。</summary>
-        private static double SumSubstances(FlowProperties p)
-        {
-            double total = 0d;
-            foreach (PropertyRule rule in _ruleTable)
-            {
-                if (rule.Merge != MergeRule.Add)
-                {
-                    continue;
-                }
-                total += (double)_fieldMap[rule.FieldName].GetValue(p);
-            }
-            return total;
-        }
-
-        private static Dictionary<string, FieldInfo> BuildFieldMap()
-        {
-            FieldInfo[] fields = typeof(FlowProperties).GetFields(
-                BindingFlags.Public | BindingFlags.Instance);
-
-            Dictionary<string, FieldInfo> map = new Dictionary<string, FieldInfo>(fields.Length);
-            foreach (FieldInfo field in fields)
-            {
-                map[field.Name] = field;
-            }
-            return map;
-        }
-
-        private static void Validate()
-        {
-            // 规则指向的字段必须存在
-            foreach (PropertyRule rule in _ruleTable)
-            {
-                if (!_fieldMap.ContainsKey(rule.FieldName))
-                {
-                    throw new InvalidOperationException(
-                        "分合规则指向了不存在的字段：" + rule.FieldName);
-                }
-            }
-
-            // 每个 public 字段都必须配规则
-            foreach (string name in _fieldMap.Keys)
-            {
-                bool matched = false;
-                foreach (PropertyRule rule in _ruleTable)
-                {
-                    if (rule.FieldName == name)
-                    {
-                        matched = true;
-                        break;
-                    }
-                }
-
-                if (!matched)
-                {
-                    throw new InvalidOperationException(
-                        "属性字段缺少分合规则：FlowProperties." + name
-                        + "（请在 _ruleTable 中为该字段声明 PropertyRule）");
-                }
-            }
+            FlowProperties clone = new FlowProperties();
+            Array.Copy(_values, clone._values, _values.Length);
+            return clone;
         }
     }
 }

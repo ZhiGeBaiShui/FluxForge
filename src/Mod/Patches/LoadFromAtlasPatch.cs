@@ -1,9 +1,9 @@
 using System;
 using HarmonyLib;
 using UnityEngine;
-using ProbablyBagMod.Mod.Rendering.ItemSprites;
+using FluxForge.Mod.Rendering.ItemSprites;
 
-namespace ProbablyBagMod.Mod
+namespace FluxForge.Mod
 {
     /// <summary>
     /// 拦截游戏从 atlas 取 sprite 的调用（物品生成时设置的贴图字段最终走这里解析）：
@@ -42,7 +42,7 @@ namespace ProbablyBagMod.Mod
                 if (!_hitLogged)
                 {
                     _hitLogged = true;
-                    PBModEntry.Log.Log("[贴图] 首次拦截命中：atlas=" + atlasPath
+                    FFModEntry.Log.Log("[贴图] 首次拦截命中：atlas=" + atlasPath
                         + " name=" + name + " sprite=" + sprite.rect.width + "x" + sprite.rect.height
                         + "（后续命中不再打印）");
                 }
@@ -51,7 +51,7 @@ namespace ProbablyBagMod.Mod
             }
             catch (Exception e)
             {
-                PBModEntry.Log.Error("[贴图] 拦截过程出错，退回原生贴图：" + e);
+                FFModEntry.Log.Error("[贴图] 拦截过程出错，退回原生贴图：" + e);
                 return true;
             }
         }

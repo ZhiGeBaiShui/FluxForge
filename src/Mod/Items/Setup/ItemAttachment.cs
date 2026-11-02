@@ -1,4 +1,4 @@
-namespace ProbablyBagMod.Mod
+namespace FluxForge.Mod
 {
     /// <summary>
     /// 物品行为装配件：一件物品可以在 items.json 里声明多个，按声明顺序执行。

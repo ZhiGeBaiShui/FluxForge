@@ -1,129 +1,85 @@
 using System.Collections.Generic;
 
-namespace ProbablyBagMod.Mod
+namespace FluxForge.Mod
 {
     /// <summary>
     /// 物品引用 ↔ 装置实例的注册表，外加一张「装置实例 → 物品」的反向表。
     ///
-    /// GameItem 没有可以挂字段的地方，所以「这件物品对应哪个装置」只能靠外部字典记住。
-    /// 反向表服务于装置的自播报：装置只知道自己，要写 tag / 从网格移除，
-    /// 得先找到它挂在哪件物品上。
-    ///
-    /// Mono 下没有原生指针，改用对象引用做 key。
-    /// 读档后游戏会按目录重建物品，旧引用不能继续生效，所以读档时必须整体 Clear()。
+    /// 登记即订阅、注销即退订；订阅点只有这里。
     /// </summary>
     public static class DeviceRegistry
     {
-        private static readonly Dictionary<GameItem, object> _devices
-            = new Dictionary<GameItem, object>();
+        private static readonly Dictionary<GameItem, IFlowNotifier> _devices
+            = new Dictionary<GameItem, IFlowNotifier>();
 
-        /// <summary>装置实例 → 它挂在哪件物品上（事件播报时反查用）。</summary>
-        private static readonly Dictionary<object, GameItem> _items
-            = new Dictionary<object, GameItem>();
+        private static readonly Dictionary<IFlowNotifier, GameItem> _items
+            = new Dictionary<IFlowNotifier, GameItem>();
 
-        public static void Register(GameItem item, object device)
+        public static void Register(GameItem item, IFlowNotifier device)
         {
-            // 同一件物品被重复登记时，先摘掉旧装置的反向条目，
-            // 否则那张表会一直留着旧装置，旧装置也永远回收不了
-            object previous;
-            if (_devices.TryGetValue(item, out previous))
-            {
-                _items.Remove(previous);
-            }
-
             _devices[item] = device;
             _items[device] = item;
+
+            FlowDeviceEvents.Subscribe(device);
+        }
+
+        /// <summary>
+        /// 该物品是否已经登记过装置。
+        ///
+        /// 落地绑定必须先查再建：同网格移动是「Expel + Accept」，每次都会重新进入网格，
+        /// 不查就会每次都白造一台装置再丢弃。
+        /// </summary>
+        public static bool Contains(GameItem item)
+        {
+            return _devices.ContainsKey(item);
         }
 
         public static void Unregister(GameItem item)
         {
-            if (item == null)
-            {
-                return;
-            }
-
-            // 反向表以装置实例为 key，必须先由物品取出装置才能一并删掉
-            object device;
-            if (_devices.TryGetValue(item, out device))
-            {
-                _items.Remove(device);
-            }
-
+            IFlowNotifier device = _devices[item];
             _devices.Remove(item);
+            _items.Remove(device);
+
+            FlowDeviceEvents.Unsubscribe(device);
         }
 
-        /// <summary>
-        /// 注销一台机器网格里出现过的全部装置。
-        ///
-        /// 入参是 <see cref="ProbablyBagMod.Mod.Flow.Adapters.FlowGridAdapter"/> 在启动扫描时记下的物品；
-        /// 非装置物品也会传进来，<see cref="Unregister"/> 查不到时自然无操作。
-        /// </summary>
-        public static void UnregisterAll(IReadOnlyCollection<GameItem> items)
-        {
-            foreach (GameItem item in items)
-            {
-                Unregister(item);
-            }
-        }
-
-        /// <summary>读档 / 换场景时整体失效（旧物品引用不能留着）。</summary>
+        /// <summary>读档 / 换场景时整体失效。</summary>
         public static void Clear()
         {
+            foreach (IFlowNotifier device in _devices.Values)
+            {
+                FlowDeviceEvents.Unsubscribe(device);
+            }
+
             _devices.Clear();
             _items.Clear();
         }
 
-        /// <summary>
-        /// 装置挂在哪件物品上；查不到返回 null。
-        ///
-        /// 调用方按「装置与物品生命周期一致」的前提使用它，前提被打破时由调用链上层暴露，
-        /// 而不是在这里静默吞掉。
-        /// </summary>
-        public static GameItem GetItem(object device)
+        /// <summary>装置挂在哪件物品上。</summary>
+        public static GameItem GetItem(IFlowNotifier device)
         {
-            if (device == null)
-            {
-                return null;
-            }
-
-            GameItem item;
-            return _items.TryGetValue(device, out item) ? item : null;
+            return _items[device];
         }
 
-        /// <summary>取实现了 IFlowDevice 的装置（反应类），没有返回 null。</summary>
+        /// <summary>取实现了 IFlowDevice 的装置（反应类）。</summary>
         public static IFlowDevice GetReactor(GameItem item)
         {
-            object device;
-            if (item == null || !_devices.TryGetValue(item, out device))
-            {
-                return null;
-            }
-
-            return device as IFlowDevice;
+            IFlowNotifier device;
+            return _devices.TryGetValue(item, out device) ? device as IFlowDevice : null;
         }
 
-        /// <summary>取实现了 IFlowRouter 的装置（路由类），没有返回 null。</summary>
+        /// <summary>取实现了 IFlowRouter 的装置（路由类）。</summary>
         public static IFlowRouter GetRouter(GameItem item)
         {
-            object device;
-            if (item == null || !_devices.TryGetValue(item, out device))
-            {
-                return null;
-            }
-
-            return device as IFlowRouter;
+            IFlowNotifier device;
+            return _devices.TryGetValue(item, out device) ? device as IFlowRouter : null;
         }
 
-        /// <summary>按具体类型取（调用方自己知道该物品挂的是什么装置）。</summary>
+        /// <summary>按具体类型取。</summary>
         public static T Get<T>(GameItem item) where T : class
         {
-            object device;
-            if (item == null || !_devices.TryGetValue(item, out device))
-            {
-                return null;
-            }
-
-            return device as T;
+            IFlowNotifier device;
+            return _devices.TryGetValue(item, out device) ? device as T : null;
         }
     }
 }

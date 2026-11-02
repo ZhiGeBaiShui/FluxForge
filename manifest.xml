@@ -1,16 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Manifest>
-  <ID>probably_bag_mod</ID>
-  <Name>ProbablyBagMod</Name>
-  <Author>ProbablyBagMod</Author>
+  <ID>fluxforge</ID>
+  <Name>FluxForge</Name>
+  <Author>FluxForge</Author>
   <ModVersion>0.1.0</ModVersion>
-  <Description>Adds flow machines, emitters, collectors and liquid containers driven by configurable flow tags.</Description>
+  <Description>新增流量机、发射装置、收集装置与液体容器，由可配置的标签驱动。</Description>
   <GameVersions>
     <Version>0.46</Version>
   </GameVersions>
   <Prerequisites />
   <Assemblies>
-    <Assembly>ProbablyBagMod.dll</Assembly>
+    <Assembly>FluxForge.dll</Assembly>
   </Assemblies>
   <Capabilities />
 </Manifest>

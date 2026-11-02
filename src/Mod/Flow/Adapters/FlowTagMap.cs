@@ -1,18 +1,24 @@
-using System;
 using System.Collections.Generic;
 
-namespace ProbablyBagMod.Mod
+namespace FluxForge.Mod
 {
     /// <summary>
-    /// 我们管理的 tag 清单，以及"tag ↔ 装置成员 ↔ 槽位"的对应关系。
+    /// 我们管理的 tag 清单，以及"tag ↔ 流属性 ↔ 槽位"的对应关系。
     ///
-    /// 一行登记一个属性的全部信息：落在哪个 tag、由哪个单成员接口描述、读写哪个数值槽。
-    /// 读写通过登记的强类型委托完成，不做反射——Mono 下这既更快，也让能力声明保持为空。
+    /// 清单分两部分：
+    ///   · 液体：Logic 登记为 <see cref="FlowPropertyKind.Liquid"/> 的属性，
+    ///     按原版 <c>CURRENT_PART_&lt;ID&gt;</c> 约定落成 <see cref="SlotKind.Int"/>；
+    ///     清单从游戏 <c>Liquid.InitLiquid()</c> 手工同步。
+    ///   · 标量：按 <c>&lt;ID&gt;_TAG</c> 约定生成（container_temp →
+    ///     <c>CONTAINER_TEMP_TAG</c>），按 <see cref="SlotKind.Double"/> 存。
+    /// tag 与槽位都是 mod 层的约定，由 <see cref="FlowPropertyKind"/> 分支选择。
+    ///
+    /// items.json 只声明 water 与温度，不声明其余 35 种液体 tag——那 35 种由游戏
+    /// <c>InitLiquidContainerItem</c> 创建。
     ///
     /// 新增属性的步骤：
-    ///   ① 在 Logic 加一个单成员接口，并让相关装置实现它；
-    ///   ② 这里加一行（Tag / Getter / Setter / Slot）；
-    ///   ③ items.json 声明该 tag 与对应的 statusLine。
+    ///   ① 在 Logic 的属性表登记（id / 种类 / 分合规则）；
+    ///   ② 液体 tag 由游戏创建；标量按 id 生成 &lt;ID&gt;_TAG，需要显示时在 items.json 声明 statusLine。
     /// </summary>
     internal static class FlowTagMap
     {
@@ -20,50 +26,27 @@ namespace ProbablyBagMod.Mod
         internal enum SlotKind
         {
             Int,
-            Float,
             Double,
         }
 
-        /// <summary>一条映射：tag 名 + 读写该属性的委托 + 槽位。</summary>
+        /// <summary>一条映射：tag 名 + 该 tag 对应的流属性 key + 槽位。</summary>
         internal sealed class Binding
         {
             /// <summary>落在物品上的 tag 名。</summary>
             public string Tag;
+
+            /// <summary>该 tag 对应的流属性。</summary>
+            public FlowPropertyKey Key;
 
             /// <summary>
             /// 读写哪个槽位。必须和原版写入方一致：
             /// 原版用 SetInt 写的 tag 这里就是 Int，用 double 写的就是 Double。
             /// </summary>
             public SlotKind Slot;
-
-            /// <summary>从装置 / FlowProperties 读出属性值。</summary>
-            public Func<object, double> Getter;
-
-            /// <summary>把属性值写回装置 / FlowProperties。</summary>
-            public Action<object, double> Setter;
         }
 
-        /// <summary>我们管理的属性；顺序即遍历顺序。</summary>
-        private static readonly Binding[] _bindings =
-        {
-            // 原版 AddLiquid / GetTotalVolume 都按 int 读写
-            new Binding
-            {
-                Tag = FlowTags.CurrentPartWater,
-                Slot = SlotKind.Int,
-                Getter = target => ((IWaterState)target).Water,
-                Setter = (target, value) => ((IWaterState)target).Water = value,
-            },
-
-            // 原版 HandleReceiveLiquidTemp / 冰箱制冷按 double 读写
-            new Binding
-            {
-                Tag = FlowTags.ContainerTempTag,
-                Slot = SlotKind.Double,
-                Getter = target => ((ITemperatureState)target).Temperature,
-                Setter = (target, value) => ((ITemperatureState)target).Temperature = value,
-            },
-        };
+        /// <summary>我们管理的属性；顺序即遍历顺序（与 Logic 的属性表一致）。</summary>
+        private static readonly Binding[] _bindings = Build();
 
         /// <summary>只读视图：<see cref="FlowStock"/> 遍历用。</summary>
         internal static IReadOnlyList<Binding> Bindings
@@ -71,29 +54,36 @@ namespace ProbablyBagMod.Mod
             get { return _bindings; }
         }
 
-        /// <summary>按 tag 从装置（或一份属性）上读出对应成员。</summary>
-        internal static double Get(object target, string tag)
+        /// <summary>按属性键取对应 binding；键必须已登记。</summary>
+        internal static Binding Get(FlowPropertyKey key)
         {
-            return PropertyOf(tag).Getter(target);
+            return _bindings[key.Index - 1];
         }
 
-        /// <summary>按 tag 把值写回装置（或一份属性）的对应成员。</summary>
-        internal static void Set(object target, string tag, double value)
+        /// <summary>
+        /// 一个循环按 Kind 生成全部映射：
+        ///   · 液体：<c>CURRENT_PART_&lt;ID&gt;</c> + Int（原版 currentPart 全是 int）；
+        ///   · 标量：<c>&lt;ID&gt;_TAG</c> + Double（container_temp → CONTAINER_TEMP_TAG）。
+        /// </summary>
+        private static Binding[] Build()
         {
-            PropertyOf(tag).Setter(target, value);
-        }
+            List<Binding> bindings = new List<Binding>(FlowPropertyRegistry.Count);
 
-        private static Binding PropertyOf(string tag)
-        {
-            foreach (Binding binding in _bindings)
+            foreach (FlowPropertyDef def in FlowPropertyRegistry.All)
             {
-                if (binding.Tag == tag)
+                bool liquid = def.Kind == FlowPropertyKind.Liquid;
+
+                bindings.Add(new Binding
                 {
-                    return binding;
-                }
+                    Tag = liquid
+                        ? "CURRENT_PART_" + def.Id.ToUpperInvariant()
+                        : def.Id.ToUpperInvariant() + "_TAG",
+                    Key = def.Key,
+                    Slot = liquid ? SlotKind.Int : SlotKind.Double,
+                });
             }
 
-            throw new ArgumentException("没有登记该 tag 的成员：" + tag, nameof(tag));
+            return bindings.ToArray();
         }
     }
 }

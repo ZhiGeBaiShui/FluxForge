@@ -1,10 +1,10 @@
 using System.Collections.Generic;
-using ProbablyBagMod.Presentation.Flow.Particles;
-using ProbablyBagMod.Presentation.Flow.Visual;
+using FluxForge.Presentation.Flow.Particles;
+using FluxForge.Presentation.Flow.Visual;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace ProbablyBagMod.Mod.Visual.Internal
+namespace FluxForge.Mod.Visual.Internal
 {
     /// <summary>
     /// 一帧里一个流源的绘制参数（值类型：放进 List 不产生堆分配）。

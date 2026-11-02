@@ -1,4 +1,4 @@
-namespace ProbablyBagMod
+namespace FluxForge
 {
     /// <summary>
     /// 温度改变：最基础的单一反应。
@@ -20,7 +20,9 @@ namespace ProbablyBagMod
         /// <param name="delta">温度增减量。正数升温、负数降温、0 无变化。</param>
         public static void React(FlowProperties properties, double delta)
         {
-            properties.Temperature += delta;
+            properties.Set(
+                FlowProps.Temperature,
+                properties.Get(FlowProps.Temperature) + delta);
         }
     }
 }

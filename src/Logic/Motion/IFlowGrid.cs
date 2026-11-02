@@ -1,4 +1,4 @@
-namespace ProbablyBagMod
+namespace FluxForge
 {
     /// <summary>
     /// 网格查询：运动层知道「某格上有什么」的唯一通道。由外部（适配层）实现，框架不认识游戏网格。

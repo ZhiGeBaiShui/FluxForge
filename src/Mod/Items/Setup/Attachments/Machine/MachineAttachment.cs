@@ -1,4 +1,4 @@
-namespace ProbablyBagMod.Mod
+namespace FluxForge.Mod
 {
     /// <summary>
     /// 流量机面板：仅提供装置网格与窗口，运行环境由装置激活时按需创建。
@@ -29,7 +29,7 @@ namespace ProbablyBagMod.Mod
             // 第 4/5 个参数是**最小像素宽高**（不是行列数），给 0 表示用元素自身尺寸。
             if (!root.Attach(inventory, 0, 0, 0, 0))
             {
-                PBModEntry.Log.Error(
+                FFModEntry.Log.Error(
                     "[流量机] 网格挂载失败（" + columns + "x" + rows + "），面板里不会有格子");
             }
 
@@ -67,7 +67,7 @@ namespace ProbablyBagMod.Mod
             }
             else
             {
-                PBModEntry.Log.Warning("[流量机] grid 配置无效：" + text + "（用默认 4x3）");
+                FFModEntry.Log.Warning("[流量机] grid 配置无效：" + text + "（用默认 4x3）");
             }
         }
     }

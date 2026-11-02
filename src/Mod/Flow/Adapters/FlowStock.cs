@@ -1,12 +1,12 @@
 using System;
 
-namespace ProbablyBagMod.Mod
+namespace FluxForge.Mod
 {
     /// <summary>
     /// 物品 tag ↔ 流源属性的唯一读写点。
     ///
     /// 属性清单、槽位规则全部来自 <see cref="FlowTagMap"/>；
-    /// 本类只做三件事：按 tag 遍历、按 tag 读写成员、按 tag 决定槽位。
+    /// 本类只做三件事：按 tag 遍历、按 tag 读写属性、按 tag 决定槽位。
     /// 不认识任何具体属性，也不区分"容器物品"与"普通物品"。
     /// </summary>
     public static class FlowStock
@@ -15,28 +15,31 @@ namespace ProbablyBagMod.Mod
         /// <summary>读出一份完整属性。</summary>
         public static FlowProperties Read(GameItem item)
         {
-            FlowProperties properties = new FlowProperties(0d, 0d);
+            FlowProperties properties = new FlowProperties();
             ReadInto(item, properties);
             return properties;
         }
 
         /// <summary>把 tag 里的值读进 <paramref name="target"/>（装置或一份属性）。</summary>
-        public static void ReadInto(GameItem item, object target)
+        public static void ReadInto(GameItem item, IFlowState target)
         {
-            foreach (FlowTagMap.Binding binding in FlowTagMap.Bindings)
+            foreach (FlowPropertyKey key in target.Keys)
             {
-                FlowTagMap.Set(target, binding.Tag, ReadNumber(item, binding));
+                FlowTagMap.Binding binding = FlowTagMap.Get(key);
+                target.Set(key, ReadNumber(item, binding));
             }
         }
 
-        /// <summary>把 <paramref name="target"/> 的值写进物品 tag。</summary>
-        public static void Write(GameItem item, object target)
+        /// <summary>把 <paramref name="source"/> 的值写进物品 tag。</summary>
+        public static void Write(GameItem item, IFlowState source)
         {
-            foreach (FlowTagMap.Binding binding in FlowTagMap.Bindings)
+            foreach (FlowPropertyKey key in source.Keys)
             {
-                WriteNumber(item, binding, FlowTagMap.Get(target, binding.Tag));
+                FlowTagMap.Binding binding = FlowTagMap.Get(key);
+                WriteNumber(item, binding, source.Get(key));
             }
 
+            item.SyncModifiedState();
             Refresh(item);
         }
 
@@ -44,23 +47,6 @@ namespace ProbablyBagMod.Mod
         public static double Total(GameItem item)
         {
             return Read(item).SubstanceTotal;
-        }
-
-        /// <summary>
-        /// 取走全部：按映射表把每个属性对应的 tag 写 0，返回取走前的属性。
-        /// 容器与普通物品走同一条路——tag 就是唯一真相。
-        /// </summary>
-        public static FlowProperties Take(GameItem item)
-        {
-            FlowProperties properties = Read(item);
-
-            foreach (FlowTagMap.Binding binding in FlowTagMap.Bindings)
-            {
-                WriteNumber(item, binding, 0d);
-            }
-
-            Refresh(item);
-            return properties;
         }
 
         /// <summary>
@@ -83,11 +69,10 @@ namespace ProbablyBagMod.Mod
             item.SetSprite(item.spriteAtlasPath, item.spritePath);
         }
 
-        /// <summary>读一个 tag 的数值；tag 不存在时按 0 处理（如新容器还没写过温度）。</summary>
+        /// <summary>从 modifiedState 读一个 tag 的数值；tag 不存在时按 0 处理（如新容器还没写过温度）。</summary>
         private static double ReadNumber(GameItem item, FlowTagMap.Binding binding)
         {
-            TagState state = item.GetTagReadonly(binding.Tag);
-            if (state == null)
+            if (!item.modifiedState.dict.TryGetValue(binding.Tag, out TagState state))
             {
                 return 0d;
             }
@@ -96,30 +81,54 @@ namespace ProbablyBagMod.Mod
             {
                 case FlowTagMap.SlotKind.Double:
                     return state.GetDouble();
-                case FlowTagMap.SlotKind.Float:
-                    return state.GetFloat();
                 default:
                     return state.GetInt();
             }
         }
 
-        /// <summary>按 tag 决定写哪个槽位；tag 是活的 TagState，写它才生效。</summary>
+        /// <summary>
+        /// 按 tag 决定写哪个槽位；tag 是活的 TagState，写它才生效。
+        ///
+        /// tag 还不存在且要写的值是 0 时直接跳过——零值不必占一个 tag，
+        /// 否则冰块 / 收集器上会凭空多出三十多个液体零 tag。
+        /// 写非零值前先 Enable（与游戏写入方一致）；零值不碰 Enable，
+        /// 避免 Take 把已有的零 tag 变成 enabled。
+        /// </summary>
         private static void WriteNumber(GameItem item, FlowTagMap.Binding binding, double value)
         {
-            TagState state = item.state.GetTag(binding.Tag);
+            bool zero = IsZero(binding.Slot, value);
+
+            TagState state;
+            if (!item.state.dict.TryGetValue(binding.Tag, out state))
+            {
+                if (zero)
+                {
+                    return;
+                }
+
+                state = item.state.GetTag(binding.Tag);
+            }
+
+            if (!zero)
+            {
+                state.Enable();
+            }
 
             switch (binding.Slot)
             {
                 case FlowTagMap.SlotKind.Double:
                     state.SetDouble(value);
                     break;
-                case FlowTagMap.SlotKind.Float:
-                    state.SetFloat((float)value);
-                    break;
                 default:
                     state.SetInt((int)value);
                     break;
             }
+        }
+
+        /// <summary>按槽位量化后是否为 0：int 会被截断，不能统一按 double 判。</summary>
+        private static bool IsZero(FlowTagMap.SlotKind slot, double value)
+        {
+            return slot == FlowTagMap.SlotKind.Int ? (int)value == 0 : value == 0d;
         }
     }
 }

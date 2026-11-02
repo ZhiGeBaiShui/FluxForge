@@ -1,8 +1,8 @@
 using System;
 using System.Threading;
-using ProbablyBagMod.Presentation.Flow.Visual;
+using FluxForge.Presentation.Flow.Visual;
 
-namespace ProbablyBagMod.Presentation.Flow.Particles
+namespace FluxForge.Presentation.Flow.Particles
 {
     /// <summary>
     /// 常驻粒子的纯函数规则层：默认 profile → 已注册 modifier → 最终 profile，以及颜色。

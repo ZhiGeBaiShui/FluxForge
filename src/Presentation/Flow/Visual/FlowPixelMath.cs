@@ -1,24 +1,22 @@
 using System;
 
-namespace ProbablyBagMod.Presentation.Flow.Visual
+namespace FluxForge.Presentation.Flow.Visual
 {
     /// <summary>
-    /// 格内像素 → 局部坐标的换算与四边取整。**零 Unity 依赖**，可脱离游戏单测。
+    /// 流源网格与像素之间的纯换算。
     ///
-    /// UGUI 层拿到的是「格坐标 + 格内像素」，最终要落到与图集 tile 对齐的整数像素上：
-    ///   · <see cref="CellToLocal"/>：拼出格内坐标（单位 = tile 像素，1 格 = 16）；
-    ///   · <see cref="Snap"/>：把 float 位置吸到屏幕像素网格，避免 NEAREST 采样时
-    ///     半像素偏移导致整张贴图糊掉或抖动（SPEC §0「全部轴对齐整数像素」）。
+    /// 这里不持有 Logic 坐标语义：调用方必须先把 Logic 中心换算成
+    /// 游戏格中心，再交给本类换成图块左上角。
     /// </summary>
     public static class FlowPixelMath
     {
-        /// <summary>一格 = 16 像素，与 SPEC §0 的 tile 尺寸一致。</summary>
+        /// <summary>一个格在流源图集里的像素尺寸。</summary>
         public const int CellPixels = 16;
 
-        /// <summary>逻辑中心坐标转为16×16图块的左上坐标，本体与粒子共用。</summary>
-        public static double TileOriginFromCenter(double center)
+        /// <summary>游戏格中心 → 16×16 图块左上角（中心回退半格）。</summary>
+        public static double TileLeftFromGameCenter(double gameCenter)
         {
-            return center - 0.5d;
+            return gameCenter - 0.5d;
         }
 
         /// <summary>
@@ -31,14 +29,8 @@ namespace ProbablyBagMod.Presentation.Flow.Visual
         }
 
         /// <summary>
-        /// 把 <paramref name="value"/> 吸到 <paramref name="scale"/> 的整数倍网格上：
-        /// <c>round(value * scale) / scale</c>。例如 scale = 7.0625（= 113/16）时，
-        /// 1/7.0625 会先乘回 1 个像素、取整、再除回去，位置精确落在像素中心线上。
-        ///
-        /// 用 <see cref="MathF.Round(float)"/>（银行家舍入）而不是 <c>floor(x + 0.5)</c>：
-        /// 对 .5 的中立处理可以避免同一格在两帧之间来回跳 1px（抖动）。
-        ///
-        /// <paramref name="scale"/> ≤ 0 或为 NaN 时原样返回，调用方不必先判断屏幕缩放是否就绪。
+        /// 把 value 吸到 scale 的整数倍网格上：<c>round(value * scale) / scale</c>。
+        /// scale ≤ 0 或 NaN 时原样返回。
         /// </summary>
         public static float Snap(float value, float scale)
         {

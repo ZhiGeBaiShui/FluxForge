@@ -1,26 +1,26 @@
 [
   {
-    "path": "E:\\code\\ProbablyBagMod\\docs\\flow-visual\\final\\tiles\\state-flow.png",
+    "path": "E:\\code\\FluxForge\\docs\\flow-visual\\final\\tiles\\state-flow.png",
     "group": "state",
     "answer": "flow"
   },
   {
-    "path": "E:\\code\\ProbablyBagMod\\docs\\flow-visual\\final\\tiles\\state-blocked.png",
+    "path": "E:\\code\\FluxForge\\docs\\flow-visual\\final\\tiles\\state-blocked.png",
     "group": "state",
     "answer": "blocked"
   },
   {
-    "path": "E:\\code\\ProbablyBagMod\\docs\\flow-visual\\final\\tiles\\state-split.png",
+    "path": "E:\\code\\FluxForge\\docs\\flow-visual\\final\\tiles\\state-split.png",
     "group": "state",
     "answer": "split"
   },
   {
-    "path": "E:\\code\\ProbablyBagMod\\docs\\flow-visual\\final\\tiles\\state-merge.png",
+    "path": "E:\\code\\FluxForge\\docs\\flow-visual\\final\\tiles\\state-merge.png",
     "group": "state",
     "answer": "merge"
   },
   {
-    "path": "E:\\code\\ProbablyBagMod\\docs\\flow-visual\\final\\tiles\\state-collect.png",
+    "path": "E:\\code\\FluxForge\\docs\\flow-visual\\final\\tiles\\state-collect.png",
     "group": "state",
     "answer": "collect"
   }

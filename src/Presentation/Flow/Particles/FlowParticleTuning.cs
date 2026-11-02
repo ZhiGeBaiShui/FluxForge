@@ -1,4 +1,4 @@
-namespace ProbablyBagMod.Presentation.Flow.Particles
+namespace FluxForge.Presentation.Flow.Particles
 {
     /// <summary>
     /// 常驻粒子的默认参数与倍率常量。**纯常量、零 Unity 依赖**。

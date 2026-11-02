@@ -1,6 +1,6 @@
 # Probably Stolen 游戏机制 API 手册
 
-> 来源：2026-10-09 ~ 10-18 的 mod 开发沉淀（ProbablyBagMod）
+> 来源：2026-10-09 ~ 10-18 的 mod 开发沉淀（FluxForge）
 > 取证手段：ISIL 转储（`_isil_out/IsilDump`）+ ilspycmd 反编译（mod DLL / Il2Cpp 程序集）+ UnityPy 资源提取 + 游戏内只读探针
 > 适用对象：给 Probably Stolen 做自定义物品 / 贴图 / UI 的 mod 开发者
 
@@ -10,7 +10,7 @@
 
 | 日期 | 事件 | 沉淀结论 |
 |---|---|---|
-| 10-09 | 网格系统迁移到独立类库 `ProbablyBagCore` | 47 项测试全绿；网格语义规格书可用 |
+| 10-09 | 网格系统迁移到独立类库 `FluxForgeCore` | 47 项测试全绿；网格语义规格书可用 |
 | 10-13 | 落地「流源传导」框架（运动层 / 反应层解耦） | 装置接口 `IFlowDevice` 同时决定「往哪出」和「带什么载荷」 |
 | 10-14 | 代码清零，改由用户主导设计 | 保留 29 项设计决策，代码从 git 历史恢复 |
 | 10-16 | 自定义物品生成层 | 目录注册 + `items.json` / `sprites.json` 双配置驱动 |
@@ -616,13 +616,13 @@ _devices[item.Pointer] = device;
 
 ---
 
-## 4. 我们的框架（ProbablyBagMod）
+## 4. 我们的框架（FluxForge）
 
 ### 4.1 目录结构
 
 ```
 src/Mod/
-├─ PBModEntry.cs                  入口：目录注册 + 每帧驱动 + 读档重置
+├─ FFModEntry.cs                  入口：目录注册 + 每帧驱动 + 读档重置
 ├─ Common/EmbeddedResources.cs    嵌入资源（前缀探测 + 读取）
 ├─ Items/
 │   ├─ FlowItemRegistry.cs        物品定义（items.json）
@@ -910,7 +910,7 @@ python tools/pixel_pipeline.py 原图.png assets/新物品.png <列数> <行数>
 
 ### 6.4 重编译并验证
 
-`dotnet build -c Release` → `E:\code\build\ProbablyBagMod.dll`
+`dotnet build -c Release` → `E:\code\build\FluxForge.dll`
 
 日志应为：
 

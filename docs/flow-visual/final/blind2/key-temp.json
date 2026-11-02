@@ -2,16 +2,16 @@
   "1": {
     "answer": "hot",
     "meta": null,
-    "path": "E:\\code\\ProbablyBagMod\\docs\\flow-visual\\final\\tiles\\temp-hot.png"
+    "path": "E:\\code\\FluxForge\\docs\\flow-visual\\final\\tiles\\temp-hot.png"
   },
   "2": {
     "answer": "cold",
     "meta": null,
-    "path": "E:\\code\\ProbablyBagMod\\docs\\flow-visual\\final\\tiles\\temp-cold.png"
+    "path": "E:\\code\\FluxForge\\docs\\flow-visual\\final\\tiles\\temp-cold.png"
   },
   "3": {
     "answer": "normal",
     "meta": null,
-    "path": "E:\\code\\ProbablyBagMod\\docs\\flow-visual\\final\\tiles\\temp-normal.png"
+    "path": "E:\\code\\FluxForge\\docs\\flow-visual\\final\\tiles\\temp-normal.png"
   }
 }

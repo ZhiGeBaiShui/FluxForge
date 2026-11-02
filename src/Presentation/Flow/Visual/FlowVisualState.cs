@@ -1,4 +1,4 @@
-namespace ProbablyBagMod.Presentation.Flow.Visual
+namespace FluxForge.Presentation.Flow.Visual
 {
     /// <summary>
     /// 温度档：≤5℃ 冷、≥60℃ 热，其余常温。只影响边缘染色，不参与选图。

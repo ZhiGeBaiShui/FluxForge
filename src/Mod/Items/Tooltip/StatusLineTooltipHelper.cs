@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 
-namespace ProbablyBagMod.Mod
+namespace FluxForge.Mod
 {
     /// <summary>
     /// 通用状态行 helper：由 items.json 的 statusLines 声明驱动。
@@ -85,11 +85,6 @@ namespace ProbablyBagMod.Mod
                 return state.GetString() ?? string.Empty;
             }
 
-            if (string.Equals(line.valueType, "float", StringComparison.OrdinalIgnoreCase))
-            {
-                return (state.GetFloat() * scale).ToString(format, CultureInfo.InvariantCulture);
-            }
-
             if (string.Equals(line.valueType, "double", StringComparison.OrdinalIgnoreCase))
             {
                 return (state.GetDouble() * scale).ToString(format, CultureInfo.InvariantCulture);
@@ -121,7 +116,7 @@ namespace ProbablyBagMod.Mod
             {
                 if (WarnedColors.Add(name))
                 {
-                    PBModEntry.Log.Warning("[tooltip] 未知颜色名：" + name + "（用默认 LightBlue）");
+                    FFModEntry.Log.Warning("[tooltip] 未知颜色名：" + name + "（用默认 LightBlue）");
                 }
 
                 parsed = DefaultColor;

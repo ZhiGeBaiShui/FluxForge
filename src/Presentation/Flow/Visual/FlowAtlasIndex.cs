@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
 
-namespace ProbablyBagMod.Presentation.Flow.Visual
+namespace FluxForge.Presentation.Flow.Visual
 {
     /// <summary>
     /// 运行时图集的索引（<c>assets/flow_mask.json</c>）：

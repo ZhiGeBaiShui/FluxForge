@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using HarmonyLib;
 
-namespace ProbablyBagMod.Mod
+namespace FluxForge.Mod
 {
     /// <summary>
     /// tooltip 分派器（patch）：对应原版 <c>GameItemElement.GetTooltipBasic()</c> 里
@@ -41,7 +41,7 @@ namespace ProbablyBagMod.Mod
             if (!_firstHitLogged)
             {
                 _firstHitLogged = true;
-                PBModEntry.Log.Log("[tooltip] 首次触发 patch=ok id=" + __instance.identifier
+                FFModEntry.Log.Log("[tooltip] 首次触发 patch=ok id=" + __instance.identifier
                     + " helper=" + FlowTooltipHelpers.Count);
             }
 
@@ -53,7 +53,7 @@ namespace ProbablyBagMod.Mod
             }
             catch (System.Exception e)
             {
-                PBModEntry.Log.Error("[tooltip] 追加状态行失败：" + e);
+                FFModEntry.Log.Error("[tooltip] 追加状态行失败：" + e);
             }
         }
 
@@ -71,7 +71,7 @@ namespace ProbablyBagMod.Mod
         {
             FlowTooltipHelpers.EnsureInitialized();
 
-            PBModEntry.Log.Log("[tooltip] 分派器就绪，已注册 helper=" + FlowTooltipHelpers.Count
+            FFModEntry.Log.Log("[tooltip] 分派器就绪，已注册 helper=" + FlowTooltipHelpers.Count
                 + "（首次悬停时会打印 [tooltip] 首次触发）");
         }
     }

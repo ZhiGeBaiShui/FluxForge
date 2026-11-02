@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace ProbablyBagMod.Mod
+namespace FluxForge.Mod
 {
     /// <summary>
     /// 把游戏背包网格接到框架的运动层：回答「某格上有什么装置」。
@@ -103,18 +103,40 @@ namespace ProbablyBagMod.Mod
                     continue;
                 }
 
-                int maxX = shape.minX + shape.width;
-                int maxY = shape.minY + shape.height;
-                for (int y = shape.minY; y < maxY; y++)
+                // 朝向同步：分流器的通道方向依赖物品当前朝向；只在有效发射时刷新。
+                SplitDevice split = DeviceRegistry.Get<SplitDevice>(item);
+                if (split != null)
                 {
-                    for (int x = shape.minX; x < maxX; x++)
-                    {
-                        if (shape.Get(x, y) != 0)
-                        {
-                            _cells[Pack(x, y)] = item;
-                        }
-                    }
+                    split.Facing = FlowFacing.FromOrientation(shape.orientation);
                 }
+
+                // 只有参与路由/反应的装置才需要中心格；纯数据物品（例如流量机）
+                // 没有 anchor，也没有 router/reactor。
+                IFlowRouter router = DeviceRegistry.GetRouter(item);
+                IFlowDevice reactor = DeviceRegistry.GetReactor(item);
+                if (router == null && reactor == null)
+                {
+                    continue;
+                }
+
+                // DeviceAttachment 保证每个 device 都有 anchor tag；
+                // 缺 anchor 属于非法物品，直接让字典索引失败，不做 fallback。
+                TagState anchorXState = item.state.dict["FLUXFORGE_DEVICE_ANCHOR_X"];
+                TagState anchorYState = item.state.dict["FLUXFORGE_DEVICE_ANCHOR_Y"];
+
+                (int anchorX, int anchorY) =
+                    shape.ForwardTransform(anchorXState.GetInt(), anchorYState.GetInt());
+
+                FFModEntry.Log.Log(
+                    "[Anchor] " + item.identifier + " ptr=" + item.uniqueId
+                    + " min=" + shape.minX + "," + shape.minY
+                    + " size=" + shape.width + "x" + shape.height
+                    + " orient=" + shape.orientation
+                    + " local=" + anchorXState.GetInt() + "," + anchorYState.GetInt()
+                    + " world=" + anchorX + "," + anchorY);
+
+                // 装置只在中心格注册；流源沿形状的其它格走到中心格才触发。
+                _cells[Pack(anchorX, anchorY)] = item;
             }
         }
 
@@ -125,6 +147,10 @@ namespace ProbablyBagMod.Mod
             {
                 return null;
             }
+
+            FFModEntry.Log.Log(
+                "[RouterHit] cell=" + cellX + "," + cellY
+                + " item=" + item.identifier + " ptr=" + item.uniqueId);
 
             return DeviceRegistry.GetRouter(item);
         }
@@ -147,3 +173,4 @@ namespace ProbablyBagMod.Mod
         }
     }
 }
+

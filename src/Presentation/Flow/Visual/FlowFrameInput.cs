@@ -1,4 +1,4 @@
-namespace ProbablyBagMod.Presentation.Flow.Visual
+namespace FluxForge.Presentation.Flow.Visual
 {
     /// <summary>
     /// 一帧内一条流源的全部视觉输入：位置/方向/速度 + 成分/温度/含量/状态。

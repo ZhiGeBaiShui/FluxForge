@@ -1,5 +1,5 @@
-using ProbablyBagMod.Presentation.Flow.Visual;
-namespace ProbablyBagMod.Presentation.Flow.Particles
+using FluxForge.Presentation.Flow.Visual;
+namespace FluxForge.Presentation.Flow.Particles
 {
     /// <summary>
     /// 默认注册的温度 modifier：温度只改**扩散速度**与**寿命**，不改颜色、不改数量。

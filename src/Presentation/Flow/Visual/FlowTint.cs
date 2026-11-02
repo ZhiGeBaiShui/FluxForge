@@ -1,4 +1,4 @@
-namespace ProbablyBagMod.Presentation.Flow.Visual
+namespace FluxForge.Presentation.Flow.Visual
 {
     /// <summary>
     /// A 方案（蒙版 + 运行时染色）的唯一调色入口，纯 C#、零 Unity。

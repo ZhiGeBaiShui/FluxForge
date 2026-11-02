@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace ProbablyBagMod.Mod
+namespace FluxForge.Mod
 {
     /// <summary>
     /// 物品装配入口：先按 json 装配数据（<see cref="ItemFactory"/>），
@@ -60,7 +60,7 @@ namespace ProbablyBagMod.Mod
             catch (Exception e)
             {
                 // 这一段是游戏物品创建链直接调用的，异常会顺着游戏调用栈冒出去
-                PBModEntry.Log.Error("[物品] 「" + def.key + "」装配失败：" + e);
+                FFModEntry.Log.Error("[物品] 「" + def.key + "」装配失败：" + e);
                 return null;
             }
 
@@ -75,7 +75,7 @@ namespace ProbablyBagMod.Mod
             }
             catch (Exception e)
             {
-                PBModEntry.Log.Error(
+                FFModEntry.Log.Error(
                     "[物品] 「" + def.key + "」装置挂接失败，物品将以无行为状态存在：" + e);
             }
 
@@ -109,7 +109,7 @@ namespace ProbablyBagMod.Mod
                 ItemAttachment attachment = Get(name);
                 if (attachment == null)
                 {
-                    PBModEntry.Log.Log(
+                    FFModEntry.Log.Log(
                         "[装配]「" + def.key + "」引用了未识别的装配件「" + name
                         + "」，已注册：" + KnownNames());
                     continue;
@@ -121,7 +121,7 @@ namespace ProbablyBagMod.Mod
                 }
                 catch (Exception e)
                 {
-                    PBModEntry.Log.Error(
+                    FFModEntry.Log.Error(
                         "[装配]「" + def.key + "」" + name + " 失败：" + e);
                 }
             }

@@ -1,10 +1,10 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-namespace ProbablyBagMod.Mod
+namespace FluxForge.Mod
 {
     /// <summary>
-    /// 每帧宿主：内部 MonoBehaviour，由 <see cref="PBModEntry.OnEnable"/> 创建，
+    /// 每帧宿主：内部 MonoBehaviour，由 <see cref="FFModEntry.OnEnable"/> 创建，
     /// 挂在隐藏且跨场景保留的 GameObject 上。
     ///
     /// 职责只有三件：Update 推进逻辑、LateUpdate 推进视觉、场景卸载时重置。
@@ -16,7 +16,7 @@ namespace ProbablyBagMod.Mod
         /// <summary>创建隐藏宿主。重复调用会得到多个实例，调用方负责只创建一次。</summary>
         internal static ModHost Attach()
         {
-            GameObject hostObject = new GameObject("ProbablyBagMod.ModHost");
+            GameObject hostObject = new GameObject("FluxForge.ModHost");
             hostObject.hideFlags = HideFlags.HideAndDontSave;
             UnityEngine.Object.DontDestroyOnLoad(hostObject);
             return hostObject.AddComponent<ModHost>();
@@ -56,7 +56,7 @@ namespace ProbablyBagMod.Mod
             FlowDriver.Reset();
         }
 
-        /// <summary>由 PBModEntry 在 OnDisable 调用；销毁 GameObject 后宿主不再收到帧回调。</summary>
+        /// <summary>由 FFModEntry 在 OnDisable 调用；销毁 GameObject 后宿主不再收到帧回调。</summary>
         internal void Stop()
         {
             UnityEngine.Object.Destroy(gameObject);

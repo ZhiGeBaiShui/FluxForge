@@ -1,7 +1,7 @@
 using System.Collections.Generic;
-using ProbablyBagMod.Presentation.Flow.Visual;
+using FluxForge.Presentation.Flow.Visual;
 
-namespace ProbablyBagMod.Presentation.Flow.Particles
+namespace FluxForge.Presentation.Flow.Particles
 {
     /// <summary>单个视觉视图的粒子状态与逐帧算法。</summary>
     internal sealed class FlowParticleSystem

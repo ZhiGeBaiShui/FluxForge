@@ -1,4 +1,4 @@
-namespace ProbablyBagMod.Presentation.Flow.Visual
+namespace FluxForge.Presentation.Flow.Visual
 {
     /// <summary>
     /// 方向枚举 → 单位步长 / 运动反方向。**纯函数、零 Unity 依赖**。

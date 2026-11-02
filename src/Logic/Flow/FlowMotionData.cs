@@ -1,4 +1,4 @@
-namespace ProbablyBagMod
+namespace FluxForge
 {
     /// <summary>
     /// 流源的运动数据：方向 + 速度。

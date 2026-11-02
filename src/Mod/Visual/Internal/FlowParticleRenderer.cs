@@ -1,9 +1,9 @@
 using System.Collections.Generic;
-using ProbablyBagMod.Presentation.Flow.Particles;
+using FluxForge.Presentation.Flow.Particles;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace ProbablyBagMod.Mod.Visual.Internal
+namespace FluxForge.Mod.Visual.Internal
 {
     /// <summary>将粒子快照绘制到借入的根下；独占粒子池与白图，不参与模拟或根生命周期。</summary>
     internal sealed class FlowParticleRenderer

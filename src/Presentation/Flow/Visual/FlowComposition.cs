@@ -1,6 +1,6 @@
 using System;
 
-namespace ProbablyBagMod.Presentation.Flow.Visual
+namespace FluxForge.Presentation.Flow.Visual
 {
     /// <summary>
     /// 流源的六分量成分（相对权重，**不要求调用方先归一化**）。

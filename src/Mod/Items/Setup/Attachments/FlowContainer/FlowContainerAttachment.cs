@@ -1,4 +1,4 @@
-namespace ProbablyBagMod.Mod
+namespace FluxForge.Mod
 {
     /// <summary>
     /// mod 水容器生成器：把物品变成原版的液体容器。

@@ -1,5 +1,5 @@
-using ProbablyBagMod.Presentation.Flow.Visual;
-namespace ProbablyBagMod.Presentation.Flow.Particles
+using FluxForge.Presentation.Flow.Visual;
+namespace FluxForge.Presentation.Flow.Particles
 {
     /// <summary>
     /// 常驻环境粒子的可调参数。**纯值类型、零 Unity 依赖**，可以在测试项目里直接构造。

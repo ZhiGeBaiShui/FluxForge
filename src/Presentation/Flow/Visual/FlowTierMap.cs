@@ -1,4 +1,4 @@
-namespace ProbablyBagMod.Presentation.Flow.Visual
+namespace FluxForge.Presentation.Flow.Visual
 {
     /// <summary>
     /// 数据 → 图集枚举的**唯一换算入口**（IMPL-PLAN-A §4「Tier-0」）。

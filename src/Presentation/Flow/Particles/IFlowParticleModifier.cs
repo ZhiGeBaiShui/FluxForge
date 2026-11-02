@@ -1,6 +1,6 @@
-using ProbablyBagMod.Presentation.Flow.Visual;
+using FluxForge.Presentation.Flow.Visual;
 
-namespace ProbablyBagMod.Presentation.Flow.Particles
+namespace FluxForge.Presentation.Flow.Particles
 {
     /// <summary>
     /// 粒子 profile 的扩展点。实现必须**无状态、可重复调用**：

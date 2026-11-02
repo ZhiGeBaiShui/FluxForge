@@ -1,6 +1,6 @@
 using System;
 
-namespace ProbablyBagMod
+namespace FluxForge
 {
     /// <summary>
     /// 连续位置（浮点）。

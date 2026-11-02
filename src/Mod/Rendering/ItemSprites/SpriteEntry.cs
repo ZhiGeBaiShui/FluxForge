@@ -1,4 +1,4 @@
-namespace ProbablyBagMod.Mod.Rendering.ItemSprites
+namespace FluxForge.Mod.Rendering.ItemSprites
 {
     /// <summary>
     /// 单张贴图的配置项（sprites.json 一条）。

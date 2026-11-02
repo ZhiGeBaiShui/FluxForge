@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace ProbablyBagMod
+namespace FluxForge
 {
     /// <summary>
     /// 流源的生命周期：谁还活着、什么时候生、什么时候死。

@@ -4,7 +4,7 @@ using System.Reflection;
 using System.Text;
 using UnityEngine;
 
-namespace ProbablyBagMod.Mod
+namespace FluxForge.Mod
 {
     /// <summary>嵌入资源工具：探测资源名前缀（MSBuild 用 RootNamespace 作前缀）+ 读取资源内容。</summary>
     internal static class EmbeddedResources
@@ -66,7 +66,7 @@ namespace ProbablyBagMod.Mod
             }
             catch (Exception e)
             {
-                PBModEntry.Log.Error("[嵌入资源] 贴图解码失败 " + fileName + "：" + e);
+                FFModEntry.Log.Error("[嵌入资源] 贴图解码失败 " + fileName + "：" + e);
 
                 // 解码失败时刚创建的贴图不会再被任何字段引用，先销毁，避免每次重载漏一份
                 if (texture != null)
@@ -80,8 +80,8 @@ namespace ProbablyBagMod.Mod
 
         /// <summary>
         /// 探测资源前缀：找以 ".assets.文件名" 结尾的资源名，反推前缀。
-        /// 例：资源 "ProbablyBagMod.assets.items.json" + fileName "items.json"
-        ///     → 返回 "ProbablyBagMod.assets."（供拼其它文件名）。
+        /// 例：资源 "FluxForge.assets.items.json" + fileName "items.json"
+        ///     → 返回 "FluxForge.assets."（供拼其它文件名）。
         /// </summary>
         public static string FindPrefix(Assembly assembly, string fileName)
         {
@@ -96,7 +96,7 @@ namespace ProbablyBagMod.Mod
                 }
             }
 
-            PBModEntry.Log.Warning("[嵌入资源] 未找到 " + fileName + "，现有资源："
+            FFModEntry.Log.Warning("[嵌入资源] 未找到 " + fileName + "，现有资源："
                 + string.Join(", ", names));
             return assembly.GetName().Name + ".assets.";
         }

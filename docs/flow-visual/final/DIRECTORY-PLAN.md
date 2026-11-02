@@ -40,7 +40,7 @@ src/
 │         └─ FlowAmbientField.cs
 │
 └─ Mod/                                    # Unity / 游戏适配层
-   ├─ PBModEntry.cs                        # Bootstrap（唯一入口）
+   ├─ FFModEntry.cs                        # Bootstrap（唯一入口）
    ├─ Common/
    │   └─ EmbeddedResources.cs
    │
@@ -72,19 +72,19 @@ src/
 
 | 目录 | 命名空间 |
 |---|---|
-| `Presentation/Flow/Visual` | `ProbablyBagMod.Presentation.Flow.Visual` |
-| `Presentation/Flow/Particles` | `ProbablyBagMod.Presentation.Flow.Particles` |
-| `Mod/Flow`（根文件） | `ProbablyBagMod.Mod`（保持原 namespace，避免无谓改动） |
-| `Mod/Flow/View` | `ProbablyBagMod.Mod.Flow.View` |
-| `Mod/Rendering/FlowAtlas` | `ProbablyBagMod.Mod.Rendering.FlowAtlas` |
-| `Mod/Rendering/ItemSprites` | `ProbablyBagMod.Mod.Rendering.ItemSprites` |
-| `Mod/Flow/Adapters` | `ProbablyBagMod.Mod.Flow.Adapters` |
-| 其余 | `ProbablyBagMod.Mod` / `ProbablyBagMod.Mod.Items` / `ProbablyBagMod.Mod.Patches` |
+| `Presentation/Flow/Visual` | `FluxForge.Presentation.Flow.Visual` |
+| `Presentation/Flow/Particles` | `FluxForge.Presentation.Flow.Particles` |
+| `Mod/Flow`（根文件） | `FluxForge.Mod`（保持原 namespace，避免无谓改动） |
+| `Mod/Flow/View` | `FluxForge.Mod.Flow.View` |
+| `Mod/Rendering/FlowAtlas` | `FluxForge.Mod.Rendering.FlowAtlas` |
+| `Mod/Rendering/ItemSprites` | `FluxForge.Mod.Rendering.ItemSprites` |
+| `Mod/Flow/Adapters` | `FluxForge.Mod.Flow.Adapters` |
+| 其余 | `FluxForge.Mod` / `FluxForge.Mod.Items` / `FluxForge.Mod.Patches` |
 
 ## 3. 依赖规则（单向）
 
 ```
-PBModEntry (Bootstrap)
+FFModEntry (Bootstrap)
    │
    ├─► Mod.Flow (管理) ──────────► Mod.Flow.View ──► Mod.Rendering.FlowAtlas
    │        │                          │                    │
@@ -106,8 +106,8 @@ PBModEntry (Bootstrap)
 ## 4. 调用链（粒子 + 贴图）
 
 ```
-PBModEntry.OnUpdate            → FlowDriver.Update(dt)            # 逻辑推进
-PBModEntry.OnLateUpdate        → FlowDriver.LateUpdateVisuals(dt)
+FFModEntry.OnUpdate            → FlowDriver.Update(dt)            # 逻辑推进
+FFModEntry.OnLateUpdate        → FlowDriver.LateUpdateVisuals(dt)
                                    └─ FlowMachine.AtlasView.Tick(dt)      # View（管理）
                                         ├─ TryBuildItem → Layer.Submit    # 贴图
                                         └─ UpdateParticles
@@ -122,7 +122,7 @@ PBModEntry.OnLateUpdate        → FlowDriver.LateUpdateVisuals(dt)
 1. **建目录 + `git mv`**（未跟踪文件用 `Move-Item`；已跟踪文件用 `git mv` 保留历史）。
 2. 改 **namespace**（6 个）+ 全局 `using` 修正（Mod 内约 10 处、测试 3 处）。
 3. `dotnet build -c Release` 修到 0/0；`dotnet test` 107/107。
-4. 全仓检索旧命名空间：`ProbablyBagMod.Mod` 下不应再有 `Visual` 子目录引用。
+4. 全仓检索旧命名空间：`FluxForge.Mod` 下不应再有 `Visual` 子目录引用。
 5. 更新文档：`REFACTOR-A.md` 文件树、`IMPL-STATUS.md`、本文件状态。
 
 ## 6. 风险与对策
@@ -130,7 +130,7 @@ PBModEntry.OnLateUpdate        → FlowDriver.LateUpdateVisuals(dt)
 | 风险 | 对策 |
 |---|---|
 | 命名空间改动遗漏 `using` | 编译器会全部报出来；一次 build 即可收敛 |
-| 反射/字符串引用旧类型名 | 全仓检索 `"ProbablyBagMod.Mod.` 字符串；当前无 |
+| 反射/字符串引用旧类型名 | 全仓检索 `"FluxForge.Mod.` 字符串；当前无 |
 | Unity 序列化丢失 | 现有类均非 MonoBehaviour/ScriptableObject，无资产引用；DLL 内部类型名变化不影响 MelonLoader |
 | IL2CPP 注入类型 | 无 `[RegisterTypeInIl2Cpp]`，安全 |
 | 与并行 agent 冲突 | 迁移期间暂停其它写手；一次搬完再验证 |

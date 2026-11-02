@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
-using ProbablyBagMod.Mod.Visual;
+using FluxForge.Mod.Visual;
 
-namespace ProbablyBagMod.Mod
+namespace FluxForge.Mod
 {
     /// <summary>
     /// 按网格对象引用管理唯一运行环境，逐环境隔离逻辑与视觉异常。
@@ -35,7 +35,7 @@ namespace ProbablyBagMod.Mod
                 }
                 catch (Exception e)
                 {
-                    PBModEntry.Log.Error("[流源] 网格存活检查失败，已退役旧环境：" + e);
+                    FFModEntry.Log.Error("[流源] 网格存活检查失败，已退役旧环境：" + e);
                 }
 
                 // 同键失效项必须先从双表摘除并释放，才能创建替代环境。
@@ -78,7 +78,7 @@ namespace ProbablyBagMod.Mod
                 }
                 catch (Exception e)
                 {
-                    PBModEntry.Log.Error("[流源] 推进或存活检查失败，已退役该环境：" + e);
+                    FFModEntry.Log.Error("[流源] 推进或存活检查失败，已退役该环境：" + e);
                     Retire(runtime);
                 }
             }
@@ -106,7 +106,7 @@ namespace ProbablyBagMod.Mod
                 {
                     if (_visualErrorReported.Add(runtime))
                     {
-                        PBModEntry.Log.Error(
+                        FFModEntry.Log.Error(
                             "[流源] 视觉推进失败，已退役该环境（其它网格继续绘制）：" + e);
                     }
 
@@ -138,13 +138,13 @@ namespace ProbablyBagMod.Mod
             }
             catch (Exception e)
             {
-                PBModEntry.Log.Error("[流源] 退役时终止流源失败：" + e);
+                FFModEntry.Log.Error("[流源] 退役时终止流源失败：" + e);
             }
 
             // 死亡广播先由仍订阅的视图接收，再退订并销毁绘制层。
             DisposeView(runtime);
 
-            PBModEntry.Log.Log("[流源] 已移除失效的网格环境");
+            FFModEntry.Log.Log("[流源] 已移除失效的网格环境");
         }
 
         /// <summary>读档 / 换场景整体归零，沿用原语义，不逐流源广播死亡。</summary>
@@ -179,7 +179,7 @@ namespace ProbablyBagMod.Mod
             }
             catch (Exception e)
             {
-                PBModEntry.Log.Error("[流源] 释放视图失败：" + e);
+                FFModEntry.Log.Error("[流源] 释放视图失败：" + e);
             }
 
             // 即使 Dispose 抛异常也断开引用：半销毁的视图不能再被下一帧 Tick。

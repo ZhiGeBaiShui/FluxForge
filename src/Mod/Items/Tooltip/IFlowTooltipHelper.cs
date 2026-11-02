@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace ProbablyBagMod.Mod
+namespace FluxForge.Mod
 {
     /// <summary>
     /// tooltip 追加段（对应原版各 *Helper.CreateXxxTooltip 的角色）。

@@ -48,7 +48,7 @@ src/Mod/Items/
 └─ Tooltip/
 ```
 
-命名空间不变（`ProbablyBagMod.Mod`）。
+命名空间不变（`FluxForge.Mod`）。
 
 **成员归属**：
 
@@ -170,7 +170,7 @@ private static void ApplyAttachments(Il2Cpp.GameItem item, FlowItemDefinition de
 2. `ItemFactory.cs` 移入 `Setup/`（100% rename）；
 3. `FlowItemSetup.cs` → `Setup/ItemSetup.cs`：删 switch / 四个旧方法 / 四个 key 常量，加注册表 + `ApplyAttachments`；
 4. `FlowDeviceEvents` 增加 `Subscribe`；
-5. `PBModEntry`：3 处改名引用；**无初始化调用**；
+5. `FFModEntry`：3 处改名引用；**无初始化调用**；
 6. `FlowItemRegistry`：`FlowItemDefinition` 增加 `string[] attachments`；
 7. `FlowTags`：注释 cref 改为 `ItemSetup`；
 8. `items.json` 四条加 `attachments`。
@@ -179,8 +179,8 @@ private static void ApplyAttachments(Il2Cpp.GameItem item, FlowItemDefinition de
 
 | 项 | 命令 | 通过标准 |
 |---|---|---|
-| 构建 | `dotnet build ProbablyBagMod.csproj -c Release` | 0 warning / 0 error |
-| 单测 | `dotnet test tests\ProbablyBagMod.Tests\...\csproj -c Release` | 162 全绿 |
+| 构建 | `dotnet build FluxForge.csproj -c Release` | 0 warning / 0 error |
+| 单测 | `dotnet test tests\FluxForge.Tests\...\csproj -c Release` | 162 全绿 |
 | 引用 | grep `FlowItemSetup` / 四个 key 常量 | 0 命中 |
 
 ## 10. 风险与对策

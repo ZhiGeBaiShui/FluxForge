@@ -1,4 +1,4 @@
-namespace ProbablyBagMod
+namespace FluxForge
 {
     /// <summary>
     /// 流源：系统里流转的一个对象，携带全部游戏属性。纯数据对象。
@@ -19,7 +19,7 @@ namespace ProbablyBagMod
     /// </summary>
     public class FlowEntity
     {
-        /// <summary>流源中心的连续坐标，格中心位于格号加0.5处。</summary>
+        /// <summary>流源中心的连续坐标；Logic 的格中心是整数坐标（格 1 中心 = 1.00）。</summary>
         public FlowPos Position;
 
         /// <summary>运动数据（方向 / 速度）。</summary>

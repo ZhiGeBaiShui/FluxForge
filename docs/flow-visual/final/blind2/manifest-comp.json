@@ -1,31 +1,31 @@
 [
   {
-    "path": "E:\\code\\ProbablyBagMod\\docs\\flow-visual\\final\\tiles\\comp-water.png",
+    "path": "E:\\code\\FluxForge\\docs\\flow-visual\\final\\tiles\\comp-water.png",
     "group": "comp",
     "answer": "water"
   },
   {
-    "path": "E:\\code\\ProbablyBagMod\\docs\\flow-visual\\final\\tiles\\comp-poison.png",
+    "path": "E:\\code\\FluxForge\\docs\\flow-visual\\final\\tiles\\comp-poison.png",
     "group": "comp",
     "answer": "poison"
   },
   {
-    "path": "E:\\code\\ProbablyBagMod\\docs\\flow-visual\\final\\tiles\\comp-oil.png",
+    "path": "E:\\code\\FluxForge\\docs\\flow-visual\\final\\tiles\\comp-oil.png",
     "group": "comp",
     "answer": "oil"
   },
   {
-    "path": "E:\\code\\ProbablyBagMod\\docs\\flow-visual\\final\\tiles\\comp-blood.png",
+    "path": "E:\\code\\FluxForge\\docs\\flow-visual\\final\\tiles\\comp-blood.png",
     "group": "comp",
     "answer": "blood"
   },
   {
-    "path": "E:\\code\\ProbablyBagMod\\docs\\flow-visual\\final\\tiles\\comp-acid.png",
+    "path": "E:\\code\\FluxForge\\docs\\flow-visual\\final\\tiles\\comp-acid.png",
     "group": "comp",
     "answer": "acid"
   },
   {
-    "path": "E:\\code\\ProbablyBagMod\\docs\\flow-visual\\final\\tiles\\comp-energy.png",
+    "path": "E:\\code\\FluxForge\\docs\\flow-visual\\final\\tiles\\comp-energy.png",
     "group": "comp",
     "answer": "energy"
   }

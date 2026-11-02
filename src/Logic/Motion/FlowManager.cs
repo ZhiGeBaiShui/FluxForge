@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace ProbablyBagMod
+namespace FluxForge
 {
     /// <summary>
     /// 流源的运动：一帧推进多少、撞上谁、被谁拦住。
@@ -23,14 +23,6 @@ namespace ProbablyBagMod
 
         /// <summary>速度高于该值却连续不动，才算受阻。</summary>
         private const double BlockedMinSpeed = 0.01d;
-
-        /// <summary>
-        /// 撞上装置时停在装置格内的偏移量（沿运动方向前进一点点）。
-        /// 让位置明确落在装置格内部、不压在格边界上：
-        /// 下一帧起点格仍是装置格，探测从下一格开始，本装置只触发一次。
-        /// 1e-3 格远小于一格，视觉上不可见。
-        /// </summary>
-        private const double StopEpsilon = 1e-3;
 
         private sealed class BlockedState
         {
@@ -189,73 +181,80 @@ namespace ProbablyBagMod
             int stepX = FlowMotionData.StepX(direction);
             int stepY = FlowMotionData.StepY(direction);
 
-            int probeX = (int)Math.Floor(startPos.X);
-            int probeY = (int)Math.Floor(startPos.Y);
-            int endCellX = (int)Math.Floor(endPos.X);
-            int endCellY = (int)Math.Floor(endPos.Y);
-
-            // 位移不足一格（起点格 == 终点格）时循环不执行，直接判无阻挡
-            while (probeX != endCellX || probeY != endCellY)
+            // 只遍历本帧真正经过的整数坐标，包含“起点所在格但还没经过的坐标”。
+            // 向左/向上时起点格可能正是装置格：Floor(start) 会把该格排除掉，
+            // 必须从 Ceiling(start)-1 开始，才能看到起点与终点之间的装置坐标。
+            if (stepX != 0)
             {
-                probeX += stepX;
-                probeY += stepY;
+                int baseY = (int)Math.Floor(startPos.Y);
+                int cellX = stepX > 0
+                    ? (int)Math.Floor(startPos.X) + 1
+                    : (int)Math.Ceiling(startPos.X) - 1;
 
-                IFlowRouter router = _grid.GetRouterAt(probeX, probeY);
-                IFlowDevice reactor = _grid.GetReactorAt(probeX, probeY);
+                while (stepX > 0 ? cellX <= endPos.X : cellX >= endPos.X)
+                {
+                    if (TryProbeCell(entity, flows, cellX, baseY))
+                    {
+                        return true;
+                    }
 
-                // 先反应、后路由：同一格两者都有时，反应先改属性，路由再按新属性分流
-                bool blocked = false;
-                if (reactor != null && reactor.TryReact(entity.Properties))
-                {
-                    blocked = true;
-                }
-                if (router != null && router.Route(entity, flows, probeX, probeY))
-                {
-                    blocked = true;
+                    cellX += stepX;
                 }
 
-                if (blocked)
+                return false;
+            }
+
+            int baseX = (int)Math.Floor(startPos.X);
+            int cellY = stepY > 0
+                ? (int)Math.Floor(startPos.Y) + 1
+                : (int)Math.Ceiling(startPos.Y) - 1;
+
+            while (stepY > 0 ? cellY <= endPos.Y : cellY >= endPos.Y)
+            {
+                if (TryProbeCell(entity, flows, baseX, cellY))
                 {
-                    StopAt(entity, probeX, probeY, stepX, stepY);
                     return true;
                 }
+
+                cellY += stepY;
             }
 
             return false;
         }
 
-        /// <summary>
-        /// 把流源落到装置格的内缘上。
-        /// 单独抽出来是因为「落位」必须发生在把控制权交给装置**之前**，
-        /// 见 <see cref="TryFindBlocker"/> 里的说明。
-        /// </summary>
-        private static void StopAt(FlowEntity entity, int cellX, int cellY, int stepX, int stepY)
+        private bool TryProbeCell(
+            FlowEntity entity, FlowSpawner flows, int cellX, int cellY)
         {
-            entity.Position.Set(
-                StopInsideCell(entity.Position.X, cellX, stepX),
-                StopInsideCell(entity.Position.Y, cellY, stepY));
+            IFlowRouter router = _grid.GetRouterAt(cellX, cellY);
+            IFlowDevice reactor = _grid.GetReactorAt(cellX, cellY);
+
+            // 先反应、后路由：同一格两者都有时，反应先改属性，路由再按新属性分流
+            bool blocked = false;
+            if (reactor != null && reactor.TryReact(entity.Properties))
+            {
+                blocked = true;
+            }
+            if (router != null && router.Route(entity, flows, cellX, cellY))
+            {
+                blocked = true;
+            }
+
+            if (!blocked)
+            {
+                return false;
+            }
+
+            // 反应发生后，流源截停到装置所在的整数格。
+            StopAt(entity, cellX, cellY);
+            return true;
         }
 
         /// <summary>
-        /// 撞停位置必须落在格子内部：停在格边界上会让下一帧的 Floor 判到隔壁格，
-        /// 向左/向下撞停时甚至会算出负数坐标，被越界判定当场回收。
-        ///
-        /// 沿运动的那个轴停在入口侧内缘（从右往左撞就停在右边缘内 eps 处）；
-        /// 不沿运动轴移动的那个轴原样保留，否则流源会被瞬间吸附到格中线，看起来像跳了一下。
+        /// 把流源截停到装置所在的整数格中心。
         /// </summary>
-        private static double StopInsideCell(double current, int cell, int step)
+        private static void StopAt(FlowEntity entity, int cellX, int cellY)
         {
-            if (step > 0)
-            {
-                return cell + StopEpsilon;
-            }
-
-            if (step < 0)
-            {
-                return cell + 1d - StopEpsilon;
-            }
-
-            return current;
+            entity.Position.Set(cellX, cellY);
         }
     }
 }
