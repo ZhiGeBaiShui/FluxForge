@@ -14,7 +14,6 @@ namespace FluxForge.Tests
         {
             "collector",
             "ice_block",
-            "emitter",
             "turn",
             "l_right_down",
             "t_junction",

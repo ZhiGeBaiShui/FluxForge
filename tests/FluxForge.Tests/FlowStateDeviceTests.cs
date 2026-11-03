@@ -9,49 +9,6 @@ namespace FluxForge.Tests
     public class FlowStateDeviceTests
     {
         [Fact]
-        public void Emitter_NonWaterLiquidStock_EmitsFullPayloadAndClearsLiquidOnly()
-        {
-            FlowSpawner flows = new FlowSpawner();
-            List<FlowEntity> spawned = new List<FlowEntity>();
-            flows.OnEntityAdded += spawned.Add;
-
-            EmitterDevice emitter = new EmitterDevice(TestFlow.Make(0d, 20d));
-            emitter.Stock.Set(FlowProps.Fat, 50d);
-            emitter.Stock.Set(FlowProps.Protein, 25d);
-            Assert.True(emitter.HasContent);
-
-            Assert.True(emitter.EmitAll(new FlowPos(0.5d, 0.5d), 1, flows));
-
-            // 载荷完整：纯油库存也能发射，液体与温度都带走
-            FlowProperties payload = Assert.Single(spawned).Properties;
-            Assert.Equal(50d, payload.Get(FlowProps.Fat));
-            Assert.Equal(25d, payload.Get(FlowProps.Protein));
-            Assert.Equal(0d, payload.Get(FlowProps.Water));
-            Assert.Equal(20d, payload.Get(FlowProps.Temperature));
-
-            // 存量清零全部液体、保留温度
-            Assert.Equal(0d, emitter.Stock.SubstanceTotal);
-            Assert.Equal(0d, emitter.Stock.Get(FlowProps.Fat));
-            Assert.Equal(0d, emitter.Stock.Get(FlowProps.Protein));
-            Assert.Equal(0d, emitter.Stock.Get(FlowProps.Water));
-            Assert.Equal(20d, emitter.Stock.Get(FlowProps.Temperature));
-            Assert.False(emitter.HasContent);
-
-            // 载荷与库存深拷贝独立
-            payload.Set(FlowProps.Fat, 1d);
-            Assert.Equal(0d, emitter.Stock.Get(FlowProps.Fat));
-        }
-
-        [Fact]
-        public void Emitter_TemperatureOnly_HasNoContent()
-        {
-            EmitterDevice emitter = new EmitterDevice(TestFlow.Make(0d, 20d));
-
-            Assert.False(emitter.HasContent);
-            Assert.Equal(20d, emitter.Stock.Get(FlowProps.Temperature));
-        }
-
-        [Fact]
         public void IceBlock_NonWaterLiquidFlowWithoutWater_DoesNotMelt()
         {
             IceBlockDevice ice = new IceBlockDevice(10d, -5d);
@@ -92,11 +49,11 @@ namespace FluxForge.Tests
         }
 
         [Fact]
-        public void Emitter_FlowState_RoundTripsEveryRegisteredProperty()
+        public void FlowProperties_FlowState_RoundTripsEveryRegisteredProperty()
         {
-            EmitterDevice emitter = new EmitterDevice(TestFlow.Make(0d, 0d));
+            FlowProperties properties = new FlowProperties();
 
-            AssertFlowStateRoundTrip(emitter);
+            AssertFlowStateRoundTrip(properties);
         }
 
         [Fact]

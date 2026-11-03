@@ -75,9 +75,6 @@ namespace FluxForge.Mod.Visual.Internal
         /// <summary>残影 alpha：越远越淡（与 final/png/trail-probe.png 的 A 方案一致，Σα≈1.43）。</summary>
         private static readonly float[] GhostAlpha = { 0.42f, 0.34f, 0.27f, 0.20f, 0.13f, 0.07f };
 
-        /// <summary>叠放顺序检查的间隔（次 Submit）：面板重建才会插新节点，没必要每帧查。</summary>
-        private const int SiblingChecksEveryNSubmits = 30;
-
         /// <summary>某个 Image 上一次真正写入的 sprite/color（相同则跳过赋值）。</summary>
         private struct QuadCache
         {
@@ -155,13 +152,10 @@ namespace FluxForge.Mod.Visual.Internal
         /// </summary>
         private bool _dotOrderDirty;
 
-        /// <summary>距下一次叠放顺序检查还剩几次提交；层重建时随新实例归零重算。</summary>
-        private int _siblingCheckCountdown = SiblingChecksEveryNSubmits;
-
         /// <summary>Destroy 之后不再提交（旧层可能比网格晚一帧才真正销毁）。</summary>
         private bool _destroyed;
 
-        public FlowAtlasLayer(RectTransform gridRect)
+        public FlowAtlasLayer(RectTransform gridRect, RectTransform below)
         {
             _gridRect = gridRect;
 
@@ -180,8 +174,17 @@ namespace FluxForge.Mod.Visual.Internal
             _root.sizeDelta = gridRect.rect.size;
             _root.localScale = Vector3.one;
 
-            // 画在网格里所有物品之后，流源才不会被装置挡住
-            _root.SetAsLastSibling();
+            // 流源是格子里的液体：画在格子背景之上、所有物品之下。
+            // below 是物品容器（GameGridInventory.inner），插到它之前即可；
+            // 拿不到时退回最后一位，至少保证可见。
+            if (below != null && ReferenceEquals(below.parent, gridRect))
+            {
+                _root.SetSiblingIndex(below.GetSiblingIndex());
+            }
+            else
+            {
+                _root.SetAsLastSibling();
+            }
 
             // 子 Canvas = 重建边界：本层每帧都有本体/粒子在动，若不隔离，
             // 每帧都会把背包网格所在的 Canvas 整体标脏（重建范围含全部物品）。
@@ -267,19 +270,6 @@ namespace FluxForge.Mod.Visual.Internal
             if (!TryBeginSubmit(out Rect area, out float ppu))
             {
                 return;
-            }
-
-            // 面板重建可能新建了物品节点：确保本层仍在最上层。
-            // 只有重建才会插进新节点，所以每 30 次提交查一次即可（层重建时构造器已 SetAsLastSibling）。
-            if (--_siblingCheckCountdown <= 0)
-            {
-                _siblingCheckCountdown = SiblingChecksEveryNSubmits;
-
-                Transform parent = _root.parent;
-                if (parent != null && _root.GetSiblingIndex() != parent.childCount - 1)
-                {
-                    _root.SetAsLastSibling();
-                }
             }
 
             float sizePx = QuadSizePx(ppu);

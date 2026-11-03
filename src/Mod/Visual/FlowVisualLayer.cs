@@ -67,13 +67,6 @@ namespace FluxForge.Mod.Visual
         /// <summary>本网格的图集层；面板还没建好时为 null。</summary>
         private FlowAtlasLayer _layer;
 
-        /// <summary>
-        /// 本网格的物品顶层覆盖层（网格构造时已挂好，不随流源懒创建）。
-        /// 只用于提交流源之后把它压回最后一位，保证覆盖层不被流源盖住；
-        /// 内容刷新由覆盖层自己的 LateUpdate 负责。
-        /// </summary>
-        private readonly FlowItemOverlayLayer _overlay;
-
         /// <summary>当前层挂在哪个网格 RectTransform 上（变了就重建层）。</summary>
         private RectTransform _rect;
 
@@ -97,8 +90,6 @@ namespace FluxForge.Mod.Visual
                 _flows.OnEntityRemoved += _removedHandler;
                 _flows.OnEntityBlockedChanged += _blockedChangedHandler;
             }
-
-            _overlay = FlowItemOverlayLayer.Find(inventory.rectTransform);
         }
 
         /// <summary>
@@ -168,11 +159,8 @@ namespace FluxForge.Mod.Visual
             _particles.CompleteFrame(deltaTime, _dots);
 
             // 本帧的本体与粒子一次性提交；层在解析处已确认存活。
-            // 流源层的构造/周期检查会把自己排到网格子节点最后，覆盖层必须在这一帧
-            // 的流源提交之后再压回去，否则它会被流源盖住。
             layer.Submit(_items);
             layer.SubmitDots(_dots);
-            _overlay.BringToFront();
         }
 
         /// <summary>
@@ -288,9 +276,19 @@ namespace FluxForge.Mod.Visual
             }
 
             _rect = rect;
-            _layer = new FlowAtlasLayer(rect);
+            _layer = new FlowAtlasLayer(rect, ResolveBelow());
             layer = _layer;
             return rect;
+        }
+
+        /// <summary>
+        /// 流源层要插在物品容器（<c>inner</c>）之前：格子背景之上、所有物品之下。
+        /// 调用方 <see cref="ResolveRect"/> 已确认 <c>_inventory</c> 非空。
+        /// </summary>
+        private RectTransform ResolveBelow()
+        {
+            TreeNodeRender inner = _inventory.inner;
+            return inner == null ? null : inner.rectTransform;
         }
 
         /// <summary>

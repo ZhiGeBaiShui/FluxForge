@@ -68,9 +68,6 @@
     },
     {
       "key": "flow_emitter",
-      "device": "emitter",
-      "anchorX": 0,
-      "anchorY": 0,
       "capacityMl": 1000000,
       "sprite": "flow_emitter",
       "name": "发射装置",
@@ -81,7 +78,6 @@
       ],
       "attachments": [
         "flow_container",
-        "device",
         "emitter"
       ],
       "tags": [
@@ -172,12 +168,6 @@
       ],
       "attachments": [
         "device"
-      ],
-      "tags": [
-        {
-          "valueName": "FLUXFORGE_RENDER_ABOVE_FLOW",
-          "valueInt": 1
-        }
       ]
     },
     {
@@ -189,13 +179,7 @@
       "itemTypes": [
         "FLOW_DEVICE"
       ],
-      "attachments": [],
-      "tags": [
-        {
-          "valueName": "FLUXFORGE_RENDER_ABOVE_FLOW",
-          "valueInt": 1
-        }
-      ]
+      "attachments": []
     }
   ]
 }

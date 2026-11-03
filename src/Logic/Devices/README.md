@@ -22,9 +22,6 @@ Devices/
 ├─ Reaction/                   # 改变流源属性的装置
 │  └─ IceBlock/
 │     └─ IceBlockDevice.cs
-├─ Source/                     # 生成流源的装置（不是路由，不实现 IFlowRouter）
-│  └─ Emitter/
-│     └─ EmitterDevice.cs
 ├─ FlowDeviceCatalog.cs        # items.json device key → 无参工厂（唯一登记点）
 ```
 
@@ -35,15 +32,15 @@ Devices/
 ## 新增装置：创建时声明什么
 
 1. **目录和类**
-   - 路由装置放 `Routing/<类别>/`，反应装置放 `Reaction/<类别>/`，
-     生成流源的装置放 `Source/<类别>/`；
+   - 路由装置放 `Routing/<类别>/`，反应装置放 `Reaction/<类别>/`；
    - 类必须是 `public sealed`（或 `SplitDevice` 的 `public sealed` 派生类），
      并提供 **public 无参构造**；`FlowDeviceCatalog` 和测试都直接 `new`。
 
 2. **角色接口**
    - 反应：`IFlowDevice`，实现 `TryReact(FlowProperties)`；
    - 路由：`IFlowRouter`，实现 `Route(FlowEntity, FlowSpawner, cellX, cellY)`；
-   - 纯生成流源：参考 `EmitterDevice`，不需要 `IFlowRouter`；
+   - 发射不是装置：流源由 `FlowRuntime.Emit` 直接从物品存量生成，
+     Logic 层没有「发射装置类」；
    - 分流变体：继承 `SplitDevice`，只传通道常量和发射数量，不重写 `Route`：
      ```csharp
      public sealed class XxxSplitDevice : SplitDevice
@@ -80,7 +77,7 @@ Devices/
      ```
    - `Get` 对未拥有的 key 可以返回 0，`Set` 可以忽略；因为 `FlowStock`
      只遍历 `Keys`，未声明的槽位不会参与 tag 读写。
-   - `FlowProperties`、`EmitterDevice`、`CollectorDevice` 是完整状态，`Keys`
+   - `FlowProperties`、`CollectorDevice` 是完整状态，`Keys`
      返回 `FlowPropertyRegistry.AllKeys`；`IceBlockDevice` 只返回
      `Water` / `Temperature`。
 
@@ -94,9 +91,9 @@ Devices/
      `FlowDeviceEvents.OnChanged` 调 `FlowStock.Write(item, device)`，
      只写 `Keys` 里的槽位。
    - 装置会从网格销毁（如冰块化完）时触发 `Exhausted`；
-     永远不会销毁的装置（Collector / Emitter）用空访问器实现，保持订阅链路统一。
-   - 不要在 Attach 里读 tag，也不要自己写 `FlowStock`；读档回灌由首次有效发射的
-     `FlowRuntime.Adopt` 调 `FlowStock.ReadInto`，之后由 `Changed` 写回。
+     永远不会销毁的装置（Collector）用空访问器实现，保持订阅链路统一。
+   - 不要在 Attach 里读 tag，也不要自己写 `FlowStock`；存量在物品挂上容器时
+     由 `ItemDeviceBinding.Bind` 调 `FlowStock.ReadInto` 灌入，之后由 `Changed` 写回。
 
 5. **目录登记**
    - 在 `FlowDeviceCatalog` 的静态字典里加一行：
