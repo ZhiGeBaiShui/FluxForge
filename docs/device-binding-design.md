@@ -1,6 +1,18 @@
-# 装置通用绑定与 Split 变体体系（设计稿 v0.1）
+# 装置通用绑定与 Split 变体体系（历史设计稿 v0.1）
 
-> 状态：**已实施**，2026-11-01。设计稿保留为决策记录；实现结果：`dotnet build` 0 warning / 0 error，`dotnet test` 230 / 230 通过；本轮已把 `FluxForge.dll` 复制到游戏 `Mods\FluxForge` 做功能测试，尚未发布。
+> 状态：**历史设计记录**（2026-11-01 已实施；保留为决策记录）。**本文不代表当前实现**，当前代码请以 `src/Logic/Devices/`、`src/Mod/DeviceServices/`、`src/Mod/GridBuilding/` 为准。
+>
+> **当前实现差异（2026-11-04 核对）**：
+>
+> - **无 `EmitterDevice` / `EmitAll` / `Adopt`**：发射由 `FlowRuntime.Emit` 直接完成（`FlowStock.Read` → 生成流源 → 液体归零写回）；没有 `FlowRuntime._adopted`。
+> - **装置身份改为 tag 驱动**：`DeviceAttachment` 只把 `items.json` 的 `device` 字段写成**同名 tag**，并写 `FLUXFORGE_DEVICE_ANCHOR_X/Y` 中心格 tag；不在 Attach 时 `new` 装置。`ItemDeviceBinding.Bind` 在物品挂上网格（#2）和读档完成（#6）时遍历 `FlowDeviceCatalog.Keys`，命中 tag 才构造并登记。
+> - **§4.4「构造/类型 key 只放 items.json，不放 tag」已被推翻**：`device` key 现在就是持久化 tag 名，改名等于换物品；旧存档会丢失装置身份。
+> - Logic 目录当前 key：`collector` / `ice_block` / `turn` / `l_right_down` / `t_junction` / `double_emit`（**没有 `emitter`**）。
+> - Split 常量：`Turn {3,2}`（默认 1 道）、`LRightDown {1,2}`（默认 1 道）、`TJunction {0,1,3}` + `{1,1,1}`、`DoubleEmit {0,2}` + `{2,2}`。
+> - 网格登记粒度、朝向同步在 `FlowGridAdapter.RegisterCore`：按 anchor tag + `GridShape.ForwardTransform` 落到一格，并写 `SplitDevice.Facing`；本文提到的 `FlowGridAdapter.Refresh` 已不存在。
+> - 测试基线：当前 **221 / 221**（本文 §5/§9 里的 230 是当时基线）。
+> - §3.4（adopt 回灌）、§3.6（`DeviceRegistry` 代码片段）、§4.2（items.json 示例）、§5（迁移步骤）保留为历史方案；实际实现见上面列出的文件。
+
 > 仓库：`E:\code\FluxForge`；游戏：Probably Stolen 0.46；框架：官方 Mono mod（`manifest.xml` + `FluxForge.dll`）；目标框架：`netstandard2.1`；脚本后端：Mono（`Assembly-CSharp.dll`）。
 > 事实校正：`.modstudio/AGENTS.md`、`TDD.md`、`context.md` 里的 il2cpp / MelonLoader 0.7.3 / net6.0 是旧阶段（流源视觉 v1）的记录，**不是当前事实**；当前构建与加载以 `FluxForge.csproj`、`manifest.xml`、README 为准。
 > 评审输入：架构子代理、Split 子代理（两轮）、对抗审查子代理（两轮）、数据/持久化子代理。本文是汇总裁决稿；未修改源码。

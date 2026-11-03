@@ -12,6 +12,9 @@ namespace FluxForge.Mod
     /// 不按容器类型过滤：装置属于物品，不属于它当下待的容器。
     /// 唯一的判据是物品身上有没有装置类型 tag（见 <see cref="ItemDeviceBinding"/>）。
     ///
+    /// 注意时序：原版 UncheckedAccept 在 AddParent 之后才 ValidateShapeState，
+    /// 这里读到的是挂载瞬间的形状；排序 / 读档这类批量路径结束后仍要 Rebuild 校正。
+    ///
     /// 生命周期 #2（物品进入网格），完整表见 `Lifecycle/README.md`。
     /// </summary>
     [HarmonyPatch(typeof(GameItem), "AddParent")]
@@ -42,7 +45,8 @@ namespace FluxForge.Mod
             FlowRuntime runtime = GridRegistry.Get(inventory);
             if (runtime == null)
             {
-                // 兜底：游戏原生网格（柜台等）可能不走 SetShape，现场注册一次。
+                // 构造期登记已完成；不变量强校验尚未落地，这里仍保留兜底注册：
+                // 查不到说明登记被退役或整体清空，而网格还在接收挂载。
                 runtime = GridRegistry.Register(inventory);
             }
 

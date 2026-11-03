@@ -8,6 +8,9 @@ namespace FluxForge.Mod
     /// 挂在隐藏且跨场景保留的 GameObject 上。
     ///
     /// 职责只有三件：Update 推进逻辑、LateUpdate 推进视觉、场景卸载时重置。
+    /// 驱动与重置都不持有登记表：<see cref="GridRegistry"/> / <see cref="DeviceRegistry"/>
+    /// 是静态根，宿主销毁不会带走它们，真正的边界清理在
+    /// <see cref="FFModEntry.OnDisable"/> 与 <see cref="SaveExited"/>。
     ///
     /// 生命周期 #8（场景卸载），完整表见 `Lifecycle/README.md`。
     /// </summary>
@@ -55,6 +58,9 @@ namespace FluxForge.Mod
 
         private void OnSceneUnloaded(Scene scene)
         {
+            // sceneUnloaded 每卸载一个场景都会触发（含 additive）；场景卸载不等于
+            // 网格销毁，所以只 Reset（杀流源、清装置、保留网格登记）。真正的单网格
+            // 退役由 GridLifetime.OnDestroy 触发。
             FlowDriver.Reset();
         }
 

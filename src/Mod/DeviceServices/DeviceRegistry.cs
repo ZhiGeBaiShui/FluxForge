@@ -12,6 +12,9 @@ namespace FluxForge.Mod
     /// 这时反向表里没有它，事件订阅自然跳过——静默丢失是正确的语义。
     ///
     /// 登记即订阅、注销即退订；订阅点只有这里。
+    ///
+    /// 登记表是独立的静态根：物品离开网格、网格退役都只摘格表与流源，不会注销装置；
+    /// 条目只由装置播报 Exhausted（<see cref="FlowDeviceEvents"/>）或整体清表移除。
     /// </summary>
     public static class DeviceRegistry
     {
@@ -56,8 +59,8 @@ namespace FluxForge.Mod
         /// <summary>
         /// 该物品是否已经登记过装置。
         ///
-        /// 落地绑定必须先查再建：同网格移动是「Expel + Accept」，每次都会重新进入网格，
-        /// 不查就会每次都白造一台装置再丢弃。
+        /// 落地绑定必须先查再建：同网格移动会重新走 RemoveParent + AddParent，
+        /// 每次都会重新进入网格，不查就会每次都白造一台装置再丢弃。
         /// </summary>
         public static bool Contains(GameItem item)
         {
@@ -81,7 +84,10 @@ namespace FluxForge.Mod
             }
         }
 
-        /// <summary>读档 / 换场景时整体失效。</summary>
+        /// <summary>
+        /// 退出存档 / 场景卸载 / mod 卸载时整体失效
+        /// （<see cref="FlowDriver.Reset"/> / <see cref="FlowDriver.Shutdown"/> 调用）。
+        /// </summary>
         public static void Clear()
         {
             foreach (IFlowNotifier device in _items.Keys)

@@ -57,7 +57,7 @@ namespace FluxForge
     /// </summary>
     public sealed class FlowPropertyDef
     {
-        /// <summary>稳定标识（例：water / temperature）。</summary>
+        /// <summary>稳定标识（例：water / container_temp）。</summary>
         public string Id { get; }
 
         /// <summary>数据种类。</summary>

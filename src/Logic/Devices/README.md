@@ -17,6 +17,7 @@ Devices/
 │  └─ Split/
 │     ├─ SplitDevice.cs        # 抽象基类：校验、Facing 换算、Route 算法
 │     ├─ Turn/TurnDevice.cs
+│     ├─ LRightDown/LRightDownDevice.cs
 │     ├─ TJunction/TJunctionDevice.cs
 │     └─ DoubleEmit/DoubleEmitDevice.cs
 ├─ Reaction/                   # 改变流源属性的装置
@@ -26,7 +27,7 @@ Devices/
 ```
 
 游戏侧 `orientation → 方向码` 的换算是适配层职责，放在
-`src/Mod/Flow/Adapters/FlowFacing.cs`；Logic 只认识 `SplitDevice.Facing` 0..3，
+`src/Mod/Game/FlowFacing.cs`；Logic 只认识 `SplitDevice.Facing` 0..3，
 没有 `IFacingAware` 之类的朝向接口。
 
 ## 新增装置：创建时声明什么
@@ -100,15 +101,22 @@ Devices/
      ```csharp
      ["xxx"] = () => new XxxDevice(),
      ```
-   - key 必须唯一，并与 `items.json` 的 `device` 完全一致；没有运行期兜底，
-     未知 key 会在 `FlowDeviceCatalog.Create` 的字典索引直接失败。
+   - key 必须唯一，并与 `items.json` 的 `device` 完全一致。
+     **当前没有 key 的启动校验**：绑定端是「遍历目录里的全部 key，命中哪个 tag 就建哪个装置」，
+     所以 `items.json` 写了未知 key 时只会留下一个没有绑定方的 tag，**不会抛异常**；
+     拼写错误必须靠评审或后续加启动校验发现。
 
 6. **items.json**
-   - 声明 `device` 和 `device` 附件：
+   - 声明 `device`（同时是持久化 tag 名）、中心格和 `device` 附件：
      ```json
      "device": "xxx",
+     "anchorX": 0,
+     "anchorY": 0,
      "attachments": ["device"],
      ```
+   - `anchorX` / `anchorY` 是基础形状的局部坐标，运行时由
+     `GridShape.ForwardTransform` 换算；`device` 附件会把它写成
+     `FLUXFORGE_DEVICE_ANCHOR_X/Y` tag，缺字段直接抛异常。
    - 需要放进流量机网格的物品，再加：
      ```json
      "itemTypes": ["FLOW_DEVICE"],
@@ -118,8 +126,12 @@ Devices/
 
 7. **不需要声明的东西**
    - 不需要为装置单独写 Mod attachment：所有装置统一走 `DeviceAttachment`；
-   - 不需要实现朝向接口：分流器的 `Facing` 由适配层直接写 `SplitDevice.Facing`；
-   - 不需要在 Attach 时读 tag：tag 是存档真相，首次发射的 adopt 负责回灌；
+   - 不需要实现朝向接口：分流器的 `Facing` 由 `FlowGridAdapter.RegisterCore` 直接写 `SplitDevice.Facing`；
+   - 不需要在 Attach 时读 tag：tag 是存档真相，绑定发生在物品挂上网格
+     （`ItemDeviceBinding.Bind`）和读档完成（生命周期 #6），两处都会 `FlowStock.ReadInto`；
    - 不需要在装置里保存 `GameItem` / `TagState`，也不需要引用 Unity。
 
-详细设计：`docs/device-binding-design.md`。
+> 注意：`device` key 同时是持久化 tag 名。改 key 等于换物品，旧存档会丢失装置身份；
+> 改名必须按读档兼容处理，不能只改 `items.json`。
+
+详细设计：`docs/device-binding-design.md`（历史设计稿；当前绑定已改为 tag 驱动，差异见该文状态头）。

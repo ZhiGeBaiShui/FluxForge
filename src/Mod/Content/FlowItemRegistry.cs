@@ -9,7 +9,7 @@ namespace FluxForge.Mod
     /// 物品定义管理者（单例）：配置驱动（嵌入 assets/items.json），
     /// 描述每个自定义物品（identifier / 贴图 key / 显示名 / 类型 / 标签 / 装配件）。
     ///
-    /// 新增物品 = items.json 加一条 + 放一张 mod/Textures/Items/&lt;sprite&gt;.png + 重编译——零 C# 改动。
+    /// 新增物品 = items.json 加一条 + 放一张对应 png（文件名见 sprites.json 的 file）+ 重编译——零 C# 改动。
     /// </summary>
     public sealed class FlowItemRegistry
     {
@@ -152,7 +152,7 @@ namespace FluxForge.Mod
         /// <summary>物品 identifier（= 贴图 key 约定；存档按它找回）。</summary>
         public string key { get; set; }
 
-        /// <summary>模组物品精灵图 key（Textures/Items/&lt;key&gt;.png；空则回退用 key 本身）。</summary>
+        /// <summary>模组物品贴图 key（查 sprites.json 的 key；空则回退用物品 key 本身）。</summary>
         public string sprite { get; set; }
 
         /// <summary>显示名（空则留空）。</summary>
@@ -178,20 +178,20 @@ namespace FluxForge.Mod
         public long value { get; set; }
 
         /// <summary>
-        /// 面板网格尺寸（仅流量机这类带网格的物品用）：如 "4x3" 表示 4 列 3 行。
-        /// 空则用默认 4x3。
+        /// （预留）面板网格尺寸，如 "4x3" 表示 4 列 3 行。
+        /// 当前没有读取方；留作带网格物品的配置位。
         /// </summary>
         public string grid { get; set; }
 
         /// <summary>
-        /// 该网格接受哪个物品类型（类型名即 tag）。仅带网格的物品用；
-        /// 由 <c>ContainerHelper.AllowOnlyTaggedItem</c> 实施白名单。
+        /// （预留）该网格接受哪个物品类型（类型名即 tag）。
+        /// 当前没有读取方，白名单尚未接线。
         /// </summary>
         public string acceptsType { get; set; }
 
         /// <summary>
-        /// 液体容器容量（毫升）。由 flow_container 装配件翻译成
-        /// <c>WaterHelper.InitLiquidContainerItem(item, capacityMl, 0)</c>；
+        /// 液体容器容量（毫升）。由 flow_container / water_bottle 装配件传给
+        /// <c>WaterHelper.InitLiquidContainerItem</c>；
         /// 不声明 = 0，即不给这件物品容器身份。
         /// </summary>
         public int capacityMl { get; set; }
@@ -199,21 +199,21 @@ namespace FluxForge.Mod
         /// <summary>
         /// 行为装配件名列表（对应 <see cref="ItemAttachment.Name"/>），按声明顺序执行。
         /// 必须是数组；缺失或空数组 = 纯数据物品（合法，且不输出任何日志）。
-        /// 名字未识别记一条 Msg；同一独占槽冲突记 Error 并跳过后者。
+        /// 名字未识别记一条 Msg；运行期不检查互斥，同一字段被写两次时后者生效。
         /// </summary>
         public string[] attachments { get; set; }
 
         /// <summary>
         /// Logic 装置目录 key（<c>FlowDeviceCatalog</c>）；空 = 纯数据物品。
         ///
-        /// 只给 "device" 附件用：它按这个 key 取一台新装置并登记。key 本身不进 tag，
-        /// 读档时 tag 会被旧档覆盖，构造/类型信息只能留在 items.json。
+        /// 只给 "device" 附件用：它把 key 本身启用为 tag；物品进入容器 / 读档补绑时，
+        /// <see cref="ItemDeviceBinding"/> 再按同名 tag 从目录构造并登记装置。
         /// </summary>
         public string device { get; set; }
 
         /// <summary>
         /// 装置中心格的 X 局部坐标（基础形状坐标，0 起）。
-        /// 只有需要中心格的分流装置才声明；缺失 = 该物品不写 anchor tag。
+        /// 由 device 附件写入 tag；声明 device 附件时必填，缺失会让该物品装配失败。
         /// </summary>
         public int? anchorX { get; set; }
 

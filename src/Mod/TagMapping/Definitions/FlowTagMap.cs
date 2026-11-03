@@ -13,8 +13,8 @@ namespace FluxForge.Mod
     ///     <c>CONTAINER_TEMP_TAG</c>），按 <see cref="SlotKind.Double"/> 存。
     /// tag 与槽位都是 mod 层的约定，由 <see cref="FlowPropertyKind"/> 分支选择。
     ///
-    /// items.json 只声明 water 与温度，不声明其余 35 种液体 tag——那 35 种由游戏
-    /// <c>InitLiquidContainerItem</c> 创建。
+    /// 液体 tag 由游戏 <c>InitLiquidContainerItem</c> 建立；items.json 只写需要初始化的
+    /// 那几个（测试瓶各写一种液体，有状态的装置写 water + 温度），其余槽位保持默认 0。
     ///
     /// 新增属性的步骤：
     ///   ① 在 Logic 的属性表登记（id / 种类 / 分合规则）；

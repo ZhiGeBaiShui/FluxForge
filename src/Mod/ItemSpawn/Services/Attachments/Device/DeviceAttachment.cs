@@ -4,7 +4,8 @@ namespace FluxForge.Mod
     /// 唯一的装置身份装配件：只把「这件物品携带哪种装置」写进 tag。
     ///
     /// 本类**不创建装置实例、不登记装置**。
-    /// 装置实例由物品挂上容器时按 tag 现场构造，让「构造 → 初始化 → 注册」落在同一个时刻。
+    /// 装置实例由物品进入容器（或读档补绑）时按 tag 现场构造，见 <see cref="ItemDeviceBinding"/>，
+    /// 让「构造 → 初始化 → 注册」落在同一个时刻。
     /// </summary>
     public sealed class DeviceAttachment : ItemAttachment
     {

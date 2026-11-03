@@ -5,7 +5,8 @@
 ## 判定顺序
 
 1. 它是**生命周期事件**——改变物品在网格中的位置/归属 → `GridBuilding/Lifecycle/`；
-   存档边界或进程生命周期 → `Bootstrap/`
+   存档边界或进程生命周期 → `Bootstrap/`（例外：`EmporiumDestroyed` 挂在商城主场景销毁上，
+   跟随网格生命周期放 `GridBuilding/Lifecycle/`）
 2. 它属于**物品出生**（定义 → 工厂 → 附件装配）→ `ItemSpawn/`
 3. 它属于**网格映射或驱动**（游戏网格 → 逻辑网格、每帧推进）→ `GridBuilding/`
 4. 它是 **tag 映射**（物品 tag ↔ 属性 / 装置）→ `TagMapping/`
@@ -25,9 +26,9 @@
 
 | 文件 | 职责 |
 |---|---|
-| `FFModEntry.cs` | `IMod` 入口：初始化、订阅、启停宿主；只做接线 |
+| `FFModEntry.cs` | `IMod` 入口：初始化、订阅、启停宿主；只做接线（生命周期 #9，`OnDisable` → `FlowDriver.Shutdown` + `FlowVisualLayer.Shutdown`） |
 | `ModHost.cs` | 每帧宿主（`Update` / `LateUpdate` / 场景卸载，生命周期 #8） |
-| `SaveExited.cs` | 生命周期 #5：退出存档 → `FlowDriver.Reset` |
+| `SaveExited.cs` | 生命周期 #5：退出存档（`EscapeUIManager.OnMainMenu` + `GameMaster.QuitToMenu`）→ `FlowDriver.Shutdown`；不能挂 `PlayerStore.Reset`，它会在构造/预读档时误清网格 |
 | `SaveLoaded.cs` | 生命周期 #6：读档完成 → `Bind` + `Rebuild` |
 
 ### `ItemSpawn/` — 物品出生
@@ -35,9 +36,9 @@
 | 路径 | 职责 |
 |---|---|
 | `ItemSetup.cs` | 入口：装配件调度（反射发现 + 名字查表） |
-| `Services/ItemFactory.cs` | 工厂：按 `FlowItemDefinition` 创建 `GameItem` |
+| `Services/ItemFactory.cs` | 工厂：把 `FlowItemDefinition` 的通用属性 / 贴图 / 文本 / 类型 / tag 装配到已存在的 `GameItem`（不创建物品） |
 | `Services/Attachments/ItemAttachment.cs` | 附件基类 |
-| `Services/Attachments/*` | 各能力附件（device / emitter / flow_container / machine） |
+| `Services/Attachments/*` | 各能力附件（device / emitter / flow_container / water_bottle） |
 
 工厂、附件、调度是一个整体：新增一种能力 = 加一个附件 + 在 items.json 声明。
 
@@ -45,15 +46,17 @@
 
 | 路径 | 职责 |
 |---|---|
-| `FlowDriver.cs` | 入口：遍历所有网格，推进流源与视觉 |
-| `Lifecycle/GridCreatedPatch.cs` | #1 网格创建：`SetShape` → 注册，保证所有构造都被捕获 |
-| `Lifecycle/GridLifetime.cs` | #7 网格注销：节点销毁 → 注销 |
+| `FlowDriver.cs` | 入口：遍历所有网格，推进流源与视觉；`Reset` / `Shutdown` 的清理边界见生命周期表 |
+| `Lifecycle/GridCreatedPatch.cs` | #1 网格创建：全部 public 构造函数 + 全部 public `SetShape` 重载 → 注册，保证所有构造都被捕获 |
+| `Lifecycle/GridLifetime.cs` | #7 网格注销：哨兵节点销毁 → 注销 |
 | `Lifecycle/ItemAttached.cs` | #2 物品进入：`AddParent` → `Bind` + `Register` |
 | `Lifecycle/ItemDetached.cs` | #3 物品离开：`RemoveParent` → `Unregister` |
+| `Lifecycle/ItemPickedUp.cs` | #3b 物品拿起：`StartDrag` → `Unregister` |
 | `Lifecycle/InventorySorted.cs` | #4 排序：`Sort` → `Rebuild` |
+| `Lifecycle/EmporiumDestroyed.cs` | #5b 商城场景销毁 → `FlowDriver.Shutdown`（退档兜底，2026-11 新增） |
 | `Services/GridRegistry.cs` | `GameGridInventory` ↔ `FlowRuntime` |
-| `Services/FlowRuntime.cs` | 一块网格的运行环境（流源 + 运动 + 视觉） |
-| `Services/FlowGridAdapter.cs` | 网格 → `IFlowGrid`：格表缓存 |
+| `Services/FlowRuntime.cs` | 一块网格的运行环境（流源 + 运动 + 视觉），`Emit` 也从这里发起 |
+| `Services/FlowGridAdapter.cs` | 网格 → `IFlowGrid`：anchor 格表缓存 |
 
 完整生命周期总表与反向索引见 [`GridBuilding/Lifecycle/README.md`](GridBuilding/Lifecycle/README.md)。
 
@@ -73,8 +76,12 @@
 | `ItemDeviceBinding.cs` | 建立：物品 tag → 装置实例（被生命周期 #2 / #6 调用） |
 | `FlowDeviceEvents.cs` | 订阅注册：装置 `Changed` / `Exhausted` → tag 写回 / 移出容器 |
 
-装置没有独立的生命周期 patch——建立由「物品进入」触发，销毁由装置自己触发
+装置没有独立的生命周期 patch——建立由「物品进入」(#2) / 「读档完成」(#6) 触发，销毁由装置自己触发
 `Exhausted`。所以本目录没有 `Lifecycle/`，三个类都是能力，平铺即可。
+
+**注意**：物品被销毁时没有对应的 patch（`ItemDestroyed` 评估后未采用），`DeviceRegistry` 的条目只在
+`FlowDriver.Reset` / `Shutdown` 或装置 `Exhausted` 时清理；这是有界保留，详见
+`docs/review-pending-fixes.md` P2-2。
 
 ### `Content/` — 配置与展示模型
 

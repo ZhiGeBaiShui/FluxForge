@@ -7,16 +7,16 @@ namespace FluxForge
     /// 流源属性注册表：属性清单、槽位与分合规则的唯一来源。
     ///
     /// 顺序即槽位顺序，按游戏 <c>Liquid.InitLiquid()</c> 的液体登记顺序排列，
-    /// 最后是标量属性 temperature。Logic 只认识这里的稳定标识，
+    /// 最后是标量属性 container_temp（温度）。Logic 只认识这里的稳定标识，
     /// 游戏 tag 的对应关系由 mod 层维护。
     ///
     /// 分合规则按种类统一：液体一律 Divide/Add，标量一律 Keep/WeightedAverage，
-    /// 定义里不单独声明。新增 Scalar 必须在 Mod 层为它指定独立 tag。
+    /// 定义里不单独声明。新增 Scalar 的 tag 名由 Mod 层按 id 自动生成（FlowTagMap）。
     ///
     /// 新增属性的步骤：
     ///   ① 在 <see cref="Build"/> 的清单里追加一行；
     ///   ② 在 <see cref="FlowProps"/> 加同名槽位键；
-    ///   ③ 新增标量时在 Mod 层指定独立 tag（FlowTagMap）。
+    ///   ③ 新增标量时不用改 FlowTagMap：它会按 id 自动生成独立 tag（&lt;ID&gt;_TAG）。
     /// </summary>
     public static class FlowPropertyRegistry
     {

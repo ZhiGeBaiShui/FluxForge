@@ -7,15 +7,16 @@ namespace FluxForge
     /// 同一时刻可能有很多个流源各自独立存在、各自移动，彼此没有关联。
     ///
     /// 不持有事件；生命周期与受阻变化由框架集中广播：
-    ///   生：FlowSpawner.Accept（装置交付）→ OnEntityAdded 广播
+    ///   生：FlowSpawner.Accept（装置 / 发射方交付）→ OnEntityAdded 广播
     ///   动：FlowManager.Tick 推进 → 位置直接写在 Position 上（不广播，视觉层自己读）
-    ///   死：FlowSpawner.Kill（装置发起）→ OnEntityRemoved 广播
+    ///   死：FlowSpawner.Kill（装置或运动层发起）→ OnEntityRemoved 广播
     /// 受阻检测记录保存在运动层，不属于流源属性。
     ///
-    /// 不自带网格：网格属于机器，由 <see cref="FlowManager"/> 构造时注入，
-    /// 所以一个流源只可能在它所属那台机器的网格里跑。
+    /// 不自带网格：网格属于上层运行环境，由 <see cref="FlowManager"/> 构造时注入，
+    /// 所以一个流源只可能在它所属那块网格里跑。
     ///
-    /// 纯逻辑对象，不含 Unity 内容。显示由 mod 层的 GameObject 壳经框架广播间接关联。
+    /// 纯逻辑对象，不含 Unity 内容。显示由 mod 层的视觉视图订阅生死/受阻广播、
+    /// 按每帧快照绘制，不为流源持有 GameObject 壳。
     /// </summary>
     public class FlowEntity
     {

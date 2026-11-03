@@ -10,7 +10,7 @@ namespace FluxForge.Presentation.Flow.Visual
     /// <code>{"tiles": {"large|flow|right": [x, y], "large|flow|right|f7": [x, y], ...}}</code>
     ///
     /// 这一层只做「key → 图集像素坐标」的纯查表，**不依赖 Unity**：
-    /// 贴图加载、Sprite 创建、UV 换算都在 UGUI 层。
+    /// 贴图加载、Sprite 创建、UV 换算都在 Mod/Visual 渲染层。
     ///
     /// 容错策略见 <see cref="TryGetWithFallback"/>：图集生成器少一张 tile 时
     /// 宁可画一张近似的，也不要让格子空着或抛异常。
@@ -130,7 +130,7 @@ namespace FluxForge.Presentation.Flow.Visual
         /// 第 3 级也去掉帧号，因为静态图集里没有 <c>large|...|fN</c> 组合。
         ///
         /// 成分与温度已经不在 key 里，所以 fallback 不再有「退到 water」这一级：
-        /// 颜色由调用方用 <see cref="FlowVisualState.Composition"/> 运行时染，与选哪张蒙版无关。
+        /// 颜色由调用方用 <see cref="FlowVisualState.BodyColor"/> 运行时染，与选哪张蒙版无关。
         /// </summary>
         public bool TryGetWithFallback(FlowVisualState state, out int x, out int y)
         {

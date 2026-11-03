@@ -10,7 +10,10 @@ namespace FluxForge.Mod
     /// </summary>
     internal static class FlowTags
     {
-        /// <summary>原版液体容器的身份 tag（由 flow_container 装配件建立）。</summary>
+        /// <summary>
+        /// 原版液体容器的身份 tag
+        /// （flow_container / water_bottle 装配件经 <c>WaterHelper.InitLiquidContainerItem</c> 建立）。
+        /// </summary>
         public const string LiquidContainerTag = "LIQUID_CONTAINER_TAG";
     }
 }

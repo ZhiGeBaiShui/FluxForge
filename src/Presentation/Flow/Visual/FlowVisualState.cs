@@ -40,7 +40,7 @@ namespace FluxForge.Presentation.Flow.Visual
 
     /// <summary>
     /// 单个流源的视觉参数，不持有 PNG、Sprite 或其他 Unity 对象。
-    /// Content/State/Dir/Frame 用于选图，Composition/Temp 用于染色。
+    /// Content/State/Dir/Frame 用于选图，BodyColor/Temp 用于染色。
     /// </summary>
     public readonly struct FlowVisualState
     {
@@ -51,7 +51,7 @@ namespace FluxForge.Presentation.Flow.Visual
         public const int FrameCount = 12;
 
         // 染色参数，不参与图集索引。
-        /// <summary>本体色：由成分加权算好，直接用于三层染色。</summary>
+        /// <summary>本体色：已按各液体存量加权算好，直接用于三层染色。</summary>
         public readonly FlowColor BodyColor;
 
         /// <summary>温度档，用于计算边缘颜色。</summary>

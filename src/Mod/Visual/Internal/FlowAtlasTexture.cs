@@ -48,7 +48,7 @@ namespace FluxForge.Mod.Visual.Internal
     ///   ③ 图集里不再有成分/温度维度，key = <c>content|state|dir[|fN]</c>，
     ///      所以「状态 → 坐标」的记忆表只需要 4 个枚举 + 帧号就能压成 long。
     ///
-    /// 这里是全 mod **唯一**共享的可变状态：贴图与 Sprite 缓存。
+    /// 这里是视觉子系统里**唯一**共享的可变状态：贴图与 Sprite 缓存。
     /// 它没有网格、没有实体、没有每帧数据——那些都在各自的 <see cref="FlowVisualLayer"/> 里。
     ///
     /// 失败策略：整份加载失败只记一条 Warning 并把内部就绪标志置 false，

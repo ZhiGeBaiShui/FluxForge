@@ -49,11 +49,11 @@ namespace FluxForge.Mod.Visual.Internal
     /// A 方案把颜色拆成三层（REFACTOR-A §3）：
     ///   · body   —— 本体蒙版 × <see cref="FlowTint.Body"/>；
     ///   · edge   —— 边缘蒙版 × <see cref="FlowTint.Edge"/>（温度只影响这一层）；
-    ///   · accent —— 亮核/高光/霜/沫蒙版 × <c>FlowTint.Accent(composition)</c>（按成分提亮）；
+    ///   · accent —— 亮核/高光/霜/沫蒙版 × <see cref="FlowTint.Accent"/>（按本体色提亮）；
     ///   · wall   —— 墙图整张白 tint（贴图自带 #C9C2B8），只在 blocked 显示。
     /// 四张蒙版来自同一份索引、同一组坐标，所以一次 Get 就能拿全。
     ///
-    /// 本层管理本体 4 通道各 64、残影 384 的池；粒子池与白图由每层独立的
+    /// 本层管理本体 4 通道（body/edge/accent/wall）各 64 的池；粒子池与白图由每层独立的
     /// FlowParticleRenderer 管理。本层保留粒子提交守卫及本体新建后的重排请求。
     /// 射程点已删除（Tier-0 无数据源）：`FlowVisualState.Range` 仍是预留字段，
     /// 在数据源就绪前整条射程点绘制链不再存在。
@@ -98,12 +98,6 @@ namespace FluxForge.Mod.Visual.Internal
                 cache.Color = color;
             }
 
-            /// <summary>
-            /// 转向：图集只有「向右」一份，其余方向靠旋转。
-            /// 首次直接到位（不要从 0° 转过去），之后按 <paramref name="speed"/> 平滑逼近：
-            /// 转向角速度 = 90 × speed（度/秒），即「走过一格的时间 ≈ 转 90° 的时间」。
-            /// 转到位就停止写入，避免每帧触发 Canvas 重建。
-            /// </summary>
             /// <summary>
             /// 转向：图集只有「向右」一份，其余方向靠旋转。
             /// 瞬间切到目标角度，不做过渡。
@@ -248,7 +242,7 @@ namespace FluxForge.Mod.Visual.Internal
         }
 
         /// <summary>
-        /// 本体/残影共用的方块边长（屏幕像素）：<c>round(16 * ppu)</c>，最小 1。
+        /// 本体各层共用的方块边长（屏幕像素）：<c>round(16 * ppu)</c>，最小 1。
         /// 缩放到 1px 以下时仍保留 1px——0 尺寸的 Image 不会再被任何路径点亮。
         /// </summary>
         private static float QuadSizePx(float ppu)
@@ -269,7 +263,7 @@ namespace FluxForge.Mod.Visual.Internal
         ///   leftPx = Round((area.xMin + cellX * 16) * ppu)
         ///   topPx  = Round((area.yMax - cellY * 16) * ppu)
         ///   sizePx = Round(16 * ppu)
-        /// Image 的锚点/pivot 都是左上角，所以 anchoredPosition 就是「相对网格左上角的偏移」。
+        /// Image 的锚点都在左上、pivot 在中心，所以 anchoredPosition 是「图块中心相对网格左上角的偏移」。
         /// 注意 area 是 _root.rect：根节点 pivot 在左上，area.yMax == 0，topPx 天然是负值（向下）。
         /// </summary>
         /// <param name="items">本帧要画的流源；调用方保证非空（可以是空列表）。</param>
@@ -301,7 +295,7 @@ namespace FluxForge.Mod.Visual.Internal
                 // 图集只有「向右」一份：right=0°，down=-90°，left=180°，up=90°
                 float angle = (1 - item.Direction) * 90f;
 
-                // 三层颜色：成分为唯一本体色来源，温度只进边缘，亮核恒白
+                // 三层颜色：本体色是唯一颜色来源，温度只进边缘，亮核由本体色提亮
                 Color bodyTint = ToColor(FlowTint.Body(state.BodyColor));
                 Color edgeTint = ToColor(FlowTint.Edge(state.BodyColor, state.Temp));
                 Color accentTint = ToColor(FlowTint.Accent(state.BodyColor));
@@ -341,7 +335,7 @@ namespace FluxForge.Mod.Visual.Internal
             _dotOrderDirty = false;
         }
 
-        /// <summary>销毁整层（面板重建 / 网格退役 / 读档）。可重复调用。</summary>
+        /// <summary>销毁整层（面板重建 / 网格退役 / 退档或 mod 卸载）。可重复调用。</summary>
         public void Destroy()
         {
             if (_destroyed)
@@ -411,7 +405,7 @@ namespace FluxForge.Mod.Visual.Internal
 
         /// <summary>
         /// 墙：只有 blocked 且墙图可用时创建/显示。
-        /// 墙图是**彩色**小图（固定 #C9C2B8），所以这里用白色 tint，不再乘成分色。
+        /// 墙图是**彩色**小图（固定 #C9C2B8），所以这里用白色 tint，不再乘本体色。
         /// 墙与本体在像素上互不重叠（角色 W 独占那些像素），所以叠放顺序不影响观感；
         /// 但为了不让墙盖住相邻流源的亮核，这里把它压到本体三层的下面。
         /// </summary>
@@ -472,18 +466,7 @@ namespace FluxForge.Mod.Visual.Internal
         }
 
         /// <summary>
-        /// 画拖尾：同一张 body 蒙版往运动反方向按 **亚格间距**（3px 一档）叠出连续渐隐的残影。
-        ///
-        /// 为什么用残影而不是把尾巴画长：16px 下任何收尖都会被读成"前端"，
-        /// 所以方向线索必须锁在"钝头 + 亮核"上；流体感改由运动痕迹提供。
-        /// 为什么是亚格间距而不是 1 格：1 格间距会读成"几个独立虚影"，3px 才连成一条。
-        /// 层数由含量档决定（空 1 / 少 2 / 中 4 / 多 6）。
-        /// 残影只属于 flow：blocked/split/merge 各自有静态签名，叠拖尾会混淆
-        /// （collect 死亡贴图已删除，死亡改由粒子淡出表达，不再有 collect 静态签名）。
-        /// 颜色 = 本体色带逐层下降的 alpha（不额外染色，否则成分会被拖尾"二次混色"）。
-        /// </summary>
-        /// <summary>
-        /// 纯逻辑层的 <see cref="FlowColor"/>（0–255 byte）→ UGUI 颜色。
+        /// 表现层的 <see cref="FlowColor"/>（0–255 byte）→ UGUI 颜色。
         /// 蒙版图的 RGB 是亮度、A 是形状，所以这里一律给 255 的 alpha：
         /// 形状透明度完全由贴图携带，再乘一次会让整层变灰。
         /// </summary>

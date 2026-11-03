@@ -6,9 +6,9 @@ namespace FluxForge
     /// <summary>
     /// 收集装置：吸收撞上来的流源，把它们的属性累积成一份存量。
     ///
-    /// 路由语义：注册 0 个新流源 = 吸收，所以本装置同时是流源的终点——
+    /// 路由语义：接受 0 个新流源 = 吸收，所以本装置同时是流源的终点——
     /// <see cref="Route"/> 无条件返回 true 让运动层截停，再调 <see cref="FlowSpawner.Kill"/>
-    /// 走统一的删除流程（mod 层据此销毁壳）。
+    /// 走统一的删除流程（mod 层的视觉视图据此移除对应绘制项）。
     ///
     /// 只保留累积后的 <see cref="FlowProperties"/>，不保留流源对象本身：
     /// 收集器需要的是「收到了什么」，不是「每个流源从哪来」。
@@ -46,7 +46,7 @@ namespace FluxForge
             get { return _stock; }
         }
 
-        /// <summary>收集器可累积全部液体：拥有全部 37 个属性槽。</summary>
+        /// <summary>收集器可累积全部液体：拥有注册表的全部 37 个槽位（36 种液体 + 温度）。</summary>
         public IReadOnlyList<FlowPropertyKey> Keys
         {
             get { return FlowPropertyRegistry.AllKeys; }

@@ -5,7 +5,7 @@ namespace FluxForge.Presentation.Flow.Visual
     /// <summary>
     /// 36 种液体的本体颜色表，来源为游戏 <c>Liquid.InitLiquid()</c> 的 <c>color</c> 字段。
     ///
-    /// 只做「id → 颜色」的静态映射与稀有度权重，不参与混合；
+    /// 只做「id → 颜色」的静态映射与染色权重，不参与混合；
     /// 混合由 <see cref="FlowTint.Body"/> 的调用方按各液体存量加权完成。
     ///
     /// 顺序与 <c>FlowPropertyRegistry</c> 的液体槽位一致，改这里必须同步改注册表。

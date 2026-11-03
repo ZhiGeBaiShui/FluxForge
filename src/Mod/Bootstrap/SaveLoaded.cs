@@ -10,9 +10,11 @@ namespace FluxForge.Mod
     /// <c>Init</c> 是第一步（`PlayerStore.txt:6134`），
     /// <c>Late</c> 在方法末尾（`:6934`），那时物品才全部恢复完。
     ///
-    /// 为什么需要它：读档恢复物品走 <c>SaveManager.DecodeNodes</c>，
-    /// 直接反序列化 <c>modifiedShape</c> / <c>parentInventory</c> 字段，
-    /// 不调 <c>AddParent</c>，生命周期 #2（<see cref="ItemAttached"/>）收不到信号。
+    /// 这里为什么还要补一次 Bind + Rebuild：读档走 <c>SaveManager.DecodeNodes</c>
+    /// → <c>GameInventory.UncheckedAccept</c> → <c>GameItem.AddParent</c>，
+    /// 生命周期 #2（<see cref="ItemAttached"/>）确实会触发；但 <c>UncheckedAccept</c>
+    /// 在 <c>AddParent</c> 之后才 <c>ValidateShapeState</c> / <c>Validate</c>，
+    /// 反序列化的 <c>modifiedShape</c> 可能被校正，登记时的格位不一定是最终格位。
     ///
     /// ⚠ 不能把重建放在 #1（<see cref="GridCreatedPatch"/>）时：
     ///   那一刻 <c>childItems</c> 还是空的，全量登记等于空转。
@@ -47,10 +49,11 @@ namespace FluxForge.Mod
                     continue;
                 }
 
-                // 读档前可能残留旧流源（读档不走 QuitToMenu），先清掉。
+                // 读档前可能残留旧流源（ContinueGame 不经过 #5 的退出钩子），先清掉。
                 runtime.Flows.KillAll();
 
-                // 读档恢复的物品不经过 AddParent，装置要在这里补绑。
+                // AddParent 时 ItemAttached 已经绑过装置；这里再补一次 Bind 是幂等防御，
+                // 不依赖挂载钩子的触发时序。
                 List<GameItem> items = runtime.Inventory.childItems;
                 if (items != null)
                 {

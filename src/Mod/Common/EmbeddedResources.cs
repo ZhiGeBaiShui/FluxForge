@@ -10,7 +10,8 @@ namespace FluxForge.Mod
     internal static class EmbeddedResources
     {
         // Mono 下 Texture2D.LoadImage 是 ImageConversion 的扩展方法，直接调用即可；
-        // 目前只有流源蒙版图集走嵌入资源，物品贴图已迁到 mod/Textures/Items。
+        // 运行时从嵌入资源加载的 PNG 目前只有流源蒙版图集，物品贴图由 ModLoader
+        // 从 mod/Textures/Items 读取。
 
         /// <summary>读取嵌入资源（prefix + fileName）；找不到返回 null。</summary>
         public static byte[] Read(string prefix, string fileName)

@@ -1,5 +1,12 @@
 # Probably Stolen 游戏机制 API 手册
 
+> **历史取证记录（2026-10-09 ~ 10-18，Il2Cpp / MelonLoader 时期）。**
+> 本文的**游戏 API / 机制**仍可参考；其中出现的 **FluxForge 架构代码**（`FlowMachine`、旧 `FlowDriver`、
+> 指针式 `DeviceRegistry`、`Il2Cpp.` 前缀、把 `OnGameLoadedInit` 当读档回灌点）是**旧实现，已被当前
+> Mono 0.46 代码取代**。当前架构、生命周期与测试基线以 [`README.md`](../README.md) 和
+> [`src/Mod/GridBuilding/Lifecycle/README.md`](../src/Mod/GridBuilding/Lifecycle/README.md) 为准；
+> 0.46 Mono 下类型名不再需要 `Il2Cpp.` 前缀。
+
 > 来源：2026-10-09 ~ 10-18 的 mod 开发沉淀（FluxForge）
 > 取证手段：ISIL 转储（`_isil_out/IsilDump`）+ ilspycmd 反编译（mod DLL / Il2Cpp 程序集）+ UnityPy 资源提取 + 游戏内只读探针
 > 适用对象：给 Probably Stolen 做自定义物品 / 贴图 / UI 的 mod 开发者

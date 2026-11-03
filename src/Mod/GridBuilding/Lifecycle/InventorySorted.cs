@@ -5,13 +5,11 @@ namespace FluxForge.Mod
     /// <summary>
     /// 排序后的格表重建。
     ///
-    /// <c>InventorySortHelper.Sort</c> 是原版唯一会批量改物品位置、却不通知外部的路径：
-    /// 它对每件物品 <c>new GridShapeBuilder(old)</c> → <c>SetTransform(...)</c> →
-    /// 直接写 <c>[item+0x1A0]</c>（modifiedShape 的 backing field），
-    /// 全程不调 <c>AddParent</c> / <c>RemoveParent</c>，也不调任何 <c>Validate</c>。
-    ///
-    /// 所以增量路径（ItemAttached / ItemDetached）收不到信号，
-    /// 只能在排序结束后对整个网格做一次全量重建。
+    /// 原版排序会成批重写 <c>modifiedShape</c>，再逐件 <c>Expel</c> →
+    /// <c>UncheckedAccept</c> 重放挂载。增量的 AddParent / RemoveParent 钩子虽然
+    /// 会被调到，但 <c>UncheckedAccept</c> 是在 <c>AddParent</c> 之后才
+    /// <c>ValidateShapeState</c>，登记时拿到的形状可能不是最终形状。排序收尾
+    /// 统一 Rebuild 一次，保证格表与最终位置一致。
     ///
     /// 生命周期 #4（排序），完整表见 `Lifecycle/README.md`。
     /// </summary>

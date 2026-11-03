@@ -6,8 +6,9 @@ namespace FluxForge.Mod
     /// 物品 tag ↔ 流源属性的唯一读写点。
     ///
     /// 属性清单、槽位规则全部来自 <see cref="FlowTagMap"/>；
-    /// 本类只做三件事：按 tag 遍历、按 tag 读写属性、按 tag 决定槽位。
-    /// 不认识任何具体属性，也不区分"容器物品"与"普通物品"。
+    /// 本类只按 tag 遍历、读写属性，不认任何具体属性名。
+    /// 唯一按物品身份分支的地方是写入后的 <see cref="Refresh"/>：
+    /// 液体容器走原版的水质刷新，其余物品只标记贴图重取。
     /// </summary>
     public static class FlowStock
     {
@@ -30,7 +31,10 @@ namespace FluxForge.Mod
             }
         }
 
-        /// <summary>把 <paramref name="source"/> 的值写进物品 tag。</summary>
+        /// <summary>
+        /// 把 <paramref name="source"/> 声明的槽位（<see cref="IFlowState.Keys"/>）写进物品 tag，
+        /// 最后统一刷新一次外部表现。
+        /// </summary>
         public static void Write(GameItem item, IFlowState source)
         {
             foreach (FlowPropertyKey key in source.Keys)
@@ -43,7 +47,7 @@ namespace FluxForge.Mod
             Refresh(item);
         }
 
-        /// <summary>总存量 = 一份属性里所有"相加类"属性之和。</summary>
+        /// <summary>总存量 = 一份属性里所有液体属性（<see cref="FlowPropertyKind.Liquid"/>）之和。</summary>
         public static double Total(GameItem item)
         {
             return Read(item).SubstanceTotal;

@@ -20,11 +20,12 @@ namespace FluxForge.Mod.Visual
     /// 生命周期（由 <see cref="FlowDriver"/> 驱动）：
     ///   FlowRuntime 构造时 new → runtime.Visual；
     ///   FlowDriver.LateUpdateVisuals → Tick(dt)；
-    ///   FlowDriver.Retire / Reset → Dispose()。
+    ///   FlowDriver.Retire / Shutdown → Dispose()（Reset 只退役已死网格，保留存活网格的视图）。
     ///
-    /// Tier-0 的退化（REFACTOR-A §4）：
-    ///   成分固定纯水（Tier-0 没有成分数据源）、射程固定 0（预留字段，不渲染射程点）、
-    ///   状态只区分 flow/blocked；collect 死亡贴图已删除，死亡改由粒子场原地淡出表达。
+    /// 当前的退化（REFACTOR-A §4）：
+    ///   本体色按 36 种液体存量加权算好（见 <see cref="ComputeBodyColor"/>）、
+    ///   射程固定 0（预留字段，不渲染射程点）、状态只区分 flow/blocked；
+    ///   collect 死亡贴图已删除，死亡改由粒子场原地淡出表达。
     ///   温度/含量/方向/帧号全部来自 FlowEntity 的现有字段。
     /// </summary>
     public sealed class FlowVisualLayer : IDisposable
@@ -170,7 +171,9 @@ namespace FluxForge.Mod.Visual
 
         /// <summary>
         /// 退订广播 + 销毁层 + 清空本网格所有表。可重复调用。
-        /// 环境退役（FlowDriver.Retire）与读档（FlowDriver.Reset）走同一条路径，
+        /// 环境退役（<see cref="FlowDriver.Retire"/>）与 mod 卸载/退档
+        /// （<see cref="FlowDriver.Shutdown"/>）走同一条释放路径；
+        /// <see cref="FlowDriver.Reset"/> 只对已死网格调用退役，存活网格的视图保留。
         /// 不会留下指向死 FlowSpawner 的订阅，也不会把层留在已经销毁的网格下。
         /// </summary>
         public void Dispose()
@@ -286,7 +289,7 @@ namespace FluxForge.Mod.Visual
         }
 
         /// <summary>
-        /// 读一条流源这一帧的快照：位置/方向/速度 + 成分/温度/含量/状态。
+        /// 读一条流源这一帧的快照：位置/方向/速度 + 本体色/温度/含量/状态。
         ///
         /// 受阻状态只读事件缓存；贴图与粒子共用快照。
         /// </summary>

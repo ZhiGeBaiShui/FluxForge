@@ -15,7 +15,7 @@ namespace FluxForge
     ///     里的种类与规则计算
     ///   - <see cref="Split"/> / <see cref="Merge"/> 均为纯函数：返回新对象，不修改本对象与入参
     ///   - <see cref="Clone"/> 深拷贝数组，克隆体可独立修改
-    ///   - 不含价值——价值由外部工具类根据属性动态算出，不存储
+    ///   - 不含价值——价值属于物品定义（items.json 的 value），不随流源属性计算
     /// </summary>
     public sealed class FlowProperties : IFlowState
     {
@@ -136,7 +136,7 @@ namespace FluxForge
         }
 
         /// <summary>
-        /// 原地汇聚单份属性：把 <paramref name="other"/> 合并进 this，不分配新对象。
+        /// 原地汇聚单份属性：把 <paramref name="other"/> 合并进 this，不新建 FlowProperties。
         /// 规则与 <see cref="Merge(FlowProperties)"/> 相同。
         /// </summary>
         public void MergeFrom(FlowProperties other)

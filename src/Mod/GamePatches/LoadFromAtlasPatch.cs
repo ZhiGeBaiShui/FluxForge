@@ -7,7 +7,7 @@ namespace FluxForge.Mod
 {
     /// <summary>
     /// 拦截游戏从 atlas 取 sprite 的调用（物品生成时设置的贴图字段最终走这里解析）：
-    /// atlas 名命中贴图管理者配置时返回我们的嵌入贴图。
+    /// atlas 名命中贴图管理者配置时返回我们自建的 Sprite。
     ///
     /// 正路：物品工厂设置三字段（spriteAtlasPath=我们的atlas / spritePath=我们的key /
     /// spriteChanged=true）→ 元素刷新 → 解析时 atlas 命中 → 返回自建图（原始像素密度）。

@@ -11,7 +11,7 @@ namespace FluxForge.Mod
     ///      通用字段（identifier / 贴图 / shape / 名称 / 说明 / 风味 / itemTypes / value /
     ///      配置声明的 tags）在 factory 之后仍然保留。调用游戏原生装配 API 建立行为
     ///      所需状态（如 <c>WaterHelper.InitLiquidContainerItem</c>）不算越界；
-    ///   5. 一件物品挂哪些装配件、组合是否互斥（两个面板 / 两个装置 / 两组激活委托），
+    ///   5. 一件物品挂哪些装配件、组合是否互斥（两个装置 / 两组激活委托 / 两个同类装配件），
     ///      由作者在 items.json 里决定并保证；运行期不做检查，同一字段被写两次时后者生效；
     ///   6. 装配件之间不得互相依赖，需要依赖就该合并；<see cref="FlowItemDefinition"/> 是唯一配置入口；
     ///   7. 装配件必须无参——需要参数就说明该参数应成为 def 的顶层字段，或该装配件应被拆分。

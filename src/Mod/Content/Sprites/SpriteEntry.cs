@@ -12,7 +12,7 @@ namespace FluxForge.Mod.Rendering.ItemSprites
         /// <summary>自定义 atlas 名（与游戏原生 atlas 区分）。</summary>
         public string atlas { get; set; }
 
-        /// <summary>嵌入资源文件名（assets/ 下）。</summary>
+        /// <summary>图片文件名（对应 mod/Textures/Items 下的 png，源文件在 assets/）。</summary>
         public string file { get; set; }
 
         /// <summary>

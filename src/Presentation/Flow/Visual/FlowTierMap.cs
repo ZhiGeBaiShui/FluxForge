@@ -6,7 +6,7 @@ namespace FluxForge.Presentation.Flow.Visual
     /// 刻意保持纯函数、零状态、零 Unity：
     ///   · 温度只影响「冷/常温/热」三档，不改尺寸（SPEC §2 的 bbox 不变约束）；
     ///   · 含量四档是**唯一**控制尺寸的通道（SPEC §1）；
-    ///   · 状态目前来自「两帧未动」一个布尔，不读 Composition；
+    ///   · 状态只由调用方传入的 blocked 布尔决定（运动层用「连续两帧未动」判定）；
     ///   · 方向来自 <c>Motion.Direction</c> 的 0..3。
     /// 值域以外的输入都有明确的兜底，保证渲染层永远拿到一个合法枚举。
     /// </summary>
@@ -100,6 +100,9 @@ namespace FluxForge.Presentation.Flow.Visual
         /// <summary>
         /// 拖尾层数（1–6）：尾巴长度要跟体量走，否则"重"和"轻"的流源拖着一样长的尾巴，
         /// 会把含量通道读乱。按面积档给：空 1、少 2、中 4、多 6（每层 3px）。
+        ///
+        /// 当前渲染层已不再绘制残影/拖尾（残影池已删除），本表只作为纯函数契约保留，
+        /// 取值仍由单测固定。
         /// </summary>
         public static int TrailLayersFromContent(FlowContent content)
         {

@@ -6,7 +6,7 @@ using FluxForge.Presentation.Flow.Visual;
 namespace FluxForge.Tests
 {
     /// <summary>
-    /// 流源常驻粒子纯逻辑层（<c>src/Presentation/Flow/FlowParticle*</c>）的单测。
+    /// 流源常驻粒子表现层（<c>src/Presentation/Flow/Particles/FlowParticle*</c>）的单测。
     ///
     /// 覆盖四段：
     ///   1. Profile：默认值、温度三档倍率、modifier 扩展点；

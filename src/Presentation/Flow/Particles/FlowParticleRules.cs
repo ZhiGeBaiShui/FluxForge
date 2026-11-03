@@ -95,15 +95,12 @@ namespace FluxForge.Presentation.Flow.Particles
         }
 
         /// <summary>
-        /// 粒子颜色。默认 = <c>mix(Body(composition), white, 0.10)</c>：
+        /// 粒子颜色。默认 = <c>mix(bodyColor, white, 0.10)</c>：
         /// 与本体同色但略提亮，避免和贴图本体糊成一块。
         ///
-        /// **扩展方式（本轮不实现）**：以后要按成分改色（例如毒物生成暗绿色粒子）时，
-        /// 在返回前按 <see cref="FlowFrameInput.Composition"/> 分支即可，例如：
-        /// <code>
-        /// if (input.Composition.Poison &gt; 0f)
-        ///     return new FlowColor(0x3E, 0x7A, 0x2E);
-        /// </code>
+        /// **扩展方式（当前未实现）**：以后要按成分改色（例如毒物生成暗绿色粒子）时，
+        /// 需要在 <c>ReadSnapshot</c> 侧按液体存量先算出 <see cref="FlowFrameInput.BodyColor"/>，
+        /// 本方法只负责「本体色 → 粒子色」的纯映射（<see cref="FlowFrameInput"/> 不再携带六分量权重）。
         /// 注意：本方法必须是**纯函数**，不要在这里用随机数决定「有概率」；
         /// 概率应由调用方在每次 Spawn 前掷骰，再把选好的颜色传给
         /// <see cref="FlowAmbientField.Spawn"/>。这样同一份输入永远得到同一个颜色，测试可重复。

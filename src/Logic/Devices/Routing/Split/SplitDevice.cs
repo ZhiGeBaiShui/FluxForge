@@ -16,8 +16,9 @@ namespace FluxForge
     ///   · 流源属性按「总发射数」等分，每道各拿一份（总量守恒）
     ///   · 「同步」= 分完立刻交给 <see cref="FlowSpawner"/> 纳入名单
     ///   · 通道方向按「相对 Facing」存储：装置旋转（索引 +1 = 右旋 90°）后全部通道一起转
-    ///   · 具体变体只提供通道常量（<see cref="TurnDevice"/> / <see cref="TJunctionDevice"/> /
-    ///     <see cref="DoubleEmitDevice"/>），Route 算法固定在基类，不随变体变化
+    ///   · 具体变体只提供通道常量（<see cref="TurnDevice"/> / <see cref="LRightDownDevice"/> /
+    ///     <see cref="TJunctionDevice"/> / <see cref="DoubleEmitDevice"/>），Route 算法固定在基类，
+    ///     不随变体变化
     /// </summary>
     public abstract class SplitDevice : IFlowRouter, IFlowNotifier
     {

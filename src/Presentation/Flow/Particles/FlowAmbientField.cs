@@ -195,7 +195,7 @@ namespace FluxForge.Presentation.Flow.Particles
             radialX /= radialLength;
             radialY /= radialLength;
 
-            // 运动反方向从 FlowDirMath 取：越界方向按 right，与旧的本地 switch 一致。
+            // 运动反方向从 FlowDirMath 取：越界方向按 right 兜底。
             FlowDir flowDir = (FlowDir)dir;
             float backwardX = FlowDirMath.BackwardX(flowDir);
             float backwardY = FlowDirMath.BackwardY(flowDir);

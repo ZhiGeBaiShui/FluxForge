@@ -5,6 +5,9 @@ namespace FluxForge.Mod
 {
     /// <summary>
     /// 一块网格的运行环境：借用游戏网格，拥有流源、运动采样与视觉视图。
+    /// 每个 GameGridInventory 一份，由 <see cref="GridRegistry"/> 在构造期创建，
+    /// 生命周期与网格对象一致：网格销毁时由 <see cref="FlowDriver"/> 单条退役，
+    /// 退出存档 / mod 卸载时由 <see cref="FlowDriver.Shutdown"/> 整体清理。
     /// 发射是运行环境自己的职责——流源从物品的存量直接生成，不经过装置类。
     /// </summary>
     public sealed class FlowRuntime
@@ -16,12 +19,14 @@ namespace FluxForge.Mod
         {
             Inventory = inventory ?? throw new ArgumentNullException(nameof(inventory));
 
-            // 先读取网格尺寸，再装配自有对象；构造期间不刷新布局、不创建 UGUI 绘制层。
+            // 构造只装配自有对象，不刷新布局、不创建 UGUI 绘制层：
+            // 形状与 RectTransform 由适配器和视图在真正用到时现查，
+            // 因此构造发生在网格刚建好、还没排版的时刻也没问题。
             Grid = new FlowGridAdapter(inventory);
             Flows = new FlowSpawner();
             Motion = new FlowManager(Grid, Flows);
-            // 视觉最后装配，完成全部订阅后才交给 Driver 登记及发射。
-            // 构造失败时未登记的名单和运动订阅没有外部持有者，可一起回收。
+            // 视觉最后装配：视图会直接订阅本网格的生死广播；
+            // 装配完成后再由 GridRegistry 登记，避免半初始化的环境被 Tick。
             Visual = new FlowVisualLayer(inventory, Flows);
         }
 

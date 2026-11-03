@@ -33,7 +33,7 @@ namespace FluxForge
 
         /// <summary>
         /// 某个方向在 X 轴上的位移（-1 / 0 / 1）。
-        /// 用方法而不是公开数组：数组元素是可变，任何一处改一格都会影响所有机器的运动。
+        /// 用方法而不是公开数组：数组元素是可变，任何一处改一格都会影响所有流源的运动。
         /// </summary>
         public static int StepX(int direction)
         {

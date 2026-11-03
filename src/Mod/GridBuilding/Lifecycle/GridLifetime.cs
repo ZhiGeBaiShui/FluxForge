@@ -10,6 +10,9 @@ namespace FluxForge.Mod
     /// 用节点而不是轮询 <c>rectTransform</c>，是为了让退役发生在销毁当帧，
     /// 不依赖下一帧的存活检查。
     ///
+    /// 只在 <see cref="GridRegistry.Register"/> 首次登记时挂一次；构造与 SetShape
+    /// 的重复登记不会再建节点。
+    ///
     /// 生命周期 #7（网格节点销毁），完整表见 `Lifecycle/README.md`。
     /// </summary>
     internal sealed class GridLifetime : MonoBehaviour

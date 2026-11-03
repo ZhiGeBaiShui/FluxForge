@@ -6,14 +6,21 @@ namespace FluxForge.Mod
 {
     /// <summary>
     /// 逐环境驱动流源与视觉，隔离单网格异常。
-    /// 登记与查找属于 <see cref="GridRegistry"/>，本类只负责推进与退役。
+    /// 登记与查找属于 <see cref="GridRegistry"/>；本类只负责推进、单网格退役
+    /// 和两个边界清理（<see cref="Reset"/> / <see cref="Shutdown"/>）。
+    /// 两张登记表都是静态根，GC 与场景销毁都不会替我们清空，边界清理必须显式调用。
     /// </summary>
     public static class FlowDriver
     {
+        /// <summary>已经报过视觉异常的环境：同一块网格只报一次，避免每帧刷日志。</summary>
         private static readonly HashSet<FlowRuntime> _visualErrorReported
             = new HashSet<FlowRuntime>();
 
-        /// <summary>由 <see cref="ModHost"/> 每帧调用。</summary>
+        /// <summary>
+        /// 由 <see cref="ModHost"/> 每帧调用。
+        /// 倒序遍历：退役会立即从 <see cref="GridRegistry.Runtimes"/> 摘除当前项，
+        /// 正序会跳过下一个环境。
+        /// </summary>
         public static void Update(double deltaTime)
         {
             List<FlowRuntime> runtimes = GridRegistry.Runtimes;
@@ -36,6 +43,7 @@ namespace FluxForge.Mod
 
         /// <summary>
         /// 由 <see cref="ModHost"/> 每帧在游戏 UI 排版后调用，逐环境推进纯视觉。
+        /// 正序保持绘制顺序；失败退役后 i-- 抵消列表前移，避免跳过下一块网格。
         /// </summary>
         public static void LateUpdateVisuals(float deltaTime)
         {
@@ -70,7 +78,8 @@ namespace FluxForge.Mod
 
         /// <summary>
         /// 网格销毁回调：按网格引用退役对应环境。
-        /// 读档 / 场景卸载时登记表可能已先被 <see cref="Reset"/> 清空，查不到直接返回。
+        /// 退出存档 / 卸载时 <see cref="Shutdown"/> 可能已经先清空登记表，这里
+        /// 查不到就直接返回；退役本身是幂等的。
         /// </summary>
         internal static void RetireByGrid(GameGridInventory inventory)
         {
@@ -84,7 +93,9 @@ namespace FluxForge.Mod
         }
 
         /// <summary>
-        /// 先从登记表摘除，再独立尝试终止流源和释放视图；不注销物品。
+        /// 单网格退役：先从登记表摘除，再分别兜底终止流源和释放视图。
+        /// 不注销装置——<see cref="DeviceRegistry"/> 是全局静态表，不能因为一块
+        /// 网格退役就整体清空。
         /// </summary>
         private static void Retire(FlowRuntime runtime)
         {
@@ -109,10 +120,16 @@ namespace FluxForge.Mod
         }
 
         /// <summary>
-        /// 存档边界：清流源与装置，但保留网格登记。
+        /// 场景边界：终止所有流源、清空装置登记，但保留网格登记。
         ///
-        /// 网格对象可能还活着（场景切换不等于网格销毁），清掉登记会让它变成死网格。
-        /// 网格真正消失时由 <see cref="GridLifetime.OnDestroy"/> 走 <see cref="Retire"/>。
+        /// 由 <see cref="ModHost"/> 的 sceneUnloaded 调用。场景卸载不等于网格销毁：
+        /// 网格对象可能还活着，清掉登记会让它变成没有运行环境的死网格；真正消失
+        /// 时由 <see cref="GridLifetime"/> 的 OnDestroy 走 <see cref="RetireByGrid"/>。
+        /// 已经失效的环境在这里顺手退役。
+        ///
+        /// <see cref="DeviceRegistry"/> 是独立的静态根，持有普通 C# 的 GameItem，
+        /// Unity 不会替它清；场景切换必须在这里整表清空，否则旧场景的物品会一直
+        /// 留在内存里。
         /// </summary>
         public static void Reset()
         {
@@ -133,7 +150,17 @@ namespace FluxForge.Mod
             DeviceRegistry.Clear();
         }
 
-        /// <summary>mod 卸载 / 退出存档：连网格登记一起清。</summary>
+        /// <summary>
+        /// 退出存档 / mod 卸载：连网格登记一起清。
+        ///
+        /// 先取运行时快照再清表，之后逐个 Dispose 视图（退订生死广播、销毁层）。
+        /// 这里不逐个 KillAll：环境已经不再被登记表引用，视图 Dispose 之后整块
+        /// 对象交给 GC 即可。
+        ///
+        /// 可重复调用：<see cref="SaveExited"/>、<see cref="EmporiumDestroyed"/>、
+        /// <see cref="FFModEntry.OnDisable"/> 可能先后命中同一次退出，第二次起
+        /// 两张表都是空的。
+        /// </summary>
         public static void Shutdown()
         {
             FlowRuntime[] runtimes = GridRegistry.Runtimes.ToArray();
@@ -150,8 +177,9 @@ namespace FluxForge.Mod
 
         /// <summary>
         /// 释放一个环境的视觉视图（退订生死广播 + 销毁层 + 清空表），并把引用置空。
-        /// <see cref="Retire"/> 与 <see cref="Reset"/> 共用同一条路径；
-        /// 释放在这里兜底：视图的 Dispose 会碰 Unity 对象，抛异常不能打断其它环境的清理。
+        /// <c>Retire</c>、<see cref="Reset"/>（失效分支）与 <see cref="Shutdown"/>
+        /// 共用同一条路径；释放在这里兜底：视图的 Dispose 会碰 Unity 对象，
+        /// 抛异常不能打断其它环境的清理。
         /// </summary>
         private static void DisposeView(FlowRuntime runtime)
         {

@@ -100,7 +100,7 @@ namespace FluxForge.Tests
                 7);
             Assert.Equal("large|blocked|right", blocked.ToKey());
 
-            // 6 参构造 = 静态 tile（Frame 缺省 NoFrame）。
+            // 省略 frame 参数 = 静态 tile（Frame 缺省 NoFrame）。
             FlowVisualState staticFlow = new FlowVisualState(
                 FlowComposition.PureWater,
                 FlowTemp.Normal,
@@ -220,7 +220,7 @@ namespace FluxForge.Tests
         [Fact]
         public void ToKey_IgnoresRange()
         {
-            // 射程不进 key：图集 tile 不含射程点，点由渲染层另画（SPEC §4）。
+            // 射程不进 key：Range 是预留字段，当前不参与选图或绘制（SPEC §4 的射程点已删除）。
             FlowVisualState unknown = new FlowVisualState(
                 FlowComposition.PureWater, FlowTemp.Cold, FlowContent.Small,
                 FlowState.Flow, FlowDir.Left, FlowVisualState.NoFrame, 0);
@@ -566,7 +566,8 @@ namespace FluxForge.Tests
         [Fact]
         public void TrailLayers_ScaleWithContent()
         {
-            // 尾巴长度必须跟体量走：轻流源短尾、重流源长尾，否则含量读数会被拖平。
+            // 拖尾层数按体量给：轻流源短尾、重流源长尾。
+            // 渲染层当前已不再绘制残影池，这里只钉住纯函数契约。
             Assert.Equal(1, FlowTierMap.TrailLayersFromContent(FlowContent.Empty));
             Assert.Equal(2, FlowTierMap.TrailLayersFromContent(FlowContent.Small));
             Assert.Equal(4, FlowTierMap.TrailLayersFromContent(FlowContent.Mid));
@@ -613,7 +614,7 @@ namespace FluxForge.Tests
             Assert.Equal(1, FlowDirMath.StepX((FlowDir)99));
             Assert.Equal(0, FlowDirMath.StepY((FlowDir)99));
 
-            // 反方向就是取反，残影/粒子后偏共用同一张表。
+            // 反方向就是取反，粒子后偏复用同一张表。
             Assert.Equal(-1, FlowDirMath.BackwardX(FlowDir.Right));
             Assert.Equal(1, FlowDirMath.BackwardY(FlowDir.Up));
             Assert.Equal(0, FlowDirMath.BackwardX(FlowDir.Down));

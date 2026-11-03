@@ -9,8 +9,9 @@ namespace FluxForge.Mod
     /// <c>parentInventory</c> 仍指向原网格。所以必须在拿起时就注销，
     /// 否则流源会继续撞到「已经被拿在手上」的装置。
     ///
-    /// 松手时 <c>EndDrag</c> 会走 RemoveParent + AddParent，
-    /// <see cref="ItemDetached"/> 与 <see cref="ItemAttached"/> 会再各触发一次。
+    /// 这里只撤格表条目，装置实例不销毁：松手落回容器时 EndDrag 会走
+    /// RemoveParent + AddParent，<see cref="ItemDetached"/> 与
+    /// <see cref="ItemAttached"/> 会再各触发一次并重新登记格表。
     ///
     /// 生命周期 #3 的补充（拿起），完整表见 `Lifecycle/README.md`。
     /// </summary>

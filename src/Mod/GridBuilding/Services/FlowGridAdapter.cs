@@ -5,13 +5,13 @@ namespace FluxForge.Mod
     /// <summary>
     /// 把游戏背包网格接到框架的运动层：回答「某格上有什么装置」。
     ///
-    /// 装置在**落到格子时**登记（<c>GameItem.AddParent</c> postfix），
-    /// 离开时注销（<c>GameItem.RemoveParent</c> postfix）。
-    /// 不再在发射时遍历 childItems 全量展开，所以运行中拖动、新增、卖掉装置
-    /// 都会立即反映到这张表，发射路径只负责查询。
+    /// 表在挂载 / 离开时增量维护：落到格子时登记（<c>GameItem.AddParent</c> postfix），
+    /// 离开容器时注销（<c>GameItem.RemoveParent</c> prefix），拿起时由
+    /// <see cref="ItemPickedUp"/> 提前注销。发射路径只做查询，所以运行中拖动、
+    /// 新增、卖掉装置都会立即反映到这张表。
     ///
-    /// 登记粒度是 anchor 格：一个装置只占表里的一格，流源沿形状的其它格
-    /// 走到中心格才触发路由/反应。
+    /// 登记粒度是 anchor 格（物品定义里的中心格）：一个装置只占表里的一格，
+    /// 流源沿形状的其它格走到中心格才触发路由/反应。
     /// </summary>
     public sealed class FlowGridAdapter : IFlowGrid
     {
@@ -52,9 +52,9 @@ namespace FluxForge.Mod
         /// <summary>
         /// 装置落到格子时登记。
         ///
-        /// 只有参与路由/反应的装置才进表；纯数据物品（例如流量机）没有 anchor，
-        /// 也没有 router/reactor。朝向也在这里同步，因为分流器的通道方向
-        /// 依赖物品当前朝向。
+        /// 只有参与路由/反应的装置才进表；纯数据物品没有 anchor，也没有
+        /// router/reactor，走到这里会直接返回。朝向也在这里同步，因为分流器的
+        /// 通道方向依赖物品当前朝向。
         /// </summary>
         public void Register(GameItem item)
         {
@@ -71,9 +71,10 @@ namespace FluxForge.Mod
         /// <summary>
         /// 全量重建格表。
         ///
-        /// 排序（<c>InventorySortHelper.Sort</c>）和读档（<c>SaveItemNode.itemModifiedShape</c>）
-        /// 都直接写 <c>item.modifiedShape</c>，原版不走 <c>AddParent</c> / <c>RemoveParent</c>，
-        /// 增量路径收不到任何信号，只能由调用方在批量变化后主动调这里。
+        /// 排序和读档都会成批改写 <c>modifiedShape</c>：排序先逐件 Expel 再
+        /// UncheckedAccept，读档则在 AddParent 之后才 ValidateShapeState。
+        /// 增量的挂载信号拿到的可能不是最终形状，所以在这些批量路径结束后
+        /// 统一重建一次。调用方负责在批量变化后主动调这里。
         /// </summary>
         public void Rebuild()
         {

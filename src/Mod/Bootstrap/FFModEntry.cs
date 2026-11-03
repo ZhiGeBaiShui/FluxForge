@@ -9,14 +9,15 @@ namespace FluxForge.Mod
     ///
     /// 职责边界：
     ///   · <see cref="Init"/>      —— 绑定日志、初始化装配件 / tooltip helper / 本地化
-    ///   · <see cref="OnEnable"/>  —— 订阅「物品目录初始化」、启动每帧宿主
-    ///   · <see cref="OnDisable"/> —— 退订、停宿主、清空流源与图集
+    ///   · <see cref="OnEnable"/>  —— 订阅「物品目录初始化」与读档完成、启动每帧宿主
+    ///   · <see cref="OnDisable"/> —— 退订、停宿主、清空两张静态登记表与图集
     ///
     /// 物品注册走官方钩子 <see cref="ModHook.OnModItemDirectoryInit"/>：
     /// <c>ModItemDirectory.InitDirectory</c> 里 Fire，mod 在游戏初始化前加载，
     /// 订阅一定早于触发。
     ///
-    /// 读档重建由 <see cref="SaveLoaded"/> 自己订阅（生命周期 #6）。
+    /// 读档重建由 <see cref="SaveLoaded"/> 负责（生命周期 #6），订阅在
+    /// <see cref="OnEnable"/> 完成。
     ///
     /// 生命周期 #9（mod 卸载），完整表见 `Lifecycle/README.md`。
     /// </summary>
@@ -63,13 +64,18 @@ namespace FluxForge.Mod
             ModHook.OnModItemDirectoryInit -= OnModItemDirectoryInit;
             SaveLoaded.Unsubscribe();
 
+            // 先停宿主：停止每帧驱动，再拆登记表与视图。
             if (_host != null)
             {
                 _host.Stop();
                 _host = null;
             }
 
+            // 两张登记表都是静态根：宿主销毁不会带走它们，必须在这里显式清。
             FlowDriver.Shutdown();
+
+            // 最后释放进程级图集；放在视图 Dispose 之后，避免仍挂着的 Image
+            // 引用已经销毁的 Sprite。
             FlowVisualLayer.Shutdown();
 
             Log.Log("FluxForge 已卸载");

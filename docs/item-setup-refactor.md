@@ -1,7 +1,17 @@
 # 物品装配层重构（ItemAttachment）设计 · v3
 
-> 状态：已实施。v1 出稿 → 三份评审 25 条 → v2 → 实施（`4ba9fe6`）→ 复核后去掉反射自动发现（v3）
-> 基线：`d92ef03`（构建 0 warning / 0 error，测试 162 全绿）
+> 状态：**历史设计记录**（v3，基线 `d92ef03`，测试 162）。本文保留为决策史，**不代表当前实现**。
+>
+> **当前实现差异（2026-11-04 核对）**：
+>
+> - 目录：`src/Mod/Items/` → `src/Mod/ItemSpawn/`，`Setup/` → `Services/`；`ItemFactory.cs` 在 `ItemSpawn/Services/`。
+> - **反射自动发现回来了**：`FFModEntry.Init` 调 `ItemSetup.Initialize()`，用 `Assembly.GetTypes()` + `Activator.CreateInstance` 建表；本文 §5「放弃反射」的结论已被后续实现推翻。名字重复会让 `Dictionary.Add` 在启动期抛异常。
+> - `ItemSetup` 的职责改为「空白物品 → attachments → `ItemFactory.Apply(item, def)`」；`ItemFactory` 只装配已有物品，不再 `Create`。
+> - 当前装配件共 4 个：`device` / `flow_container` / `water_bottle` / `emitter`；本文提到的 `machine` / `collector` / `ice_block` 三个专属装配件已删除，装置统一走 `device`（只写 tag）。
+> - `FlowItemDefinition` 新增 `device` / `anchorX` / `anchorY`；`device` 同时是持久化 tag 名。
+> - 测试基线：当前 **221 / 221**（本文 §9 的 162 是当时基线）。
+> - §3 的目录树、§5 的注册表、§7 的 items.json 示例、§11 的实机验收都属于当时状态；实际以 `src/Mod/ItemSpawn/` 与 `assets/items.json` 为准。
+
 > 评审与裁决记录：`.superpowers/sdd/item-attachments/progress.md`
 
 ## 1. 背景
