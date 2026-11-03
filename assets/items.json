@@ -4,21 +4,6 @@
   },
   "items": [
     {
-      "key": "flow_machine",
-      "sprite": "flow_machine",
-      "name": "流量机",
-      "desc": "打开后是一块可自定义大小的网格，把流量装置放进去即可驱动流源。",
-      "flavor": "它嗡嗡作响，像在抱怨自己被降级了。",
-      "grid": "4x3",
-      "acceptsType": "FLOW_DEVICE",
-      "itemTypes": [
-        "MACHINE"
-      ],
-      "attachments": [
-        "machine"
-      ]
-    },
-    {
       "key": "ice_block",
       "device": "ice_block",
       "anchorX": 0,
@@ -171,11 +156,51 @@
       ]
     },
     {
+      "key": "flow_straight",
+      "sprite": "flow_straight",
+      "name": "直通装置",
+      "desc": "流源从中间直穿而过，不改变方向或属性。",
+      "itemTypes": [
+        "FLOW_DEVICE"
+      ],
+      "attachments": []
+    },
+    {
       "key": "chem_reactor_top",
       "sprite": "chem_reactor_top",
       "name": "化学反应装置（预览）",
       "desc": "无 attachment 的视觉测试物品，用来观察流源经过通道时的透明覆盖效果。",
       "flavor": "玻璃后面好像有什么在流动。",
+      "itemTypes": [
+        "FLOW_DEVICE"
+      ],
+      "attachments": []
+    },
+    {
+      "key": "chem_reactor_heat",
+      "sprite": "chem_reactor_heat",
+      "name": "化学反应器（加热）",
+      "desc": "后续扩展占位。",
+      "itemTypes": [
+        "FLOW_DEVICE"
+      ],
+      "attachments": []
+    },
+    {
+      "key": "chem_reactor_cool",
+      "sprite": "chem_reactor_cool",
+      "name": "化学反应器（冷却）",
+      "desc": "后续扩展占位。",
+      "itemTypes": [
+        "FLOW_DEVICE"
+      ],
+      "attachments": []
+    },
+    {
+      "key": "chem_reactor_alkali",
+      "sprite": "chem_reactor_alkali",
+      "name": "化学反应器（碱）",
+      "desc": "后续扩展占位。",
       "itemTypes": [
         "FLOW_DEVICE"
       ],

@@ -1,13 +1,6 @@
 {
   "sprites": [
     {
-      "key": "flow_machine",
-      "atlas": "flow_machine_atlas",
-      "file": "flow_machine.png",
-      "shape": "111111",
-      "shapeWidth": 2
-    },
-    {
       "key": "ice_block",
       "atlas": "ice_block_atlas",
       "file": "ice_block.png",
@@ -32,8 +25,15 @@
       "key": "l_turn_device",
       "atlas": "l_turn_device_atlas",
       "file": "l_turn_device.png",
-      "shape": "1110",
-      "shapeWidth": 2
+      "shape": "1",
+      "shapeWidth": 1
+    },
+    {
+      "key": "flow_straight",
+      "atlas": "flow_straight_atlas",
+      "file": "flow_straight.png",
+      "shape": "1",
+      "shapeWidth": 1
     },
     {
       "key": "chem_reactor_top",
@@ -41,6 +41,27 @@
       "file": "chem_reactor_top.png",
       "shape": "010111010",
       "shapeWidth": 3
+    },
+    {
+      "key": "chem_reactor_heat",
+      "atlas": "chem_reactor_heat_atlas",
+      "file": "chem_reactor_heat.png",
+      "shape": "1",
+      "shapeWidth": 1
+    },
+    {
+      "key": "chem_reactor_cool",
+      "atlas": "chem_reactor_cool_atlas",
+      "file": "chem_reactor_cool_1x1.png",
+      "shape": "1",
+      "shapeWidth": 1
+    },
+    {
+      "key": "chem_reactor_alkali",
+      "atlas": "chem_reactor_alkali_atlas",
+      "file": "chem_reactor_alkali1x1.png",
+      "shape": "1",
+      "shapeWidth": 1
     }
   ]
 }

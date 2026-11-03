@@ -69,7 +69,7 @@ namespace FluxForge.Mod
         /// <summary>
         /// 贴图三字段 + shape 占位。
         ///
-        /// 形如 spriteAtlasPath=flow_machine_atlas / spritePath=flow_machine / spriteChanged=true，
+        /// 形如 spriteAtlasPath=ice_block_atlas / spritePath=ice_block / spriteChanged=true，
         /// 游戏解析贴图时由 <see cref="LoadFromAtlasPatch"/> 命中我们自建的 Sprite。
         /// </summary>
         private static void ApplySprite(GameItem item, FlowItemDefinition def)
