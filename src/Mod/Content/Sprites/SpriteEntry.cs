@@ -15,6 +15,12 @@ namespace FluxForge.Mod.Rendering.ItemSprites
         /// <summary>嵌入资源文件名（assets/ 下）。</summary>
         public string file { get; set; }
 
+        /// <summary>
+        /// 可选的游戏 spritePath 覆盖。留空时用 key。
+        /// 原版液体容器需要 spritePath="small" 才能加载 small_*_100 / small_hl_100 修饰层。
+        /// </summary>
+        public string spritePath { get; set; }
+
         /// <summary>形状数据：0/1 按行拼接（1=占格）。例：L 型（2×2 缺右下）="1110"，shapeWidth=2。</summary>
         public string shape { get; set; }
 

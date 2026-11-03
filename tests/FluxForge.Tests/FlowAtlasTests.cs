@@ -288,10 +288,10 @@ namespace FluxForge.Tests
         public void Tint_BodyEqualsCompositionBlend()
         {
             FlowComposition half = new FlowComposition(1f, 1f, 0f, 0f, 0f, 0f);
-            AssertColor(FlowTint.Body(in half), 97, 146, 242);
+            AssertColor(FlowTint.Body(half), 97, 146, 242);
 
             FlowComposition water = FlowComposition.PureWater;
-            AssertColor(FlowTint.Body(in water), 0x27, 0xC7, 0xE6);
+            AssertColor(FlowTint.Body(water), 0x27, 0xC7, 0xE6);
         }
 
         [Fact]
@@ -301,13 +301,13 @@ namespace FluxForge.Tests
 
             // 本体 #27C7E6 → shade(-0.52) = 每通道 ×0.48：
             // (18.72→19, 95.52→96, 110.4→110)。
-            AssertColor(FlowTint.Edge(in water, FlowTemp.Normal), 19, 96, 110);
+            AssertColor(FlowTint.Edge(water, FlowTemp.Normal), 19, 96, 110);
 
             // cold: mix(base, #D6ECFF, 0.88) = (190.6→191, 219.2→219, 237.6→238)。
-            AssertColor(FlowTint.Edge(in water, FlowTemp.Cold), 191, 219, 238);
+            AssertColor(FlowTint.Edge(water, FlowTemp.Cold), 191, 219, 238);
 
             // hot: mix(base, #FF964E, 0.86) = (221.96→222, 142.44→142, 82.48→82)。
-            AssertColor(FlowTint.Edge(in water, FlowTemp.Hot), 222, 142, 82);
+            AssertColor(FlowTint.Edge(water, FlowTemp.Hot), 222, 142, 82);
         }
 
         [Fact]
@@ -318,9 +318,9 @@ namespace FluxForge.Tests
             // hot  = (225.88→226, 138.8→139, 83.32→83)
             FlowComposition half = new FlowComposition(1f, 1f, 0f, 0f, 0f, 0f);
 
-            AssertColor(FlowTint.Edge(in half, FlowTemp.Normal), 47, 70, 116);
-            AssertColor(FlowTint.Edge(in half, FlowTemp.Cold), 194, 216, 238);
-            AssertColor(FlowTint.Edge(in half, FlowTemp.Hot), 226, 139, 83);
+            AssertColor(FlowTint.Edge(half, FlowTemp.Normal), 47, 70, 116);
+            AssertColor(FlowTint.Edge(half, FlowTemp.Cold), 194, 216, 238);
+            AssertColor(FlowTint.Edge(half, FlowTemp.Hot), 226, 139, 83);
         }
 
         [Fact]
@@ -330,18 +330,18 @@ namespace FluxForge.Tests
             // 水 #27C7E6 → (39*0.38+158.1, 199*0.38+158.1, 230*0.38+158.1)
             //            = (172.92→173, 233.72→234, 245.5→246)。
             FlowComposition water = FlowComposition.PureWater;
-            AssertColor(FlowTint.Accent(in water), 0xAD, 0xEA, 0xF6);
+            AssertColor(FlowTint.Accent(water), 0xAD, 0xEA, 0xF6);
 
             // 50/50 水+毒的本体是 (97,146,242) → accent (195,214,250)。
             FlowComposition half = new FlowComposition(1f, 1f, 0f, 0f, 0f, 0f);
-            AssertColor(FlowTint.Accent(in half), 195, 214, 250);
+            AssertColor(FlowTint.Accent(half), 195, 214, 250);
 
             // 油/酸必须保留暖亮核：固定 #F2FAFF 会把 B 通道从 174 拉到 255（评审的 Δ≈81）。
             FlowComposition oil = new FlowComposition(0f, 0f, 1f, 0f, 0f, 0f);
-            AssertColor(FlowTint.Accent(in oil), 249, 226, 174);
+            AssertColor(FlowTint.Accent(oil), 249, 226, 174);
 
             FlowComposition acid = new FlowComposition(0f, 0f, 0f, 0f, 1f, 0f);
-            AssertColor(FlowTint.Accent(in acid), 206, 238, 174);
+            AssertColor(FlowTint.Accent(acid), 206, 238, 174);
         }
 
         // ── 索引解析 ────────────────────────────────────────────────

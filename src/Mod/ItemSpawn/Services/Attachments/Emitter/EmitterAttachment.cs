@@ -77,31 +77,7 @@ namespace FluxForge.Mod
         internal static void ActivateEmitter(
             GameItem item, GameInventory inventory, SlotMarker marker)
         {
-            // 原生执行回调重新读当前物品的父网格，不相信菜单阶段或回调参数里的旧容器。
-            try
-            {
-                GameGridInventory currentInventory = GetEmitterInventory(item);
-                if (currentInventory == null)
-                {
-                    FFModEntry.Log.Warning(
-                        "[发射装置] 激活未执行：物品失效或当前直接父容器不是支持的网格");
-                    return;
-                }
-
-                FlowRuntime runtime = GridRegistry.Get(currentInventory);
-                if (runtime == null)
-                {
-                    FFModEntry.Log.Warning(
-                        "[发射装置] 激活未执行：当前网格没有登记运行环境");
-                    return;
-                }
-
-                runtime.Emit(item);
-            }
-            catch (Exception e)
-            {
-                FFModEntry.Log.Error("[发射装置] 激活失败：" + e);
-            }
+            GridRegistry.Emit(item);
         }
     }
 }

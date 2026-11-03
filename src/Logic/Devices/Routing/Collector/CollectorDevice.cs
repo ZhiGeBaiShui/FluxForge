@@ -77,11 +77,5 @@ namespace FluxForge
 
             return true;
         }
-
-        /// <summary>清空收集：累积属性归零。</summary>
-        public void Clear()
-        {
-            _stock = new FlowProperties();
-        }
     }
 }

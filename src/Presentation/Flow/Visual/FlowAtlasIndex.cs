@@ -137,7 +137,7 @@ namespace FluxForge.Presentation.Flow.Visual
             // 图集只保留「向右」一份，其余方向由渲染层旋转贴图得到。
             // 所以查表时方向固定 Right，流源真实方向由 FlowDrawItem.Direction 传给渲染层。
             FlowVisualState right = new FlowVisualState(
-                state.Composition,
+                state.BodyColor,
                 state.Temp,
                 state.Content,
                 state.State,
@@ -150,7 +150,7 @@ namespace FluxForge.Presentation.Flow.Visual
             }
 
             FlowVisualState flowStatic = new FlowVisualState(
-                state.Composition,
+                state.BodyColor,
                 state.Temp,
                 state.Content,
                 FlowState.Flow,
@@ -163,7 +163,7 @@ namespace FluxForge.Presentation.Flow.Visual
             }
 
             FlowVisualState large = new FlowVisualState(
-                state.Composition,
+                state.BodyColor,
                 state.Temp,
                 FlowContent.Large,
                 state.State,

@@ -123,5 +123,14 @@ namespace FluxForge.Presentation.Flow.Visual
                 FlowColor.RoundToByte(green),
                 FlowColor.RoundToByte(blue));
         }
+
+        /// <summary>
+        /// 隐式转换：把成分当颜色用（旧的六色成分入口已不再是主路径，
+        /// 36 种液体的本体色由 <c>FlowVisualLayer.ComputeBodyColor</c> 直接算好）。
+        /// </summary>
+        public static implicit operator FlowColor(FlowComposition composition)
+        {
+            return composition.Blend();
+        }
     }
 }

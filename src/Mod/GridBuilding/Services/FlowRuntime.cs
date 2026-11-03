@@ -53,36 +53,16 @@ namespace FluxForge.Mod
         }
 
         /// <summary>
-        /// 激活：把物品的存量整份转成一个流源。
-        /// 空库存或直接父网格不匹配时不发射、不扣量。
+        /// 激活：把物品的存量整份转成一个流源，并把液体从 tag 里扣掉。
+        /// 空库存不发射、不扣量。
         /// </summary>
-        public bool Emit(GameItem emitterItem)
+        public bool Emit(GameItem item)
         {
-            if (!IsAlive || emitterItem == null)
+            if (FlowStock.Total(item) <= 0d)
             {
                 return false;
             }
 
-            GameGridInventory parent = emitterItem.parentInventory as GameGridInventory;
-            if (parent == null || !ReferenceEquals(parent, Inventory))
-            {
-                return false;
-            }
-
-            if (FlowStock.Total(emitterItem) <= 0d)
-            {
-                return false;
-            }
-
-            return EmitFrom(emitterItem);
-        }
-
-        /// <summary>
-        /// 把物品的存量整份转成一个流源，并把液体从 tag 里扣掉。
-        /// 返回是否真的发出了流源。
-        /// </summary>
-        private bool EmitFrom(GameItem item)
-        {
             FlowPos origin;
             int direction;
             if (!ResolveEmit(item, out origin, out direction))
@@ -100,7 +80,7 @@ namespace FluxForge.Mod
             FlowProperties payload = FlowStock.Read(item);
 
             FlowEntity entity = new FlowEntity(
-                new FlowPos(origin.X, origin.Y),
+                origin,
                 new FlowMotionData(direction, EmitSpeed),
                 payload);
 

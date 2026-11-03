@@ -302,9 +302,9 @@ namespace FluxForge.Mod.Visual.Internal
                 float angle = (1 - item.Direction) * 90f;
 
                 // 三层颜色：成分为唯一本体色来源，温度只进边缘，亮核恒白
-                Color bodyTint = ToColor(FlowTint.Body(state.Composition));
-                Color edgeTint = ToColor(FlowTint.Edge(state.Composition, state.Temp));
-                Color accentTint = ToColor(FlowTint.Accent(state.Composition));
+                Color bodyTint = ToColor(FlowTint.Body(state.BodyColor));
+                Color edgeTint = ToColor(FlowTint.Edge(state.BodyColor, state.Temp));
+                Color accentTint = ToColor(FlowTint.Accent(state.BodyColor));
 
                 ShowQuad(_bodies[i], ref _bodyCache[i], sprites.Body, bodyTint, position, quadSize, angle);
                 ShowQuad(_edges[i], ref _edgeCache[i], sprites.Edge, edgeTint, position, quadSize, angle);

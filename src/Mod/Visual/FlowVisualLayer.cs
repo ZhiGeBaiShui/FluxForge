@@ -305,19 +305,78 @@ namespace FluxForge.Mod.Visual
             int direction = entity.Motion == null ? 1 : entity.Motion.Direction;
             double speed = entity.Motion == null ? 0d : entity.Motion.Speed;
 
-            // Tier-0：成分固定纯水（REFACTOR-A §4）；射程暂无数据源，
-            // FlowVisualState.Range 保持 0（预留：字段就绪前不渲染射程点）。
+            // 本体色按 36 种液体的存量加权算好，再交给三层染色。
+            // 射程暂无数据源，FlowVisualState.Range 保持 0（预留：字段就绪前不渲染射程点）。
             return new FlowFrameInput(
                 positionX,
                 positionY,
                 direction,
                 speed,
-                FlowComposition.PureWater,
+                ComputeBodyColor(entity.Properties),
                 FlowTierMap.TempFrom((float)entity.Properties.Get(FlowProps.Temperature)),
                 FlowTierMap.ContentFromWater(entity.Properties.SubstanceTotal),
                 FlowTierMap.StateFrom(blocked));
         }
 
+        /// <summary>
+        /// 液体混合色，逐行对齐游戏原版 <c>WaterHelper.GetLiquidContainerColor</c>：
+        /// <code>
+        /// weight = amount × Mathf.Max(1, colorMultiplier)
+        /// color  = Σ(rgb × weight) / Σweight     // 截断取整，不是四舍五入
+        /// </code>
+        ///
+        /// 与原版保持一致的三件事（刻意**不**加任何额外修饰）：
+        ///   · 没有含量阈值——只要 &gt;0 就参与，1 单位氰化物也会影响颜色；
+        ///   · 没有水权重压制——water 的 colorMultiplier 就是 1；
+        ///   · 取整用截断（<see cref="FlowColor.TruncateToByte"/>），对齐
+        ///     Unity <c>Color</c> → <c>Color32</c> 的隐式转换。
+        ///
+        /// 唯一差异：原版空容器返回 <c>"000000"</c> 黑（容器没有液体层，不显示），
+        /// 而流源不存在「空」的语义——真拿到全 0 说明数据缺失，返回兜底色
+        /// <see cref="FlowLiquidPalette.Default"/> 比黑块更容易发现问题。
+        ///
+        /// 精度说明：原版用 float 累加，这里用 double。数学式完全一致，
+        /// 极少数通道可能差 1，肉眼不可辨。
+        /// </summary>
+        private static FlowColor ComputeBodyColor(IFlowState properties)
+        {
+            double weightedR = 0d;
+            double weightedG = 0d;
+            double weightedB = 0d;
+            double weightTotal = 0d;
+
+            foreach (FlowPropertyDef def in FlowPropertyRegistry.All)
+            {
+                if (def.Kind != FlowPropertyKind.Liquid)
+                {
+                    continue;
+                }
+
+                double amount = properties.Get(def.Key);
+                if (amount <= 0d)
+                {
+                    continue;
+                }
+
+                FlowColor color = FlowLiquidPalette.Get(def.Id);
+                double weight = amount * FlowLiquidPalette.GetColorMultiplier(def.Id);
+
+                weightedR += color.R * weight;
+                weightedG += color.G * weight;
+                weightedB += color.B * weight;
+                weightTotal += weight;
+            }
+
+            if (weightTotal <= 0d)
+            {
+                return FlowLiquidPalette.Default;
+            }
+
+            return new FlowColor(
+                FlowColor.TruncateToByte(weightedR / weightTotal),
+                FlowColor.TruncateToByte(weightedG / weightTotal),
+                FlowColor.TruncateToByte(weightedB / weightTotal));
+        }
         /// <summary>把快照翻译成一条绘制指令（纯函数，不查表、不改状态）。</summary>
         private static FlowDrawItem BuildDrawItem(in FlowFrameInput snapshot, int frame)
         {
@@ -327,7 +386,7 @@ namespace FluxForge.Mod.Visual
             int visualFrame = snapshot.State == FlowState.Flow ? frame : FlowVisualState.NoFrame;
 
             FlowVisualState visual = new FlowVisualState(
-                snapshot.Composition, snapshot.Temp, snapshot.Content, snapshot.State, dir, visualFrame);
+                snapshot.BodyColor, snapshot.Temp, snapshot.Content, snapshot.State, dir, visualFrame);
 
             return new FlowDrawItem(
                 snapshot.X,

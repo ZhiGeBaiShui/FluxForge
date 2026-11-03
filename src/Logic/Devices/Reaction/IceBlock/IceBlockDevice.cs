@@ -109,8 +109,7 @@ namespace FluxForge
                 return false;
             }
 
-            // 两者用同一单位存储（µL），1 mL ↔ 1 g 的换算系数就是 1，
-            // 所以「自身质量的一半」直接是流源水量 * 0.5
+            // 冰块自己的规则：按流源水量决定最多带走多少冰。
             double capacity = properties.Get(FlowProps.Water) * MeltRatio;
             double melted = Math.Min(Water, capacity);
             if (melted <= 0d)
@@ -118,18 +117,13 @@ namespace FluxForge
                 return false;
             }
 
-            // 先留下流源反应前的总液体质量与温度：混合温度要按「混合前」的配比算
-            double flowTotal = properties.SubstanceTotal;
-            double flowTemperature = properties.Get(FlowProps.Temperature);
+            // 反应产生的属性作为一份独立 FlowProperties；按注册表合并进流源。
+            FlowProperties reactionProperties = new FlowProperties();
+            reactionProperties.Set(FlowProps.Water, melted);
+            reactionProperties.Set(FlowProps.Temperature, Temperature);
 
             Water -= melted;
-            properties.Set(FlowProps.Water, properties.Get(FlowProps.Water) + melted);
-
-            // 化掉的冰以冰水身份进入流源，温度按总液体质量加权
-            double totalMass = flowTotal + melted;
-            properties.Set(
-                FlowProps.Temperature,
-                (flowTotal * flowTemperature + melted * Temperature) / totalMass);
+            properties.MergeFrom(reactionProperties);
 
             // 顺序不可调换：订阅方收到 Exhausted 就会把物品从网格里摘掉，
             // 摘掉之后就再也写不进 tag 了。Changed 必须在它之前把最终状态同步出去。
@@ -145,3 +139,4 @@ namespace FluxForge
         }
     }
 }
+

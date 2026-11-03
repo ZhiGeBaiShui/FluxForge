@@ -4,11 +4,11 @@ using System.Collections.Generic;
 namespace FluxForge.Mod
 {
     /// <summary>
-    /// 物品装配入口：先按 json 装配数据（<see cref="ItemFactory"/>），
-    /// 再按 items.json 声明的 attachments 列表依次挂行为（<see cref="ItemAttachment"/>）。
+    /// 物品生命周期入口：创建空白物品，执行 attachments，最后调用
+    /// <see cref="ItemFactory.Apply"/> 装配通用属性与 tag。
     ///
-    /// 放在物品目录工厂里而不是 ItemFactory 内部，是为了让 ItemFactory 保持
-    /// 「纯数据装配」的职责——行为属于 mod 层的事。
+    /// 顺序固定为：出生 → attachment → 通用信息 / tag。
+    /// 水容器先初始化液体 tag，工厂最后写 items.json 的 tag，因此不会被覆盖。
     ///
     /// 分派不看 def.key：key 只负责存档标识与贴图约定。
     /// 新增装配件 = 新建一个 <see cref="ItemAttachment"/> 子类，本文件不用改。
@@ -43,11 +43,11 @@ namespace FluxForge.Mod
         }
 
         /// <summary>
-        /// 物品目录工厂的入口：先按 json 装配，再按 attachments 挂装置。
+        /// 物品目录工厂的入口：空白物品 → attachments → 通用信息 / tag。
         ///
-        /// 挂装置单独包一层 try/catch：这段代码是**在游戏的物品创建回调内部**执行的，
-        /// 异常会顺着游戏调用栈往上抛，轻则这个物品没行为、重则整次读档失败。
-        /// 出问题时留下 Error 日志、物品照常返回，比让存档加载中断要好。
+        /// 这段代码是**在游戏的物品创建回调内部**执行的；异常会顺着游戏调用栈
+        /// 往上抛，轻则这个物品没行为、重则整次读档失败。出问题时留下 Error
+        /// 日志、物品照常返回，比让存档加载中断要好。
         /// </summary>
         public static GameItem Create(FlowItemDefinition def)
         {
@@ -55,17 +55,18 @@ namespace FluxForge.Mod
 
             try
             {
-                item = ItemFactory.Create(def);
+                item = ItemDirectory.CreateEmptyItem(null);
+                if (item == null)
+                {
+                    FFModEntry.Log.Error("[物品] 「" + def.key + "」空物品创建失败");
+                    return null;
+                }
+
+                item.identifier = def.key;
             }
             catch (Exception e)
             {
-                // 这一段是游戏物品创建链直接调用的，异常会顺着游戏调用栈冒出去
-                FFModEntry.Log.Error("[物品] 「" + def.key + "」装配失败：" + e);
-                return null;
-            }
-
-            if (item == null)
-            {
+                FFModEntry.Log.Error("[物品] 「" + def.key + "」空物品创建失败：" + e);
                 return null;
             }
 
@@ -77,6 +78,16 @@ namespace FluxForge.Mod
             {
                 FFModEntry.Log.Error(
                     "[物品] 「" + def.key + "」装置挂接失败，物品将以无行为状态存在：" + e);
+            }
+
+            try
+            {
+                ItemFactory.Apply(item, def);
+            }
+            catch (Exception e)
+            {
+                FFModEntry.Log.Error(
+                    "[物品] 「" + def.key + "」通用信息装配失败：" + e);
             }
 
             return item;

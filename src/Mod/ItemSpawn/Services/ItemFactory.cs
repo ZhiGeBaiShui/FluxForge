@@ -3,9 +3,10 @@ using FluxForge.Mod.Rendering.ItemSprites;
 namespace FluxForge.Mod
 {
     /// <summary>
-    /// 物品工厂：把一条 <see cref="FlowItemDefinition"/> 装配成 GameItem。
+    /// 物品工厂：只负责把一条 <see cref="FlowItemDefinition"/> 的通用属性
+    /// 装配到已经存在的 GameItem 上，不创建物品、不管理生命周期。
     ///
-    /// 起点是 CreateEmptyItem，随后由 <see cref="Initialize"/> 按 items.json 逐段填充内容。
+    /// 空白物品出生、attachment 顺序和工厂调用顺序由 <see cref="ItemSetup"/> 管理。
     /// </summary>
     public static class ItemFactory
     {
@@ -13,34 +14,12 @@ namespace FluxForge.Mod
         internal const string ModId = "fluxforge";
 
         /// <summary>
-        /// 按配置装配物品：从空物品开始，按 items.json 逐项加工；造不出来时返回 null。
+        /// 装配通用属性：外观 / 文本 / 类型 / 价值 / tag / 快照。
+        /// 调用时 item 已经由 ItemSetup 创建并跑完 attachments。
         ///
-        /// 原版自己的物品工厂也是这个形态（例如 ModuleDirectory.SystemPerformanceModule：
-        /// CreateEmptyItem → SetSpriteAndShape → SetName → SetGameItemType → InitModuleItem），
-        /// 所以这里不复制任何模板，一切外观 / 文本 / 类型 / 价值 / 标签都由配置决定。
+        /// tag 必须最后写：attachment 可能重建液体 tag，提前写的 tag 会被覆盖。
         /// </summary>
-        public static GameItem Create(FlowItemDefinition def)
-        {
-            GameItem item = ItemDirectory.CreateEmptyItem(null);
-            if (item == null)
-            {
-                FFModEntry.Log.Error("[工厂] 「" + def.key + "」空物品创建失败");
-                return null;
-            }
-
-            item.identifier = def.key;
-            Initialize(item, def);
-            return item;
-        }
-
-        /// <summary>
-        /// 内容初始化序列。只对「刚造出、尚未被任何 UI 持有」的物品调用一次。
-        ///
-        /// 每一项都是**显式覆盖**：配置里没写的字段保持空物品默认值。
-        ///
-        /// 步骤之间有顺序依赖：④ 必须排在 ③ 之后，原因见各自注释。
-        /// </summary>
-        private static void Initialize(GameItem item, FlowItemDefinition def)
+        public static void Apply(GameItem item, FlowItemDefinition def)
         {
             // ① 外观：自定义图集贴图（sprites.json）+ 声明的占格形状。没配 sprite 时保持空物品外观。
             ApplySprite(item, def);
@@ -57,8 +36,8 @@ namespace FluxForge.Mod
             ApplyValue(item, def);
 
             // ④ 标签：启用 tag 并只写声明过的槽位，其余槽位保持默认值。
-            //    必须最后：类型本质就是 tag，③ 会先清掉全部类型 tag，
-            //    提前写的标签可能被那一步清掉。
+            //    必须最后：类型本质就是 tag，③ 会先清掉全部类型 tag；
+            //    attachment 也可能重建液体 tag，提前写的标签会被覆盖。
             ApplyTags(item, def);
 
             // ApplyTags 用 skipValidate: true 批量写 state，不会走 ValidateShapeState，
@@ -81,7 +60,8 @@ namespace FluxForge.Mod
             }
 
             // spriteChanged 是 protected；SetSprite 是公开的“设两字段 + 标记重取”入口，语义相同。
-            item.SetSprite(sprite.atlas, sprite.key);
+            string spritePath = string.IsNullOrEmpty(sprite.spritePath) ? sprite.key : sprite.spritePath;
+            item.SetSprite(sprite.atlas, spritePath);
 
             GridShapeBuilder shapeBuilder = new GridShapeBuilder();
             shapeBuilder.SetData(sprite.shape, sprite.shapeWidth);

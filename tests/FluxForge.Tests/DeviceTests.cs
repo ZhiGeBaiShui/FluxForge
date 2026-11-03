@@ -99,10 +99,6 @@ namespace FluxForge.Tests
             Assert.Equal(100d, collector.Stock.Get(FlowProps.Water));
             // 加权平均：(40×10 + 60×20) / 100 = 16
             Assert.Equal(16d, collector.Stock.Get(FlowProps.Temperature), 3);
-
-            collector.Clear();
-            Assert.Equal(0d, collector.Stock.Get(FlowProps.Water));
-            Assert.Equal(0d, collector.Stock.Get(FlowProps.Temperature));
         }
 
         [Fact]

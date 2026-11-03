@@ -144,6 +144,21 @@ namespace FluxForge.Tests
         }
 
         [Fact]
+        public void MergeFrom_MatchesMerge_AndMutatesThis()
+        {
+            FlowProperties a = Make(60d, 20d);
+            FlowProperties b = Make(40d, 80d);
+            FlowProperties expected = a.Merge(b);
+
+            a.MergeFrom(b);
+
+            Assert.Equal(expected.Get(FlowProps.Water), a.Get(FlowProps.Water));
+            Assert.Equal(expected.Get(FlowProps.Temperature), a.Get(FlowProps.Temperature));
+            Assert.Equal(40d, b.Get(FlowProps.Water));
+            Assert.Equal(80d, b.Get(FlowProps.Temperature));
+        }
+
+        [Fact]
         public void Merge_IsPure_ArgumentsUnchanged()
         {
             FlowProperties a = Make(60d, 20d);

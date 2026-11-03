@@ -21,6 +21,9 @@ review_results.json
 assets/raw/
 generated-images/
 __pycache__/
+.tmp-decomp/
+.tmp-zh-strings.json
+debug.log
 
 # === 系统文件 ===
 Thumbs.db

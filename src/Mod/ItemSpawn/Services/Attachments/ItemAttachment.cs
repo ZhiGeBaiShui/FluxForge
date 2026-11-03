@@ -7,9 +7,10 @@ namespace FluxForge.Mod
     ///   1. 无实例字段——实例启动时创建、全局共享；
     ///   2. 无静态可变状态——不要缓存 GameItem / PixelWindow，读档后游戏会按目录重建物品；
     ///   3. 顶层 public sealed class，public 无参构造，不嵌套；
-    ///   4. 不得覆盖 <see cref="ItemFactory"/> 五步写入的内容（identifier / 贴图 / shape /
-    ///      名称 / 说明 / 风味 / itemTypes / value / 配置声明的 tags）；调用游戏原生装配 API
-    ///      建立行为所需状态（如 <c>WaterHelper.InitLiquidContainerItem</c>）不算越界；
+    ///   4. attachment 在 ItemSetup 中先于 ItemFactory.Apply 执行；不要依赖自己写入的
+    ///      通用字段（identifier / 贴图 / shape / 名称 / 说明 / 风味 / itemTypes / value /
+    ///      配置声明的 tags）在 factory 之后仍然保留。调用游戏原生装配 API 建立行为
+    ///      所需状态（如 <c>WaterHelper.InitLiquidContainerItem</c>）不算越界；
     ///   5. 一件物品挂哪些装配件、组合是否互斥（两个面板 / 两个装置 / 两组激活委托），
     ///      由作者在 items.json 里决定并保证；运行期不做检查，同一字段被写两次时后者生效；
     ///   6. 装配件之间不得互相依赖，需要依赖就该合并；<see cref="FlowItemDefinition"/> 是唯一配置入口；

@@ -47,6 +47,15 @@ namespace FluxForge.Mod
         }
 
         /// <summary>
+        /// 对外统一的发射入口：从物品当前网格取运行环境并发射。
+        /// </summary>
+        public static bool Emit(GameItem item)
+        {
+            GameGridInventory parent = (GameGridInventory)item.parentInventory;
+            return Get(parent).Emit(item);
+        }
+
+        /// <summary>
         /// 注销登记，不负责终止流源或释放视图——那是 <see cref="FlowDriver"/> 的退役路径。
         /// </summary>
         public static void Unregister(GameGridInventory inventory)

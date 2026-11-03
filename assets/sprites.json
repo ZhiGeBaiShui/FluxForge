@@ -62,6 +62,14 @@
       "file": "chem_reactor_alkali1x1.png",
       "shape": "1",
       "shapeWidth": 1
+    },
+    {
+      "key": "fluxforge_450ml_bottle",
+      "atlas": "fluxforge_450ml_bottle_atlas",
+      "file": "fluxforge_450ml_bottle.png",
+      "shape": "111",
+      "shapeWidth": 1,
+      "spritePath": "small"
     }
   ]
 }

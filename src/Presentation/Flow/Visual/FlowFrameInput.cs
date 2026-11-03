@@ -24,7 +24,7 @@ namespace FluxForge.Presentation.Flow.Visual
         public readonly double Speed;
 
         /// <summary>六分量成分（相对权重，不要求归一化）。</summary>
-        public readonly FlowComposition Composition;
+        public readonly FlowColor BodyColor;
 
         /// <summary>温度档。</summary>
         public readonly FlowTemp Temp;
@@ -40,7 +40,7 @@ namespace FluxForge.Presentation.Flow.Visual
             double y,
             int direction,
             double speed,
-            FlowComposition composition,
+            FlowColor bodyColor,
             FlowTemp temp,
             FlowContent content,
             FlowState state)
@@ -49,7 +49,7 @@ namespace FluxForge.Presentation.Flow.Visual
             Y = y;
             Direction = direction;
             Speed = speed;
-            Composition = composition;
+            BodyColor = bodyColor;
             Temp = temp;
             Content = content;
             State = state;

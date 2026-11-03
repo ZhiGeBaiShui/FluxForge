@@ -135,9 +135,33 @@ namespace FluxForge
             return MergeAll(new FlowProperties[] { other });
         }
 
+        /// <summary>
+        /// 原地汇聚单份属性：把 <paramref name="other"/> 合并进 this，不分配新对象。
+        /// 规则与 <see cref="Merge(FlowProperties)"/> 相同。
+        /// </summary>
+        public void MergeFrom(FlowProperties other)
+        {
+            if (other == null)
+            {
+                throw new ArgumentNullException(nameof(other));
+            }
+
+            MergeAllInto(new FlowProperties[] { other });
+        }
+
         private FlowProperties MergeAll(IReadOnlyList<FlowProperties> others)
         {
             FlowProperties result = Clone();
+            result.MergeAllInto(others);
+            return result;
+        }
+
+
+        private void MergeAllInto(IReadOnlyList<FlowProperties> others)
+        {
+            // 原地修改前先把 this 的权重固定下来；否则前面的 Add 会改变 SubstanceTotal。
+            double thisWeight = SubstanceTotal;
+
             IReadOnlyList<FlowPropertyDef> defs = FlowPropertyRegistry.All;
             for (int i = 0; i < defs.Count; i++)
             {
@@ -151,13 +175,13 @@ namespace FluxForge
                     {
                         sum += others[j]._values[slot];
                     }
-                    result._values[slot] = sum;
+                    _values[slot] = sum;
                 }
                 else
                 {
                     // 加权平均：按各份的物质总量加权（现算，不信任何缓存状态）
-                    double weight = SubstanceTotal;
-                    double weightedSum = _values[slot] * weight;
+                    double weight = thisWeight;
+                    double weightedSum = _values[slot] * thisWeight;
 
                     for (int j = 0; j < others.Count; j++)
                     {
@@ -168,14 +192,13 @@ namespace FluxForge
                     }
 
                     // 分母为 0（几份都没有物质）时保留 this 的值，避免算出 NaN
-                    result._values[slot] = weight > 0d
+                    _values[slot] = weight > 0d
                         ? weightedSum / weight
                         : _values[slot];
                 }
             }
-
-            return result;
         }
+
 
         /// <summary>深拷贝：数组独立，克隆体与本体互不影响。</summary>
         public FlowProperties Clone()

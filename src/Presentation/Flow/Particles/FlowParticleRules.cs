@@ -110,7 +110,7 @@ namespace FluxForge.Presentation.Flow.Particles
         /// </summary>
         public static FlowColor ColorFor(in FlowFrameInput input)
         {
-            FlowColor body = input.Composition.Blend();
+            FlowColor body = input.BodyColor;
             return FlowColor.Mix(body, White, 0.10d);
         }
     }

@@ -2,7 +2,7 @@
   "schema": 1,
   "project": {
     "title": "流源视觉语言 v1",
-    "modId": "ProbablyBagMod",
+    "modId": "FluxForge",
     "game": "Probably Stolen",
     "unityVersion": "2021.3.45f2",
     "scriptingBackend": "il2cpp",
@@ -284,7 +284,7 @@
         "src/Presentation/Flow/FlowAtlasIndex.cs",
         "src/Presentation/Flow/FlowTierMap.cs",
         "src/Presentation/Flow/FlowPixelMath.cs",
-        "tests/ProbablyBagMod.Tests/FlowAtlasTests.cs"
+        "tests/FluxForge.Tests/FlowAtlasTests.cs"
       ],
       "acceptance": [
         "四个纯逻辑类零 Unity 依赖，dotnet build -c Release 0 error",
@@ -413,7 +413,7 @@
         "src/Presentation/Flow/FlowVisualState.cs",
         "src/Presentation/Flow/FlowAtlasIndex.cs",
         "src/Presentation/Flow/FlowTierMap.cs",
-        "tests/ProbablyBagMod.Tests"
+        "tests/FluxForge.Tests"
       ],
       "acceptance": [
         "FlowComposition/FlowTint/FlowVisualState/FlowAtlasIndex 按 REFACTOR-A §4 实现，零 Unity 依赖",
@@ -454,7 +454,7 @@
         "src/Mod/Flow/FlowMachine.cs",
         "src/Mod/Flow/FlowDriver.cs",
         "src/Mod/Items/FlowItemSetup.cs",
-        "src/Mod/PBModEntry.cs",
+        "src/Mod/FFModEntry.cs",
         "src/Presentation/Particles",
         "src/Mod/Flow/FlowVisual.cs"
       ],
@@ -486,7 +486,7 @@
         {
           "at": "2026-10-20T16:13:07.069Z",
           "by": "unity-refactor",
-          "text": "完成：删 src/Presentation/Particles/ 整目录 + FlowParticleLayer/FlowParticleGraphic/FlowVisual.cs（另删 FlowAtlasVisual.cs，§1 目标树无此文件）；新增 FlowAtlasView（每机器一实例、订阅本机 Flows、实体表/blocked 计数/collect 0.2s 残影/12fps 时钟/层全在实例、无 Dictionary&lt;IFlowGrid&gt;）；重写 FlowAtlasTexture（4 张 256×1040 蒙版共用 flow_mask.json、FlowSprites 四通道、(texId,x,y) 缓存、wall 缺失仅 Wall=null）与 FlowAtlasLayer（每源 body/edge/accent 池 64×3 + wall 懒创建 + 6 残影 + 3 射程点；body=Body(comp)、edge=Edge(comp,temp)、accent=Accent、wall=白；残影只 flow；Range&lt;=0 全隐藏）；接线 FlowMachine.AtlasView / FlowItemSetup / FlowDriver.LateUpdateVisuals+Retire/Reset Dispose / PBModEntry。证据：E-0024/E-0030 build 0/0、E-0025/E-0031 test 78/78、E-0026 review（rg 0 命中、键契约 440/440、verify_mask_atlas exit 0）。"
+          "text": "完成：删 src/Presentation/Particles/ 整目录 + FlowParticleLayer/FlowParticleGraphic/FlowVisual.cs（另删 FlowAtlasVisual.cs，§1 目标树无此文件）；新增 FlowAtlasView（每机器一实例、订阅本机 Flows、实体表/blocked 计数/collect 0.2s 残影/12fps 时钟/层全在实例、无 Dictionary&lt;IFlowGrid&gt;）；重写 FlowAtlasTexture（4 张 256×1040 蒙版共用 flow_mask.json、FlowSprites 四通道、(texId,x,y) 缓存、wall 缺失仅 Wall=null）与 FlowAtlasLayer（每源 body/edge/accent 池 64×3 + wall 懒创建 + 6 残影 + 3 射程点；body=Body(comp)、edge=Edge(comp,temp)、accent=Accent、wall=白；残影只 flow；Range&lt;=0 全隐藏）；接线 FlowMachine.AtlasView / FlowItemSetup / FlowDriver.LateUpdateVisuals+Retire/Reset Dispose / FFModEntry。证据：E-0024/E-0030 build 0/0、E-0025/E-0031 test 78/78、E-0026 review（rg 0 命中、键契约 440/440、verify_mask_atlas exit 0）。"
         }
       ]
     },
@@ -544,15 +544,15 @@
         "src/Presentation/Flow/TemperatureSpeedModifier.cs",
         "src/Presentation/Flow/FlowParticleRules.cs",
         "src/Presentation/Flow/FlowAmbientField.cs",
-        "tests/ProbablyBagMod.Tests/FlowParticleTests.cs"
+        "tests/FluxForge.Tests/FlowParticleTests.cs"
       ],
       "acceptance": [
         "6 个 src/Presentation/Flow 文件按冻结契约实现，零 Unity 依赖、显式类型、中文 XML 注释",
         "温度三档 speed/life 倍率（0.6/1.0/1.6 与 1.2/1.0/0.8）与 ColorFor 水/50%毒字节符合契约",
         "Spawn/Advance 覆盖 bbox、30% 边缘、反向后偏、容量覆盖最老、扩散加速淡出、swap-remove、稳态 0 分配",
         "IFlowParticleModifier 测试 modifier 注册后可改变 profile，毒物扩展方式有文档注释",
-        "dotnet build ProbablyBagMod.csproj -c Release --no-incremental：0 warning / 0 error",
-        "dotnet test tests/ProbablyBagMod.Tests/ProbablyBagMod.Tests.csproj -c Release：全绿 107/107"
+        "dotnet build FluxForge.csproj -c Release --no-incremental：0 warning / 0 error",
+        "dotnet test tests/FluxForge.Tests/FluxForge.Tests.csproj -c Release：全绿 107/107"
       ],
       "dependsOn": [],
       "requiredEvidence": [
@@ -593,7 +593,7 @@
         "FlowAtlasLayer.SubmitDots 用 512 池绘制粒子，颜色 R/G/B + Life/MaxLife*AlphaStart，层级在 body/edge/accent 之上",
         "面板关闭时清空所有粒子场与淡出列表",
         "dotnet build -c Release --no-incremental 0 error / 0 warning",
-        "dotnet test ProbablyBagMod.Tests -c Release 107/107",
+        "dotnet test FluxForge.Tests -c Release 107/107",
         "rg \"Linger|AppendLingers|CollectTtl\" src/Mod 0 命中"
       ],
       "dependsOn": [],
@@ -637,7 +637,7 @@
       "acceptance": [
         "dotnet build -c Release --no-incremental: 0 warning / 0 error",
         "dotnet test: 107/107 passed",
-        "Old namespaces/paths (bare ProbablyBagMod.Presentation, Mod/Flow/Visual, Mod/Sprites): 0 hits in src/tests/tools (docs excluded)",
+        "Old namespaces/paths (bare FluxForge.Presentation, Mod/Flow/Visual, Mod/Sprites): 0 hits in src/tests/tools (docs excluded)",
         "Diff vs pre-migration backup contains only namespace/using line changes (0 other line changes)"
       ],
       "dependsOn": [],

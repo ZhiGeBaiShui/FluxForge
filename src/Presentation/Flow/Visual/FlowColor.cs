@@ -61,5 +61,28 @@ namespace FluxForge.Presentation.Flow.Visual
 
             return (byte)rounded;
         }
+
+        /// <summary>
+        /// double → byte：**截断**取整，对齐游戏原版。
+        ///
+        /// 原版 <c>MetaHelper.ColorToHex</c> 把 <c>Color</c>（0–1 float）隐式转
+        /// <c>Color32</c>，Unity 那个转换是 <c>(byte)(Clamp01(c) * 255f)</c>，
+        /// 而 C# 的 <c>(byte)</c> 对浮点是向零截断，不是四舍五入。
+        /// 液体混合色必须走这里，否则每个通道可能比原版大 1。
+        /// </summary>
+        internal static byte TruncateToByte(double value)
+        {
+            if (value <= 0d)
+            {
+                return 0;
+            }
+
+            if (value >= 255d)
+            {
+                return 255;
+            }
+
+            return (byte)value;
+        }
     }
 }

@@ -51,8 +51,8 @@ namespace FluxForge.Presentation.Flow.Visual
         public const int FrameCount = 12;
 
         // 染色参数，不参与图集索引。
-        /// <summary>成分，用于计算本体等通道的颜色。</summary>
-        public readonly FlowComposition Composition;
+        /// <summary>本体色：由成分加权算好，直接用于三层染色。</summary>
+        public readonly FlowColor BodyColor;
 
         /// <summary>温度档，用于计算边缘颜色。</summary>
         public readonly FlowTemp Temp;
@@ -75,7 +75,7 @@ namespace FluxForge.Presentation.Flow.Visual
 
         /// <summary>创建视觉参数，将帧序号限制在 -1..11；默认使用静态贴图。</summary>
         public FlowVisualState(
-            FlowComposition composition,
+            FlowColor bodyColor,
             FlowTemp temp,
             FlowContent content,
             FlowState state,
@@ -83,7 +83,7 @@ namespace FluxForge.Presentation.Flow.Visual
             int frame = NoFrame,
             int range = 0)
         {
-            Composition = composition;
+            BodyColor = bodyColor;
             Temp = temp;
             Content = content;
             State = state;

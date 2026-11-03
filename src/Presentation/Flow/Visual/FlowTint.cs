@@ -24,10 +24,10 @@ namespace FluxForge.Presentation.Flow.Visual
         private static readonly FlowColor White = new FlowColor(0xFF, 0xFF, 0xFF);
         private static readonly FlowColor Black = new FlowColor(0x00, 0x00, 0x00);
 
-        /// <summary>本体颜色：直接取成分归一化混合的结果。</summary>
-        public static FlowColor Body(in FlowComposition c)
+        /// <summary>本体颜色：调用方已按液体存量加权算好，直接透传。</summary>
+        public static FlowColor Body(FlowColor bodyColor)
         {
-            return c.Blend();
+            return bodyColor;
         }
 
         /// <summary>
@@ -35,9 +35,9 @@ namespace FluxForge.Presentation.Flow.Visual
         /// 常温不混色；未知/越界温度档按常温处理。
         /// 这是 <c>render_final.edge_color</c> 的 C# 等价式，必须保持逐步 byte 舍入。
         /// </summary>
-        public static FlowColor Edge(in FlowComposition c, FlowTemp temp)
+        public static FlowColor Edge(FlowColor bodyColor, FlowTemp temp)
         {
-            FlowColor baseColor = Shade(Body(c), -0.52d);
+            FlowColor baseColor = Shade(bodyColor, -0.52d);
 
             switch (temp)
             {
@@ -56,9 +56,9 @@ namespace FluxForge.Presentation.Flow.Visual
         /// 同族的 <c>G</c>(0.72) / <c>S</c>(0.60) / <c>~</c>(0.55) 也都落在这条白化曲线上，
         /// 因此油/酸的暖亮核不会再被固定近白 <c>#F2FAFF</c> 染成冷色。
         /// </summary>
-        public static FlowColor Accent(in FlowComposition c)
+        public static FlowColor Accent(FlowColor bodyColor)
         {
-            return FlowColor.Mix(Body(c), White, 0.62d);
+            return FlowColor.Mix(bodyColor, White, 0.62d);
         }
 
         /// <summary>
