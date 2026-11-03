@@ -108,8 +108,33 @@ namespace FluxForge.Mod
             FFModEntry.Log.Log("[流源] 已移除失效的网格环境");
         }
 
-        /// <summary>读档 / 换场景整体归零，沿用原语义，不逐流源广播死亡。</summary>
+        /// <summary>
+        /// 存档边界：清流源与装置，但保留网格登记。
+        ///
+        /// 网格对象可能还活着（场景切换不等于网格销毁），清掉登记会让它变成死网格。
+        /// 网格真正消失时由 <see cref="GridLifetime.OnDestroy"/> 走 <see cref="Retire"/>。
+        /// </summary>
         public static void Reset()
+        {
+            FlowRuntime[] runtimes = GridRegistry.Runtimes.ToArray();
+            _visualErrorReported.Clear();
+
+            for (int i = 0; i < runtimes.Length; i++)
+            {
+                if (!runtimes[i].IsAlive)
+                {
+                    Retire(runtimes[i]);
+                    continue;
+                }
+
+                runtimes[i].Flows.KillAll();
+            }
+
+            DeviceRegistry.Clear();
+        }
+
+        /// <summary>mod 卸载 / 退出存档：连网格登记一起清。</summary>
+        public static void Shutdown()
         {
             FlowRuntime[] runtimes = GridRegistry.Runtimes.ToArray();
             GridRegistry.Clear();

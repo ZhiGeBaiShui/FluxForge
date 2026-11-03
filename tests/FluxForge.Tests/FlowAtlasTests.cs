@@ -440,7 +440,7 @@ namespace FluxForge.Tests
         [Fact]
         public void Fallback_ExactKeyWins()
         {
-            FlowAtlasIndex index = IndexWithSingleTile("small|split|up", 48, 64);
+            FlowAtlasIndex index = IndexWithSingleTile("small|split|right", 48, 64);
             FlowVisualState state = new FlowVisualState(
                 FlowComposition.PureWater, FlowTemp.Hot, FlowContent.Small, FlowState.Split, FlowDir.Up);
 
@@ -451,7 +451,7 @@ namespace FluxForge.Tests
         public void Fallback_SecondLevel_DropsStateToFlow()
         {
             // 精确 key（merge）不存在 → 退到同含量/方向的 flow 静态 tile。
-            FlowAtlasIndex index = IndexWithSingleTile("small|flow|up", 32, 0);
+            FlowAtlasIndex index = IndexWithSingleTile("small|flow|right", 32, 0);
             FlowVisualState state = new FlowVisualState(
                 FlowComposition.PureWater, FlowTemp.Hot, FlowContent.Small, FlowState.Merge, FlowDir.Up);
 
@@ -474,7 +474,7 @@ namespace FluxForge.Tests
         public void Fallback_ThirdLevel_DropsContentToLargeKeepingStateAndDir()
         {
             // 第 1、2 级都缺 → 含量退到 large，但状态仍是 blocked（不是退到 flow）。
-            FlowAtlasIndex index = IndexWithSingleTile("large|blocked|up", 64, 0);
+            FlowAtlasIndex index = IndexWithSingleTile("large|blocked|right", 64, 0);
             FlowVisualState state = new FlowVisualState(
                 FlowComposition.PureWater, FlowTemp.Hot, FlowContent.Small, FlowState.Blocked, FlowDir.Up);
 
@@ -485,7 +485,7 @@ namespace FluxForge.Tests
         public void Fallback_ThirdLevel_DoesNotInventFlowState()
         {
             // 只有 large|flow 时，blocked 的请求不能「假装」成 flow：状态是玩家可见的真实信息。
-            FlowAtlasIndex index = IndexWithSingleTile("large|flow|up", 80, 0);
+            FlowAtlasIndex index = IndexWithSingleTile("large|flow|right", 80, 0);
             FlowVisualState state = new FlowVisualState(
                 FlowComposition.PureWater, FlowTemp.Hot, FlowContent.Small, FlowState.Blocked, FlowDir.Up);
 
@@ -500,7 +500,7 @@ namespace FluxForge.Tests
         public void Fallback_ThirdLevel_DropsFlowFrameToo()
         {
             // flow 的缺帧请求：第 3 级是 large|flow（静态），不能拼出 |f5。
-            FlowAtlasIndex index = IndexWithSingleTile("large|flow|up", 96, 0);
+            FlowAtlasIndex index = IndexWithSingleTile("large|flow|right", 96, 0);
             FlowVisualState state = new FlowVisualState(
                 FlowComposition.PureWater, FlowTemp.Normal, FlowContent.Mid,
                 FlowState.Flow, FlowDir.Up, 5);

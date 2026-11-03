@@ -264,7 +264,6 @@ namespace FluxForge.Mod.Visual.Internal
                 _wallTexture = wall;
                 _index = index;
                 _ready = true;
-                FFModEntry.Log.Log("[流源] 蒙版图集就绪：" + index.Count + " tiles × 4 通道");
             }
             catch (Exception e)
             {

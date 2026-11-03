@@ -47,6 +47,9 @@ namespace FluxForge.Mod
                     continue;
                 }
 
+                // 读档前可能残留旧流源（读档不走 QuitToMenu），先清掉。
+                runtime.Flows.KillAll();
+
                 // 读档恢复的物品不经过 AddParent，装置要在这里补绑。
                 List<GameItem> items = runtime.Inventory.childItems;
                 if (items != null)

@@ -42,7 +42,8 @@ namespace FluxForge.Mod
             FlowRuntime runtime = GridRegistry.Get(inventory);
             if (runtime == null)
             {
-                return;
+                // 兜底：游戏原生网格（柜台等）可能不走 SetShape，现场注册一次。
+                runtime = GridRegistry.Register(inventory);
             }
 
             runtime.Grid.Register(__instance);

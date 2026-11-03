@@ -15,9 +15,11 @@ namespace FluxForge.Mod
     [HarmonyPatch(typeof(GameItem), "RemoveParent")]
     internal static class ItemDetached
     {
-        public static void Prefix(GameItem __instance, GraphNodeStorage node)
+        public static void Prefix(GameItem __instance)
         {
-            GameGridInventory inventory = node as GameGridInventory;
+            // Prefix 阶段 parentInventory 还是旧值（RemoveParent 之后才清 0），
+            // 用它判定，比 node 参数可靠：node 是 GraphNodeStorage，未必是 GameGridInventory。
+            GameGridInventory inventory = __instance.parentInventory as GameGridInventory;
             if (inventory == null)
             {
                 return;

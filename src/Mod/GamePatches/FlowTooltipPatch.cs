@@ -17,9 +17,6 @@ namespace FluxForge.Mod
         /// <summary>已处理过的 builder（同一 builder 只追加一次）。</summary>
         private static readonly HashSet<RichTextBuilder> _seen = new HashSet<RichTextBuilder>();
 
-        /// <summary>首次触发标记（确认 patch 真的挂上了）。</summary>
-        private static bool _firstHitLogged;
-
         public static void Postfix(GameItemElement __instance, ref RichTextBuilder __result)
         {
             if (__instance == null || __result == null)
@@ -37,13 +34,6 @@ namespace FluxForge.Mod
             }
 
             TrimSeen();
-
-            if (!_firstHitLogged)
-            {
-                _firstHitLogged = true;
-                FFModEntry.Log.Log("[tooltip] 首次触发 patch=ok id=" + __instance.identifier
-                    + " helper=" + FlowTooltipHelpers.Count);
-            }
 
             // 这是游戏 tooltip 链上的回调，异常冒出去会破坏本次 UI 刷新；
             // 追加失败最多是这个物品少两行状态，不该让游戏陪葬

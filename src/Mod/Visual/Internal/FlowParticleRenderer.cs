@@ -38,10 +38,11 @@ namespace FluxForge.Mod.Visual.Internal
 
                 FlowAmbientParticle particle = dots[i];
 
-                dot.rectTransform.anchoredPosition = FlowAtlasLayer.PositionFor(area, ppu, particle.X, particle.Y);
-
                 float sizePx = ParticleSizePx(particle.SizePx, ppu);
-                dot.rectTransform.sizeDelta = new Vector2(sizePx / ppu, sizePx / ppu);
+                float sizeUi = sizePx / ppu;
+                dot.rectTransform.sizeDelta = new Vector2(sizeUi, sizeUi);
+                dot.rectTransform.anchoredPosition = FlowAtlasLayer.PositionFor(
+                    area, ppu, particle.X, particle.Y, sizeUi);
 
                 float lifeRatio = particle.MaxLife > 0f
                     ? particle.Life / particle.MaxLife

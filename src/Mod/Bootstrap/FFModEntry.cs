@@ -69,7 +69,7 @@ namespace FluxForge.Mod
                 _host = null;
             }
 
-            FlowDriver.Reset();
+            FlowDriver.Shutdown();
             FlowVisualLayer.Shutdown();
 
             Log.Log("FluxForge 已卸载");

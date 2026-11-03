@@ -134,7 +134,17 @@ namespace FluxForge.Presentation.Flow.Visual
         /// </summary>
         public bool TryGetWithFallback(FlowVisualState state, out int x, out int y)
         {
-            if (TryGet(state.ToKey(), out x, out y))
+            // 图集只保留「向右」一份，其余方向由渲染层旋转贴图得到。
+            // 所以查表时方向固定 Right，流源真实方向由 FlowDrawItem.Direction 传给渲染层。
+            FlowVisualState right = new FlowVisualState(
+                state.Composition,
+                state.Temp,
+                state.Content,
+                state.State,
+                FlowDir.Right,
+                state.Frame,
+                state.Range);
+            if (TryGet(right.ToKey(), out x, out y))
             {
                 return true;
             }
@@ -144,7 +154,7 @@ namespace FluxForge.Presentation.Flow.Visual
                 state.Temp,
                 state.Content,
                 FlowState.Flow,
-                state.Dir,
+                FlowDir.Right,
                 FlowVisualState.NoFrame,
                 state.Range);
             if (TryGet(flowStatic.ToKey(), out x, out y))
@@ -157,7 +167,7 @@ namespace FluxForge.Presentation.Flow.Visual
                 state.Temp,
                 FlowContent.Large,
                 state.State,
-                state.Dir,
+                FlowDir.Right,
                 FlowVisualState.NoFrame,
                 state.Range);
             if (TryGet(large.ToKey(), out x, out y))

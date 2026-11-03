@@ -25,18 +25,18 @@ namespace FluxForge.Mod.Visual.Internal
         public readonly FlowVisualState State;
 
         /// <summary>
-        /// 拖尾层数（1–6）：由含量档决定（见 <see cref="FlowTierMap.TrailLayersFromContent"/>）。
-        /// 尾巴长度必须跟体量走，否则轻/重流源拖一样长的尾，含量读数会被拉平。
+        /// 流源方向（0=上 1=右 2=下 3=左）。
+        /// 图集只存「向右」一份，渲染层按这个角度旋转 Image 得到其它方向。
         /// </summary>
-        public readonly int TrailLayers;
+        public readonly int Direction;
 
         public FlowDrawItem(double positionX, double positionY,
-            FlowVisualState state, int trailLayers)
+            FlowVisualState state, int direction)
         {
             PositionX = positionX;
             PositionY = positionY;
             State = state;
-            TrailLayers = trailLayers;
+            Direction = direction;
         }
     }
 
@@ -60,26 +60,15 @@ namespace FluxForge.Mod.Visual.Internal
     /// </summary>
     internal sealed class FlowAtlasLayer
     {
-        /// <summary>每个流源最多 6 层残影：亚格间距叠出连续渐隐的拖尾。</summary>
-        private const int GhostsPerSource = 6;
-
         /// <summary>本体通道池的槽位数（body/edge/accent/wall 各一份）。</summary>
         private const int SourceCapacity = 64;
 
-        /// <summary>残影池槽位数：每个本体槽位 <see cref="GhostsPerSource"/> 层。</summary>
-        private const int GhostCapacity = SourceCapacity * GhostsPerSource;
-
-        /// <summary>残影相对本体的后退像素（亚格：3px 一档，6 层共 18px ≈ 1.1 格）。</summary>
-        private static readonly int[] GhostOffsetsPx = { 3, 6, 9, 12, 15, 18 };
-
-        /// <summary>残影 alpha：越远越淡（与 final/png/trail-probe.png 的 A 方案一致，Σα≈1.43）。</summary>
-        private static readonly float[] GhostAlpha = { 0.42f, 0.34f, 0.27f, 0.20f, 0.13f, 0.07f };
-
-        /// <summary>某个 Image 上一次真正写入的 sprite/color（相同则跳过赋值）。</summary>
+        /// <summary>某个 Image 上一次真正写入的 sprite/color/角度（相同则跳过赋值）。</summary>
         private struct QuadCache
         {
             public Sprite Sprite;
             public Color Color;
+            public float Angle;
 
             /// <summary>
             /// 只在 sprite 变化时写 Image：sprite/color 赋值会触发 Canvas 重建，
@@ -108,10 +97,30 @@ namespace FluxForge.Mod.Visual.Internal
                 image.color = color;
                 cache.Color = color;
             }
+
+            /// <summary>
+            /// 转向：图集只有「向右」一份，其余方向靠旋转。
+            /// 首次直接到位（不要从 0° 转过去），之后按 <paramref name="speed"/> 平滑逼近：
+            /// 转向角速度 = 90 × speed（度/秒），即「走过一格的时间 ≈ 转 90° 的时间」。
+            /// 转到位就停止写入，避免每帧触发 Canvas 重建。
+            /// </summary>
+            /// <summary>
+            /// 转向：图集只有「向右」一份，其余方向靠旋转。
+            /// 瞬间切到目标角度，不做过渡。
+            /// </summary>
+            public static void SetAngle(Image image, ref QuadCache cache, float target)
+            {
+                if (cache.Angle == target)
+                {
+                    return;
+                }
+
+                image.rectTransform.localRotation = Quaternion.Euler(0f, 0f, target);
+                cache.Angle = target;
+            }
         }
 
         // 下标约束：body/edge/accent/wall 的下标 ∈ [0, SourceCapacity)；
-        // 残影下标 = body 下标 * GhostsPerSource + 层号 ∈ [0, GhostCapacity)。
         // Submit 已按 SourceCapacity 截断提交数，所以池内下标不会越界。
 
         /// <summary>本体通道池：一个流源一个 Image。</summary>
@@ -126,16 +135,12 @@ namespace FluxForge.Mod.Visual.Internal
         /// <summary>墙通道池：只有 blocked 且墙图可用时才创建。</summary>
         private readonly Image[] _walls = new Image[SourceCapacity];
 
-        /// <summary>残影池：一个流源 6 个 Image，下标 = 本体下标 * 6 + k。</summary>
-        private readonly Image[] _ghosts = new Image[GhostCapacity];
-
         // 每槽位上次写入的 sprite/color：位置每帧都写，但 sprite/color 只在变化时写，
         // 避免每帧触发 Canvas 的材质/网格重建。
         private readonly QuadCache[] _bodyCache = new QuadCache[SourceCapacity];
         private readonly QuadCache[] _edgeCache = new QuadCache[SourceCapacity];
         private readonly QuadCache[] _accentCache = new QuadCache[SourceCapacity];
         private readonly QuadCache[] _wallCache = new QuadCache[SourceCapacity];
-        private readonly QuadCache[] _ghostCache = new QuadCache[GhostCapacity];
 
         private readonly RectTransform _gridRect;
         private readonly RectTransform _root;
@@ -230,13 +235,16 @@ namespace FluxForge.Mod.Visual.Internal
         /// 这里的位置是连续 double（流源在格内平滑移动），
         /// 所以不能套 <see cref="FlowPixelMath.CellToLocal"/>（它只接受整数格 + 整数像素）。
         /// </summary>
-        internal static Vector2 PositionFor(Rect area, float ppu, double cellX, double cellY)
+        internal static Vector2 PositionFor(Rect area, float ppu, double cellX, double cellY, float size)
         {
             float left = FlowPixelMath.Snap(
                 area.xMin + (float)cellX * FlowPixelMath.CellPixels, ppu);
             float top = FlowPixelMath.Snap(
                 area.yMax - (float)cellY * FlowPixelMath.CellPixels, ppu);
-            return new Vector2(left - area.xMin, top - area.yMax);
+
+            // pivot 在中心：返回图块中心点，旋转时图像绕中心转，不会跑偏。
+            float half = size * 0.5f;
+            return new Vector2(left - area.xMin + half, top - area.yMax - half);
         }
 
         /// <summary>
@@ -287,20 +295,21 @@ namespace FluxForge.Mod.Visual.Internal
                 // 四张蒙版共用同一组图集坐标，一次查表全拿到
                 FlowSprites sprites = FlowAtlasTexture.Get(state);
 
-                Vector2 position = PositionFor(area, ppu, item.PositionX, item.PositionY);
+                Vector2 position = PositionFor(
+                    area, ppu, item.PositionX, item.PositionY, quadSize.x);
+
+                // 图集只有「向右」一份：right=0°，down=-90°，left=180°，up=90°
+                float angle = (1 - item.Direction) * 90f;
 
                 // 三层颜色：成分为唯一本体色来源，温度只进边缘，亮核恒白
                 Color bodyTint = ToColor(FlowTint.Body(state.Composition));
                 Color edgeTint = ToColor(FlowTint.Edge(state.Composition, state.Temp));
                 Color accentTint = ToColor(FlowTint.Accent(state.Composition));
 
-                ShowQuad(_bodies[i], ref _bodyCache[i], sprites.Body, bodyTint, position, quadSize);
-                ShowQuad(_edges[i], ref _edgeCache[i], sprites.Edge, edgeTint, position, quadSize);
-                ShowQuad(_accents[i], ref _accentCache[i], sprites.Accent, accentTint, position, quadSize);
-                ShowWall(i, sprites.Wall, state.State == FlowState.Blocked, position, quadSize);
-
-                // 拖尾用同一张 body 蒙版，只改 alpha：残影是"运动痕迹"，不是体积
-                SubmitGhosts(i, in item, bodyTint, sprites.Body, area, ppu, quadSize);
+                ShowQuad(_bodies[i], ref _bodyCache[i], sprites.Body, bodyTint, position, quadSize, angle);
+                ShowQuad(_edges[i], ref _edgeCache[i], sprites.Edge, edgeTint, position, quadSize, angle);
+                ShowQuad(_accents[i], ref _accentCache[i], sprites.Accent, accentTint, position, quadSize, angle);
+                ShowWall(i, sprites.Wall, state.State == FlowState.Blocked, position, quadSize, angle);
             }
 
             // 流源数变少：把上一帧多出来的所有池对象关掉（不销毁，下一波复用）
@@ -310,11 +319,6 @@ namespace FluxForge.Mod.Visual.Internal
                 Deactivate(_edges[i]);
                 Deactivate(_accents[i]);
                 Deactivate(_walls[i]);
-
-                for (int gh = 0; gh < GhostsPerSource; gh++)
-                {
-                    Deactivate(_ghosts[i * GhostsPerSource + gh]);
-                }
             }
 
             _activeSources = count;
@@ -393,7 +397,7 @@ namespace FluxForge.Mod.Visual.Internal
         /// sprite 为空时只是不显示（不销毁节点）；<paramref name="cache"/> 记住上次真正写入的值。
         /// </summary>
         private static void ShowQuad(Image image, ref QuadCache cache, Sprite sprite, Color color,
-            Vector2 position, Vector2 size)
+            Vector2 position, Vector2 size, float angle)
         {
             Activate(image);
 
@@ -402,6 +406,7 @@ namespace FluxForge.Mod.Visual.Internal
 
             QuadCache.SetSprite(image, ref cache, sprite);
             QuadCache.SetColor(image, ref cache, color);
+            QuadCache.SetAngle(image, ref cache, angle);
         }
 
         /// <summary>
@@ -410,7 +415,8 @@ namespace FluxForge.Mod.Visual.Internal
         /// 墙与本体在像素上互不重叠（角色 W 独占那些像素），所以叠放顺序不影响观感；
         /// 但为了不让墙盖住相邻流源的亮核，这里把它压到本体三层的下面。
         /// </summary>
-        private void ShowWall(int index, Sprite sprite, bool blocked, Vector2 position, Vector2 size)
+        private void ShowWall(int index, Sprite sprite, bool blocked, Vector2 position, Vector2 size,
+            float angle)
         {
             Image wall = _walls[index];
             bool show = blocked && sprite != null;
@@ -435,6 +441,7 @@ namespace FluxForge.Mod.Visual.Internal
 
             wall.rectTransform.anchoredPosition = position;
             wall.rectTransform.sizeDelta = size;
+            wall.rectTransform.localRotation = Quaternion.Euler(0f, 0f, angle);
 
             // 墙图自身带 #C9C2B8，颜色恒为白；sprite 只在状态/方向/含量变化时换
             QuadCache.SetSprite(wall, ref _wallCache[index], sprite);
@@ -475,56 +482,6 @@ namespace FluxForge.Mod.Visual.Internal
         /// （collect 死亡贴图已删除，死亡改由粒子淡出表达，不再有 collect 静态签名）。
         /// 颜色 = 本体色带逐层下降的 alpha（不额外染色，否则成分会被拖尾"二次混色"）。
         /// </summary>
-        private void SubmitGhosts(int bodyIndex, in FlowDrawItem item, Color bodyTint,
-            Sprite bodySprite, Rect area, float ppu, Vector2 quadSize)
-        {
-            // 前置条件：TrailLayers 的值域是 1..6（FlowTierMap.TrailLayersFromContent），
-            // 不会超过 GhostsPerSource，也不存在 0 层；这里不再夹取。
-            int layers = item.TrailLayers;
-
-            bool show = bodySprite != null && item.State.State == FlowState.Flow;
-
-            int dx = FlowDirMath.StepX(item.State.Dir);
-            int dy = FlowDirMath.StepY(item.State.Dir);
-
-            for (int gh = 0; gh < GhostsPerSource; gh++)
-            {
-                int ghostIndex = bodyIndex * GhostsPerSource + gh;
-                Image ghost = _ghosts[ghostIndex];
-
-                if (!show || gh >= layers)
-                {
-                    Deactivate(ghost);
-                    continue;
-                }
-
-                if (ghost == null)
-                {
-                    ghost = CreateImage(_root, "FlowAtlasGhost");
-                    // 拖尾压到最底：后创建的本体自然叠在它上面
-                    ghost.rectTransform.SetAsFirstSibling();
-                    _ghosts[ghostIndex] = ghost;
-                }
-
-                Activate(ghost);
-
-                // 残影同理：sprite/color 只在变化时写，位置每帧写
-                QuadCache.SetSprite(ghost, ref _ghostCache[ghostIndex], bodySprite);
-
-                // 残影位置 = 本体位置沿运动反方向退 offsetMap 像素（格坐标换算后交给统一的位置函数）
-                float distance = GhostOffsetsPx[gh];
-                double ghostX = item.PositionX - (dx * distance) / (double)FlowPixelMath.CellPixels;
-                double ghostY = item.PositionY - (dy * distance) / (double)FlowPixelMath.CellPixels;
-
-                ghost.rectTransform.anchoredPosition = PositionFor(area, ppu, ghostX, ghostY);
-                // 尺寸与本体完全一致：直接复用 Submit 算好的 quadSize，不再每颗重算。
-                ghost.rectTransform.sizeDelta = quadSize;
-
-                Color ghostColor = new Color(bodyTint.r, bodyTint.g, bodyTint.b, GhostAlpha[gh]);
-                QuadCache.SetColor(ghost, ref _ghostCache[ghostIndex], ghostColor);
-            }
-        }
-
         /// <summary>
         /// 纯逻辑层的 <see cref="FlowColor"/>（0–255 byte）→ UGUI 颜色。
         /// 蒙版图的 RGB 是亮度、A 是形状，所以这里一律给 255 的 alpha：
@@ -535,7 +492,7 @@ namespace FluxForge.Mod.Visual.Internal
             return new Color32(color.R, color.G, color.B, 255);
         }
 
-        /// <summary>创建一个像素对齐的 Image（锚点/pivot 左上角，不接收点击，Simple 拉伸）。</summary>
+        /// <summary>创建一个像素对齐的 Image（pivot 在中心，旋转不偏移；不接收点击，Simple 拉伸）。</summary>
         internal static Image CreateImage(RectTransform root, string name)
         {
             GameObject go = new GameObject(name);
@@ -545,7 +502,7 @@ namespace FluxForge.Mod.Visual.Internal
             rect.SetParent(root, false);
             rect.anchorMin = new Vector2(0f, 1f);
             rect.anchorMax = new Vector2(0f, 1f);
-            rect.pivot = new Vector2(0f, 1f);
+            rect.pivot = new Vector2(0.5f, 0.5f);
             rect.localScale = Vector3.one;
 
             Image image = go.AddComponent<Image>();

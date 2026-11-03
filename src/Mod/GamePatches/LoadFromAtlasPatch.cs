@@ -18,9 +18,6 @@ namespace FluxForge.Mod
     [HarmonyPatch(typeof(RenderHandler), "LoadFromAtlas")]
     public static class LoadFromAtlasPatch
     {
-        /// <summary>命中日志只打一次：UI 每次刷新都会走这里，无条件打会刷爆日志。</summary>
-        private static bool _hitLogged;
-
         public static bool Prefix(string atlasPath, string name, ref Sprite __result)
         {
             try
@@ -38,15 +35,6 @@ namespace FluxForge.Mod
                 }
 
                 __result = sprite;
-
-                if (!_hitLogged)
-                {
-                    _hitLogged = true;
-                    FFModEntry.Log.Log("[贴图] 首次拦截命中：atlas=" + atlasPath
-                        + " name=" + name + " sprite=" + sprite.rect.width + "x" + sprite.rect.height
-                        + "（后续命中不再打印）");
-                }
-
                 return false;
             }
             catch (Exception e)

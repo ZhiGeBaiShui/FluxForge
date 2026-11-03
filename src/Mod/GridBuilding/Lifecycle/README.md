@@ -9,6 +9,7 @@
 | 1 | 网格出现 | `GridCreatedPatch.cs` | `GameGridInventory.SetShape` | `GridRegistry.Register` |
 | 2 | 物品进入 | `ItemAttached.cs` | `GameItem.AddParent` | `Bind` + `Register` |
 | 3 | 物品离开 | `ItemDetached.cs` | `GameItem.RemoveParent` | `Unregister` |
+| 3b | 物品拿起 | `ItemPickedUp.cs` | `ItemMouseDragHandler.StartDrag` | `Unregister` |
 | 4 | 排序 | `InventorySorted.cs` | `InventorySortHelper.Sort` | `Rebuild` |
 | 7 | 网格销毁 | `GridLifetime.cs` | `GridLifetime.OnDestroy` | `FlowDriver.RetireByGrid` |
 

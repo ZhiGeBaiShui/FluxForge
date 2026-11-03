@@ -46,10 +46,6 @@ namespace FluxForge.Mod.Visual
         private readonly Dictionary<FlowEntity, bool> _blockedStates
             = new Dictionary<FlowEntity, bool>();
 
-        /// <summary>诊断：每个流源上一次记录过的方向，方向变化时打一条位置日志。</summary>
-        private readonly Dictionary<FlowEntity, int> _loggedDirections
-            = new Dictionary<FlowEntity, int>();
-
         /// <summary>本视图独立的粒子系统。</summary>
         private readonly FlowParticleSystem _particles = new FlowParticleSystem();
 
@@ -203,7 +199,6 @@ namespace FluxForge.Mod.Visual
             _clock = 0f;
             _entities.Clear();
             _blockedStates.Clear();
-            _loggedDirections.Clear();
             _particles.Reset();
             _dots.Clear();
             _items.Clear();
@@ -225,7 +220,6 @@ namespace FluxForge.Mod.Visual
         {
             _entities.Remove(entity);
             _blockedStates.Remove(entity);
-            _loggedDirections.Remove(entity);
 
             // 死亡后只把粒子场转入淡出队列：已经存在的粒子留在原地自然衰减，
             // 视觉上就是「散掉」而不是「换一张图」。
@@ -311,19 +305,6 @@ namespace FluxForge.Mod.Visual
             int direction = entity.Motion == null ? 1 : entity.Motion.Direction;
             double speed = entity.Motion == null ? 0d : entity.Motion.Speed;
 
-            int loggedDirection;
-            if (!_loggedDirections.TryGetValue(entity, out loggedDirection)
-                || loggedDirection != direction)
-            {
-                _loggedDirections[entity] = direction;
-                FFModEntry.Log.Log(
-                    "[FlowVisual] id=" + entity.GetHashCode()
-                    + " dir=" + direction
-                    + " logic=(" + entity.Position.X + "," + entity.Position.Y + ")"
-                    + " game=(" + gameCenterX + "," + gameCenterY + ")"
-                    + " tile=(" + positionX + "," + positionY + ")");
-            }
-
             // Tier-0：成分固定纯水（REFACTOR-A §4）；射程暂无数据源，
             // FlowVisualState.Range 保持 0（预留：字段就绪前不渲染射程点）。
             return new FlowFrameInput(
@@ -352,7 +333,7 @@ namespace FluxForge.Mod.Visual
                 snapshot.X,
                 snapshot.Y,
                 visual,
-                FlowTierMap.TrailLayersFromContent(snapshot.Content));
+                (int)dir);
         }
     }
 }
