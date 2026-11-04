@@ -92,6 +92,7 @@ namespace FluxForge.Tests
         public void Collector_AccumulatesAndKillsIncoming()
         {
             CollectorDevice collector = new CollectorDevice();
+            collector.Facing = 2;   // 入口朝下，接收向上移动（direction 0）的流源
 
             collector.Route(new FlowEntity(new FlowPos(0, 0), new FlowMotionData(0, 1), TestFlow.Make(40, 10)), _flows, 0, 0);
             collector.Route(new FlowEntity(new FlowPos(0, 0), new FlowMotionData(0, 1), TestFlow.Make(60, 20)), _flows, 0, 0);
@@ -102,9 +103,38 @@ namespace FluxForge.Tests
         }
 
         [Fact]
+        public void Collector_IgnoresFlowFromWrongDirection()
+        {
+            // 默认入口朝上（Facing = 0），只接受向下移动（direction 2）的流源。
+            CollectorDevice collector = new CollectorDevice();
+            FlowEntity fromSide = new FlowEntity(
+                new FlowPos(0, 0), new FlowMotionData(1, 1), TestFlow.Make(40, 10));
+
+            bool blocked = collector.Route(fromSide, _flows, 0, 0);
+
+            Assert.False(blocked);
+            Assert.Equal(0d, collector.Stock.Get(FlowProps.Water));
+        }
+
+        [Fact]
+        public void Collector_AcceptsFlowFromFacingDirection()
+        {
+            // 默认入口朝上 → 向下移动（direction 2）的流源会被吸收。
+            CollectorDevice collector = new CollectorDevice();
+            FlowEntity fromAbove = new FlowEntity(
+                new FlowPos(0, 0), new FlowMotionData(2, 1), TestFlow.Make(40, 10));
+
+            bool blocked = collector.Route(fromAbove, _flows, 0, 0);
+
+            Assert.True(blocked);
+            Assert.Equal(40d, collector.Stock.Get(FlowProps.Water));
+        }
+
+        [Fact]
         public void Collector_RouteReportsChanged()
         {
             CollectorDevice collector = new CollectorDevice();
+            collector.Facing = 3;   // 入口朝左，接收向右移动（direction 1）的流源
             int changedCount = 0;
             double waterAtEvent = -1d;
 
@@ -131,6 +161,7 @@ namespace FluxForge.Tests
             // 两个流源同帧推进，A 的流源被吸走，B 的必须原样走完这一帧。
             // 新设计里「独立」的单位是一台流量机：各有一套网格 / 名单 / 运动器。
             CollectorDevice collector = new CollectorDevice();
+            collector.Facing = 3;   // 入口朝左，接收向右移动（direction 1）的流源
             FakeGrid gridA = new FakeGrid().SetRouter(1, 0, collector);
             FakeGrid gridB = new FakeGrid();
 
@@ -293,6 +324,7 @@ namespace FluxForge.Tests
         {
             // 一格一个装置只吸收撞上它的那个流源，同网格里的其他流源不受牵连
             CollectorDevice collector = new CollectorDevice();
+            collector.Facing = 3;   // 入口朝左，接收向右移动（direction 1）的流源
             _grid.SetRouter(1, 0, collector);
 
             FlowEntity absorbed = new FlowEntity(
@@ -318,6 +350,7 @@ namespace FluxForge.Tests
             // 装置贴着网格左边界（x=0）时，向左撞停曾经算出 -0.001，
             // 下一帧 Floor 变成 -1 直接被越界回收。撞停必须落在格内。
             CollectorDevice collector = new CollectorDevice();
+            collector.Facing = 1;   // 入口朝右，接收向左移动（direction 3）的流源
             _grid.SetRouter(0, 0, collector)
                 .SetBounds(0, 0, 4, 4);
 
@@ -353,6 +386,7 @@ namespace FluxForge.Tests
         public void BlockedEntity_StopsAtDeviceCellCenter()
         {
             CollectorDevice collector = new CollectorDevice();
+            collector.Facing = 3;   // 入口朝左，接收向右移动（direction 1）的流源
             _grid.SetRouter(3, 2, collector);
 
             FlowEntity entity = new FlowEntity(

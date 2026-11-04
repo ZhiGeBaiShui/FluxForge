@@ -31,10 +31,10 @@ namespace FluxForge.Mod
 
             // 中心格随模板写入 tag；运行时实例沿用这份物品状态。
             // 局部坐标，不是世界坐标；旋转/翻转由 FlowGridAdapter.ForwardTransform 处理。
-            item.EnableTag("FLUXFORGE_DEVICE_ANCHOR_X", true);
-            item.EnableTag("FLUXFORGE_DEVICE_ANCHOR_Y", true);
-            item.state.GetTag("FLUXFORGE_DEVICE_ANCHOR_X").SetInt(def.anchorX.Value);
-            item.state.GetTag("FLUXFORGE_DEVICE_ANCHOR_Y").SetInt(def.anchorY.Value);
+            item.EnableTag(FlowTags.AnchorX, true);
+            item.EnableTag(FlowTags.AnchorY, true);
+            item.state.GetTag(FlowTags.AnchorX).SetInt(def.anchorX.Value);
+            item.state.GetTag(FlowTags.AnchorY).SetInt(def.anchorY.Value);
 
             // 批量写 state 后刷新派生快照，再交给目录。
             item.SyncModifiedState();

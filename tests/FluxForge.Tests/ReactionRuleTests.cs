@@ -67,10 +67,37 @@ namespace FluxForge.Tests
 
             new BoilingRule().React(properties);
 
-            Assert.Equal(9800d, properties.Get(FlowProps.Water));
+            // 101 度时三者过热度不同（沸点处 2%，每高 20 度翻倍）：
+            //   水 过热度 1.00  → 2.07%，10000 掉 207
+            //   酒精 过热度 22.63 → 4.38%，1000 算出 43 → 被 100µL 下限抬到 100
+            //   lipobond 过热度 46.00 → 9.85%，1000 算出 98 → 同样被抬到 100
+            // 脂肪不在 FlowBoilingTable 里，不蒸发。
+            Assert.Equal(9793d, properties.Get(FlowProps.Water));
             Assert.Equal(900d, properties.Get(FlowProps.Alcohol));
             Assert.Equal(900d, properties.Get(FlowProps.LipobondAgent));
             Assert.Equal(1000d, properties.Get(FlowProps.Fat));
+        }
+
+        [Fact]
+        public void HigherTemperatureEvaporatesFaster()
+        {
+            FlowProperties nearBoiling = new FlowProperties();
+            nearBoiling.Set(FlowProps.Temperature, 101d);
+            nearBoiling.Set(FlowProps.Water, 10000d);
+
+            FlowProperties farAboveBoiling = new FlowProperties();
+            farAboveBoiling.Set(FlowProps.Temperature, 141d);
+            farAboveBoiling.Set(FlowProps.Water, 10000d);
+
+            new BoilingRule().React(nearBoiling);
+            new BoilingRule().React(farAboveBoiling);
+
+            double nearRemoved = 10000d - nearBoiling.Get(FlowProps.Water);
+            double farRemoved = 10000d - farAboveBoiling.Get(FlowProps.Water);
+
+            Assert.True(farRemoved > nearRemoved);
+            // 过热度 1 度 vs 41 度：2^2 = 4 倍左右。
+            Assert.Equal(4d, farRemoved / nearRemoved, 1);
         }
 
         [Fact]
@@ -129,7 +156,8 @@ namespace FluxForge.Tests
 
             FlowReactionSolver.React(properties);
 
-            Assert.Equal(9800d, properties.Get(FlowProps.Water));
+            // 101 度：水过热度 1 度 → 2.07%，10000 去掉 207。
+            Assert.Equal(9793d, properties.Get(FlowProps.Water));
             Assert.Equal(4000d, properties.Get(FlowProps.Acid));
             Assert.Equal(4000d, properties.Get(FlowProps.Base));
         }

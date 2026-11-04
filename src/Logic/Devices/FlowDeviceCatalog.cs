@@ -19,6 +19,8 @@ namespace FluxForge
             = new Dictionary<string, Func<object>>(StringComparer.OrdinalIgnoreCase)
         {
             ["collector"] = () => new CollectorDevice(),
+            ["filter"] = () => new FilterDevice(),
+            ["temperature"] = () => new TemperatureDevice(),
             ["ice_block"] = () => new IceBlockDevice(),
             ["turn"] = () => new TurnDevice(),
             ["l_right_down"] = () => new LRightDownDevice(),

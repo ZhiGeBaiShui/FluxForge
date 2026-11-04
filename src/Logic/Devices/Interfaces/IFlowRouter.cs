@@ -25,6 +25,15 @@ namespace FluxForge
     public interface IFlowRouter
     {
         /// <summary>
+        /// 朝向（0=上 1=右 2=下 3=左）。
+        ///
+        /// 路由装置才有方向：入口/出口按「相对朝向」定义，物品旋转时由
+        /// mod 层按 <c>modifiedShape.orientation</c> 同步，装置内部据此换算世界方向。
+        /// 纯反应装置（只改属性、不改流向）没有这个属性。
+        /// </summary>
+        int Facing { get; set; }
+
+        /// <summary>
         /// 对流入的流源做路由（再分配）。
         /// </summary>
         /// <param name="incoming">流入的流源（实参）。装置自行读取其位置/运动数据/属性。</param>

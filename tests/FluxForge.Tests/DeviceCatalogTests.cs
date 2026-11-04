@@ -13,6 +13,8 @@ namespace FluxForge.Tests
         private static readonly string[] ExpectedKeys =
         {
             "collector",
+            "filter",
+            "temperature",
             "ice_block",
             "turn",
             "l_right_down",

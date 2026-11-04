@@ -53,6 +53,9 @@
     },
     {
       "key": "flow_emitter",
+      "device": "collector",
+      "anchorX": 0,
+      "anchorY": 0,
       "capacityMl": 1000000,
       "sprite": "flow_emitter",
       "name": "发射装置",
@@ -63,7 +66,8 @@
       ],
       "attachments": [
         "flow_container",
-        "emitter"
+        "emitter",
+        "device"
       ],
       "tags": [
         {
@@ -96,14 +100,30 @@
       ]
     },
     {
-      "key": "flow_collector",
-      "device": "collector",
+      "key": "flow_filter",
+      "device": "filter",
       "anchorX": 0,
       "anchorY": 0,
-      "sprite": "flow_collector",
-      "name": "收集装置",
-      "desc": "接收流源，把其中的水分与温度累积存储。",
-      "flavor": "来者不拒。",
+      "sprite": "chem_reactor_alkali",
+      "name": "过滤装置",
+      "desc": "流源穿过时去除化学污染与重金属。\n温度越高，能净化到的下限越低；流速越慢，单次去除越多。",
+      "flavor": "滤芯里积着一层说不清颜色的东西。",
+      "itemTypes": [
+        "FLOW_DEVICE"
+      ],
+      "attachments": [
+        "device"
+      ]
+    },
+    {
+      "key": "flow_heater",
+      "device": "temperature",
+      "anchorX": 0,
+      "anchorY": 0,
+      "sprite": "chem_reactor_heat",
+      "name": "升温装置",
+      "desc": "流源经过时被加热。",
+      "flavor": "摸上去烫手，但没人敢松手。",
       "itemTypes": [
         "FLOW_DEVICE"
       ],
@@ -112,26 +132,47 @@
       ],
       "tags": [
         {
-          "valueName": "CURRENT_PART_WATER",
-          "valueInt": 0
-        },
-        {
           "valueName": "CONTAINER_TEMP_TAG",
-          "valueDouble": 25.0
+          "valueDouble": 10.0
         }
       ],
       "statusLines": [
         {
-          "tag": "CURRENT_PART_WATER",
-          "label": "已收集",
-          "scale": 0.001,
+          "tag": "CONTAINER_TEMP_TAG",
+          "label": "温度变化",
+          "scale": 1,
           "format": "0.#",
-          "unit": "mL",
-          "color": "LightGreen"
-        },
+          "unit": "℃",
+          "color": "LightCyan",
+          "valueType": "double"
+        }
+      ]
+    },
+    {
+      "key": "flow_cooler",
+      "device": "temperature",
+      "anchorX": 0,
+      "anchorY": 0,
+      "sprite": "chem_reactor_cool",
+      "name": "降温装置",
+      "desc": "流源经过时被冷却。",
+      "flavor": "结着一层永远化不掉的白霜。",
+      "itemTypes": [
+        "FLOW_DEVICE"
+      ],
+      "attachments": [
+        "device"
+      ],
+      "tags": [
+        {
+          "valueName": "CONTAINER_TEMP_TAG",
+          "valueDouble": -10.0
+        }
+      ],
+      "statusLines": [
         {
           "tag": "CONTAINER_TEMP_TAG",
-          "label": "温度",
+          "label": "温度变化",
           "scale": 1,
           "format": "0.#",
           "unit": "℃",
@@ -171,36 +212,6 @@
       "name": "化学反应装置（预览）",
       "desc": "无 attachment 的视觉测试物品，用来观察流源经过通道时的透明覆盖效果。",
       "flavor": "玻璃后面好像有什么在流动。",
-      "itemTypes": [
-        "FLOW_DEVICE"
-      ],
-      "attachments": []
-    },
-    {
-      "key": "chem_reactor_heat",
-      "sprite": "chem_reactor_heat",
-      "name": "化学反应器（加热）",
-      "desc": "后续扩展占位。",
-      "itemTypes": [
-        "FLOW_DEVICE"
-      ],
-      "attachments": []
-    },
-    {
-      "key": "chem_reactor_cool",
-      "sprite": "chem_reactor_cool",
-      "name": "化学反应器（冷却）",
-      "desc": "后续扩展占位。",
-      "itemTypes": [
-        "FLOW_DEVICE"
-      ],
-      "attachments": []
-    },
-    {
-      "key": "chem_reactor_alkali",
-      "sprite": "chem_reactor_alkali",
-      "name": "化学反应器（碱）",
-      "desc": "后续扩展占位。",
       "itemTypes": [
         "FLOW_DEVICE"
       ],

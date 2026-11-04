@@ -52,14 +52,14 @@
     {
       "key": "chem_reactor_cool",
       "atlas": "chem_reactor_cool_atlas",
-      "file": "chem_reactor_cool_1x1.png",
+      "file": "chem_reactor_cool.png",
       "shape": "1",
       "shapeWidth": 1
     },
     {
       "key": "chem_reactor_alkali",
       "atlas": "chem_reactor_alkali_atlas",
-      "file": "chem_reactor_alkali1x1.png",
+      "file": "chem_reactor_alkali.png",
       "shape": "1",
       "shapeWidth": 1
     },
