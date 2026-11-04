@@ -15,17 +15,12 @@ namespace FluxForge.Mod
             get { return _device; }
         }
 
-        /// <summary>只回灌存在的 tag，缺失项保留当前存量。</summary>
+        /// <summary>回灌全部存量槽位；缺 tag 时读取为 0。</summary>
         public void Load(ITagStore tags)
         {
             foreach (FlowPropertyDef def in FlowPropertyRegistry.All)
             {
                 string tag = FlowTagNaming.ForProperty(def.Id, def.Kind);
-                if (!tags.Has(tag))
-                {
-                    continue;
-                }
-
                 double value = def.Kind == FlowPropertyKind.Liquid
                     ? tags.ReadInt(tag)
                     : tags.ReadDouble(tag);

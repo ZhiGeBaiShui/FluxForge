@@ -37,7 +37,7 @@ namespace FluxForge.Tests
                 get { return _entries.Count; }
             }
 
-            public bool Has(string tag)
+            public bool Exists(string tag)
             {
                 return _entries.ContainsKey(tag);
             }
@@ -140,8 +140,8 @@ namespace FluxForge.Tests
             Assert.True(adapter.Save(tags));
 
             Assert.Equal(2, tags.Count);
-            Assert.True(tags.Has(FlowTagNaming.Water));
-            Assert.True(tags.Has(FlowTagNaming.ContainerTemperature));
+            Assert.True(tags.Exists(FlowTagNaming.Water));
+            Assert.True(tags.Exists(FlowTagNaming.ContainerTemperature));
             Assert.Equal(5, tags.ReadInt(FlowTagNaming.Water));
             Assert.Equal(-2d, tags.ReadDouble(FlowTagNaming.ContainerTemperature));
             Assert.True(tags.IsEnabled(FlowTagNaming.Water));
@@ -163,7 +163,7 @@ namespace FluxForge.Tests
         }
 
         [Fact]
-        public void Collector_Load_OnlyAppliesExistingTags()
+        public void Collector_Load_AppliesAllTagValues_IncludingAbsentAsZero()
         {
             FakeTagStore tags = new FakeTagStore();
             tags.WriteInt(FlowTagNaming.Water, 30);
@@ -171,7 +171,7 @@ namespace FluxForge.Tests
 
             CollectorDevice device = new CollectorDevice();
 
-            // 存量里已有一份值，但 tag 不存在——Load 必须跳过它而不是清零。
+            // 存量里已有一份值，但对应 tag 不存在——适配器只执行同步，缺失读作 0。
             device.Set(FlowProps.Fat, 99d);
 
             CollectorStateAdapter adapter = new CollectorStateAdapter(device);
@@ -179,7 +179,7 @@ namespace FluxForge.Tests
 
             Assert.Equal(30d, device.Get(FlowProps.Water));
             Assert.Equal(12.5d, device.Get(FlowProps.Temperature));
-            Assert.Equal(99d, device.Get(FlowProps.Fat));
+            Assert.Equal(0d, device.Get(FlowProps.Fat));
         }
 
         [Fact]
@@ -196,22 +196,23 @@ namespace FluxForge.Tests
             // 其余 36 个槽位都是 0：WriteXxx 的「不存在 + 零值」规则应拒绝建 tag。
             Assert.Equal(1, tags.Count);
             Assert.Equal(42, tags.ReadInt(FlowTagNaming.Water));
-            Assert.False(tags.Has(FlowTagNaming.ContainerTemperature));
-            Assert.False(tags.Has(FlowTagNaming.ForProperty("fat", FlowPropertyKind.Liquid)));
+            Assert.False(tags.Exists(FlowTagNaming.ContainerTemperature));
+            Assert.False(tags.Exists(FlowTagNaming.ForProperty("fat", FlowPropertyKind.Liquid)));
         }
 
         [Fact]
-        public void Collector_TemperatureScalar_RoundTripsThroughDoubleTag()
+        public void Collector_TemperatureScalar_RoundTripsThroughExistingDoubleTag()
         {
             CollectorDevice source = new CollectorDevice();
             source.Set(FlowProps.Temperature, 12.5d);
 
             CollectorStateAdapter saveAdapter = new CollectorStateAdapter(source);
             FakeTagStore tags = new FakeTagStore();
+            tags.WriteDouble(FlowTagNaming.ContainerTemperature, 0.1d);
 
             Assert.True(saveAdapter.Save(tags));
             Assert.Equal(1, tags.Count);
-            Assert.True(tags.Has(FlowTagNaming.ContainerTemperature));
+            Assert.True(tags.Exists(FlowTagNaming.ContainerTemperature));
             Assert.Equal(12.5d, tags.ReadDouble(FlowTagNaming.ContainerTemperature));
 
             CollectorDevice restored = new CollectorDevice();
@@ -223,7 +224,7 @@ namespace FluxForge.Tests
         }
 
         [Fact]
-        public void TemperatureConfig_Load_OnlyAppliesExistingTag_AndSaveIsFalse()
+        public void TemperatureConfig_Load_AppliesTag_AndSaveIsFalse()
         {
             FakeTagStore tags = new FakeTagStore();
             tags.WriteDouble(FlowTagNaming.ContainerTemperature, 8.5d);
@@ -237,10 +238,10 @@ namespace FluxForge.Tests
             Assert.Same(device, adapter.Device);
             Assert.Equal(8.5d, device.Temperature);
 
-            // 缺失 tag 时保留构造配置，不清零。
+            // 适配器不做存在性判断：缺失 tag 读到 0，覆盖当前配置值。
             FakeTagStore emptyTags = new FakeTagStore();
             adapter.Load(emptyTags);
-            Assert.Equal(8.5d, device.Temperature);
+            Assert.Equal(0d, device.Temperature);
 
             // 温度是 items.json 配置：Save 永远 false，也不写 tag。
             Assert.False(adapter.Save(emptyTags));

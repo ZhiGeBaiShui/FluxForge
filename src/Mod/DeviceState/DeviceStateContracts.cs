@@ -8,8 +8,6 @@ namespace FluxForge.Mod
     /// </summary>
     public interface ITagStore
     {
-        bool Has(string tag);
-
         int ReadInt(string tag);
 
         double ReadDouble(string tag);

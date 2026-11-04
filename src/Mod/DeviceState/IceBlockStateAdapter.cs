@@ -15,18 +15,11 @@ namespace FluxForge.Mod
             get { return _device; }
         }
 
-        /// <summary>只回灌存在的 tag，缺失项保留装置当前值。</summary>
+        /// <summary>回灌水量与温度；缺 tag 时读取为 0。</summary>
         public void Load(ITagStore tags)
         {
-            if (tags.Has(FlowTagNaming.Water))
-            {
-                _device.Water = tags.ReadInt(FlowTagNaming.Water);
-            }
-
-            if (tags.Has(FlowTagNaming.ContainerTemperature))
-            {
-                _device.Temperature = tags.ReadDouble(FlowTagNaming.ContainerTemperature);
-            }
+            _device.Water = tags.ReadInt(FlowTagNaming.Water);
+            _device.Temperature = tags.ReadDouble(FlowTagNaming.ContainerTemperature);
         }
 
         /// <summary>写回全部状态，返回是否有值实际变化。</summary>

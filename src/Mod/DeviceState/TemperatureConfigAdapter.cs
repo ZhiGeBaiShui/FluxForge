@@ -15,13 +15,10 @@ namespace FluxForge.Mod
             get { return _device; }
         }
 
-        /// <summary>只回灌存在的温度 tag，缺失时保留构造时的配置值。</summary>
+        /// <summary>回灌温度配置；缺 tag 时读取为 0。</summary>
         public void Load(ITagStore tags)
         {
-            if (tags.Has(FlowTagNaming.ContainerTemperature))
-            {
-                _device.Temperature = tags.ReadDouble(FlowTagNaming.ContainerTemperature);
-            }
+            _device.Temperature = tags.ReadDouble(FlowTagNaming.ContainerTemperature);
         }
 
         /// <summary>温度是 items.json 的静态配置，运行期不回写。</summary>

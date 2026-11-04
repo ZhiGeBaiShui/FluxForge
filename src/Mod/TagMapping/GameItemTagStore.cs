@@ -18,12 +18,6 @@ namespace FluxForge.Mod
             _item = item;
         }
 
-        /// <summary>tag 是否存在于物品快照中。</summary>
-        public bool Has(string tag)
-        {
-            return _item.modifiedState.dict.ContainsKey(tag);
-        }
-
         /// <summary>读整数；tag 不存在时按 0 处理（与 <see cref="FlowStock"/> 的读取一致）。</summary>
         public int ReadInt(string tag)
         {
