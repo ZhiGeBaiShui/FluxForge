@@ -149,7 +149,7 @@ public interface IFlowState
 - `CollectorDevice`（`collector`）：`Merge` 累积属性，不保留流源记录；`Exhausted` 永不触发；
 - `SplitDevice` 变体（`turn` / `l_right_down` / `t_junction` / `double_emit`）：按**所有非入口通道的 emitCounts 之和**等分；`total == 1` 时只改方向、不分裂；入口通道的 emitCounts 被忽略；
 - `FlowManager` / `FlowSpawner`：逐帧推进与生命周期；
-- `src/Logic/Reactions/`：咖啡豆/梦帽菇/梦魇帽菇的**比例萃取**纯函数（`React(FlowProperties)`），目前只被单测调用，**没有接入任何装置**；接入前不要当作已生效的游戏行为。
+- `src/Logic/Reactions/Formulas/`：咖啡豆/梦帽菇/梦魇帽菇的**比例萃取**纯函数（`React(FlowProperties)`），目前只被单测调用，**没有接入任何装置**；接入前不要当作已生效的游戏行为。
 
 逻辑层只校验既有参数契约：
 

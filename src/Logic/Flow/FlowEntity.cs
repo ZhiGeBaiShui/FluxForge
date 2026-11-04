@@ -29,6 +29,17 @@ namespace FluxForge
         /// <summary>流源属性（水量 / 温度……）。</summary>
         public FlowProperties Properties;
 
+        /// <summary>
+        /// 下一轮化学反应前的剩余等待时间（秒）。
+        ///
+        /// 出生时由 <see cref="FlowSpawner"/> 写入黄金比例
+        /// <c>0.6180339887498949</c> 递增后的相位（0..1），作为第一轮等待；
+        /// 之后由 <see cref="FlowManager"/> 每帧扣减。到期执行反应后，
+        /// 去掉负数的整数部分、保留负小数再 +1，得到下一轮等待时间。
+        /// 本类不主动计算。
+        /// </summary>
+        public double NextReactionTime;
+
         public FlowEntity(FlowPos position, FlowMotionData motion, FlowProperties properties)
         {
             Position = position;

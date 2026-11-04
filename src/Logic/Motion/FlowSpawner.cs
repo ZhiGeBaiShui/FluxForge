@@ -17,7 +17,12 @@ namespace FluxForge
     /// </summary>
     public sealed class FlowSpawner
     {
+        private const double GoldenRatio = 0.6180339887498949d;
+
         private readonly List<FlowEntity> _active = new List<FlowEntity>();
+
+        /// <summary>出生相位；用黄金比例递增，避免同帧/连续出生的流源落在同一小数相位。</summary>
+        private double _reactionPhase;
 
         /// <summary>流源出生时触发（mod 层订阅 → 纳入视图）。</summary>
         public event Action<FlowEntity> OnEntityAdded;
@@ -41,6 +46,14 @@ namespace FluxForge
             {
                 return;
             }
+
+            _reactionPhase += GoldenRatio;
+            if (_reactionPhase >= 1d)
+            {
+                _reactionPhase -= 1d;
+            }
+
+            entity.NextReactionTime = _reactionPhase;
 
             _active.Add(entity);
             OnEntityAdded?.Invoke(entity);

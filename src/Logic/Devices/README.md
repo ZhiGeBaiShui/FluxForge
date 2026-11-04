@@ -26,6 +26,11 @@ Devices/
 ├─ FlowDeviceCatalog.cs        # items.json device key → 无参工厂（唯一登记点）
 ```
 
+实时反应规则（`FlowReactionRule` / `FlowReactionSolver`）和未接入的纯公式
+在 `src/Logic/Reactions/`，见
+[`Reactions/README.md`](../Reactions/README.md)；它们不是装置，仍由 Devices
+之外的生命周期驱动。
+
 游戏侧 `orientation → 方向码` 的换算是适配层职责，放在
 `src/Mod/Game/FlowFacing.cs`；Logic 只认识 `SplitDevice.Facing` 0..3，
 没有 `IFacingAware` 之类的朝向接口。
@@ -33,7 +38,8 @@ Devices/
 ## 新增装置：创建时声明什么
 
 1. **目录和类**
-   - 路由装置放 `Routing/<类别>/`，反应装置放 `Reaction/<类别>/`；
+   - 路由装置放 `Devices/Routing/<类别>/`，反应装置放 `Devices/Reaction/<类别>/`；
+   - 实时反应规则继承 `FlowReactionRule`，放 `Reactions/Realtime/`，不属于装置；
    - 类必须是 `public sealed`（或 `SplitDevice` 的 `public sealed` 派生类），
      并提供 **public 无参构造**；`FlowDeviceCatalog` 和测试都直接 `new`。
 

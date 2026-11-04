@@ -109,6 +109,17 @@ namespace FluxForge
 
                 // 位置直接写进 entity.Position，视觉层在 LateUpdate 里自己读
                 MoveFlowEntity(entity, deltaTime, flows);
+
+                // 反应等待时间按现实帧扣减；到期后执行一次，并保留越过 0 的小数残差。
+                entity.NextReactionTime -= deltaTime;
+                if (entity.NextReactionTime < 0d)
+                {
+                    FlowReactionSolver.React(entity.Properties);
+
+                    // 保留负小数，再 +1 进入下一轮等待。
+                    entity.NextReactionTime %= 1d;
+                    entity.NextReactionTime += 1d;
+                }
             }
 
             UpdateBlockedStates(deltaTime, flows);
