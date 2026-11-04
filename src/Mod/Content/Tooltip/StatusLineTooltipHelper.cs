@@ -14,6 +14,8 @@ namespace FluxForge.Mod
     public sealed class StatusLineTooltipHelper : IFlowTooltipHelper
     {
         private const string DefaultFormat = "0.#";
+        private const string TemperatureDeviceKey = "temperature";
+        private const string TemperatureTag = "CONTAINER_TEMP_TAG";
         private const RenderHandler.ColorPalette DefaultColor
             = RenderHandler.ColorPalette.LightBlue;
 
@@ -37,16 +39,25 @@ namespace FluxForge.Mod
         /// </summary>
         public void Append(RichTextBuilder builder, GameItemElement item)
         {
-            // 自判：配置里没声明状态行 → 不归我管
+            // 目前只显示温度反应装置的温度属性；其它装置/属性不进入 tooltip。
             FlowItemDefinition def = FlowItemRegistry.Instance.Get(item.identifier);
-            if (def == null || def.statusLines == null || def.statusLines.Length == 0)
+            if (def == null
+                || def.device != TemperatureDeviceKey
+                || def.statusLines == null
+                || def.statusLines.Length == 0)
             {
                 return;
             }
 
             for (int i = 0; i < def.statusLines.Length; i++)
             {
-                AppendLine(builder, item, def.statusLines[i]);
+                StatusLine line = def.statusLines[i];
+                if (line == null || line.tag != TemperatureTag)
+                {
+                    continue;
+                }
+
+                AppendLine(builder, item, line);
             }
         }
 

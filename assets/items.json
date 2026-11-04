@@ -30,25 +30,6 @@
           "valueName": "CONTAINER_TEMP_TAG",
           "valueDouble": -5.0
         }
-      ],
-      "statusLines": [
-        {
-          "tag": "CURRENT_PART_WATER",
-          "label": "含冰量",
-          "scale": 0.001,
-          "format": "0.#",
-          "unit": "g",
-          "color": "LightBlue"
-        },
-        {
-          "tag": "CONTAINER_TEMP_TAG",
-          "label": "温度",
-          "scale": 1,
-          "format": "0.#",
-          "unit": "℃",
-          "color": "LightCyan",
-          "valueType": "double"
-        }
       ]
     },
     {
@@ -77,25 +58,6 @@
         {
           "valueName": "CONTAINER_TEMP_TAG",
           "valueDouble": 25.0
-        }
-      ],
-      "statusLines": [
-        {
-          "tag": "CURRENT_PART_WATER",
-          "label": "存量",
-          "scale": 0.001,
-          "format": "0.#",
-          "unit": "mL",
-          "color": "LightBlue"
-        },
-        {
-          "tag": "CONTAINER_TEMP_TAG",
-          "label": "温度",
-          "scale": 1,
-          "format": "0.#",
-          "unit": "℃",
-          "color": "LightCyan",
-          "valueType": "double"
         }
       ]
     },
