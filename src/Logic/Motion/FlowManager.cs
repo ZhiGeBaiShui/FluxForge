@@ -241,7 +241,7 @@ namespace FluxForge
 
             // 先反应、后路由：同一格两者都有时，反应先改属性，路由再按新属性分流
             bool blocked = false;
-            if (reactor != null && reactor.TryReact(entity.Properties))
+            if (reactor != null && reactor.TryReact(entity))
             {
                 blocked = true;
             }

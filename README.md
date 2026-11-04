@@ -132,7 +132,7 @@ public interface IFlowState
 
 | 接口 | 作用 |
 |---|---|
-| `IFlowDevice.TryReact(FlowProperties)` | 反应类：改属性，返回是否截停 |
+| `IFlowDevice.TryReact(FlowEntity)` | 反应类：读完整流源（属性/位置/速度），返回是否截停 |
 | `IFlowRouter.Route(FlowEntity, FlowSpawner, x, y)` | 路由类：改去向 / 数量，返回是否截停/接管（吸收只是其中一种） |
 | `IFlowNotifier` | `Changed` / `Exhausted` 播报 |
 | `IFlowGrid` | 运动层只读网格查询 |
@@ -149,7 +149,7 @@ public interface IFlowState
 - `CollectorDevice`（`collector`）：`Merge` 累积属性，不保留流源记录；`Exhausted` 永不触发；
 - `SplitDevice` 变体（`turn` / `l_right_down` / `t_junction` / `double_emit`）：按**所有非入口通道的 emitCounts 之和**等分；`total == 1` 时只改方向、不分裂；入口通道的 emitCounts 被忽略；
 - `FlowManager` / `FlowSpawner`：逐帧推进与生命周期；
-- `src/Logic/Reactions/Formulas/`：咖啡豆/梦帽菇/梦魇帽菇的**比例萃取**纯函数（`React(FlowProperties)`），目前只被单测调用，**没有接入任何装置**；接入前不要当作已生效的游戏行为。
+- `src/Logic/Reactions/Formulas/`：`TemperatureChangeReaction`、`FilterReaction`，由装置传入参数；原版萃取反应已实现在 `Realtime/Rules`；
 
 逻辑层只校验既有参数契约：
 
@@ -697,7 +697,7 @@ Select-String -Path (Get-ChildItem src,tests,mod,assets -Recurse -File).FullName
 
 ## 12. 当前状态与已知限制
 
-- **逻辑层**：36 种液体 + 温度已注册；Split/Merge/Clone/装置规则有单测；`Reactions/` 的比例萃取纯函数尚未接入装置；
+- **逻辑层**：36 种液体 + 温度已注册；Split/Merge/Clone/装置规则有单测；`Realtime/Rules` 已移植原版 22 条每秒反应 + 环境降温；
 - **适配层**：tag 双向同步、装置绑定（`ItemDeviceBinding`）、发射路径（`FlowRuntime.Emit`）、网格/存档生命周期已实现；`dotnet build` 0 warning / 0 error，实机读档待验证；
 - **视觉层**：AI 设计，未完成人工检阅；36 色加权混合已接入，致死/快感叠色未接入；64 流源 / 512 粒子 / 仅 Flow+Blocked / 射程 0 是当前上限；
 - **tooltip**：当前只显示水与温度，非水液体暂不显示；

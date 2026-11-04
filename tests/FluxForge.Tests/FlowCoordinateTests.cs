@@ -74,7 +74,7 @@ namespace FluxForge.Tests
         {
             public int Calls;
 
-            public bool TryReact(FlowProperties properties)
+            public bool TryReact(FlowEntity entity)
             {
                 Calls++;
                 return true;

@@ -32,18 +32,58 @@ public sealed class XxxRule : FlowReactionRule
 
 不需要修改 Solver。
 
+当前 Realtime/Rules 为原版 `HandleTemperatureReaction` 的 22 条移植，执行顺序：
+
+```text
+10 MicrobeHeat
+20 MicrobeAlcohol
+30 OrganicWasteHeat
+40 DreamCapMushReaction
+50 NightmareCapMushReaction
+60 CoffeeBeanSolventExtraction
+70 CoffeeBeanWaterExtraction
+80 Nomore
+90 DreamCapExtractDegradation
+100 DreamCapMushDegradation
+110 NightmareCapExtractDegradation
+120 NightmareCapMushDegradation
+130 OrganicWasteMineralization
+140 AcidBaseMicrobeKill
+150 StabilizingAgentSedimentation
+160 ProteinPrecipitation
+170 LipobondAgentSedimentation
+180 AcidBaseNeutralization
+190 FantaHeat
+200 MethylolHeatReaction
+210 Chlorine
+220 Boiling
+230 AmbientTemperature（环境降温，不是化学反应，最后执行）
+```
+
+`BoilingRule` 只读稀疏表 `FlowBoilingTable`：
+
+```text
+water 100.0
+alcohol 78.37
+lipobond_agent 55.0
+```
+
+没有登记的液体不会蒸发。
+
 ## Formulas
 
 ```text
-CoffeeBeanSolventExtractionReaction
-DreamCapExtractionReaction
-NightmareCapExtractionReaction
 TemperatureChangeReaction
+FilterReaction
 ```
 
-这些是纯反应公式，目前没有接入实时 Solver 或装置。接入前只作为
-测试中的计算函数存在，不代表游戏内已生效。`TemperatureChangeReaction`
-需要由装置传入 `delta`，因此保留两个参数的签名。
+`TemperatureChangeReaction` 由装置传入 `delta`，`FilterReaction` 由过滤装置传入
+`properties + speed`；两者都不继承 `FlowReactionRule`，不会被实时 Solver 自动发现。
+
+原版三条萃取反应已经完整实现在 `Realtime/Rules` 的
+`04_DreamCapMushReactionRule`、`05_NightmareCapMushReactionRule`、
+`06_CoffeeBeanSolventExtractionRule`、`07_CoffeeBeanWaterExtractionRule`
+中；旧的简化一次性实现已删除。
 
 ## 与 Devices 的边界
 

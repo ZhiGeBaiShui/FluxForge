@@ -101,9 +101,20 @@ namespace FluxForge
         }
 
         /// <summary>反应入口：流源撞上冰块时由运动层调用。</summary>
-        /// <param name="properties">流源属性，实现里可直接原地修改。</param>
+        /// <param name="entity">完整流源；冰块只读取并修改其属性。</param>
         /// <returns>是否真的发生了反应（true → 该帧阻挡）。</returns>
-        public bool TryReact(FlowProperties properties)
+        public bool TryReact(FlowEntity entity)
+        {
+            if (entity == null)
+            {
+                return false;
+            }
+
+            return TryReact(entity.Properties);
+        }
+
+        /// <summary>只依赖属性的内部核心，供本类和单测使用。</summary>
+        internal bool TryReact(FlowProperties properties)
         {
             if (Water <= 0d)
             {

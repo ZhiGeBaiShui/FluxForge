@@ -7,7 +7,7 @@
 ```text
 Devices/
 ├─ Interfaces/                 # 所有装置相关接口
-│  ├─ IFlowDevice.cs           # 反应类：TryReact(FlowProperties)
+│  ├─ IFlowDevice.cs           # 反应类：TryReact(FlowEntity)
 │  ├─ IFlowRouter.cs           # 路由类：Route(FlowEntity, FlowSpawner, x, y)
 │  ├─ IFlowNotifier.cs         # 播报；继承 IFlowState
 │  └─ IFlowState.cs            # Keys + Get/Set 属性槽
@@ -44,7 +44,7 @@ Devices/
      并提供 **public 无参构造**；`FlowDeviceCatalog` 和测试都直接 `new`。
 
 2. **角色接口**
-   - 反应：`IFlowDevice`，实现 `TryReact(FlowProperties)`；
+   - 反应：`IFlowDevice`，实现 `TryReact(FlowEntity)`；装置从完整流源读取属性/速度；
    - 路由：`IFlowRouter`，实现 `Route(FlowEntity, FlowSpawner, cellX, cellY)`；
    - 发射不是装置：流源由 `FlowRuntime.Emit` 直接从物品存量生成，
      Logic 层没有「发射装置类」；
