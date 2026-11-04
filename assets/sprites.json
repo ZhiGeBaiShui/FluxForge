@@ -11,8 +11,15 @@
       "key": "flow_emitter",
       "atlas": "flow_emitter_atlas",
       "file": "flow_emitter.png",
-      "shape": "1",
-      "shapeWidth": 1
+      "shape": "111111111111111111",
+      "shapeWidth": 3
+    },
+    {
+      "key": "flow_emitter_2x3",
+      "atlas": "flow_emitter_2x3_atlas",
+      "file": "flow_emitter_2x3.png",
+      "shape": "111111",
+      "shapeWidth": 2
     },
     {
       "key": "flow_collector",

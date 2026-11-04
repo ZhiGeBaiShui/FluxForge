@@ -54,10 +54,10 @@
     {
       "key": "flow_emitter",
       "device": "collector",
-      "anchorX": 0,
+      "anchorX": 1,
       "anchorY": 0,
       "capacityMl": 1000000,
-      "sprite": "flow_emitter",
+      "sprite": "flow_emitter_2x3",
       "name": "发射装置",
       "desc": "从水容器接收水分，启动后持续向上发射流源。",
       "flavor": "它不讲道理，只讲方向。",
