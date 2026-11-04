@@ -24,6 +24,9 @@
     <Compile Include="..\..\src\Logic\**\*.cs" />
     <!-- 表现层的纯计算（粒子）也零 Unity 依赖，一并编入以便单测 -->
     <Compile Include="..\..\src\Presentation\**\*.cs" />
+    <!-- 装置状态契约 + 适配器：只依赖 Logic 装置与 ITagStore，不含 GameItem。
+         不要包含 src/Mod/TagMapping：那边直接引用游戏类型，测试环境加载不了。 -->
+    <Compile Include="..\..\src\Mod\DeviceState\**\*.cs" />
   </ItemGroup>
 
 </Project>
