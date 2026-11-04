@@ -4,7 +4,7 @@
 - 状态：**P0-1 已实施（有遗留）**、**P1-1 接受现状**、**P1-2 已实施**、**P2-1 backlog**、**P2-2 延后/待调研**、**P3-1 本次执行**
 - 验证（2026-11-04）：
   - `dotnet build FluxForge.csproj -c Release --no-incremental -p:GameManagedDir="E:\SteamLibrary\steamapps\common\Probably Stolen\Probably Stolen_Data\Managed"` → 0 warning / 0 error
-  - `dotnet test tests\FluxForge.Tests\FluxForge.Tests.csproj -c Release` → 221 / 221 通过，0 失败 0 跳过
+  - `dotnet test tests\FluxForge.Tests\FluxForge.Tests.csproj -c Release` → 259 / 259 通过，0 失败 0 跳过
 
 | 编号 | 项目 | 结论 | 状态 |
 |---|---|---|---|
@@ -280,8 +280,12 @@ src/Mod/GridBuilding/Lifecycle/README.md
 `DeviceRegistry` 保存：
 
 ```text
-GameItem → IFlowRouter
-GameItem → IFlowDevice
+GameItem → DeviceHost
+  ├─ Router
+  ├─ Reactor
+  ├─ Notifiers
+  └─ 具体装置事件源
+
 IFlowNotifier → GameItem
 ```
 
@@ -311,7 +315,7 @@ DeviceRegistry.Clear()
 ## 如果将来要做
 
 - 只在确认「销毁与移动可区分」后新增钩子；
-- 钩子里只调 `DeviceRegistry.Unregister(item)`（幂等）；
+- 钩子里只调 `DeviceRegistry.Unregister(item)`（该调用不是幂等的；只有确认物品尚未注销时才能调用）；
 - 同步更新 `Lifecycle/README.md` 反向索引。
 
 ---
@@ -324,7 +328,7 @@ DeviceRegistry.Clear()
   - 删除 `EmitterDevice` / `EmitAll` / `Adopt` / `OnGameLoadedInit` / `Grid.Refresh` / `GetOrCreate` 等旧架构描述；
   - 发射章节改为 `FlowRuntime.Emit` + `FlowStock.Read/Write`；
   - 生命周期表改为 `EscapeUIManager.OnMainMenu` + `QuitToMenu` → `Shutdown`，`EmporiumEntry.OnDestroy` → `Shutdown`；
-  - 测试数改为 221，并注明以 `dotnet test` 为准；
+  - 测试数改为 259，并注明以 `dotnet test` 为准；
   - 视觉章节改为 36 色加权混合（`FlowLiquidPalette`）；
   - 装配件表改为 `device` / `flow_container` / `water_bottle` / `emitter`；
   - 反射与 `reflection-external` 的约束改成与当前实现一致。

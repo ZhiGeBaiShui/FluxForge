@@ -54,6 +54,11 @@ namespace FluxForge.Mod
             ModHook.OnModItemDirectoryInit += OnModItemDirectoryInit;
             SaveLoaded.Subscribe();
 
+            // 先把自定义 WAV 登记进 AudioDirectory，再启动音效服务。
+            DeviceAudioClips.Initialize();
+            DeviceAudioService.Initialize();
+            DeviceAnimationService.Initialize();
+
             _host = ModHost.Attach();
 
             Log.Log("FluxForge 已启用");
@@ -63,6 +68,9 @@ namespace FluxForge.Mod
         {
             ModHook.OnModItemDirectoryInit -= OnModItemDirectoryInit;
             SaveLoaded.Unsubscribe();
+
+            DeviceAudioService.Shutdown();
+            DeviceAnimationService.Shutdown();
 
             // 先停宿主：停止每帧驱动，再拆登记表与视图。
             if (_host != null)

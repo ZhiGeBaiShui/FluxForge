@@ -3,100 +3,82 @@ using System.Collections.Generic;
 namespace FluxForge.Mod
 {
     /// <summary>
-    /// 物品 ↔ 装置实例的注册表，按角色分三张表：
-    ///   · 正向两张（路由 / 反应）存具体接口，查询时不用再向下转型；
-    ///   · 反向一张（播报者 → 物品）供 <see cref="FlowDeviceEvents"/> 回写 tag。
+    /// GameItem → DeviceHost 的唯一注册表。
     ///
-    /// 一个物品最多一个路由 + 一个反应，两张正向表各自独立。
-    /// 没有状态变化的装置可以不实现 <see cref="IFlowNotifier"/>：
-    /// 这时反向表里没有它，事件订阅自然跳过——静默丢失是正确的语义。
+    /// 一件物品只能有一个 Host；Host 内部可以同时持有 Router、Reactor、
+    /// Notifier。FlowAudio / FlowAnimation 事件用 Source 反查这里拿 GameItem。
     ///
-    /// 登记即订阅、注销即退订；订阅点只有这里。
-    ///
-    /// 登记表是独立的静态根：物品离开网格、网格退役都只摘格表与流源，不会注销装置；
-    /// 条目只由装置播报 Exhausted（<see cref="FlowDeviceEvents"/>）或整体清表移除。
+    /// 生命周期：
+    ///   ItemDeviceBinding 构建 Host
+    ///   Register  订阅全部 Notifier
+    ///   Unregister 退订并移除全部反查项
+    ///   Clear     整体失效
     /// </summary>
     public static class DeviceRegistry
     {
-        private static readonly Dictionary<GameItem, IFlowRouter> _routers
-            = new Dictionary<GameItem, IFlowRouter>();
+        private static readonly Dictionary<GameItem, DeviceHost> _hosts
+            = new Dictionary<GameItem, DeviceHost>();
 
-        private static readonly Dictionary<GameItem, IFlowDevice> _reactors
-            = new Dictionary<GameItem, IFlowDevice>();
+        private static readonly Dictionary<object, GameItem> _deviceItems
+            = new Dictionary<object, GameItem>();
 
         private static readonly Dictionary<IFlowNotifier, GameItem> _items
             = new Dictionary<IFlowNotifier, GameItem>();
 
-        /// <summary>
-        /// 登记一台装置。按它实现的角色接口落到对应正向表；
-        /// 只有实现了 <see cref="IFlowNotifier"/> 的才进反向表并订阅事件，
-        /// 没有状态变化的装置到这里就结束，不订阅任何事件。
-        /// </summary>
-        public static void Register(GameItem item, object device)
+        public static void Register(GameItem item, List<object> devices)
         {
-            IFlowRouter router = device as IFlowRouter;
-            if (router != null)
+            DeviceHost host = new DeviceHost(item, devices);
+            _hosts.Add(item, host);
+
+            for (int i = 0; i < devices.Count; i++)
             {
-                _routers[item] = router;
+                _deviceItems[devices[i]] = item;
             }
 
-            IFlowDevice reactor = device as IFlowDevice;
-            if (reactor != null)
+            for (int i = 0; i < host.Notifiers.Count; i++)
             {
-                _reactors[item] = reactor;
+                IFlowNotifier notifier = host.Notifiers[i];
+                _items.Add(notifier, item);
+                FlowDeviceEvents.Subscribe(notifier);
             }
-
-            IFlowNotifier notifier = device as IFlowNotifier;
-            if (notifier == null)
-            {
-                return;
-            }
-
-            _items[notifier] = item;
-            FlowDeviceEvents.Subscribe(notifier);
         }
 
-        /// <summary>
-        /// 该物品是否已经登记过装置。
-        ///
-        /// 落地绑定必须先查再建：同网格移动会重新走 RemoveParent + AddParent，
-        /// 每次都会重新进入网格，不查就会每次都白造一台装置再丢弃。
-        /// </summary>
         public static bool Contains(GameItem item)
         {
-            return _routers.ContainsKey(item) || _reactors.ContainsKey(item);
+            return _hosts.ContainsKey(item);
         }
 
         public static void Unregister(GameItem item)
         {
-            IFlowRouter router;
-            if (_routers.TryGetValue(item, out router))
+            DeviceHost host = _hosts[item];
+
+            for (int i = 0; i < host.Components.Count; i++)
             {
-                _routers.Remove(item);
-                Detach(router as IFlowNotifier);
+                _deviceItems.Remove(host.Components[i]);
             }
 
-            IFlowDevice reactor;
-            if (_reactors.TryGetValue(item, out reactor))
+            for (int i = 0; i < host.Notifiers.Count; i++)
             {
-                _reactors.Remove(item);
-                Detach(reactor as IFlowNotifier);
+                IFlowNotifier notifier = host.Notifiers[i];
+                _items.Remove(notifier);
+                FlowDeviceEvents.Unsubscribe(notifier);
             }
+
+            _hosts.Remove(item);
         }
 
-        /// <summary>
-        /// 退出存档 / 场景卸载 / mod 卸载时整体失效
-        /// （<see cref="FlowDriver.Reset"/> / <see cref="FlowDriver.Shutdown"/> 调用）。
-        /// </summary>
         public static void Clear()
         {
-            foreach (IFlowNotifier device in _items.Keys)
+            foreach (DeviceHost host in _hosts.Values)
             {
-                FlowDeviceEvents.Unsubscribe(device);
+                for (int i = 0; i < host.Notifiers.Count; i++)
+                {
+                    FlowDeviceEvents.Unsubscribe(host.Notifiers[i]);
+                }
             }
 
-            _routers.Clear();
-            _reactors.Clear();
+            _hosts.Clear();
+            _deviceItems.Clear();
             _items.Clear();
         }
 
@@ -106,52 +88,31 @@ namespace FluxForge.Mod
             return _items[device];
         }
 
-        /// <summary>取该物品的路由装置；没有返回 null。</summary>
+        /// <summary>任意装置实例反查所属物品；FlowAudio / FlowAnimation 使用。</summary>
+        public static GameItem GetItemForDevice(object device)
+        {
+            return _deviceItems[device];
+        }
+
+        /// <summary>取该物品的路由装置；普通物品没有 Host，返回 null。</summary>
         public static IFlowRouter GetRouter(GameItem item)
         {
-            IFlowRouter router;
-            return _routers.TryGetValue(item, out router) ? router : null;
+            DeviceHost host;
+            return _hosts.TryGetValue(item, out host) ? host.Router : null;
         }
 
-        /// <summary>取该物品的反应装置；没有返回 null。</summary>
+        /// <summary>取该物品的反应装置；普通物品没有 Host，返回 null。</summary>
         public static IFlowDevice GetReactor(GameItem item)
         {
-            IFlowDevice reactor;
-            return _reactors.TryGetValue(item, out reactor) ? reactor : null;
+            DeviceHost host;
+            return _hosts.TryGetValue(item, out host) ? host.Reactor : null;
         }
 
-        /// <summary>按具体类型取（先查路由表，再查反应表）。</summary>
+        /// <summary>在 Host 的全部角色里按具体类型查找。</summary>
         public static T Get<T>(GameItem item) where T : class
         {
-            IFlowRouter router;
-            if (_routers.TryGetValue(item, out router))
-            {
-                T matched = router as T;
-                if (matched != null)
-                {
-                    return matched;
-                }
-            }
-
-            IFlowDevice reactor;
-            if (_reactors.TryGetValue(item, out reactor))
-            {
-                return reactor as T;
-            }
-
-            return null;
-        }
-
-        /// <summary>从反向表摘除并退订；没有实现 IFlowNotifier 的装置走到这里是空操作。</summary>
-        private static void Detach(IFlowNotifier device)
-        {
-            if (device == null)
-            {
-                return;
-            }
-
-            _items.Remove(device);
-            FlowDeviceEvents.Unsubscribe(device);
+            DeviceHost host;
+            return _hosts.TryGetValue(item, out host) ? host.Find<T>() : null;
         }
     }
 }

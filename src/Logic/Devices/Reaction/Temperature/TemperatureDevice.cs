@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 
 namespace FluxForge
@@ -61,14 +62,19 @@ namespace FluxForge
         /// <param name="entity">完整流源；本装置只读温度、写温度。</param>
         public bool TryReact(FlowEntity entity)
         {
-            if (entity == null)
-            {
-                return false;
-            }
-
             entity.Properties.Set(
                 FlowProps.Temperature,
                 entity.Properties.Get(FlowProps.Temperature) + Temperature);
+
+            if (Temperature != 0d)
+            {
+                double amount = Math.Abs(Temperature);
+                FlowAudio.Play(
+                    Temperature > 0d ? FlowSoundIds.Heated : FlowSoundIds.Cooled,
+                    this,
+                    amount);
+                FlowAnimation.Play(FlowAnimationIds.TemperaturePulse, this, amount);
+            }
 
             return false;
         }

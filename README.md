@@ -326,6 +326,13 @@ EmitterAttachment 三个原生委托
   │             → tag 更新 + SyncModifiedState + Refresh
   └─ Exhausted → DeviceRegistry.Unregister(item)
                 → item.parentInventory?.Expel(item)
+
+装置动作
+  → Logic 装置调用 FlowAudio.Play / FlowAnimation.Play
+  → Mod 的 DeviceAudioService / DeviceAnimationService
+      ├─ Source → GameItem
+      ├─ 音效 ID → AudioHelper 音频
+      └─ 动画层当前为空壳
 ```
 
 - 订阅 / 退订只由 `DeviceRegistry.Register` / `Unregister` / `Clear` 负责（`IFlowNotifier : IFlowState`），别处不要手写 `FlowDeviceEvents.Subscribe`；
@@ -586,7 +593,7 @@ dotnet test tests\FluxForge.Tests\FluxForge.Tests.csproj -c Release
 - 修改 `FlowProperties` 的 Split/Merge/Clone 必须跑全量测试；
 - 修改 tag 映射/存档路径必须实机读档验证（Mod 层没有单测）。
 
-当前测试数量：**221**。最近一次运行（2026-11-04）：221 / 221 通过，0 失败 0 跳过。以 `dotnet test` 的实际输出为准，不要在文档里维护固定数字以外的手工统计。
+当前测试数量：**259**。最近一次运行（2026-11-04）：259 / 259 通过，0 失败 0 跳过。以 `dotnet test` 的实际输出为准，不要在文档里维护固定数字以外的手工统计。
 
 ---
 

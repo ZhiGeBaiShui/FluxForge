@@ -105,11 +105,6 @@ namespace FluxForge
         /// <returns>是否真的发生了反应（true → 该帧阻挡）。</returns>
         public bool TryReact(FlowEntity entity)
         {
-            if (entity == null)
-            {
-                return false;
-            }
-
             return TryReact(entity.Properties);
         }
 
@@ -141,9 +136,14 @@ namespace FluxForge
             // 摘掉之后就再也写不进 tag 了。Changed 必须在它之前把最终状态同步出去。
             Changed?.Invoke(this);
 
+            FlowAudio.Play(FlowSoundIds.Melted, this, melted);
+            FlowAnimation.Play(FlowAnimationIds.IceMelt, this, melted);
+
             // 只有真的化完了才请求销毁；没化完就留在原地等下一个流源
             if (Water <= 0d)
             {
+                FlowAudio.Play(FlowSoundIds.Exhausted, this);
+                FlowAnimation.Play(FlowAnimationIds.Destroy, this);
                 Exhausted?.Invoke(this);
             }
 

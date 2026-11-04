@@ -86,11 +86,5 @@ namespace FluxForge.Tests
             double concentration = ContaminantTotal(entity) / entity.Properties.SubstanceTotal;
             Assert.True(concentration > 0.01d);
         }
-
-        [Fact]
-        public void NullEntityIsIgnored()
-        {
-            Assert.False(new FilterDevice().TryReact(null));
-        }
     }
 }

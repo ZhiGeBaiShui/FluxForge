@@ -72,12 +72,15 @@
 
 | 文件 | 职责 |
 |---|---|
-| `DeviceRegistry.cs` | 存储：物品 ↔ 装置实例，按角色分三张表 |
-| `ItemDeviceBinding.cs` | 建立：物品 tag → 装置实例（被生命周期 #2 / #6 调用） |
+| `DeviceRegistry.cs` | 存储：`GameItem → DeviceHost`，统一管理全部装置角色 |
+| `DeviceHost.cs` | 一件物品的 Router / Reactor / Notifier 角色聚合 |
+| `ItemDeviceBinding.cs` | 建立：物品 tag → 装置角色集合 → 一个 DeviceHost |
+| `Audio/DeviceAudioService.cs` | 消费 `FlowAudio.Played`，语义 ID → 实际音效 |
+| `Animation/DeviceAnimationService.cs` | 消费 `FlowAnimation.Played`，当前为空壳 |
 | `FlowDeviceEvents.cs` | 订阅注册：装置 `Changed` / `Exhausted` → tag 写回 / 移出容器 |
 
-装置没有独立的生命周期 patch——建立由「物品进入」(#2) / 「读档完成」(#6) 触发，销毁由装置自己触发
-`Exhausted`。所以本目录没有 `Lifecycle/`，三个类都是能力，平铺即可。
+装置没有独立的生命周期 patch——建立由「物品进入」(#2) / 「读档完成」(#6) 触发。
+音效和动画由 Logic 的 `FlowAudio` / `FlowAnimation` 事件驱动，`DeviceHost` 只负责角色聚合。
 
 **注意**：物品被销毁时没有对应的 patch（`ItemDestroyed` 评估后未采用），`DeviceRegistry` 的条目只在
 `FlowDriver.Reset` / `Shutdown` 或装置 `Exhausted` 时清理；这是有界保留，详见

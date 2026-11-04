@@ -101,12 +101,19 @@ namespace FluxForge
             }
 
             // 只取属性：流源对象没有保留价值，吸收后就地终结。
+            double absorbed = incoming.Properties.SubstanceTotal;
             _stock = _stock.Merge(incoming.Properties);
 
             flows.Kill(incoming);
 
             // 库存定稿后再播报，订阅方读到的是一次完整的吸收结果
             Changed?.Invoke(this);
+
+            if (absorbed > 0d)
+            {
+                FlowAudio.Play(FlowSoundIds.Absorbed, this, absorbed);
+                FlowAnimation.Play(FlowAnimationIds.CollectorPulse, this, absorbed);
+            }
 
             return true;
         }

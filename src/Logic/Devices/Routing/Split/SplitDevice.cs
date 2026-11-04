@@ -19,6 +19,8 @@ namespace FluxForge
     ///   · 具体变体只提供通道常量（<see cref="TurnDevice"/> / <see cref="LRightDownDevice"/> /
     ///     <see cref="TJunctionDevice"/> / <see cref="DoubleEmitDevice"/>），Route 算法固定在基类，
     ///     不随变体变化
+    ///   · 基类不决定音效/动画；某个具体变体需要表现时，由该变体自己调用
+    ///     <see cref="FlowAudio"/> / <see cref="FlowAnimation"/>
     /// </summary>
     public abstract class SplitDevice : IFlowRouter, IFlowNotifier
     {

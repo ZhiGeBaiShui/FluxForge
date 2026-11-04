@@ -41,6 +41,10 @@
       <HintPath>$(GameManagedDir)\UnityEngine.ImageConversionModule.dll</HintPath>
       <Private>false</Private>
     </Reference>
+    <Reference Include="UnityEngine.AudioModule">
+      <HintPath>$(GameManagedDir)\UnityEngine.AudioModule.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
     <Reference Include="Unity.Localization">
       <HintPath>$(GameManagedDir)\Unity.Localization.dll</HintPath>
       <Private>false</Private>
@@ -58,6 +62,7 @@
   <ItemGroup>
     <EmbeddedResource Include="assets\*.png" />
     <EmbeddedResource Include="assets\*.json" />
+    <EmbeddedResource Include="assets\*.wav" />
     <!-- 旧彩色图集只作设计期对拍基准，不进运行时（A 方案改用 flow_mask_*） -->
     <EmbeddedResource Remove="assets\flow_atlas.*" />
   </ItemGroup>

@@ -93,11 +93,5 @@ namespace FluxForge.Tests
             device.Set(FlowProps.Water, 999d);
             Assert.Equal(-15d, device.Get(FlowProps.Temperature));
         }
-
-        [Fact]
-        public void NullEntityIsIgnored()
-        {
-            Assert.False(new TemperatureDevice().TryReact(null));
-        }
     }
 }

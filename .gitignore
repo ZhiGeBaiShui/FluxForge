@@ -22,6 +22,8 @@ assets/raw/
 generated-images/
 __pycache__/
 .tmp-decomp/
+.tmp-sfxr/
+artifacts/
 .tmp-zh-strings.json
 debug.log
 
