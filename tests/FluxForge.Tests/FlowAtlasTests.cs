@@ -543,24 +543,21 @@ namespace FluxForge.Tests
         [Fact]
         public void ContentFromWater_UsesSpecThresholds()
         {
-            // 只有「真的没有液体」才是空档；1 µL 以上至少是「少」，避免低含量小到看不见。
-            Assert.Equal(FlowContent.Empty, FlowTierMap.ContentFromWater(0d));
-            Assert.Equal(FlowContent.Empty, FlowTierMap.ContentFromWater(0.5d));
-            Assert.Equal(FlowContent.Empty, FlowTierMap.ContentFromWater(-1d));
-
+            // 三档：150 mL / 400 mL 是 small / mid 的上界；空档不再产出。
+            Assert.Equal(FlowContent.Small, FlowTierMap.ContentFromWater(0d));
+            Assert.Equal(FlowContent.Small, FlowTierMap.ContentFromWater(-1d));
             Assert.Equal(FlowContent.Small, FlowTierMap.ContentFromWater(1d));
-            Assert.Equal(FlowContent.Small, FlowTierMap.ContentFromWater(999d));
-            Assert.Equal(FlowContent.Small, FlowTierMap.ContentFromWater(1000d));
-            Assert.Equal(FlowContent.Small, FlowTierMap.ContentFromWater(4999999d));
+            Assert.Equal(FlowContent.Small, FlowTierMap.ContentFromWater(149999d));
 
-            Assert.Equal(FlowContent.Mid, FlowTierMap.ContentFromWater(5000000d));
-            Assert.Equal(FlowContent.Mid, FlowTierMap.ContentFromWater(19999999d));
+            Assert.Equal(FlowContent.Mid, FlowTierMap.ContentFromWater(150000d));
+            Assert.Equal(FlowContent.Mid, FlowTierMap.ContentFromWater(399999d));
 
-            Assert.Equal(FlowContent.Large, FlowTierMap.ContentFromWater(20000000d));
+            Assert.Equal(FlowContent.Large, FlowTierMap.ContentFromWater(400000d));
+            Assert.Equal(FlowContent.Large, FlowTierMap.ContentFromWater(900000d));
             Assert.Equal(FlowContent.Large, FlowTierMap.ContentFromWater(200000000d));
 
-            // NaN 属脏数据，按空档处理，不能凭空画出一大滴。
-            Assert.Equal(FlowContent.Empty, FlowTierMap.ContentFromWater(double.NaN));
+            // NaN 属脏数据，按最小档处理，不能凭空画出一大滴。
+            Assert.Equal(FlowContent.Small, FlowTierMap.ContentFromWater(double.NaN));
         }
 
         [Fact]

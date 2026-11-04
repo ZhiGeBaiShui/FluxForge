@@ -120,6 +120,13 @@ namespace FluxForge
                     entity.NextReactionTime %= 1d;
                     entity.NextReactionTime += 1d;
                 }
+
+                // 反应或其它路径清空液体后，流源本身也要退出；FlowSpawner 的
+                // OnEntityRemoved 会通知视觉层等既有订阅者，不需要 Mod 层额外代码。
+                if (entity.Properties.SubstanceTotal <= 0d)
+                {
+                    flows.Kill(entity);
+                }
             }
 
             UpdateBlockedStates(deltaTime, flows);

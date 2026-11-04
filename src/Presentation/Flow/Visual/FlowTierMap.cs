@@ -5,7 +5,7 @@ namespace FluxForge.Presentation.Flow.Visual
     ///
     /// 刻意保持纯函数、零状态、零 Unity：
     ///   · 温度只影响「冷/常温/热」三档，不改尺寸（SPEC §2 的 bbox 不变约束）；
-    ///   · 含量四档是**唯一**控制尺寸的通道（SPEC §1）；
+    ///   · 含量三档是**唯一**控制尺寸的通道（SPEC §1）；
     ///   · 状态只由调用方传入的 blocked 布尔决定（运动层用「连续两帧未动」判定）；
     ///   · 方向来自 <c>Motion.Direction</c> 的 0..3。
     /// 值域以外的输入都有明确的兜底，保证渲染层永远拿到一个合法枚举。
@@ -18,17 +18,14 @@ namespace FluxForge.Presentation.Flow.Visual
         /// <summary>热档下界（℃）：≥ 该值为 hot，与 SPEC §2 一致。</summary>
         public const float HotMinCelsius = 60f;
 
+        /// <summary>少档上界（µL）：低于 150 mL（150 000 µL）为 small，用最小的 8×6 水滴。</summary>
+        public const double SmallMaxMicroliters = 150000d;
+
         /// <summary>
-        /// 空档上界（µL）：只把真正没有液体的流源判成空。
-        /// 低含量在 16px 下画成 6×1 干痕会小到看不见，所以 1 µL 以上一律至少走「少」档。
+        /// 中档上界（µL）：低于 400 mL（400 000 µL）为 mid（8×8），否则 large（12×8）。
+        /// 900 mL 是发射器的满容量，图集只有四档，超出 400 mL 仍用 large，不再分档。
         /// </summary>
-        public const double EmptyMaxMicroliters = 1d;
-
-        /// <summary>少档上界（µL）：低于 5 000 000 µL（5 L）为 small。</summary>
-        public const double SmallMaxMicroliters = 5000000d;
-
-        /// <summary>中档上界（µL）：低于 20 000 000 µL（20 L）为 mid，否则 large。</summary>
-        public const double MidMaxMicroliters = 20000000d;
+        public const double MidMaxMicroliters = 400000d;
 
         /// <summary>
         /// 温度（℃）→ 温度档。NaN 视为未知，按 normal 处理。
@@ -56,19 +53,15 @@ namespace FluxForge.Presentation.Flow.Visual
 
         /// <summary>
         /// 含量（µL）→ 含量档。
-        /// 边界：&lt; 1 µL empty（含 0 与负数）、&lt; 5e6 small、&lt; 2e7 mid、否则 large。
+        /// 边界：&lt; 150 mL small、&lt; 400 mL mid、否则 large。
         ///
-        /// NaN 是脏数据，按 empty 处理：把它画成 large 会凭空出现一大滴液体，
-        /// 比「看不见」更容易误导玩家。
+        /// 不产出 <see cref="FlowContent.Empty"/>：发射器在存量 &lt;= 0 时不会发流源，
+        /// 空档没有真实来源，图集里那条 6×1 干痕已废弃不用。
+        /// NaN 是脏数据，按 small 处理——画成一小滴比凭空一大滴或完全看不见都更安全。
         /// </summary>
         public static FlowContent ContentFromWater(double waterAmount)
         {
-            if (double.IsNaN(waterAmount) || waterAmount < EmptyMaxMicroliters)
-            {
-                return FlowContent.Empty;
-            }
-
-            if (waterAmount < SmallMaxMicroliters)
+            if (double.IsNaN(waterAmount) || waterAmount < SmallMaxMicroliters)
             {
                 return FlowContent.Small;
             }

@@ -9,8 +9,9 @@
   非 flow 的 12 个帧槽是静态图的重复，运行时不会请求，只为维持统一布局）。
 - 每张 256×1040（每行 16 个 tile），tile 16×16 RGBA。
 - RGB = 亮度蒙版（染色时相乘），A = 形状 alpha。
-- distinct 自检：flow 右向 13 槽（静态 + f0..f11）只对 large 要求 13/13；
-  small（8×6）不做挤压，12 帧 = 静态重复（1/13，设计允许）。
+- distinct 自检：flow 右向 13 槽（静态 + f0..f11）对 large 要求 13/13；
+  small 只做 ±1px 挤压，12 帧为 9 种不同形态（要求 > 1，防止退回静态重复）；
+  mid 由边缘行抖动产出 9 种，empty 由单行双次平移产出 5 种。
 - `flow_mask_wall.png` 只画 `W`（固定 #C9C2B8），其它像素全透明。
 - 索引 {"tiles": {"<key>": [x, y]}}，UTF-8 无 BOM，key 全小写。
 
@@ -194,10 +195,11 @@ def build_atlases():
 
 
 def check_flow_distinct(images, index):
-    """flow 右向 13 槽 distinct：只对 large 硬要求 13/13。
+    """flow 右向 13 槽 distinct：large 要求 13/13，small 只要求「不是静态重复」。
 
-    small 8×6 的极值行 y=5/10 只有 4px 宽，squeeze 的 ±1px 会越出 bbox，
-    因此 build_grid 对小档跳过挤压：12 帧 = 静态槽的逐字节重复（1/13）。
+    small 8×6 的极值行 y=5/10 是 3px（x=7..9），±1px 后仍在 bbox 内，
+    因此 build_grid 对它也做挤压：12 帧收敛成 9 种形态、每帧 2~4 px 差异。
+    这里只守「> 1」——具体帧数由 FRAMES 表决定，不该在生成器里钉死。
     """
     print("\n=== flow 13 槽 distinct（静态 + f0..f11，右向）===")
     bad = []
@@ -217,8 +219,10 @@ def check_flow_distinct(images, index):
             if not ok:
                 bad.append(f"large flow distinct={distinct}/{VARIANTS}")
         elif content == "small":
-            note = ("静态重复（12 帧与静态相同，设计允许）" if distinct == 1
-                    else f"非静态重复（{distinct}/{VARIANTS}）")
+            ok = distinct > 1
+            note = "OK" if ok else f"FAIL（12 帧与静态逐字节相同，退回静态重复）"
+            if not ok:
+                bad.append(f"small flow distinct={distinct}/{VARIANTS}")
         else:
             note = "OK"
         print(f"{content:6s} distinct={distinct:2d}/{VARIANTS}  {note}")

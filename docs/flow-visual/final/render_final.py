@@ -481,10 +481,9 @@ def build_grid(comp, content, state, dirn, temp, frame=None):
     g, is_large = grid_state(state, content)
     bbox = bbox_of(g)
     if frame is not None and state == "flow":
-        # 小档 8×6 的极值行 y=5/10 只有 4px 宽（x=8..11）；squeeze 按 bbox 取极值行，
-        # ±1px 会把前/后端推出 bbox（bbox 8→9、中心 7.5→8.0）。小档不做挤压（12 帧静态重复）。
-        if content != "small":
-            g = squeeze(g, FRAMES["top"][frame], FRAMES["bot"][frame], bbox)
+        # 三档都做挤压。小档 8×6 的极值行 y=5/10 是 3px（x=7..9），±1px 后落在 x=6..10，
+        # 仍在 bbox x=4..11 内：逐帧 bbox 与面积恒为 (4,5,8,6)/32，只产生 2~4 px 的轻微蠕动。
+        g = squeeze(g, FRAMES["top"][frame], FRAMES["bot"][frame], bbox)
         g = tail_fade(g, FRAMES["tail"][frame])
         g = add_textures(g, comp, content)
         g = apply_sheen(g, frame, comp, content)
