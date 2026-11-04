@@ -4,11 +4,10 @@
 
 模拟 C# FlowVisualLayer.ComputeBodyColor 的最终逻辑：
   - 每种液体用自己的原版配色（Liquid.InitLiquid 的 color 字段）
-  - 按「存量 × 稀有度」加权平均
-  - 稀有度对数压缩 (1 + log2(rarity))
-  - 水权重 ×0.3
-  - 低于 5% 的成分忽略
-  - 不含毒性/快感对颜色的影响
+  - 加权公式对齐原版 WaterHelper.GetLiquidContainerColor：
+      weight = amount × max(1, colorMultiplier)，Σ(rgb×w)/Σw，截断取整
+  - 调色板本身统一提过饱和度（S × 2.85，L < 0.55 时向 0.55 靠 30%）
+  - 混合时不同色相加权平均自然去饱和，无运行时调制
 """
 import math
 from pathlib import Path
@@ -22,42 +21,42 @@ FONT_B = "C:/Windows/Fonts/msyhbd.ttc"
 
 # ── 36 种液体原版配色（与 FlowLiquidPalette.cs Colors 同步）──
 COLORS = {
-    "water":                (0x67, 0xAA, 0xA5),
-    "heavy_metal":          (0x44, 0x46, 0x4C),
-    "organic_waste":        (0x95, 0x5C, 0x4B),
-    "microplastic":         (0x44, 0x46, 0x4C),
-    "microbe":              (0x3D, 0x82, 0x3F),
-    "chemical_contaminant": (0x7A, 0xB0, 0x53),
-    "physical_contaminant": (0x44, 0x46, 0x4C),
-    "mineral":              (0x44, 0x46, 0x4C),
-    "dream_cap_mush":       (0x95, 0x5C, 0x4B),
-    "dream_cap_extract":    (0xBB, 0x8A, 0x65),
-    "plant_matter":         (0x4D, 0x54, 0x38),
-    "alcohol":              (0xFF, 0xFF, 0xFF),
-    "caffeine":             (0x7D, 0x4F, 0x4A),
-    "protein":              (0x67, 0xAA, 0xA5),
-    "fat":                  (0x67, 0xAA, 0xA5),
-    "starch":               (0x67, 0xAA, 0xA5),
-    "sugar":                (0x67, 0xAA, 0xA5),
-    "coffee_mush":          (0x4A, 0x2F, 0x38),
-    "contraceptive":        (0x67, 0xAA, 0xA5),
-    "zyanide":              (0x27, 0x56, 0x54),
-    "nightmare_extract":    (0x9C, 0x37, 0x38),
-    "nightmare_cap_mush":   (0x74, 0x31, 0x3B),
-    "chlorine":             (0x84, 0xA2, 0x51),
-    "synaprest":            (0x79, 0x74, 0x6E),
-    "fanta":                (0xA2, 0x72, 0xAC),
-    "methylol":             (0x35, 0x52, 0x71),
-    "reducing_agent":       (0x67, 0xAA, 0xA5),
-    "acid":                 (0x7A, 0xB0, 0x53),
-    "base":                 (0x67, 0xAA, 0xA5),
-    "stabilizing_agent":    (0x8A, 0xBF, 0xBB),
-    "debris":               (0x44, 0x46, 0x4C),
-    "lipobond_agent":       (0xCC, 0x77, 0x55),
-    "livestock_steroid":    (0xFF, 0xCC, 0x00),
-    "livestock_immunity":   (0x00, 0xCC, 0xFF),
-    "wine_extract":         (0x95, 0x56, 0x99),
-    "nomore":               (0xD9, 0x8C, 0xB3),
+    "water":                  (0x2B, 0xE8, 0xDA),
+    "heavy_metal":            (0x4E, 0x55, 0x6B),
+    "organic_waste":          (0xEA, 0x3B, 0x07),
+    "microplastic":           (0x4E, 0x55, 0x6B),
+    "microbe":                (0x00, 0xDA, 0x06),
+    "chemical_contaminant":   (0x71, 0xFF, 0x0A),
+    "physical_contaminant":   (0x4E, 0x55, 0x6B),
+    "mineral":                (0x4E, 0x55, 0x6B),
+    "dream_cap_mush":         (0xEA, 0x3B, 0x07),
+    "dream_cap_extract":      (0xFF, 0x81, 0x21),
+    "plant_matter":           (0x75, 0x8F, 0x27),
+    "alcohol":                (0xFF, 0xFF, 0xFF),
+    "caffeine":               (0xC1, 0x2E, 0x1E),
+    "protein":                (0x2B, 0xE8, 0xDA),
+    "fat":                    (0x2B, 0xE8, 0xDA),
+    "starch":                 (0x2B, 0xE8, 0xDA),
+    "sugar":                  (0x2B, 0xE8, 0xDA),
+    "coffee_mush":            (0x8A, 0x1F, 0x43),
+    "contraceptive":          (0x2B, 0xE8, 0xDA),
+    "zyanide":                (0x00, 0xAC, 0xA4),
+    "nightmare_extract":      (0xE8, 0x00, 0x02),
+    "nightmare_cap_mush":     (0xC8, 0x00, 0x1E),
+    "chlorine":               (0x9E, 0xF8, 0x06),
+    "synaprest":              (0x8C, 0x7C, 0x6A),
+    "fanta":                  (0xC5, 0x3C, 0xE2),
+    "methylol":               (0x00, 0x61, 0xC8),
+    "reducing_agent":         (0x2B, 0xE8, 0xDA),
+    "acid":                   (0x71, 0xFF, 0x0A),
+    "base":                   (0x2B, 0xE8, 0xDA),
+    "stabilizing_agent":      (0x59, 0xF0, 0xE5),
+    "debris":                 (0x4E, 0x55, 0x6B),
+    "lipobond_agent":         (0xFF, 0x61, 0x22),
+    "livestock_steroid":      (0xFF, 0xCE, 0x08),
+    "livestock_immunity":     (0x08, 0xCE, 0xFF),
+    "wine_extract":           (0xD6, 0x19, 0xE2),
+    "nomore":                 (0xFF, 0x66, 0xB3),
 }
 
 # ── 稀有度（与 FlowLiquidPalette.cs Rarity 同步）──
@@ -73,7 +72,7 @@ MULTIPLIER = {
     "nightmare_extract": 4,
 }
 
-DEFAULT = (0x67, 0xAA, 0xA5)
+DEFAULT = (0x2B, 0xE8, 0xDA)
 
 # 中文短名：图例用，避免长 id 挤在一起
 CN = {
@@ -93,16 +92,20 @@ CN = {
 
 
 def compute_body_color(liquids):
-    """与 C# ComputeBodyColor 逐行对齐（原版 WaterHelper.GetLiquidContainerColor）
+    """与 C# ComputeBodyColor 逐行对齐。
 
-    weight = amount × max(1, colorMultiplier)
-    color  = Σ(rgb × weight) / Σweight，截断取整
-    无含量阈值、无水权重压制。
+    加权公式对齐原版 WaterHelper.GetLiquidContainerColor：
+      weight = amount × max(1, colorMultiplier)
+      color  = Σ(rgb × weight) / Σweight，截断取整
+    调色板本身已统一提过饱和度（见 COLORS 表），混合时不同色相
+    按加权平均自然去饱和——不需要任何运行时调制。
     """
     wr = wg = wb = wt = 0.0
+
     for lid, amount in liquids.items():
         if amount <= 0:
             continue
+
         color = COLORS.get(lid, DEFAULT)
         weight = amount * max(1, MULTIPLIER.get(lid, 1))
         wr += color[0] * weight

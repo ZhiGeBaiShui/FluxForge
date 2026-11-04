@@ -61,6 +61,7 @@ namespace FluxForge.Presentation.Flow.Visual
             return FlowColor.Mix(bodyColor, White, 0.62d);
         }
 
+
         /// <summary>
         /// 明暗调整：向黑色混合 <paramref name="factor"/> 的比例。
         /// 与 <c>render_final.shade</c> 同式；唯一调用点恒传 -0.52（即每通道乘 0.48），

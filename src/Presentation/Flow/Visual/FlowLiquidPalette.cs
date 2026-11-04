@@ -3,57 +3,65 @@ using System.Collections.Generic;
 namespace FluxForge.Presentation.Flow.Visual
 {
     /// <summary>
-    /// 36 种液体的本体颜色表，来源为游戏 <c>Liquid.InitLiquid()</c> 的 <c>color</c> 字段。
+    /// 36 种液体的本体颜色表。
+    ///
+    /// **色值来源与改动**：基础色取自游戏 <c>Liquid.InitLiquid()</c> 的 <c>color</c> 字段，
+    /// 但**统一提过一轮饱和度**（HLS 空间：S × 2.85 上限 1.0，L &lt; 0.55 时向 0.55 靠 30%，
+    /// 色相不动）。原因：原版色值整体偏灰，纯液体看起来和混合物没区别，
+    /// 提饱和后「纯水 / 纯酸 / 纯氰化物」一眼就能认出是高纯度。
+    ///
+    /// 混合时不需要任何额外机制——不同色相按存量加权平均会自然去饱和，
+    /// 所以「越混越灰、越纯越艳」是加权平均的天然结果，不是运行时调出来的。
     ///
     /// 只做「id → 颜色」的静态映射与染色权重，不参与混合；
-    /// 混合由 <see cref="FlowTint.Body"/> 的调用方按各液体存量加权完成。
+    /// 混合由 <see cref="FlowVisualLayer"/> 按各液体存量加权完成。
     ///
     /// 顺序与 <c>FlowPropertyRegistry</c> 的液体槽位一致，改这里必须同步改注册表。
     /// </summary>
     public static class FlowLiquidPalette
     {
         /// <summary>没有可靠成分时的兜底色：水的本体色。</summary>
-        public static readonly FlowColor Default = new FlowColor(0x67, 0xAA, 0xA5);
+        public static readonly FlowColor Default = new FlowColor(0x2B, 0xE8, 0xDA);
 
         private static readonly Dictionary<string, FlowColor> Colors =
             new Dictionary<string, FlowColor>
             {
-                { "water",                 new FlowColor(0x67, 0xAA, 0xA5) },
-                { "heavy_metal",           new FlowColor(0x44, 0x46, 0x4C) },
-                { "organic_waste",         new FlowColor(0x95, 0x5C, 0x4B) },
-                { "microplastic",          new FlowColor(0x44, 0x46, 0x4C) },
-                { "microbe",               new FlowColor(0x3D, 0x82, 0x3F) },
-                { "chemical_contaminant",  new FlowColor(0x7A, 0xB0, 0x53) },
-                { "physical_contaminant",  new FlowColor(0x44, 0x46, 0x4C) },
-                { "mineral",               new FlowColor(0x44, 0x46, 0x4C) },
-                { "dream_cap_mush",        new FlowColor(0x95, 0x5C, 0x4B) },
-                { "dream_cap_extract",     new FlowColor(0xBB, 0x8A, 0x65) },
-                { "plant_matter",          new FlowColor(0x4D, 0x54, 0x38) },
+                { "water",                 new FlowColor(0x2B, 0xE8, 0xDA) },
+                { "heavy_metal",           new FlowColor(0x4E, 0x55, 0x6B) },
+                { "organic_waste",         new FlowColor(0xEA, 0x3B, 0x07) },
+                { "microplastic",          new FlowColor(0x4E, 0x55, 0x6B) },
+                { "microbe",               new FlowColor(0x00, 0xDA, 0x06) },
+                { "chemical_contaminant",  new FlowColor(0x71, 0xFF, 0x0A) },
+                { "physical_contaminant",  new FlowColor(0x4E, 0x55, 0x6B) },
+                { "mineral",               new FlowColor(0x4E, 0x55, 0x6B) },
+                { "dream_cap_mush",        new FlowColor(0xEA, 0x3B, 0x07) },
+                { "dream_cap_extract",     new FlowColor(0xFF, 0x81, 0x21) },
+                { "plant_matter",          new FlowColor(0x75, 0x8F, 0x27) },
                 { "alcohol",               new FlowColor(0xFF, 0xFF, 0xFF) },
-                { "caffeine",              new FlowColor(0x7D, 0x4F, 0x4A) },
-                { "protein",               new FlowColor(0x67, 0xAA, 0xA5) },
-                { "fat",                   new FlowColor(0x67, 0xAA, 0xA5) },
-                { "starch",                new FlowColor(0x67, 0xAA, 0xA5) },
-                { "sugar",                 new FlowColor(0x67, 0xAA, 0xA5) },
-                { "coffee_mush",           new FlowColor(0x4A, 0x2F, 0x38) },
-                { "contraceptive",         new FlowColor(0x67, 0xAA, 0xA5) },
-                { "zyanide",               new FlowColor(0x27, 0x56, 0x54) },
-                { "nightmare_extract",     new FlowColor(0x9C, 0x37, 0x38) },
-                { "nightmare_cap_mush",    new FlowColor(0x74, 0x31, 0x3B) },
-                { "chlorine",              new FlowColor(0x84, 0xA2, 0x51) },
-                { "synaprest",             new FlowColor(0x79, 0x74, 0x6E) },
-                { "fanta",                 new FlowColor(0xA2, 0x72, 0xAC) },
-                { "methylol",              new FlowColor(0x35, 0x52, 0x71) },
-                { "reducing_agent",        new FlowColor(0x67, 0xAA, 0xA5) },
-                { "acid",                  new FlowColor(0x7A, 0xB0, 0x53) },
-                { "base",                  new FlowColor(0x67, 0xAA, 0xA5) },
-                { "stabilizing_agent",     new FlowColor(0x8A, 0xBF, 0xBB) },
-                { "debris",                new FlowColor(0x44, 0x46, 0x4C) },
-                { "lipobond_agent",        new FlowColor(0xCC, 0x77, 0x55) },
-                { "livestock_steroid",     new FlowColor(0xFF, 0xCC, 0x00) },
-                { "livestock_immunity",    new FlowColor(0x00, 0xCC, 0xFF) },
-                { "wine_extract",          new FlowColor(0x95, 0x56, 0x99) },
-                { "nomore",                new FlowColor(0xD9, 0x8C, 0xB3) },
+                { "caffeine",              new FlowColor(0xC1, 0x2E, 0x1E) },
+                { "protein",               new FlowColor(0x2B, 0xE8, 0xDA) },
+                { "fat",                   new FlowColor(0x2B, 0xE8, 0xDA) },
+                { "starch",                new FlowColor(0x2B, 0xE8, 0xDA) },
+                { "sugar",                 new FlowColor(0x2B, 0xE8, 0xDA) },
+                { "coffee_mush",           new FlowColor(0x8A, 0x1F, 0x43) },
+                { "contraceptive",         new FlowColor(0x2B, 0xE8, 0xDA) },
+                { "zyanide",               new FlowColor(0x00, 0xAC, 0xA4) },
+                { "nightmare_extract",     new FlowColor(0xE8, 0x00, 0x02) },
+                { "nightmare_cap_mush",    new FlowColor(0xC8, 0x00, 0x1E) },
+                { "chlorine",              new FlowColor(0x9E, 0xF8, 0x06) },
+                { "synaprest",             new FlowColor(0x8C, 0x7C, 0x6A) },
+                { "fanta",                 new FlowColor(0xC5, 0x3C, 0xE2) },
+                { "methylol",              new FlowColor(0x00, 0x61, 0xC8) },
+                { "reducing_agent",        new FlowColor(0x2B, 0xE8, 0xDA) },
+                { "acid",                  new FlowColor(0x71, 0xFF, 0x0A) },
+                { "base",                  new FlowColor(0x2B, 0xE8, 0xDA) },
+                { "stabilizing_agent",     new FlowColor(0x59, 0xF0, 0xE5) },
+                { "debris",                new FlowColor(0x4E, 0x55, 0x6B) },
+                { "lipobond_agent",        new FlowColor(0xFF, 0x61, 0x22) },
+                { "livestock_steroid",     new FlowColor(0xFF, 0xCE, 0x08) },
+                { "livestock_immunity",    new FlowColor(0x08, 0xCE, 0xFF) },
+                { "wine_extract",          new FlowColor(0xD6, 0x19, 0xE2) },
+                { "nomore",                new FlowColor(0xFF, 0x66, 0xB3) },
             };
 
         /// <summary>
