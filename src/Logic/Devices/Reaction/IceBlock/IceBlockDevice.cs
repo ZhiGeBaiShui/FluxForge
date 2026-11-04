@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 
 namespace FluxForge
 {
@@ -11,8 +10,8 @@ namespace FluxForge
     ///   · <see cref="Temperature"/> 温度（单位：摄氏度；沿用原版 CONTAINER_TEMP_TAG 约定，
     ///     本 mod 让流源也携带它）
     ///
-    /// 对外以 <see cref="IFlowState"/> 暴露：映射层按属性键读写，
-    /// 其它槽位读 0、写忽略。
+    /// 状态由 mod 层适配器直接读写 <see cref="Water"/> / <see cref="Temperature"/>；
+    /// 存量变化播报 <see cref="Changed"/>，耗尽播报 <see cref="Exhausted"/>。
     ///
     /// 与运动层的关系：
     ///   流源撞上本装置时，运动层调用 <see cref="TryReact"/>。
@@ -60,46 +59,6 @@ namespace FluxForge
             Temperature = temperature;
         }
 
-        /// <summary>冰块只拥有水量与温度两个槽位。</summary>
-        private static readonly FlowPropertyKey[] OwnedKeys =
-        {
-            FlowProps.Water,
-            FlowProps.Temperature,
-        };
-
-        /// <summary>只声明自己拥有的属性；tag 映射只遍历这两个 key。</summary>
-        public IReadOnlyList<FlowPropertyKey> Keys
-        {
-            get { return OwnedKeys; }
-        }
-
-        /// <summary>读属性槽：只认水量与温度，其它槽位恒为 0。</summary>
-        public double Get(FlowPropertyKey key)
-        {
-            if (key.Index == FlowProps.Water.Index)
-            {
-                return Water;
-            }
-            if (key.Index == FlowProps.Temperature.Index)
-            {
-                return Temperature;
-            }
-            return 0d;
-        }
-
-        /// <summary>写属性槽：只认水量与温度，其它槽位忽略。</summary>
-        public void Set(FlowPropertyKey key, double value)
-        {
-            if (key.Index == FlowProps.Water.Index)
-            {
-                Water = value;
-            }
-            if (key.Index == FlowProps.Temperature.Index)
-            {
-                Temperature = value;
-            }
-        }
-
         /// <summary>反应入口：流源撞上冰块时由运动层调用。</summary>
         /// <param name="entity">完整流源；冰块只读取并修改其属性。</param>
         /// <returns>是否真的发生了反应（true → 该帧阻挡）。</returns>
@@ -109,7 +68,7 @@ namespace FluxForge
         }
 
         /// <summary>只依赖属性的内部核心，供本类和单测使用。</summary>
-        internal bool TryReact(FlowProperties properties)
+        public bool TryReact(FlowProperties properties)
         {
             if (Water <= 0d)
             {

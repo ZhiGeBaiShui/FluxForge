@@ -4,8 +4,8 @@ namespace FluxForge
     /// 过滤装置：流源穿过时按 <see cref="FilterReaction"/> 去除化学污染与重金属。
     ///
     /// 无状态——滤材不消耗，装置只提供「穿过瞬间的净化」。
-    /// 因此不实现 <see cref="IFlowState"/>（没有需要 tag 回灌的槽位），
-    /// 也不实现 <see cref="IFlowNotifier"/>（没有状态变化要播报）；
+    /// 因此不实现 <see cref="IFlowNotifier"/>
+    /// （没有需要回灌的槽位，也没有状态变化要播报）；
     /// 只通过 <see cref="FlowAudio"/> / <see cref="FlowAnimation"/> 播报本次去除量。
     /// </summary>
     public sealed class FilterDevice : IFlowDevice

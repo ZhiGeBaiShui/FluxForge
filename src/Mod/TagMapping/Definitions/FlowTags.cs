@@ -1,14 +1,13 @@
 namespace FluxForge.Mod
 {
     /// <summary>
-    /// 我们使用的 tag 名，常量名与 tag 英文名一一对应，方便按名字搜到落点。
+    /// 物品身份 / 锚点等非流源属性的 tag 名；常量名与 tag 英文名一一对应，方便按名字搜到落点。
     ///
-    /// items.json 里出现的 tag 必须与 <see cref="FlowTagMap"/> 生成的一致
-    /// （创建时的初始值、tooltip 的取值）。
-    /// 液体 tag 不在这里列：它们由游戏 <c>InitLiquidContainerItem</c> 按
-    /// <c>CURRENT_PART_&lt;ID&gt;</c> 创建，清单见 <see cref="FlowTagMap"/>。
+    /// 流源属性 tag 不在这里列：它们由 <see cref="FlowTagNaming.ForProperty"/>
+    /// 按注册表 id + 种类生成。液体 tag 由游戏 <c>InitLiquidContainerItem</c>
+    /// 按 <c>CURRENT_PART_&lt;ID&gt;</c> 创建，标量按 <c>&lt;ID&gt;_TAG</c>。
     /// </summary>
-    internal static class FlowTags
+    public static class FlowTags
     {
         /// <summary>
         /// 原版液体容器的身份 tag

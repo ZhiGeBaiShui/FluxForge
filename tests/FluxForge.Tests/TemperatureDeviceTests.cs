@@ -81,17 +81,14 @@ namespace FluxForge.Tests
         }
 
         [Fact]
-        public void FlowStateExposesOnlyTemperature()
+        public void TemperatureIsPublicConfigAndNotConsumedByReaction()
         {
             TemperatureDevice device = new TemperatureDevice { Temperature = -15d };
 
-            Assert.Single(device.Keys);
-            Assert.Equal(FlowProps.Temperature.Index, device.Keys[0].Index);
-            Assert.Equal(-15d, device.Get(FlowProps.Temperature));
-            // 其它槽位读 0、写忽略
-            Assert.Equal(0d, device.Get(FlowProps.Water));
-            device.Set(FlowProps.Water, 999d);
-            Assert.Equal(-15d, device.Get(FlowProps.Temperature));
+            device.TryReact(MakeEntity(10d));
+
+            // 装置温度是 items.json 的静态配置：反应只改流源，不回写装置
+            Assert.Equal(-15d, device.Temperature);
         }
     }
 }

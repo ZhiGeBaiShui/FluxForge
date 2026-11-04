@@ -1,12 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using FluxForge.Mod;
 using Xunit;
 
 namespace FluxForge.Tests
 {
     /// <summary>
-    /// Logic 装置目录的契约：key 集合、工厂每次返回新实例、无参构造、接口关系。
+    /// Mod 装置目录的契约：key 集合、工厂每次返回新实例、无参构造、接口关系。
     /// </summary>
     public class DeviceCatalogTests
     {
@@ -36,7 +37,7 @@ namespace FluxForge.Tests
         [Fact]
         public void Keys_ExposeExactlyTheKnownDeviceSet()
         {
-            string[] actual = FlowDeviceCatalog.Keys
+            string[] actual = DeviceAdapterCatalog.Keys
                 .OrderBy(key => key, StringComparer.Ordinal)
                 .ToArray();
             string[] expected = ExpectedKeys
@@ -50,8 +51,8 @@ namespace FluxForge.Tests
         [MemberData(nameof(RegisteredKeys))]
         public void Create_KnownKey_ReturnsFreshDevice(string key)
         {
-            object first = FlowDeviceCatalog.Create(key);
-            object second = FlowDeviceCatalog.Create(key);
+            object first = DeviceAdapterCatalog.CreateDevice(key);
+            object second = DeviceAdapterCatalog.CreateDevice(key);
 
             Assert.NotNull(first);
             Assert.NotNull(second);
@@ -63,7 +64,7 @@ namespace FluxForge.Tests
         [MemberData(nameof(RegisteredKeys))]
         public void EveryRegisteredDevice_HasPublicParameterlessConstructor(string key)
         {
-            object created = FlowDeviceCatalog.Create(key);
+            object created = DeviceAdapterCatalog.CreateDevice(key);
             Type deviceType = created.GetType();
 
             object activated = Activator.CreateInstance(deviceType);
@@ -74,9 +75,62 @@ namespace FluxForge.Tests
         }
 
         [Fact]
-        public void Notifier_IsAFlowState()
+        public void IceBlock_ImplementsReactionAndBothNotifications()
         {
-            Assert.True(typeof(IFlowState).IsAssignableFrom(typeof(IFlowNotifier)));
+            Assert.True(typeof(IFlowDevice).IsAssignableFrom(typeof(IceBlockDevice)));
+            Assert.True(typeof(IFlowNotifier).IsAssignableFrom(typeof(IceBlockDevice)));
+            Assert.False(typeof(IFlowRouter).IsAssignableFrom(typeof(IceBlockDevice)));
+        }
+
+        [Fact]
+        public void Collector_ImplementsRoutingAndChangedOnly()
+        {
+            Assert.True(typeof(IFlowRouter).IsAssignableFrom(typeof(CollectorDevice)));
+            Assert.True(typeof(IFlowNotifier).IsAssignableFrom(typeof(CollectorDevice)));
+            Assert.False(typeof(IFlowDevice).IsAssignableFrom(typeof(CollectorDevice)));
+        }
+
+        [Theory]
+        [InlineData(typeof(FilterDevice))]
+        [InlineData(typeof(TemperatureDevice))]
+        public void ReactionOnlyDevices_ExposeNoRoutingOrNotifications(Type deviceType)
+        {
+            Assert.True(typeof(IFlowDevice).IsAssignableFrom(deviceType));
+            Assert.False(typeof(IFlowRouter).IsAssignableFrom(deviceType));
+            Assert.False(typeof(IFlowNotifier).IsAssignableFrom(deviceType));
+        }
+
+        [Theory]
+        [InlineData("turn")]
+        [InlineData("l_right_down")]
+        [InlineData("t_junction")]
+        [InlineData("double_emit")]
+        public void SplitDevices_AreRoutingOnly(string key)
+        {
+            object device = DeviceAdapterCatalog.CreateDevice(key);
+
+            Assert.True(device is IFlowRouter);
+            Assert.False(device is IFlowDevice);
+            Assert.True(device is IFlowNotifier);
+        }
+
+        [Fact]
+        public void NotificationInterface_UsesSenderfulActions()
+        {
+            Assert.Equal(typeof(Action<IFlowNotifier>), typeof(IFlowNotifier).GetEvent("Changed").EventHandlerType);
+            Assert.Equal(typeof(Action<IFlowNotifier>), typeof(IFlowNotifier).GetEvent("Exhausted").EventHandlerType);
+        }
+
+        [Fact]
+        public void EveryCatalogDevice_HasAnAutoDiscoveredAdapter()
+        {
+            foreach (string key in DeviceAdapterCatalog.Keys)
+            {
+                object device = DeviceAdapterCatalog.CreateDevice(key);
+                DeviceStateAdapter adapter = DeviceAdapterCatalog.CreateAdapter(device);
+
+                Assert.Same(device, adapter.Device);
+            }
         }
 
         [Theory]
@@ -85,7 +139,7 @@ namespace FluxForge.Tests
         [InlineData("double_emit")]
         public void SplitVariants_ExposeFacing(string key)
         {
-            SplitDevice split = Assert.IsAssignableFrom<SplitDevice>(FlowDeviceCatalog.Create(key));
+            SplitDevice split = Assert.IsAssignableFrom<SplitDevice>(DeviceAdapterCatalog.CreateDevice(key));
 
             Assert.Equal(0, split.Facing);
 
@@ -94,3 +148,5 @@ namespace FluxForge.Tests
         }
     }
 }
+
+

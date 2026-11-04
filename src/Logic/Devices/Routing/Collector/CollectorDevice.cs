@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 
 namespace FluxForge
 {
@@ -71,24 +70,6 @@ namespace FluxForge
         public FlowProperties Stock
         {
             get { return _stock; }
-        }
-
-        /// <summary>收集器可累积全部液体：拥有注册表的全部 37 个槽位（36 种液体 + 温度）。</summary>
-        public IReadOnlyList<FlowPropertyKey> Keys
-        {
-            get { return FlowPropertyRegistry.AllKeys; }
-        }
-
-        /// <summary>读属性槽：直接委托给存量，不另存一份。</summary>
-        public double Get(FlowPropertyKey key)
-        {
-            return _stock.Get(key);
-        }
-
-        /// <summary>写属性槽：直接委托给存量，不另存一份。</summary>
-        public void Set(FlowPropertyKey key, double value)
-        {
-            _stock.Set(key, value);
         }
 
         /// <inheritdoc/>

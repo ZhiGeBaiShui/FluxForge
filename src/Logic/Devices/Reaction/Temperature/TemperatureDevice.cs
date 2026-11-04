@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 
 namespace FluxForge
 {
@@ -14,44 +13,16 @@ namespace FluxForge
     /// </code>
     ///
     /// 只改属性、不改流向，所以不实现 <see cref="IFlowRouter"/>（没有 Facing）。
-    /// 温度是装置定义的一部分、运行期不变，所以不实现 <see cref="IFlowNotifier"/>。
-    /// 但实现 <see cref="IFlowState"/>：让 <see cref="FlowStock"/> 把 items.json 的
-    /// 初始温度回灌进来，装置不必自己解析 JSON。
+    /// 温度是装置定义的一部分、运行期不变，所以也没有状态播报事件；
+    /// 初始温度由 mod 层适配器直接写进公开的 <see cref="Temperature"/>。
     /// </summary>
-    public sealed class TemperatureDevice : IFlowDevice, IFlowState
+    public sealed class TemperatureDevice : IFlowDevice
     {
         /// <summary>
         /// 本装置对每次穿过的流源施加的温度增量。
         /// 正 = 升温这么多度，负 = 降温这么多度，0 = 什么都不做。
         /// </summary>
         public double Temperature { get; set; }
-
-        /// <summary>温度控制装置只拥有温度一个槽位。</summary>
-        private static readonly FlowPropertyKey[] OwnedKeys =
-        {
-            FlowProps.Temperature,
-        };
-
-        /// <summary>只声明温度；tag 映射只遍历这一个 key。</summary>
-        public IReadOnlyList<FlowPropertyKey> Keys
-        {
-            get { return OwnedKeys; }
-        }
-
-        /// <summary>读属性槽：只认温度，其它槽位恒为 0。</summary>
-        public double Get(FlowPropertyKey key)
-        {
-            return key.Index == FlowProps.Temperature.Index ? Temperature : 0d;
-        }
-
-        /// <summary>写属性槽：只认温度，其它槽位忽略。</summary>
-        public void Set(FlowPropertyKey key, double value)
-        {
-            if (key.Index == FlowProps.Temperature.Index)
-            {
-                Temperature = value;
-            }
-        }
 
         /// <summary>
         /// 反应入口：把 <see cref="Temperature"/> 加到流源温度上。

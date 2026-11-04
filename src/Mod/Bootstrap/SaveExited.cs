@@ -27,7 +27,7 @@ namespace FluxForge.Mod
     /// 完整生命周期表见 `Lifecycle/README.md`。
     /// </summary>
     [HarmonyPatch]
-    internal static class SaveExited
+    public static class SaveExited
     {
         private static IEnumerable<MethodBase> TargetMethods()
         {

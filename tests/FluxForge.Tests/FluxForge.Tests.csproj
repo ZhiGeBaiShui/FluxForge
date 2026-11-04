@@ -25,8 +25,21 @@
     <!-- 表现层的纯计算（粒子）也零 Unity 依赖，一并编入以便单测 -->
     <Compile Include="..\..\src\Presentation\**\*.cs" />
     <!-- 装置状态契约 + 适配器：只依赖 Logic 装置与 ITagStore，不含 GameItem。
-         不要包含 src/Mod/TagMapping：那边直接引用游戏类型，测试环境加载不了。 -->
-    <Compile Include="..\..\src\Mod\DeviceState\**\*.cs" />
+         不要包含 Sync / src/Mod/TagMapping：
+         它们引用 DeviceHost 或游戏类型，测试环境加载不了。 -->
+    <Compile Include="..\..\src\Mod\DeviceState\Contracts\DeviceStateContracts.cs" />
+    <Compile Include="..\..\src\Mod\DeviceState\Naming\FlowTagNaming.cs" />
+    <Compile Include="..\..\src\Mod\DeviceState\Naming\FlowPropertyTags.cs" />
+    <Compile Include="..\..\src\Mod\DeviceState\Adapters\IceBlockStateAdapter.cs" />
+    <Compile Include="..\..\src\Mod\DeviceState\Adapters\CollectorStateAdapter.cs" />
+    <Compile Include="..\..\src\Mod\DeviceState\Adapters\TemperatureConfigAdapter.cs" />
+    <Compile Include="..\..\src\Mod\DeviceState\Adapters\FilterStateAdapter.cs" />
+    <Compile Include="..\..\src\Mod\DeviceState\Adapters\TurnStateAdapter.cs" />
+    <Compile Include="..\..\src\Mod\DeviceState\Adapters\LRightDownStateAdapter.cs" />
+    <Compile Include="..\..\src\Mod\DeviceState\Adapters\TJunctionStateAdapter.cs" />
+    <Compile Include="..\..\src\Mod\DeviceState\Adapters\DoubleEmitStateAdapter.cs" />
+    <Compile Include="..\..\src\Mod\DeviceState\Catalog\DeviceAdapterCatalog.cs" />
+    <Compile Include="..\..\src\Mod\DeviceState\Catalog\DeviceAdapterAttribute.cs" />
   </ItemGroup>
 
 </Project>

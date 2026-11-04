@@ -6,7 +6,7 @@ using UnityEngine.UI;
 namespace FluxForge.Mod.Visual.Internal
 {
     /// <summary>将粒子快照绘制到借入的根下；独占粒子池与白图，不参与模拟或根生命周期。</summary>
-    internal sealed class FlowParticleRenderer
+    public sealed class FlowParticleRenderer
     {
         private readonly RectTransform _root;
         private readonly Image[] _dots = new Image[512];

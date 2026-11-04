@@ -15,12 +15,12 @@ namespace FluxForge.Mod
     ///
     /// 生命周期 #7（网格节点销毁），完整表见 `Lifecycle/README.md`。
     /// </summary>
-    internal sealed class GridLifetime : MonoBehaviour
+    public sealed class GridLifetime : MonoBehaviour
     {
         private GameGridInventory _inventory;
 
         /// <summary>由 <see cref="GridRegistry.Register"/> 在首次登记时调用。</summary>
-        internal static void Attach(GameGridInventory inventory)
+        public static void Attach(GameGridInventory inventory)
         {
             RectTransform gridRect = inventory.rectTransform;
             if (gridRect == null)

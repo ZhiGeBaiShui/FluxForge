@@ -10,7 +10,7 @@ namespace FluxForge.Mod.Visual.Internal
     /// 一帧里一个流源的绘制参数（值类型：放进 List 不产生堆分配）。
     /// 只由 <see cref="FlowVisualLayer"/> 生产、<see cref="FlowAtlasLayer"/> 消费。
     /// </summary>
-    internal readonly struct FlowDrawItem
+    public readonly struct FlowDrawItem
     {
         /// <summary>
         /// 图块左上角的连续 X（逻辑中心坐标减半格）。
@@ -58,7 +58,7 @@ namespace FluxForge.Mod.Visual.Internal
     /// 射程点已删除（Tier-0 无数据源）：`FlowVisualState.Range` 仍是预留字段，
     /// 在数据源就绪前整条射程点绘制链不再存在。
     /// </summary>
-    internal sealed class FlowAtlasLayer
+    public sealed class FlowAtlasLayer
     {
         /// <summary>本体通道池的槽位数（body/edge/accent/wall 各一份）。</summary>
         private const int SourceCapacity = 64;
@@ -229,7 +229,7 @@ namespace FluxForge.Mod.Visual.Internal
         /// 这里的位置是连续 double（流源在格内平滑移动），
         /// 所以不能套 <see cref="FlowPixelMath.CellToLocal"/>（它只接受整数格 + 整数像素）。
         /// </summary>
-        internal static Vector2 PositionFor(Rect area, float ppu, double cellX, double cellY, float size)
+        public static Vector2 PositionFor(Rect area, float ppu, double cellX, double cellY, float size)
         {
             float left = FlowPixelMath.Snap(
                 area.xMin + (float)cellX * FlowPixelMath.CellPixels, ppu);
@@ -442,7 +442,7 @@ namespace FluxForge.Mod.Visual.Internal
         }
 
         /// <summary>点亮一个池对象（与 <see cref="Deactivate"/> 对称；null 安全）。</summary>
-        internal static void Activate(Image image)
+        public static void Activate(Image image)
         {
             if (image != null && !image.gameObject.activeSelf)
             {
@@ -451,7 +451,7 @@ namespace FluxForge.Mod.Visual.Internal
         }
 
         /// <summary>隐掉一个池对象（null 安全；不销毁，留待复用）。</summary>
-        internal static void Deactivate(Image image)
+        public static void Deactivate(Image image)
         {
             if (image != null && image.gameObject.activeSelf)
             {
@@ -460,7 +460,7 @@ namespace FluxForge.Mod.Visual.Internal
         }
 
         /// <summary>提交数量钳到池容量：超出部分按提交顺序截断，永不越界。</summary>
-        internal static int ClampCount(int count, int capacity)
+        public static int ClampCount(int count, int capacity)
         {
             return count > capacity ? capacity : count;
         }
@@ -476,7 +476,7 @@ namespace FluxForge.Mod.Visual.Internal
         }
 
         /// <summary>创建一个像素对齐的 Image（pivot 在中心，旋转不偏移；不接收点击，Simple 拉伸）。</summary>
-        internal static Image CreateImage(RectTransform root, string name)
+        public static Image CreateImage(RectTransform root, string name)
         {
             GameObject go = new GameObject(name);
             go.layer = root.gameObject.layer;

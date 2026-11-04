@@ -11,8 +11,8 @@ Reactions/
 ## Realtime
 
 ```text
-FlowReactionRule.cs    反应规则基类
-FlowReactionSolver.cs  扫描全部规则并顺序执行
+Core/FlowReactionRule.cs    反应规则基类
+Core/FlowReactionSolver.cs  扫描全部规则并顺序执行
 ```
 
 `FlowReactionSolver` 在静态初始化时扫描本程序集，自动收集所有具体的

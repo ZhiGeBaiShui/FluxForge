@@ -16,7 +16,7 @@ namespace FluxForge.Mod
     /// 生命周期 #3 的补充（拿起），完整表见 `Lifecycle/README.md`。
     /// </summary>
     [HarmonyPatch(typeof(ItemMouseDragHandler), "StartDrag")]
-    internal static class ItemPickedUp
+    public static class ItemPickedUp
     {
         public static void Postfix(ItemMouseDragHandler __instance)
         {

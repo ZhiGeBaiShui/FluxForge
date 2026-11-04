@@ -37,7 +37,7 @@ namespace FluxForge.Mod
         /// 仅支持当前直接父容器是网格的物品，不递归查找父容器。
         /// 发射能力由本附件是否存在决定，不再依赖装置实例。
         /// </summary>
-        internal static GameGridInventory GetEmitterInventory(GameItem item)
+        public static GameGridInventory GetEmitterInventory(GameItem item)
         {
             if (item == null)
             {
@@ -47,7 +47,7 @@ namespace FluxForge.Mod
             return item.parentInventory as GameGridInventory;
         }
 
-        internal static bool MayActivateEmitter(
+        public static bool MayActivateEmitter(
             GameItem item, GameInventory inventory, SlotMarker marker)
         {
             try
@@ -61,7 +61,7 @@ namespace FluxForge.Mod
             }
         }
 
-        internal static bool CanActivateEmitter(
+        public static bool CanActivateEmitter(
             GameItem item, GameInventory inventory, SlotMarker marker)
         {
             try
@@ -74,7 +74,7 @@ namespace FluxForge.Mod
             }
         }
 
-        internal static void ActivateEmitter(
+        public static void ActivateEmitter(
             GameItem item, GameInventory inventory, SlotMarker marker)
         {
             GridRegistry.Emit(item);

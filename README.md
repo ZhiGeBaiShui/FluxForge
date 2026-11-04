@@ -24,7 +24,7 @@ FluxForge 不是背包 mod，也不只是液体运输 mod。它包含三件事�
 - 游戏适配层（`src/Mod`）；
 - 纯表现计算层（`src/Presentation`）；
 - 官方 `manifest.xml`、`Textures/Items`、`assets/items.json`；
-- 单元测试（只编译 Logic + Presentation）。
+- 单元测试（编译 Logic + Presentation + Mod/DeviceState 适配器契约）。
 
 ---
 
@@ -55,10 +55,11 @@ FluxForge 不是背包 mod，也不只是液体运输 mod。它包含三件事�
 测试工程只编译：
 
 ```text
-src/Logic/**  +  src/Presentation/**
+src/Logic/**  +  src/Presentation/**  +  src/Mod/DeviceState/**
 ```
 
-因此逻辑与表现计算可以在没有游戏的机器上直接跑测试。
+`Mod/DeviceState` 的适配器契约只依赖 Logic 与 `ITagStore`，不引用 `GameItem`，
+因此逻辑、表现计算与装置状态适配器可以在没有游戏的机器上直接跑测试。
 
 ---
 
@@ -107,46 +108,46 @@ public void Set(FlowPropertyKey key, double value) => _values[key.Index - 1] = v
 - `Merge` 对 `Add` 槽求和，对 `WeightedAverage` 槽按 `SubstanceTotal` 加权；权重为 0 时保留第一份的值；
 - `SubstanceTotal` 只累加 `Kind == Liquid`，温度不计入。
 
-### 3.3 `IFlowState`
+### 3.3 `FlowProperties` 与装置状态
 
-所有能读写流源属性的对象实现同一个接口：
+`FlowProperties` 是纯数据对象，不再实现 `IFlowState`：
 
-```csharp
-public interface IFlowState
-{
-    IReadOnlyList<FlowPropertyKey> Keys { get; }
-    double Get(FlowPropertyKey key);
-    void Set(FlowPropertyKey key, double value);
-}
-```
+- `FlowProperties`：完整 37 槽，供流源与液体容器使用；
+- `IceBlockDevice`：公开 `Water` / `Temperature` 属性；
+- `CollectorDevice`：公开 `Stock`（一份 `FlowProperties`）；
+- `TemperatureDevice`：公开 `Temperature` 属性。
 
-- `FlowProperties`：完整 37 槽；
-- `IceBlockDevice`：只认 `Water` / `Temperature`（`Keys` 只声明这两个），其他槽读 0 / 写忽略；
-- `CollectorDevice`：委托给内部完整 `FlowProperties`，`Keys` 返回全部 37 槽。
+装置状态**不再经过统一接口**读写。每个装置在 `src/Mod/DeviceState/` 有对应适配器，
+适配器直接访问装置公开属性并落到 tag；Logic 层不知道 `GameItem` / `TagState` 的存在。
+`FlowStock` 只处理流源 / 容器的 `FlowProperties`，不参与装置私有状态。
 
-`FlowStock` 只依赖 `IFlowState.Keys`，不需要为每种装置写分支。**发射不是装置**：`flow_emitter` 没有装置实例，发射由 `FlowRuntime.Emit` 直接完成。
+**发射不是装置**：`flow_emitter` 没有装置实例，发射由 `FlowRuntime.Emit` 直接完成。
 
 ### 3.4 装置接口与运动层
 
-装置不是只实现 `IFlowState` 就能动。运动层通过两个接口调用它们：
+运动层不看状态接口，只通过下面这些接口调用装置：
 
 | 接口 | 作用 |
 |---|---|
 | `IFlowDevice.TryReact(FlowEntity)` | 反应类：读完整流源（属性/位置/速度），返回是否截停 |
 | `IFlowRouter.Route(FlowEntity, FlowSpawner, x, y)` | 路由类：改去向 / 数量，返回是否截停/接管（吸收只是其中一种） |
-| `IFlowNotifier` | `Changed` / `Exhausted` 播报 |
+| `IFlowNotifier` | `Changed` / `Exhausted`：`Action<IFlowNotifier>`，sender 为装置实例 |
 | `IFlowGrid` | 运动层只读网格查询 |
+
+`Changed` / `Exhausted` 是 `Action<IFlowNotifier>`，sender 就是装置实例：
+订阅方在订阅时已经持有实例，不再重复传 sender，也不再把 sender 强转成状态接口。
+`DeviceRegistry` 订阅事件，`DeviceStateSync` 负责脏标记与帧末 flush。
 
 `FlowManager` 推进时按格探测：先反应装置，再路由装置。装置必须通过 `DeviceRegistry.Register` 登记，`FlowManager` / `FlowGridAdapter` 才能找到它。
 
-已知装置（`FlowDeviceCatalog` 的 key）：
+已知装置（`DeviceAdapterCatalog` 的 key）：
 
 - `IceBlockDevice`（`ice_block`）：
   - 每次最多带走**流源水量的 50%**，且不超过冰块剩余量；
   - 只有水参与融化判定，纯油/其它液体不会融冰；
   - 冰水温度按混合前**总液体质量**加权；
   - 化完先 `Changed` 再 `Exhausted`。
-- `CollectorDevice`（`collector`）：`Merge` 累积属性，不保留流源记录；`Exhausted` 永不触发；
+- `CollectorDevice`（`collector`）：`Merge` 累积属性，不保留流源记录；实现 `IFlowNotifier`，`Exhausted` 为空访问器；
 - `SplitDevice` 变体（`turn` / `l_right_down` / `t_junction` / `double_emit`）：按**所有非入口通道的 emitCounts 之和**等分；`total == 1` 时只改方向、不分裂；入口通道的 emitCounts 被忽略；
 - `FlowManager` / `FlowSpawner`：逐帧推进与生命周期；
 - `src/Logic/Reactions/Formulas/`：`TemperatureChangeReaction`、`FilterReaction`，由装置传入参数；原版萃取反应已实现在 `Realtime/Rules`；
@@ -158,7 +159,7 @@ public interface IFlowState
 - 默认 `FlowPropertyKey` → 越界
 - `SplitDevice` 构造参数校验
 
-**逻辑层不负责校验 tag 里的脏数据**（NaN、负液体量、超 int 范围）。这些应在进入逻辑层之前，由适配层/调用方保证；当前 `FlowStock` 只做槽位转换，没有做范围钳制。
+**逻辑层不负责校验 tag 里的脏数据**（NaN、负液体量、超 int 范围）。这些应在进入逻辑层之前，由适配层/调用方保证；当前 `FlowStock` / `GameItemTagStore` 只做槽位转换，没有做范围钳制。
 
 ---
 
@@ -219,7 +220,7 @@ FlowItemRegistry（读嵌入的 assets/items.json）
 
 ### 4.3 属性 → tag 映射
 
-`FlowTagMap` 在启动时生成 37 条 `Binding`：
+`FlowTagNaming.ForProperty(id, kind)` 是唯一命名规则：
 
 | 属性 | tag 规则 | 槽位 |
 |---|---|---|
@@ -233,12 +234,23 @@ water          → CURRENT_PART_WATER        int
 container_temp → CONTAINER_TEMP_TAG        double
 ```
 
-**当前实现按 `FlowPropertyKind` 分支选槽：** Liquid → `Int`，Scalar → `Double`。这是现状，不是通用契约。新增属性时：
+`FlowTagNaming` 是纯命名规则；`FlowPropertyTags` 启动时按注册表生成一次 37 条
+只读 tag 投影，`FlowStock` 与各装置适配器热路径直接读缓存，不再重复拼字符串。
+`FlowTagNaming.Water` / `FlowTagNaming.ContainerTemperature` 两个固定常量保留给
+冰块的少量固定槽位。
+
+**槽位由 `FlowPropertyKind` 决定：** Liquid → `Int`，Scalar → `Double`。这是对原版
+写入方的镜像，不是通用存储契约：
 
 - 液体：贴游戏 `currentPart` 的 int 槽；
-- 标量：先确认游戏实际写入方用的是 double / int；当前 `SlotKind` 只支持 `Int`/`Double`，float/long 不支持。若游戏实际不是 double，必须同时改 `FlowTagMap.Build`、`SlotKind`、`FlowStock` 读写分支和 `statusLines.valueType`。
+- 标量：确认游戏实际写入方用的是 double；当前只支持 `Int` / `Double`，float/long 不支持。
+  若游戏实际不是 double，必须同时改 `FlowTagNaming` 的消费方（`FlowStock` / 装置适配器）
+  和 `statusLines.valueType`。
 
-### 4.4 tag 语义：单位、两个 TagSystem、FlowStock
+### 4.4 tag 语义：单位、两个 TagSystem、FlowStock 与装置适配器
+
+> 完整边界、旧路径删除清单与新增装置步骤见
+> [装置状态与 tag 映射](docs/device-state-architecture.md)。
 
 #### 单位
 
@@ -260,26 +272,51 @@ container_temp → CONTAINER_TEMP_TAG        double
 - **写基础值用 `state.GetTag / ModifyTag`**；
 - 一批写完后调用 `item.SyncModifiedState()`，否则 `IsTag`、tooltip、`WaterFeature` 仍读旧快照。
 
+`GameItemTagStore` 把这两条约定封成一个 `ITagStore`：`ReadInt/ReadDouble` 读
+`modifiedState`，`WriteInt/WriteDouble` 写 `state`，值没变返回 false。
+
 #### `FlowStock` 的职责
 
-`FlowStock` 是**运行期装置 ↔ tag** 的唯一同步入口，不是所有 tag 访问的唯一入口：
+`FlowStock` 是**流源 / 容器 `FlowProperties` ↔ 原生液体 tag** 的唯一读写点，
+不是装置状态的入口：
 
 - 创建期：`ItemFactory.ApplyTags` 直接写 `state`；
-- tooltip：`StatusLineTooltipHelper` 直接读 `modifiedState`；
-- 运行期：`FlowStock.Read / ReadInto / Write`。
+- tooltip：`StatusLineTooltipHelper` 直接读快照；
+- 流源 / 容器运行期：`FlowStock.Read / Write / Total / Refresh`；
+- 装置私有状态：`DeviceStateSync` + `DeviceStateAdapter`，不经过 `FlowStock`。
 
 行为：
 
-- 读：遍历 `target.Keys`，从 `modifiedState.dict` 取值；缺失按 0；
-- 写：遍历 `source.Keys`，按槽位 `SetInt` / `SetDouble`；
-- 缺失且量化值为 0 → 不创建 tag；
-- 缺失且非零 → `GetTag` 创建 + `Enable`；
-- 写完后 `SyncModifiedState`，再 `Refresh` 一次；
-- 发射后的清空也走 `FlowStock.Write`：`FlowRuntime.Emit` 先 `FlowStock.Read(item)` 取整份存量，再复制一份把液体槽归零、温度保留，写回 37 槽。没有 `EmitterDevice` / `EmitAll` / `Take` 这样的中间对象。
+- 读：遍历注册表，经 `GameItemTagStore` 从 `modifiedState` 取值；缺失按 0；
+- 写：遍历注册表，液体 `WriteInt`、标量 `WriteDouble`；
+  等值写入和「不存在 + 零值」由 store 跳过，不创建零 tag；
+- 写完后走 `ItemTagCommit.Commit`，内部先 `SyncModifiedState`，再刷新外部表现；
+- 发射后的清空也走 `FlowStock.Write`：`FlowRuntime.Emit` 先 `FlowStock.Read(item)` 取整份存量，
+  再复制一份把液体槽归零、温度保留，写回 37 槽。没有 `EmitterDevice` / `EmitAll` / `Take`
+  这样的中间对象。
 
-写回时的 `Refresh` 行为：容器走 `WaterFeatureHelper.OnLiquidContainerPourOutOf` + `SpriteHelper.UpdateWaterContainerSprite`；非容器只 `SetSprite` 标记贴图重取。
+`ItemTagCommit.Commit` 是唯一提交入口（`DeviceStateSync` 写回装置状态后也调用）：容器走
+`WaterFeatureHelper.OnLiquidContainerPourOutOf` + `SpriteHelper.UpdateWaterContainerSprite`；
+非容器只 `SetSprite` 标记贴图重取。
 
-创建期 tag 同步：`ItemFactory.Apply` 在写完配置 tags 后**统一调用 `SyncModifiedState`**，所以交给目录的物品快照是完整的；装置绑定（`ItemDeviceBinding.Bind`）在物品挂上容器时才按 tag 构造装置并 `FlowStock.ReadInto`，不需要额外的 `Adopt`。`ItemSetup` 不承担状态同步。
+#### 装置私有状态：适配器
+
+装置状态不是 `FlowProperties` 的一部分，也不要求装置实现某个状态接口：
+
+- `DeviceStateAdapter.Load(ITagStore)`：tag → 装置公开属性；缺 tag 读 0；
+- `DeviceStateAdapter.Save(ITagStore)`：装置公开属性 → tag；返回是否有值变化；
+- 适配器只搬自己那几个字段，不负责快照刷新、生命周期或存档策略；
+- `DeviceAdapterCatalog.CreateAdapter(device)` 按具体装置类型选适配器；适配器由启动扫描自动登记，没登记的类型直接抛错，
+  避免装置状态静默不落盘；
+- `DeviceStateSync` 负责把 `Changed` 标脏、在 `FlowDriver.Update` 末尾批量 `Save`，
+  有变化时 `ItemTagCommit.Commit`（内部先 `SyncModifiedState`）；`Exhausted` 先同步 flush 再注销。
+
+因此 `IceBlockDevice` 只暴露 `Water` / `Temperature`，`CollectorDevice` 只暴露
+`Stock`，`TemperatureDevice` 只暴露 `Temperature`；Logic 层完全不知道 tag 名。
+
+创建期 tag 同步：`ItemFactory.Apply` 在写完配置 tags 后**统一调用 `SyncModifiedState`**，
+所以交给目录的物品快照是完整的；装置绑定（`ItemDeviceBinding.Bind`）在物品挂上容器时
+按 tag 构造装置、创建适配器并 `Load`，不需要额外的 `Adopt`。`ItemSetup` 不承担状态同步。
 
 ### 4.5 运行环境与发射路径
 
@@ -307,6 +344,7 @@ EmitterAttachment 三个原生委托
           → Grid.Contains(origin)
           → Flows.Accept(new FlowEntity(...))
           → FlowStock.Write(item, cleared)  // 液体归零、温度保留
+          → 若挂有装置：DeviceStateSync.Load(host)  // 库存副本按新 tag 重灌
 ```
 
 关键点：
@@ -320,12 +358,20 @@ EmitterAttachment 三个原生委托
 ### 4.6 装置变化如何上传
 
 ```text
-装置修改状态
-  ├─ Changed  → FlowDeviceEvents.OnChanged
-  │             → FlowStock.Write(item, device)
-  │             → tag 更新 + SyncModifiedState + Refresh
-  └─ Exhausted → DeviceRegistry.Unregister(item)
+装置修改语义状态
+  ├─ Changed  → DeviceHost.OnDeviceChanged
+  │             → DeviceStateSync.MarkDirty(host)（不立即写 tag）
+  └─ Exhausted → DeviceHost.OnDeviceExhausted
+                → DeviceStateSync.Exhausted(host)
+                → 先同步 Save(host)：adapter.Save(GameItemTagStore)
+                   → 有变化才 SyncModifiedState + Refresh
+                → DeviceRegistry.Unregister(item)
                 → item.parentInventory?.Expel(item)
+
+每次 FlowDriver.Update 末尾（一帧一次，遍历完全部网格之后）
+  → DeviceStateSync.Flush()
+      → 遍历 dirty 的 DeviceHost
+      → adapter.Save(GameItemTagStore) → 有变化才 ItemTagCommit.Commit（内部先 SyncModifiedState）
 
 装置动作
   → Logic 装置调用 FlowAudio.Play / FlowAnimation.Play
@@ -335,9 +381,14 @@ EmitterAttachment 三个原生委托
       └─ 动画层当前为空壳
 ```
 
-- 订阅 / 退订只由 `DeviceRegistry.Register` / `Unregister` / `Clear` 负责（`IFlowNotifier : IFlowState`），别处不要手写 `FlowDeviceEvents.Subscribe`；
-- 冰块化完会从网格消失（`Exhausted` → `Unregister` + `Expel`）；
-- Collector 的 `Exhausted` 是空访问器，永不触发；
+- `Changed` 只标脏，一帧内多次变化合并成一次写入；`Exhausted` 例外，必须先同步 flush
+  再注销 / 移出，否则物品离开后写不进 tag；
+- 订阅 / 退订由 `DeviceRegistry` 随装置登记 / 注销负责，`DeviceStateSync` 只处理标脏与 flush，别处不要手写；
+- 冰块化完会从网格消失（`Exhausted` → flush → `Unregister` + `Expel`）；
+- Collector 实现 `IFlowNotifier`，但 `Exhausted` 是空访问器；
+- 游戏侧直接改 tag（倒水、溶解、环境降温）后，`DeviceStateReconcilePatch`
+  （`ValidateShapeState` postfix）只对适配器执行 `Load`，把 tag 重新灌进装置；
+  它不写 tag、不做 finalize；
 - 物品被卖掉/移除时必须先 `Unregister`，否则在途流源可能写到已离场物品（当前已知窗口）；
 - **没有 `ItemDestroyed` patch**：物品销毁不会自动注销 `DeviceRegistry`。条目只在 `FlowDriver.Reset` / `Shutdown` 或装置 `Exhausted` 时清理，属于有界保留（见 `docs/review-pending-fixes.md` P2-2）。
 
@@ -347,7 +398,7 @@ EmitterAttachment 三个原生委托
 
 | 装配件 | 作用 |
 |---|---|
-| `device` | **只写 tag，不创建装置**：把 `device` 字段写成同名 tag（装置类型名），并写 `FLUXFORGE_DEVICE_ANCHOR_X/Y` 两个中心格 tag；`ItemDeviceBinding.Bind` 在物品挂上网格时按这些 tag 现场构造并登记装置 |
+| `device` | **只写 tag，不创建装置**：把 `device` 字段写成同名 tag（装置类型名），并写 `FLUXFORGE_DEVICE_ANCHOR_X/Y` 两个中心格 tag；`ItemDeviceBinding.Bind` 在物品挂上网格时按这些 tag 构造装置与适配器、`Load` tag 状态并登记 |
 | `flow_container` | 调 `WaterHelper.InitLiquidContainerItem(item, capacityMl, 0)`，建立 36 个液体 tag + 温度 + 容器身份 |
 | `water_bottle` | 同上，但走透明容器参数（`isTransparentContainer: true`），对齐原版小瓶水 |
 | `emitter` | 只接游戏原生激活菜单（3 个 `*ActivateSlotItemFunc` 委托），**不创建装置**；发射由 `FlowRuntime.Emit` 完成 |
@@ -471,17 +522,19 @@ FluxForge 沿用同一模型：
 
 - **自定义状态只持久化在 tag 里**；物品身份（identifier/shape）等也参与读档；
 - **装置身份也在 tag 里**：`device` 附件把 `device` 字段写成同名 tag，`ItemDeviceBinding.Bind` 在物品挂上网格时按这个 tag 现场构造装置（读档后由 #6 补绑）；`FLUXFORGE_DEVICE_ANCHOR_X/Y` 记录中心格；
-- 装置对象只是运行时镜像；
+- 装置对象只是运行时镜像；有状态的装置由 `DeviceStateAdapter` 负责 tag ↔ 公开属性的双向搬运；
 - 创建期 `ItemFactory.Apply` 结束时统一 `SyncModifiedState`；绑定发生在物品进入网格 / 读档完成，不在 Attach 里读 tag；
-- 会改状态的装置（冰块/收集器）实现 `IFlowNotifier`：`Changed → FlowStock.Write` 统一写回 `Keys` 声明的槽位；发射不是装置，`FlowRuntime.Emit` 直接 `FlowStock.Read` + 写回；
+- 会改状态的装置（冰块/收集器）实现 `IFlowNotifier`：`DeviceStateSync` 收到事件后标脏，
+  帧末统一 `adapter.Save`，有变化才 `ItemTagCommit.Commit`（内部先 `SyncModifiedState`）；
+  发射不是装置，`FlowRuntime.Emit` 直接 `FlowStock.Read` + 写回；
 - 游戏自己的 `WaterHelper` / `WaterFeatureHelper` 仍能读这些 tag。
 
 因此：
 
 - 改物品行为，优先改“谁在读/写 tag”，而不是给物品加新字段；
-- 新增属性 = 新增 tag + 映射 + 读写规则；
+- 新增属性 = 新增 tag + 映射 + 读写规则；装置状态还要加对应 `DeviceStateAdapter` 的 Load/Save；
 - 不要把状态只存在装置对象里而不写回 tag，否则存档/读档会丢；
-- `LIQUID_CONTAINER_TAG` 决定 `FlowStock.Refresh` 走 `WaterFeatureHelper` + 容器贴图；非容器只 `SetSprite`。
+- `LIQUID_CONTAINER_TAG` 决定 `ItemTagCommit.Commit` 走 `WaterFeatureHelper` + 容器贴图；非容器只 `SetSprite`。
 
 ---
 
@@ -501,21 +554,29 @@ FluxForge 沿用同一模型：
 ### 7.2 新增标量
 
 1. 在 `Build` 末尾加 `FlowPropertyDef` 行；
-2. id 必须能按 `<ID>_TAG` 拼出游戏 tag（例如 `container_temp` → `CONTAINER_TEMP_TAG`），否则要改 `FlowTagMap.Build`；
+2. id 必须能按 `<ID>_TAG` 拼出游戏 tag（例如 `container_temp` → `CONTAINER_TEMP_TAG`）；
+   命名规则只在 `FlowTagNaming.ForProperty` 一处，若游戏协议不是这个形状，改它而不是加映射表；
 3. `FlowProps` 加 Key；
-4. 当前只支持 `Int` / `Double` 两种槽位；`Scalar` 一律映射 `Double`。如果游戏实际是 int，改 `FlowTagMap.Build` 的槽位分支即可；如果实际是 float/long，必须同时扩展 `SlotKind`、`FlowStock` 读写分支和 `statusLines.valueType`；
+4. 当前只支持 `Int` / `Double` 两种槽位；`Scalar` 一律映射 `Double`。
+   如果游戏实际是 int，改 `FlowTagNaming` 的消费方（`FlowStock` / 装置适配器）的读写分支；
+   如果实际是 float/long，还必须同时改 `statusLines.valueType`；
 5. 更新测试计数；
 6. `statusLines.valueType` 必须与槽位一致（`int` 默认 / `double` / `string`），否则 tooltip 静默读 0。
 
 ### 7.3 新增装置
 
-1. 在 `src/Logic/Devices/` 下实现装置类：路由类实现 `IFlowRouter`，反应类实现 `IFlowDevice`；需要状态写 tag 再加 `IFlowNotifier`。构造保持无参（目录工厂/测试用）。分流器的朝向由 `FlowGridAdapter.RegisterCore` 直接写 `SplitDevice.Facing`，不走通用接口。
-2. 在 `src/Logic/Devices/FlowDeviceCatalog.cs` 的静态字典里加一行 `key → 工厂`；key 必须唯一。
+1. 在 `src/Logic/Devices/` 下实现装置类：路由类实现 `IFlowRouter`，反应类实现 `IFlowDevice`；
+   有存量变化或耗尽播报就实现 `IFlowNotifier`。构造保持无参（目录工厂/测试用）。
+   分流器的朝向由 `FlowGridAdapter.RegisterCore` 直接写 `SplitDevice.Facing`，不走通用接口。
+2. 在 `src/Mod/DeviceState/Adapters/` 新增 `XxxStateAdapter`，并用
+   `[DeviceAdapter("<key>", typeof(XxxDevice))]` 声明 device key；`DeviceAdapterCatalog` 启动扫描会自动登记
+   `key → 装置类型 → 适配器`。Logic 层不再维护 key 目录。
 3. `items.json` 里加 `"device": "<key>"`、`"anchorX"` / `"anchorY"`（中心格局部坐标），并在 `attachments` 里加 `"device"`；需要放进流量机网格的物品还要有 `"itemTypes": ["FLOW_DEVICE"]`；发射类再额外声明 `"emitter"` 附件（只接激活，不创建装置）。
-4. 装置状态只在 `Changed` 时由 `IFlowNotifier` + `FlowStock` 统一写 tag；不要在 Attach 里读 tag。绑定发生在物品挂上网格（`ItemDeviceBinding.Bind`）和读档完成（#6），两处都会 `FlowStock.ReadInto`。
-5. **`device` key 同时是持久化 tag 名**：改名等于换物品，旧存档里的装置会丢失身份；新增/改名要按读档兼容处理，不能只改 JSON。
-6. 新装置补 `FlowDeviceCatalog` 单测；涉及 tag/读档的改动按 §9 做实机验收。
-7. 物品被卖掉/移出时必须 `DeviceRegistry.Unregister`；`DeviceRegistry.Register` 已自动订阅/退订，不需要手写 `FlowDeviceEvents.Subscribe`。
+4. 有状态的装置在同一个适配器里实现 `Load` / `Save`：`Load` 用 `ITagStore` 把 tag 写进装置公开属性，`Save` 反向写回；tag 名一律走 `FlowTagNaming`。不要给 Logic 装置加 tag / `GameItem` 依赖。
+5. `DeviceStateSync` 会负责订阅 `Changed` / `Exhausted`、标脏并在帧末 `Save`，有变化时统一 `ItemTagCommit.Commit`（内部先 `SyncModifiedState`）。不要在 Attach 里手写 tag 同步。
+6. **`device` key 同时是持久化 tag 名**：改名等于换物品，旧存档里的装置会丢失身份；新增/改名要按读档兼容处理，不能只改 JSON。
+7. 新装置补 `DeviceAdapterCatalog` 单测与适配器单测；涉及 tag/读档的改动按 §9 做实机验收。
+8. 物品被卖掉/移出时必须 `DeviceRegistry.Unregister`；订阅/退订由 `DeviceRegistry` 随登记自动处理，不需要手写。
 
 ### 7.4 新增物品/资产
 
@@ -563,7 +624,7 @@ JSON 由 Newtonsoft 兼容层解析，可能接受注释/尾逗号等宽松语�
 1. **不要把游戏类型放进 `Logic` / `Presentation`**：`GameItem`、`TagState`、`UnityEngine` 只能在 `Mod`。
 2. **不要在 `Logic` 里写 Unity 生命周期**：每帧驱动由 `ModHost` 负责。
 3. **不要让 patch 承载业务规则**：patch 只转发到逻辑/适配层。
-4. **逻辑层只校验既有参数契约，不校验 tag 脏数据**：边界层负责把外部值变成有限、合法值；当前 `FlowStock` 还没做数值钳制，新增来源必须自行保证。
+4. **逻辑层只校验既有参数契约，不校验 tag 脏数据**：边界层负责把外部值变成有限、合法值；当前 `FlowStock` / `GameItemTagStore` / 装置适配器都只做转换，没有数值钳制，新增来源必须自行保证。
 5. **跨 mod 联动只支持源码合并到同一程序集**：不提供公共 API/反射桥。官方 `ModScanner` 会把非游戏程序集引用判为 `unlisted-reference`；把计算出的 `Type` 传给反射 helper 会判 `reflection-external`。当前空能力清单只允许前一种都不出现。
 
 ### 8.2 数据契约
@@ -588,12 +649,12 @@ dotnet test tests\FluxForge.Tests\FluxForge.Tests.csproj -c Release
 
 - 主工程 `netstandard2.1`，引用游戏 Managed 程序集；
 - `FluxForge.csproj` 的 `GameManagedDir` 默认是作者机器路径，换机器必须覆盖；
-- 测试只编译 `Logic + Presentation`；
+- 测试编译 `Logic + Presentation` 与 `src/Mod/DeviceState`（适配器契约不依赖 `GameItem`）；
 - 新逻辑必须有单元测试；
 - 修改 `FlowProperties` 的 Split/Merge/Clone 必须跑全量测试；
 - 修改 tag 映射/存档路径必须实机读档验证（Mod 层没有单测）。
 
-当前测试数量：**259**。最近一次运行（2026-11-04）：259 / 259 通过，0 失败 0 跳过。以 `dotnet test` 的实际输出为准，不要在文档里维护固定数字以外的手工统计。
+当前测试数量：**274**。最近一次运行（2026-11-05）：274 / 274 通过，0 失败 0 跳过。以 `dotnet test` 的实际输出为准，不要在文档里维护固定数字以外的手工统计。
 
 ---
 
@@ -657,14 +718,16 @@ bin/Release/
 ## 11. 给其他 AI / 协作者的阅读顺序
 
 1. `src/Logic/Flow/FlowPropertyRegistry.cs`、`FlowPropertyDef.cs`、`FlowProps.cs`；
-2. `src/Logic/Flow/FlowProperties.cs`、`src/Logic/Devices/Interfaces/IFlowState.cs`；
-3. `src/Logic/Devices/*`（含 `FlowDeviceCatalog`）、`src/Logic/Motion/*`；
-4. `src/Mod/TagMapping/Definitions/FlowTagMap.cs`、`src/Mod/TagMapping/FlowStock.cs`；
-5. `src/Mod/GridBuilding/Services/FlowRuntime.cs`、`GridRegistry.cs`、`src/Mod/GridBuilding/FlowDriver.cs`；
-6. `src/Mod/ItemSpawn/*`、`src/Mod/DeviceServices/ItemDeviceBinding.cs`、`assets/items.json`、`assets/sprites.json`；
-7. `src/Mod/Bootstrap/FFModEntry.cs`、`ModHost.cs`、`SaveExited.cs`、`SaveLoaded.cs`；
-8. `src/Mod/Visual/*`（最后读，且记住第 5 节的警告）；
-9. `tests/FluxForge.Tests/*`。
+2. `src/Logic/Flow/FlowProperties.cs`、`src/Logic/Devices/Interfaces/IFlowNotifier.cs`；
+3. `src/Logic/Devices/*`、`src/Logic/Motion/*`；
+4. `src/Mod/DeviceState/Contracts/`、`Naming/`、`Adapters/`；
+5. `src/Mod/TagMapping/Core/GameItemTagStore.cs`、`Core/FlowStock.cs`、`Definitions/FlowTags.cs`；
+6. `src/Mod/DeviceState/Sync/`、`src/Mod/DeviceServices/Core/ItemDeviceBinding.cs`、`Core/DeviceRegistry.cs`；
+7. `src/Mod/GridBuilding/Services/FlowRuntime.cs`、`GridRegistry.cs`、`src/Mod/GridBuilding/Core/FlowDriver.cs`；
+8. `src/Mod/ItemSpawn/*`、`assets/items.json`、`assets/sprites.json`；
+9. `src/Mod/Bootstrap/FFModEntry.cs`、`ModHost.cs`、`SaveExited.cs`、`SaveLoaded.cs`；
+10. `src/Mod/Visual/*`（最后读，且记住第 5 节的警告）；
+11. `tests/FluxForge.Tests/*`。
 
 游戏 API 参考：`docs/游戏机制_API手册.md`。
 注意：该手册是旧 Il2Cpp/MelonLoader 时期的记录，类型名里的 `Il2Cpp.` 前缀在 0.46 Mono 下已不需要；以当前程序集为准。
@@ -705,9 +768,10 @@ Select-String -Path (Get-ChildItem src,tests,mod,assets -Recurse -File).FullName
 ## 12. 当前状态与已知限制
 
 - **逻辑层**：36 种液体 + 温度已注册；Split/Merge/Clone/装置规则有单测；`Realtime/Rules` 已移植原版 22 条每秒反应 + 环境降温；
-- **适配层**：tag 双向同步、装置绑定（`ItemDeviceBinding`）、发射路径（`FlowRuntime.Emit`）、网格/存档生命周期已实现；`dotnet build` 0 warning / 0 error，实机读档待验证；
+- **适配层**：装置状态经 `ITagStore` + per-device adapter 读写，`DeviceStateSync` 事件驱动同步；发射路径（`FlowRuntime.Emit`）、网格/存档生命周期已实现；`dotnet build` 0 warning / 0 error，实机读档待验证；
 - **视觉层**：AI 设计，未完成人工检阅；36 色加权混合已接入，致死/快感叠色未接入；64 流源 / 512 粒子 / 仅 Flow+Blocked / 射程 0 是当前上限；
-- **tooltip**：当前只显示水与温度，非水液体暂不显示；
+- **tooltip**：当前只显示温度反应装置的温度；其它装置/属性暂不进入 tooltip；
 - **跨 mod API**：不提供；联动请源码合并；
 - **已知缺口**：设备身份存在 tag 里，`device` key 改名等于换物品；`DeviceRegistry` 没有物品销毁钩子（有界保留）；`ItemAttached` 仍保留一次「退档后网格仍存活」的兜底注册；`GridRegistry.Emit` 取不到 runtime 时会 NRE，靠 #1 的不变量保证；
 - **视觉/美术资产**：必须人工 review 后才能作为稳定规范。
+

@@ -13,7 +13,7 @@ namespace FluxForge.Tests
     ///     入口通道的值不参与计算，0 = 该通道不出流。
     /// 校验也全部由基类完成（重复方向 / 长度不匹配 / 少于 2 通道 / 负数发射数）。
     /// </summary>
-    internal sealed class AnySplit : SplitDevice
+    public sealed class AnySplit : SplitDevice
     {
         public AnySplit(int[] relativeChannelDirs, int[] emitCounts = null)
             : base(relativeChannelDirs, emitCounts)

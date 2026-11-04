@@ -138,10 +138,10 @@ namespace FluxForge.Tests
             int changedCount = 0;
             double waterAtEvent = -1d;
 
-            collector.Changed += sender =>
+            collector.Changed += _ =>
             {
                 changedCount++;
-                waterAtEvent = ((CollectorDevice)sender).Stock.Get(FlowProps.Water);
+                waterAtEvent = collector.Stock.Get(FlowProps.Water);
             };
 
             collector.Route(new FlowEntity(
@@ -210,6 +210,38 @@ namespace FluxForge.Tests
         }
 
         [Fact]
+        public void IceBlock_NonWaterLiquidFlowWithoutWater_DoesNotMelt()
+        {
+            IceBlockDevice ice = new IceBlockDevice(10d, -5d);
+            FlowProperties flow = TestFlow.Make(0d, 25d);
+            flow.Set(FlowProps.Fat, 100d);
+
+            Assert.False(ice.TryReact(flow));
+
+            Assert.Equal(10d, ice.Water);
+            Assert.Equal(100d, flow.Get(FlowProps.Fat));
+            Assert.Equal(25d, flow.Get(FlowProps.Temperature));
+        }
+
+        [Fact]
+        public void IceBlock_TemperatureWeightUsesTotalLiquidMass()
+        {
+            // 冰 1000 @-10℃，流源：水 50 + 油 50 @20℃。
+            // 融化量按流源水量的一半算 = 25；混合权重用流源总液体质量 100（不是水量 50）。
+            IceBlockDevice ice = new IceBlockDevice(1000d, -10d);
+            FlowProperties flow = TestFlow.Make(50d, 20d);
+            flow.Set(FlowProps.Fat, 50d);
+
+            Assert.True(ice.TryReact(flow));
+
+            Assert.Equal(975d, ice.Water);
+            Assert.Equal(75d, flow.Get(FlowProps.Water));
+            Assert.Equal(50d, flow.Get(FlowProps.Fat));
+            // (20*100 + (-10)*25) / 125 = 14
+            Assert.Equal(14d, flow.Get(FlowProps.Temperature), 6);
+        }
+
+        [Fact]
         public void IceBlock_SmallFlowOnlyMeltsHalfItsOwnMass()
         {
             // 一杯水化不完整块冰：流源只带 100，最多带走 50，冰还剩 950
@@ -217,7 +249,7 @@ namespace FluxForge.Tests
             FlowProperties flow = TestFlow.Make(100d, 20d);
 
             bool exhausted = false;
-            ice.Exhausted += sender => exhausted = true;
+            ice.Exhausted += _ => exhausted = true;
 
             Assert.True(ice.TryReact(flow));
 
@@ -234,7 +266,7 @@ namespace FluxForge.Tests
             // 连续几轮小流源应当把冰吃空，最后一轮触发销毁
             IceBlockDevice ice = new IceBlockDevice(300d, -10d);
             int exhaustedCount = 0;
-            ice.Exhausted += sender => exhaustedCount++;
+            ice.Exhausted += _ => exhaustedCount++;
 
             int rounds = 0;
             while (ice.Water > 0d && rounds < 100)
@@ -256,17 +288,17 @@ namespace FluxForge.Tests
             double waterWhenChanged = -1d;
             double waterWhenExhausted = -1d;
 
-            ice.Changed += sender =>
+            ice.Changed += _ =>
             {
                 order.Add("Changed");
                 // Changed 必须已经能读到最终值：订阅方就是靠它把 tag 写成 0 的。
                 // 如果哪天把播报挪到 Water = 0 之前，这条断言会立刻失败。
-                waterWhenChanged = ((IceBlockDevice)sender).Water;
+                waterWhenChanged = ice.Water;
             };
-            ice.Exhausted += sender =>
+            ice.Exhausted += _ =>
             {
                 order.Add("Exhausted");
-                waterWhenExhausted = ((IceBlockDevice)sender).Water;
+                waterWhenExhausted = ice.Water;
             };
 
             Assert.True(ice.TryReact(TestFlow.Make(100d, 25d)));
@@ -520,3 +552,4 @@ namespace FluxForge.Tests
         }
     }
 }
+

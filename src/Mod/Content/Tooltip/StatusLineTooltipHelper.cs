@@ -15,7 +15,6 @@ namespace FluxForge.Mod
     {
         private const string DefaultFormat = "0.#";
         private const string TemperatureDeviceKey = "temperature";
-        private const string TemperatureTag = "CONTAINER_TEMP_TAG";
         private const RenderHandler.ColorPalette DefaultColor
             = RenderHandler.ColorPalette.LightBlue;
 
@@ -52,7 +51,7 @@ namespace FluxForge.Mod
             for (int i = 0; i < def.statusLines.Length; i++)
             {
                 StatusLine line = def.statusLines[i];
-                if (line == null || line.tag != TemperatureTag)
+                if (line == null || line.tag != FlowTagNaming.ContainerTemperature)
                 {
                     continue;
                 }

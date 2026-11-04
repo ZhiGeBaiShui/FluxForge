@@ -45,7 +45,7 @@ namespace FluxForge
         /// <summary>注册表中的 1 基槽位。</summary>
         public readonly int Index;
 
-        internal FlowPropertyKey(int index)
+        public FlowPropertyKey(int index)
         {
             Index = index;
         }
@@ -72,7 +72,7 @@ namespace FluxForge
         /// <summary>读写 <see cref="FlowProperties"/> 的槽位键。</summary>
         public FlowPropertyKey Key { get; }
 
-        internal FlowPropertyDef(
+        public FlowPropertyDef(
             string id, FlowPropertyKind kind, SplitRule split, MergeRule merge, int oneBasedIndex)
         {
             Id = id;

@@ -33,7 +33,7 @@ namespace FluxForge.Presentation.Flow.Visual
         /// 公式与 <c>render_final.mix</c> 完全一致，**不要**改写成 <c>a + (b - a) * t</c>：
         /// 浮点误差会在个别通道上差 1。
         /// </summary>
-        internal static FlowColor Mix(in FlowColor a, in FlowColor b, double t)
+        public static FlowColor Mix(in FlowColor a, in FlowColor b, double t)
         {
             return new FlowColor(
                 RoundToByte(a.R * (1d - t) + b.R * t),
@@ -46,7 +46,7 @@ namespace FluxForge.Presentation.Flow.Visual
         /// 负权重等脏数据可能把结果推出色域，钳制保证渲染层永远拿到合法 byte。
         /// 全仓库只有这一份落点规则，颜色相关实现一律调用这里。
         /// </summary>
-        internal static byte RoundToByte(double value)
+        public static byte RoundToByte(double value)
         {
             double rounded = Math.Round(value);
             if (rounded <= 0d)
@@ -70,7 +70,7 @@ namespace FluxForge.Presentation.Flow.Visual
         /// 而 C# 的 <c>(byte)</c> 对浮点是向零截断，不是四舍五入。
         /// 液体混合色必须走这里，否则每个通道可能比原版大 1。
         /// </summary>
-        internal static byte TruncateToByte(double value)
+        public static byte TruncateToByte(double value)
         {
             if (value <= 0d)
             {

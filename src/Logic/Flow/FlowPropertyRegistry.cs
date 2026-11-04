@@ -11,28 +11,21 @@ namespace FluxForge
     /// 游戏 tag 的对应关系由 mod 层维护。
     ///
     /// 分合规则按种类统一：液体一律 Divide/Add，标量一律 Keep/WeightedAverage，
-    /// 定义里不单独声明。新增 Scalar 的 tag 名由 Mod 层按 id 自动生成（FlowTagMap）。
+    /// 定义里不单独声明。新增 Scalar 的 tag 名由 Mod 层按 id 自动生成（FlowTagNaming）。
     ///
     /// 新增属性的步骤：
     ///   ① 在 <see cref="Build"/> 的清单里追加一行；
     ///   ② 在 <see cref="FlowProps"/> 加同名槽位键；
-    ///   ③ 新增标量时不用改 FlowTagMap：它会按 id 自动生成独立 tag（&lt;ID&gt;_TAG）。
+    ///   ③ 新增标量时不用改 Mod 映射：FlowTagNaming 会按 id 自动生成独立 tag（&lt;ID&gt;_TAG）。
     /// </summary>
     public static class FlowPropertyRegistry
     {
         private static readonly FlowPropertyDef[] _all = Build();
-        private static readonly FlowPropertyKey[] _allKeys = BuildKeys();
 
         /// <summary>全部属性，下标与槽位一一对应（槽位 = 下标 + 1）。</summary>
         public static IReadOnlyList<FlowPropertyDef> All
         {
             get { return _all; }
-        }
-
-        /// <summary>全部属性键，顺序与 <see cref="All"/> 一致。</summary>
-        public static IReadOnlyList<FlowPropertyKey> AllKeys
-        {
-            get { return _allKeys; }
         }
 
         /// <summary>属性个数（当前 36 种液体 + 温度 = 37）。</summary>
@@ -117,17 +110,6 @@ namespace FluxForge
                 SplitRule.Keep, MergeRule.WeightedAverage, liquids.Length + 1);
 
             return defs;
-        }
-
-        private static FlowPropertyKey[] BuildKeys()
-        {
-            FlowPropertyKey[] keys = new FlowPropertyKey[_all.Length];
-            for (int i = 0; i < _all.Length; i++)
-            {
-                keys[i] = _all[i].Key;
-            }
-
-            return keys;
         }
     }
 }

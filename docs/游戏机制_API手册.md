@@ -627,6 +627,9 @@ _devices[item.Pointer] = device;
 
 ### 4.1 目录结构
 
+> 以下为早期目录概览；当前结构以 `src/Mod/README.md` 为准。
+patch 已随所属功能目录放置，不再有顶层 `Patches/`。
+
 ```
 src/Mod/
 ├─ FFModEntry.cs                  入口：目录注册 + 每帧驱动 + 读档重置
@@ -647,10 +650,9 @@ src/Mod/
 ├─ Sprites/
 │   ├─ FlowSpriteRegistry.cs      贴图管理（sprites.json + PNG→Sprite）
 │   └─ SpriteEntry.cs             贴图配置模型
-└─ Patches/
-    ├─ LoadFromAtlasPatch.cs      贴图拦截
-    ├─ PatchRunner.cs             逐组安装补丁（单个失败不杀进程）
-    └─ FlowTooltipPatch.cs        tooltip 分派（GetTooltipBasic）
+└─ Content/
+    ├─ Sprites/LoadFromAtlasPatch.cs   贴图拦截
+    └─ Tooltip/FlowTooltipPatch.cs     tooltip 分派（GetTooltipBasic）
 ```
 
 ### 4.2 数据流

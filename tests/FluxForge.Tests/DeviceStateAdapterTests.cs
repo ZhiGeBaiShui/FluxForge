@@ -172,21 +172,21 @@ namespace FluxForge.Tests
             CollectorDevice device = new CollectorDevice();
 
             // 存量里已有一份值，但对应 tag 不存在——适配器只执行同步，缺失读作 0。
-            device.Set(FlowProps.Fat, 99d);
+            device.Stock.Set(FlowProps.Fat, 99d);
 
             CollectorStateAdapter adapter = new CollectorStateAdapter(device);
             adapter.Load(tags);
 
-            Assert.Equal(30d, device.Get(FlowProps.Water));
-            Assert.Equal(12.5d, device.Get(FlowProps.Temperature));
-            Assert.Equal(0d, device.Get(FlowProps.Fat));
+            Assert.Equal(30d, device.Stock.Get(FlowProps.Water));
+            Assert.Equal(12.5d, device.Stock.Get(FlowProps.Temperature));
+            Assert.Equal(0d, device.Stock.Get(FlowProps.Fat));
         }
 
         [Fact]
         public void Collector_Save_OnlyWaterValue_WritesExactlyOneTag()
         {
             CollectorDevice device = new CollectorDevice();
-            device.Set(FlowProps.Water, 42d);
+            device.Stock.Set(FlowProps.Water, 42d);
 
             CollectorStateAdapter adapter = new CollectorStateAdapter(device);
             FakeTagStore tags = new FakeTagStore();
@@ -204,7 +204,7 @@ namespace FluxForge.Tests
         public void Collector_TemperatureScalar_RoundTripsThroughExistingDoubleTag()
         {
             CollectorDevice source = new CollectorDevice();
-            source.Set(FlowProps.Temperature, 12.5d);
+            source.Stock.Set(FlowProps.Temperature, 12.5d);
 
             CollectorStateAdapter saveAdapter = new CollectorStateAdapter(source);
             FakeTagStore tags = new FakeTagStore();
@@ -219,8 +219,8 @@ namespace FluxForge.Tests
             CollectorStateAdapter loadAdapter = new CollectorStateAdapter(restored);
             loadAdapter.Load(tags);
 
-            Assert.Equal(12.5d, restored.Get(FlowProps.Temperature));
-            Assert.Equal(0d, restored.Get(FlowProps.Water));
+            Assert.Equal(12.5d, restored.Stock.Get(FlowProps.Temperature));
+            Assert.Equal(0d, restored.Stock.Get(FlowProps.Water));
         }
 
         [Fact]
@@ -263,10 +263,10 @@ namespace FluxForge.Tests
         }
 
         [Fact]
-        public void Split_LoadIsNoOp_AndSaveIsFalse()
+        public void Turn_LoadIsNoOp_AndSaveIsFalse()
         {
-            SplitDevice device = new TurnDevice();
-            SplitStateAdapter adapter = new SplitStateAdapter(device);
+            TurnDevice device = new TurnDevice();
+            TurnStateAdapter adapter = new TurnStateAdapter(device);
             FakeTagStore tags = new FakeTagStore();
 
             adapter.Load(tags);
@@ -274,6 +274,22 @@ namespace FluxForge.Tests
             Assert.Same(device, adapter.Device);
             Assert.False(adapter.Save(tags));
             Assert.Equal(0, tags.Count);
+        }
+
+        [Fact]
+        public void FlowPropertyTags_CachesRegistryOrderedTagNames()
+        {
+            Assert.Equal(FlowPropertyRegistry.Count, FlowPropertyTags.All.Count);
+
+            for (int i = 0; i < FlowPropertyRegistry.Count; i++)
+            {
+                FlowPropertyDef def = FlowPropertyRegistry.All[i];
+                FlowPropertyTag property = FlowPropertyTags.All[i];
+
+                Assert.Equal(def.Key, property.Key);
+                Assert.Equal(def.Kind, property.Kind);
+                Assert.Equal(FlowTagNaming.ForProperty(def.Id, def.Kind), property.Tag);
+            }
         }
 
         [Fact]

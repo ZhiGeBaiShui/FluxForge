@@ -59,7 +59,7 @@ namespace FluxForge
             OnEntityAdded?.Invoke(entity);
         }
 
-        internal void ReportBlockedState(FlowEntity entity, bool blocked)
+        public void ReportBlockedState(FlowEntity entity, bool blocked)
         {
             OnEntityBlockedChanged?.Invoke(entity, blocked);
         }

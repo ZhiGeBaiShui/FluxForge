@@ -17,19 +17,13 @@ namespace FluxForge
     ///   - <see cref="Clone"/> 深拷贝数组，克隆体可独立修改
     ///   - 不含价值——价值属于物品定义（items.json 的 value），不随流源属性计算
     /// </summary>
-    public sealed class FlowProperties : IFlowState
+    public sealed class FlowProperties
     {
         private readonly double[] _values = new double[FlowPropertyRegistry.Count];
 
         /// <summary>全零属性。</summary>
         public FlowProperties()
         {
-        }
-
-        /// <summary>流源属性拥有注册表里的全部槽位。</summary>
-        public IReadOnlyList<FlowPropertyKey> Keys
-        {
-            get { return FlowPropertyRegistry.AllKeys; }
         }
 
         /// <summary>读一个属性槽。默认键（Index=0）自然越界。</summary>

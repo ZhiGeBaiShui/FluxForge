@@ -30,7 +30,7 @@ namespace FluxForge.Mod
     /// 生命周期 #1（网格出现），完整表见 `Lifecycle/README.md`。
     /// </summary>
     [HarmonyPatch(typeof(GameGridInventory))]
-    internal static class GridCreatedPatch
+    public static class GridCreatedPatch
     {
         private static IEnumerable<MethodBase> TargetMethods()
         {

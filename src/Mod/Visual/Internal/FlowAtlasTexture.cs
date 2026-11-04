@@ -16,7 +16,7 @@ namespace FluxForge.Mod.Visual.Internal
     /// 任何一张缺失都是 null（图集没加载 / 该状态没有 tile / 墙图没随包发布），
     /// 渲染层据此逐层 setActive，不会抛异常。
     /// </summary>
-    internal readonly struct FlowSprites
+    public readonly struct FlowSprites
     {
         /// <summary>本体蒙版（角色 B/R/u/S/~）。</summary>
         public readonly Sprite Body;
@@ -55,7 +55,7 @@ namespace FluxForge.Mod.Visual.Internal
     /// 之后所有 Get 返回空（渲染层整层空转）；墙图单独缺失只让 <see cref="FlowSprites.Wall"/>
     /// 为 null，不影响本体/边缘/亮核。
     /// </summary>
-    internal static class FlowAtlasTexture
+    public static class FlowAtlasTexture
     {
         /// <summary>tile 的像素边长（与 <see cref="FlowPixelMath.CellPixels"/> 一致）。</summary>
         private const int TilePixels = 16;

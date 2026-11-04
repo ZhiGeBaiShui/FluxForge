@@ -14,12 +14,12 @@ namespace FluxForge.Mod
     ///
     /// 生命周期 #8（场景卸载），完整表见 `Lifecycle/README.md`。
     /// </summary>
-    internal sealed class ModHost : MonoBehaviour
+    public sealed class ModHost : MonoBehaviour
     {
         private bool _sceneUnloadedSubscribed;
 
         /// <summary>创建隐藏宿主。重复调用会得到多个实例，调用方负责只创建一次。</summary>
-        internal static ModHost Attach()
+        public static ModHost Attach()
         {
             GameObject hostObject = new GameObject("FluxForge.ModHost");
             hostObject.hideFlags = HideFlags.HideAndDontSave;
@@ -65,7 +65,7 @@ namespace FluxForge.Mod
         }
 
         /// <summary>由 FFModEntry 在 OnDisable 调用；销毁 GameObject 后宿主不再收到帧回调。</summary>
-        internal void Stop()
+        public void Stop()
         {
             UnityEngine.Object.Destroy(gameObject);
         }

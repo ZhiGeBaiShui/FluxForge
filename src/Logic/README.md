@@ -55,7 +55,7 @@ dotnet test tests\FluxForge.Tests\FluxForge.Tests.csproj -c Release
 ## 二、每一步为什么
 
 1. **为什么在 `FlowPropertyRegistry` 加**
-   它是唯一的属性清单：`FlowProperties` 按 `Count` 分配数组、按顺序定槽位，`FlowTagMap` 也遍历它生成 tag。只改这一处，不用再到别处维护第二份清单。
+   它是唯一的属性清单：`FlowProperties` 按 `Count` 分配数组、按顺序定槽位，Mod 层的 `FlowTagNaming` 也按它生成 tag。只改这一处，不用再到别处维护第二份清单。
 
 2. **为什么顺序不能乱**
    顺序就是槽位，槽位从 1 开始（`Key.Index - 1` 才是数组下标）。在中间插入会让后面属性的槽位号整体后移，所以代码里一律用 `FlowProps` / `Registry.Key(id)`，不要写死数字下标。
@@ -70,7 +70,7 @@ dotnet test tests\FluxForge.Tests\FluxForge.Tests.csproj -c Release
    规则由 `Kind` 决定：液体是物质，分流 `Divide`、汇聚 `Add`，计入 `SubstanceTotal`；标量不是物质，分流 `Keep`、汇聚按物质的量加权平均。`Build()` 按 Kind 统一发放，不单独写规则。
 
 6. **为什么 tag 名不用手写**
-   `FlowTagMap` 按固定规则自动生成：
+   Mod 层的 `FlowTagNaming` 按固定规则自动生成：
 
    - 液体：`CURRENT_PART_<ID大写>`，int，单位 µL。原版液体系统按这个名字读，**前缀不能换**。
    - 标量：`<ID大写>_TAG`，double。
@@ -81,7 +81,7 @@ dotnet test tests\FluxForge.Tests\FluxForge.Tests.csproj -c Release
 
 上面能加的只是游戏本来就有的属性（36 种液体 + `container_temp`）。
 
-如果要加游戏没有的属性，光登记不够：得先把它注册进原版游戏的注册表（液体走 `Liquid` 注册表，标量走原版 tag 的注册/初始化路径），否则 `FlowTagMap` 会生成一个游戏不认的孤立 tag，读档和显示都不可控。
+如果要加游戏没有的属性，光登记不够：得先把它注册进原版游戏的注册表（液体走 `Liquid` 注册表，标量走原版 tag 的注册/初始化路径），否则 Mod 层会生成一个游戏不认的孤立 tag，读档和显示都不可控。
 
 **这部分目前没有实现**，仓库里没有注册代码；在此之前请只使用游戏已有属性。
 

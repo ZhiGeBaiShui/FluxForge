@@ -91,7 +91,7 @@ namespace FluxForge.Mod
         }
 
         /// <summary>内部列表，给 <see cref="FlowDriver"/> 倒序遍历用；调用方不得增删。</summary>
-        internal static List<FlowRuntime> Runtimes
+        public static List<FlowRuntime> Runtimes
         {
             get { return _runtimes; }
         }

@@ -123,7 +123,7 @@ namespace FluxForge.Mod
             // 换算成世界方向。纯反应装置（只改属性）没有 Facing。
             if (router != null)
             {
-                router.Facing = FlowFacing.FromOrientation(shape.orientation);
+                router.Facing = FlowFacingAdapter.FromOrientation(shape.orientation);
             }
 
             // DeviceAttachment 保证每个 device 都有 anchor tag；

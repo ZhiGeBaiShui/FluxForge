@@ -134,7 +134,7 @@ namespace FluxForge.Mod
     {
         private ModLog _modLog;
 
-        internal void Bind(ModLog modLog)
+        public void Bind(ModLog modLog)
         {
             _modLog = modLog;
         }

@@ -14,7 +14,7 @@ namespace FluxForge.Mod
     /// 生命周期 #4（排序），完整表见 `Lifecycle/README.md`。
     /// </summary>
     [HarmonyPatch(typeof(InventorySortHelper), "Sort")]
-    internal static class InventorySorted
+    public static class InventorySorted
     {
         public static void Postfix(GameGridInventory inventory, bool __result)
         {

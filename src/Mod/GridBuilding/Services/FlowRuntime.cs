@@ -107,11 +107,11 @@ namespace FluxForge.Mod
             // 发射器可能兼任收集器（flow_emitter 装配 collector）：
             // tag 已经清空，但装置里的库存是独立副本，不同步的话它会保留
             // 发射前的值，下次收集时新旧叠加，看起来就是「翻倍」。
-            // 按 tag 重新读一遍，让两边重新对齐。
-            CollectorDevice collector = DeviceRegistry.Get<CollectorDevice>(item);
-            if (collector != null)
+            // 用适配器按 tag 重灌整个 Host；普通物品没有 Host，直接跳过。
+            DeviceHost host = DeviceRegistry.GetHost(item);
+            if (host != null)
             {
-                FlowStock.ReadInto(item, collector);
+                DeviceStateSync.Load(host);
             }
 
             return true;
@@ -125,7 +125,7 @@ namespace FluxForge.Mod
         ///   拖放落点写的是 modifiedShape。
         ///
         /// 朝向同样在 modifiedShape 上：orientation 0..3 表示 0°/逆90°/180°/顺90°，
-        ///   物品原图朝上，方向码 = <see cref="FlowFacing.FromOrientation"/>（0上 1右 2下 3左）。
+        ///   物品原图朝上，方向码 = <see cref="FlowFacingAdapter.FromOrientation"/>（0上 1右 2下 3左）。
         ///
         /// 发射格优先用 anchor tag（中心格），没有则回退到形状左上角：
         ///   · 声明了 <c>anchorX/anchorY</c> 的物品由 EmitterAttachment 写入 tag，
@@ -144,7 +144,7 @@ namespace FluxForge.Mod
                 return false;
             }
 
-            direction = FlowFacing.FromOrientation(shape.orientation);
+            direction = FlowFacingAdapter.FromOrientation(shape.orientation);
 
             // anchor 是局部坐标，旋转/翻转由 ForwardTransform 处理，
             // 与 FlowGridAdapter.RegisterCore 对装置的做法一致。

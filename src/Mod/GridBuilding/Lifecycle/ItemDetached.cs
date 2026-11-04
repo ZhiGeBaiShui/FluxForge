@@ -16,7 +16,7 @@ namespace FluxForge.Mod
     /// 生命周期 #3（物品离开网格），完整表见 `Lifecycle/README.md`。
     /// </summary>
     [HarmonyPatch(typeof(GameItem), "RemoveParent")]
-    internal static class ItemDetached
+    public static class ItemDetached
     {
         public static void Prefix(GameItem __instance)
         {

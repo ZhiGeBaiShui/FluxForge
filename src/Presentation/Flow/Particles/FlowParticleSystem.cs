@@ -4,7 +4,7 @@ using FluxForge.Presentation.Flow.Visual;
 namespace FluxForge.Presentation.Flow.Particles
 {
     /// <summary>单个视觉视图的粒子状态与逐帧算法。</summary>
-    internal sealed class FlowParticleSystem
+    public sealed class FlowParticleSystem
     {
         /// <summary>每源独立粒子场与发射余量。</summary>
         private sealed class ParticleSlot

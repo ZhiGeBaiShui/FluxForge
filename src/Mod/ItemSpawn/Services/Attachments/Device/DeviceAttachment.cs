@@ -25,8 +25,9 @@ namespace FluxForge.Mod
                     "[装置]「" + def.key + "」缺少中心格 anchorX/anchorY，device=" + def.device);
             }
 
-            // 装置身份：tag 名就是装置类型名（= items.json 的 device 字段 = FlowDeviceCatalog 的 key）。
-            // 绑定端遍历目录里的全部类型名，命中哪个 tag 就用哪个类型构造。
+            // 装置身份：tag 名就是装置 key（= items.json 的 device 字段 =
+            // DeviceAdapterCatalog 的 key）。绑定端遍历目录里的全部 key，
+            // 命中哪个 tag 就创建对应装置。
             item.EnableTag(def.device, true);
 
             // 中心格随模板写入 tag；运行时实例沿用这份物品状态。

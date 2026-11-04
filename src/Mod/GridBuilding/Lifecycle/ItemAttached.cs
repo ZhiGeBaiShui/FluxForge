@@ -18,7 +18,7 @@ namespace FluxForge.Mod
     /// 生命周期 #2（物品进入网格），完整表见 `Lifecycle/README.md`。
     /// </summary>
     [HarmonyPatch(typeof(GameItem), "AddParent")]
-    internal static class ItemAttached
+    public static class ItemAttached
     {
         public static void Postfix(GameItem __instance, bool __result)
         {

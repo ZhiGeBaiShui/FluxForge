@@ -507,7 +507,7 @@ P0/P1 不做。
 
 ```text
 SplitDevice.Route virtual 化
-或 IFlowFacingAware + adapter 注入朝向
+或 IFlowFacingAdapterAware + adapter 注入朝向
 自定义 StillRouter 发 2 股不同组成
 ```
 

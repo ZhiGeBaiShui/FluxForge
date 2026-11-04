@@ -17,7 +17,7 @@ namespace FluxForge.Mod
     /// 也不会出错。
     /// </summary>
     [HarmonyPatch(typeof(EmporiumEntry), "OnDestroy")]
-    internal static class EmporiumDestroyed
+    public static class EmporiumDestroyed
     {
         private static void Postfix(EmporiumEntry __instance)
         {

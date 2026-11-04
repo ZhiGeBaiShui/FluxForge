@@ -5,7 +5,7 @@
 > **当前实现差异（2026-11-04 核对）**：
 >
 > - **无 `EmitterDevice` / `EmitAll` / `Adopt`**：发射由 `FlowRuntime.Emit` 直接完成（`FlowStock.Read` → 生成流源 → 液体归零写回）；没有 `FlowRuntime._adopted`。
-> - **装置身份改为 tag 驱动**：`DeviceAttachment` 只把 `items.json` 的 `device` 字段写成**同名 tag**，并写 `FLUXFORGE_DEVICE_ANCHOR_X/Y` 中心格 tag；不在 Attach 时 `new` 装置。`ItemDeviceBinding.Bind` 在物品挂上网格（#2）和读档完成（#6）时遍历 `FlowDeviceCatalog.Keys`，命中 tag 才构造并登记。
+> - **装置身份改为 tag 驱动**：`DeviceAttachment` 只把 `items.json` 的 `device` 字段写成**同名 tag**，并写 `FLUXFORGE_DEVICE_ANCHOR_X/Y` 中心格 tag；不在 Attach 时 `new` 装置。`ItemDeviceBinding.Bind` 在物品挂上网格（#2）和读档完成（#6）时遍历 `DeviceAdapterCatalog.Keys`，命中 tag 才构造并登记（key 目录已从 Logic 迁到 Mod）。
 > - **§4.4「构造/类型 key 只放 items.json，不放 tag」已被推翻**：`device` key 现在就是持久化 tag 名，改名等于换物品；旧存档会丢失装置身份。
 > - Logic 目录当前 key：`collector` / `ice_block` / `turn` / `l_right_down` / `t_junction` / `double_emit`（**没有 `emitter`**）。
 > - Split 常量：`Turn {3,2}`（默认 1 道）、`LRightDown {1,2}`（默认 1 道）、`TJunction {0,1,3}` + `{1,1,1}`、`DoubleEmit {0,2}` + `{2,2}`。
@@ -147,10 +147,10 @@ for (int i = 0; i < items.Count; i++)
 
 ### 3.5 朝向同步
 
-新增 `src/Mod/Flow/Adapters/FlowFacing.cs`（游戏/适配层，不进 Logic）：
+新增 `src/Mod/Flow/Adapters/FlowFacingAdapter.cs`（游戏/适配层，不进 Logic）：
 
 ```csharp
-public static class FlowFacing
+public static class FlowFacingAdapter
 {
     public static int FromOrientation(int orientation)
     {
@@ -292,7 +292,7 @@ v1 **不增加** `deviceConfig`：Split 变体用无参子类表达，构造参�
    - `CollectorDevice` / `IceBlockDevice` 保留现有构造，新增无参构造（`IceBlockDevice()` → `this(0,0)`；`EmitterDevice()` → `Stock = new FlowProperties()`）；
    - `SplitDevice` 改 abstract + `TJunctionDevice` / `DoubleEmitDevice`（`TurnDevice` 视 L 型需求保留）；字段改名。
 2. **Mod**
-   - 新增 `DeviceAttachment`、`FlowFacing`（游戏 orientation → 方向码，适配层）；
+   - 新增 `DeviceAttachment`、`FlowFacingAdapter`（游戏 orientation → 方向码，适配层）；
    - 删除 `CollectorAttachment`、`IceBlockAttachment`；`EmitterAttachment` 只留激活；
    - `DeviceRegistry` 自动订阅/退订、`Clear` 退订；
    - `FlowDeviceEvents` 加 `Unsubscribe`；

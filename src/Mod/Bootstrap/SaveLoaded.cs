@@ -21,14 +21,14 @@ namespace FluxForge.Mod
     ///
     /// 完整生命周期表见 `Lifecycle/README.md`。
     /// </summary>
-    internal static class SaveLoaded
+    public static class SaveLoaded
     {
-        internal static void Subscribe()
+        public static void Subscribe()
         {
             ModHook.OnGameLoadedLate += Handle;
         }
 
-        internal static void Unsubscribe()
+        public static void Unsubscribe()
         {
             ModHook.OnGameLoadedLate -= Handle;
         }
@@ -52,8 +52,9 @@ namespace FluxForge.Mod
                 // 读档前可能残留旧流源（ContinueGame 不经过 #5 的退出钩子），先清掉。
                 runtime.Flows.KillAll();
 
-                // AddParent 时 ItemAttached 已经绑过装置；这里再补一次 Bind 是幂等防御，
-                // 不依赖挂载钩子的触发时序。
+                // AddParent 时 ItemAttached 已经绑过装置；这里再调一次 Bind。
+                // 绑定是幂等的：已登记的 Host 不重建，只按读档后的 tag 重灌全部适配器，
+                // 因此不依赖挂载钩子的触发时序，也不会丢掉存档里的装置状态。
                 List<GameItem> items = runtime.Inventory.childItems;
                 if (items != null)
                 {

@@ -1,19 +1,22 @@
 # FluxForge 待评审改进项（状态版）
 
-- 基线：`237ddd3` + 当前未提交工作区（`SaveExited.cs`、`GridCreatedPatch.cs`、新增 `EmporiumDestroyed.cs`、本文；工作区还有并行进行中的注释/坐标约定改动，行为以代码为准）
-- 状态：**P0-1 已实施（有遗留）**、**P1-1 接受现状**、**P1-2 已实施**、**P2-1 backlog**、**P2-2 延后/待调研**、**P3-1 本次执行**
-- 验证（2026-11-04）：
+- 基线：`466717f` + 当前未提交工作区（装置状态适配器切换、Logic 事件接口替换、本文；行为以代码为准）
+- 状态：**P0-1 已实施（有遗留）**、**P1-1 接受现状**、**P1-2 已实施**、**P2-1 backlog**、**P2-2 延后/待调研**、**P3-1 本次执行**、**P4-1 装置状态架构已实施**
+- 验证（2026-11-05，本轮）：
   - `dotnet build FluxForge.csproj -c Release --no-incremental -p:GameManagedDir="E:\SteamLibrary\steamapps\common\Probably Stolen\Probably Stolen_Data\Managed"` → 0 warning / 0 error
-  - `dotnet test tests\FluxForge.Tests\FluxForge.Tests.csproj -c Release` → 259 / 259 通过，0 失败 0 跳过
+  - `dotnet test tests\FluxForge.Tests\FluxForge.Tests.csproj -c Release` → 274 / 274 通过，0 失败 0 跳过
+- 本轮变化：`IFlowState` / `IFlowNotifier` / `FlowTagMap` / `FlowStock.ReadInto` 路径已删除；
+  装置状态改走 `DeviceState` 适配器 + `ITagStore`，详见 P4-1 与 `docs/device-state-architecture.md`。
 
 | 编号 | 项目 | 结论 | 状态 |
 |---|---|---|---|
 | P0-1 | 网格运行环境生命周期 | 构造期注册已落地；不变量报错 / 兜底移除未做 | **部分实施** |
 | P1-1 | Patch 全 mod 失败 | 接受「整 mod 禁用」，不引入 Guarded Patch | **不实施** |
 | P1-2 | `SaveExited` 清理范围 | `EscapeUIManager.OnMainMenu` + `GameMaster.QuitToMenu` → `Shutdown`；另加 `EmporiumDestroyed` 场景兜底 | **已实施，实机修正** |
-| P2-1 | 每帧分配 | 真实但低影响 | **backlog** |
+| P2-1 | 每帧分配 | 真实但低影响；`FlowStock.Total` 已不再分配整份属性 | **backlog（部分收窄）** |
 | P2-2 | `DeviceRegistry` 销毁清理 | `ItemDestroyed` 方案未采用；清理仍手动 | **延后** |
 | P3-1 | 文档同步 | README / Mod README / Lifecycle README / 设计稿状态头 | **本次执行** |
+| P4-1 | 装置状态适配器 / tag 映射 | `DeviceStateAdapter` + `ITagStore` + `FlowTagNaming`；删除 `FlowTagMap` / `IFlowState` / `IFlowNotifier` 旧同步路径 | **已实施** |
 
 ---
 
@@ -255,8 +258,8 @@ src/Mod/GridBuilding/Lifecycle/README.md
 真实分配，低影响，**不进本轮**：
 
 1. `FlowManager.MoveFlowEntity` 每帧 `new FlowPos(...)`（class），可用 scratch 复用；需确认 `TryFindBlocker` 不保留引用。
-2. `FlowVisualLayer.ComputeBodyColor` / `FlowStock.Total` / `ReadInto` / `Write` 里对 `IReadOnlyList` 的 `foreach` 会产生枚举器，可改索引循环；`Total` 还可直接求和，不构造 `FlowProperties`。
-3. `FlowStock.Total` 每帧被 `CanActivateEmitter` 调用，会分配 37 槽数组。
+2. `FlowVisualLayer.ComputeBodyColor` 仍对 `IReadOnlyList` 做 `foreach`，会产生枚举器，可改索引循环。
+3. `FlowStock.Total` 已改为直接累加液体 tag，不再构造 `FlowProperties`；发射路径的 `FlowStock.Read` 仍会分配一份 37 槽对象，属于可接受的一次性成本。
 
 验收：移动、分流、收集、发射库存判断、视觉颜色结果全部不变；用 Profiler 或 GC 计数对比。
 
@@ -283,10 +286,10 @@ src/Mod/GridBuilding/Lifecycle/README.md
 GameItem → DeviceHost
   ├─ Router
   ├─ Reactor
-  ├─ Notifiers
-  └─ 具体装置事件源
+  ├─ Components（Logic 装置实例）
+  └─ Adapters（一一对应的 DeviceStateAdapter）
 
-IFlowNotifier → GameItem
+装置实例 → DeviceHost / GameItem
 ```
 
 物品离开网格（`ItemDetached` / `ItemPickedUp`）只清 `FlowGridAdapter` 的格表，**不注销装置**——装置跟着物品走，不能在离开网格时销毁。
@@ -362,6 +365,68 @@ Select-String -Path README.md,src/Mod/GridBuilding/Lifecycle/README.md `
 
 ---
 
+# P4-1：装置状态适配器与 tag 映射（已实施）
+
+## 结论
+
+最终边界：
+
+- **Logic** 拥有语义状态、行为、事件：`IFlowDevice` / `IFlowRouter` /
+  `IFlowNotifier`；事件是**`Action<IFlowNotifier>`**；
+- **Mod / DeviceState** 拥有 `ITagStore`、`DeviceStateAdapter`、`FlowTagNaming`、
+  `DeviceAdapterCatalog`、`DeviceStateSync`；
+- **Mod / TagMapping** 只保留流源 / 容器的 `FlowProperties` ↔ 原生字段 tag：
+  `FlowStock` + `GameItemTagStore`；
+- **流源 / 容器 tag 是原版字段级协议**：`CURRENT_PART_<ID>`（int µL）、
+  `CONTAINER_TEMP_TAG`（double °C），由 `FlowTagNaming.ForProperty` 定义并缓存到 `FlowPropertyTags`；
+- **装置私有状态是适配器的一帧**：`Load` / `Save` 显式交换，事件驱动，
+  不经过 `FlowStock`。
+
+完整说明见 [`device-state-architecture.md`](device-state-architecture.md)。
+
+## 落地文件
+
+| 文件 | 作用 |
+|---|---|
+| `src/Logic/Devices/Interfaces/IFlowNotifier.cs` | `Changed` / `Exhausted`（`Action<IFlowNotifier>`） |
+| `src/Mod/DeviceState/Contracts/DeviceStateContracts.cs` | `ITagStore` / `DeviceStateAdapter` |
+| `src/Mod/DeviceState/Naming/FlowTagNaming.cs` | 属性 id + 种类 → tag 名；唯一命名规则 |
+| `src/Mod/DeviceState/Naming/FlowPropertyTags.cs` | 启动期属性 → tag 名只读缓存；热路径不再拼字符串 |
+| `src/Mod/DeviceState/Catalog/DeviceAdapterCatalog.cs` | 扫描 `DeviceStateAdapter<TDevice>` 子类，自动登记装置类型 → 适配器 |
+| `src/Mod/DeviceState/Sync/DeviceStateSync.cs` | 标脏 + `FlowDriver.Update` 帧末 flush；`Exhausted` 同步 flush |
+| `src/Mod/DeviceState/Adapters/*StateAdapter.cs` | 各装置字段 ↔ tag |
+| `src/Mod/TagMapping/Core/GameItemTagStore.cs` | 读 `modifiedState` / 写 `state` / 等值与零值跳过 |
+| `src/Mod/TagMapping/Core/FlowStock.cs` | 流源 / 容器 `FlowProperties` 读写 |
+| `src/Mod/Common/Item/ItemTagCommit.cs` | tag 写入后的快照 + 表现统一提交 |
+| `src/Mod/DeviceState/Sync/DeviceStateReconcilePatch.cs` | `ValidateShapeState` postfix 只 `Load`，不写回 |
+
+## 已删除
+
+`IFlowState`、`IFlowNotifier`、`FlowTagMap`、`FlowStock.ReadInto`、
+`FlowStock.Write(GameItem, IFlowState)`、`FlowDeviceEvents`、`DeviceTagSyncPatch`。
+
+## 验证
+
+```powershell
+dotnet build FluxForge.csproj -c Release --no-incremental -p:GameManagedDir="E:\SteamLibrary\steamapps\common\Probably Stolen\Probably Stolen_Data\Managed"
+dotnet test tests\FluxForge.Tests\FluxForge.Tests.csproj -c Release
+```
+
+本轮结果：**build 0 warning / 0 error；test 274 / 274 通过**。
+
+## 剩余风险 / 未覆盖
+
+- **实机读档未验证**：适配器回灌依赖 `modifiedState`，仍按 README §9 做实机验收。
+- **`DeviceRegistry` 销毁清理**仍是 P2-2 的有界保留，本轮未加 `ItemDestroyed`。
+- **历史设计稿保留旧术语**：`docs/device-binding-design.md` /
+  `docs/item-setup-refactor.md` 开头已标注「历史设计记录」，其状态同步章节不代表当前实现。
+- **不做防御式代码**：缺 tag 读 0、零值不创建 tag、生命周期由绑定/注销保证；
+  本轮没有新增 null / try-catch / 不可能状态兜底。
+- `FlowStock.Total` 每次发射激活仍会遍历全部液体 tag；这是性能剩余项（P2-1），
+  不影响正确性。
+
+---
+
 # 建议实施顺序（更新）
 
 ```text
@@ -369,6 +434,7 @@ Select-String -Path README.md,src/Mod/GridBuilding/Lifecycle/README.md `
   P0-1 构造期注册
   P1-2 SaveExited + EmporiumDestroyed
   P3-1 文档同步
+  P4-1 装置状态适配器 + tag 映射（构建 / 单测通过，实机读档待验）
 
 本轮不做：
   P0-1 的「Emit 不变量报错 / 移除 ItemAttached 兜底」→ 需先验证原生网格
