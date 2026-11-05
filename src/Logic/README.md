@@ -1,93 +1,60 @@
-# 如何添加一个属性
+# Logic 模块
 
-属性 = 流源携带的一种数值。液体成分如 `water`，标量如 `container_temp`。
+## 要做什么
 
-## 一、最简操作
+### 新增一个流源属性
 
-只改两个文件。
+1. 在 `src/Logic/Flow/FlowPropertyRegistry.cs` 的 `Build()` 里登记：
+   - 液体：加进 `liquids` 数组，位置必须与游戏 `Liquid.InitLiquid()` 的登记顺序一致。
+   - 标量：扩容 `defs`，在末尾追加 `FlowPropertyDef`；槽位号按「下标 + 1」写。
+2. 在 `src/Logic/Flow/FlowProps.cs` 末尾加具名 Key，字段名用 id 的 PascalCase：
 
-### 1. 登记属性：`src/Logic/Flow/FlowPropertyRegistry.cs`
+   ```csharp
+   public static readonly FlowPropertyKey NewLiquid = FlowPropertyRegistry.Key("new_liquid");
+   public static readonly FlowPropertyKey NewScalar = FlowPropertyRegistry.Key("new_scalar");
+   ```
 
-打开 `Build()`：
+3. 标量的 tag 名由 `FlowTagNaming` 自动生成为 `<ID大写>_TAG`；只能用游戏已有的 tag。游戏没有的属性当前不支持，必须先注册原版注册表（尚未实现）。
+4. 需要显示时，在 `assets/items.json` 的 `statusLines` 里加 `tag`；double 值加 `"valueType": "double"`。
+5. 同步测试并运行：
 
-- **加液体**：把 id 加进 `liquids` 数组，位置跟游戏 `Liquid.InitLiquid()` 的顺序一致。
-- **加标量**：在 `defs` 末尾加一行；数组长度和槽位号也要跟着 +1。
+   ```powershell
+   dotnet test tests\FluxForge.Tests\FluxForge.Tests.csproj -c Release
+   ```
 
-```csharp
-// 液体
-string[] liquids = { "water", /* … */ "new_liquid" };
+   至少同步 `Count_IsThirtySeven`、`All_HasThirtySixLiquidsAndOneScalar`、`Order_MatchesGameLiquidInit_AndEndsWithTemperature`、`FlowProps_FieldNamesMatchRegistryIds` 里的数量与顺序断言。
 
-// 标量
-defs[liquids.Length + 1] = new FlowPropertyDef(
-    "new_scalar", FlowPropertyKind.Scalar,
-    SplitRule.Keep, MergeRule.WeightedAverage, liquids.Length + 2);
-```
+### 新增装置、反应或表现
 
-### 2. 加一个 Key：`src/Logic/Flow/FlowProps.cs`
+| 要加什么 | 放哪 | 下一步 |
+|---|---|---|
+| 路由 / 反应装置 | `src/Logic/Devices/` | 按 [`Devices/README.md`](Devices/README.md) 写类，再到 Mod 层加适配器 |
+| 实时反应规则 | `src/Logic/Reactions/Realtime/Rules/` | 按 [`Reactions/README.md`](Reactions/README.md) 继承 `FlowReactionRule` |
+| 纯反应公式 | `src/Logic/Reactions/Formulas/` | 写成静态方法，由装置显式调用 |
+| 表现事件 | `src/Logic/Presentation/` | 只发语义 ID（`FlowAudio.Play` / `FlowAnimation.Play`），不碰 Unity |
 
-在文件末尾加一行（按你加的属性选对应那行），字段名是 id 的 PascalCase：
+### 保持分层
 
-```csharp
-public static readonly FlowPropertyKey NewLiquid = FlowPropertyRegistry.Key("new_liquid");
-public static readonly FlowPropertyKey NewScalar = FlowPropertyRegistry.Key("new_scalar");
-```
+`src/Logic` 和 `src/Presentation` 都是纯 C#。写这两层时不要引用 `UnityEngine`、`Assembly-CSharp`、`HarmonyLib`，也不要出现 `GameItem` / `TagState`；游戏类型属于 `src/Mod`。
 
-### 3. 标量额外确认 tag
+## 常用 API
 
-标量的 tag 名固定是 `<ID大写>_TAG`（例如 `new_scalar` → `NEW_SCALAR_TAG`）。
-这个 tag 必须是游戏本来就有的；不是的话见第三节。
+| API | 提供 |
+|---|---|
+| `FlowPropertyRegistry.All` / `Count` / `Get` / `Key` | 属性清单、稳定 id 与槽位 |
+| `FlowProps` | 具名 `FlowPropertyKey`；逻辑代码只用它，不写死数字下标 |
+| `FlowProperties.Get` / `Set` | 按 Key 读写一份属性 |
+| `FlowProperties.Split` / `Merge` / `MergeFrom` / `SubstanceTotal` / `Clone` | 守恒分合、物质总量与深拷贝 |
+| `FlowEntity` | `Position` / `Motion` / `Properties` / `NextReactionTime` |
+| `FlowManager.Tick` / `IFlowGrid` | 每帧推进与「某格有什么装置」的查询边界 |
+| `FlowSpawner.Accept` / `Kill` / `KillAll` / `Active` | 流源名单与生死广播 |
+| `FlowAudio.Play` / `FlowAnimation.Play` | 语义表现事件，由 Mod 层订阅 |
+| `FlowReactionSolver.React` | 执行全部实时反应规则 |
 
-### 4. 跑测试
+## 为什么 / 不做会怎样
 
-```powershell
-dotnet test tests\FluxForge.Tests\FluxForge.Tests.csproj -c Release
-```
-
-测试里有硬编码的数量/顺序断言，需要同步：
-
-- `Count_IsThirtySeven`
-- `All_HasThirtySixLiquidsAndOneScalar`
-- `Order_MatchesGameLiquidInit_AndEndsWithTemperature`
-- `FlowProps_FieldNamesMatchRegistryIds`
-
-需要显示时，再到 `assets/items.json` 的 `statusLines` 加 `"valueType": "double"`。
-
-## 二、每一步为什么
-
-1. **为什么在 `FlowPropertyRegistry` 加**
-   它是唯一的属性清单：`FlowProperties` 按 `Count` 分配数组、按顺序定槽位，Mod 层的 `FlowTagNaming` 也按它生成 tag。只改这一处，不用再到别处维护第二份清单。
-
-2. **为什么顺序不能乱**
-   顺序就是槽位，槽位从 1 开始（`Key.Index - 1` 才是数组下标）。在中间插入会让后面属性的槽位号整体后移，所以代码里一律用 `FlowProps` / `Registry.Key(id)`，不要写死数字下标。
-
-3. **为什么还要加 `FlowProps`**
-   逻辑代码靠具名 Key 读写属性。测试会检查 `FlowProps` 的字段数、字段名与注册表一一对应，漏加会直接失败。
-
-4. **为什么测试要改**
-   当前测试把「37 条」「36 液体 + 1 标量」「温度在第 37 槽」都写死了；加属性后这些数字必然变化，不改测试就会误报。
-
-5. **为什么液体和标量的规则不一样**
-   规则由 `Kind` 决定：液体是物质，分流 `Divide`、汇聚 `Add`，计入 `SubstanceTotal`；标量不是物质，分流 `Keep`、汇聚按物质的量加权平均。`Build()` 按 Kind 统一发放，不单独写规则。
-
-6. **为什么 tag 名不用手写**
-   Mod 层的 `FlowTagNaming` 按固定规则自动生成：
-
-   - 液体：`CURRENT_PART_<ID大写>`，int，单位 µL。原版液体系统按这个名字读，**前缀不能换**。
-   - 标量：`<ID大写>_TAG`，double。
-
-   名字对上了，`FlowStock` 才能把物品上的 tag 和属性正确对应起来。
-
-## 三、非游戏属性（未实现）
-
-上面能加的只是游戏本来就有的属性（36 种液体 + `container_temp`）。
-
-如果要加游戏没有的属性，光登记不够：得先把它注册进原版游戏的注册表（液体走 `Liquid` 注册表，标量走原版 tag 的注册/初始化路径），否则 Mod 层会生成一个游戏不认的孤立 tag，读档和显示都不可控。
-
-**这部分目前没有实现**，仓库里没有注册代码；在此之前请只使用游戏已有属性。
-
-## 四、总结
-
-- 新增属性 = `FlowPropertyRegistry.Build()` 登记一行 + `FlowProps` 加一个 Key。液体加进 `liquids` 数组，标量加一条 `FlowPropertyDef`。
-- tag 名自动生成，`CURRENT_PART_` 前缀 / `_TAG` 后缀是固定约定，不要手写。
-- 液体和标量的分合规则由 `Kind` 决定，Logic 层不碰游戏类型。
-- 游戏没有的 tag，要先注册原版注册表；当前未实现。
+- 顺序即槽位。新增液体必须按游戏 `Liquid.InitLiquid()` 的位置放；插错或重排旧项会让后续槽位、tag 和存档值错位。
+- 漏加 `FlowProps` 或不同步测试，编译或测试会直接失败，逻辑代码也没有 Key 可用。
+- Logic 引用游戏或 Unity 类型后，`tests\FluxForge.Tests` 无法脱离游戏编译，分层和可测性一起丢失。
+- tag 名是固定协议：液体 `CURRENT_PART_<ID>`（int，µL），标量 `<ID>_TAG`（double）。手写错前缀或后缀，游戏读不到或写不进。
+- 游戏里不存在的属性没有原版注册表，强行加只会生成孤立 tag，读档和 tooltip 都不可控。

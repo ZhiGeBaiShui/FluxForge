@@ -1,152 +1,108 @@
-# Mod 层目录规范
+# Mod 模块
 
-> 装置状态与 tag 映射的最终边界见
-> [docs/device-state-architecture.md](../../docs/device-state-architecture.md)。
+## 要做什么
 
-每个类按**职责**归入一个顶层目录。新增类时按下面的判定顺序逐条问，第一个「是」就是它的归属。
+### 新增一个类：先判目录
 
-## 判定顺序
+按顺序问，第一个「是」就是归属：
 
-1. 它是**生命周期事件**——改变物品在网格中的位置/归属 → `GridBuilding/Lifecycle/`；
-   存档边界或进程生命周期 → `Bootstrap/`（例外：`EmporiumDestroyed` 挂在商城主场景销毁上，
-   跟随网格生命周期放 `GridBuilding/Lifecycle/`）
-2. 它属于**物品出生**（定义 → 工厂 → 附件装配）→ `ItemSpawn/`
-3. 它属于**网格映射或驱动**（游戏网格 → 逻辑网格、每帧推进）→ `GridBuilding/`
-4. 它是 **tag 映射**（流源/容器 tag ↔ `FlowProperties`）→ `TagMapping/`
-5. 它是**装置状态适配器**（装置公开属性 ↔ tag）→ `DeviceState/`
-6. 它管理**装置实例** → `DeviceServices/`
-7. 它是**配置模型或展示模型**（items.json / sprites.json / tooltip 行）→ `Content/`
-8. 它创建或更新 **Unity UI 对象** → `Visual/`
-9. 它是**游戏/物品适配工具**（坐标 / 方向 / tag 提交）→ `Common/Game/`、`Common/Item/`
-10. 它是**对原版的功能接入 patch** → 跟随所属功能目录（tooltip / sprites / device state）
-11. 它是 **mod 进程入口或每帧宿主** → `Bootstrap/`
-12. 它是无状态、无依赖的工具类 → `Common/<场景>/`
+| # | 它是 | 放 |
+|---|---|---|
+| 1 | 改变物品在网格中位置 / 归属的生命周期事件 | `GridBuilding/Lifecycle/` |
+| 2 | 物品出生（定义 → 工厂 → 附件装配） | `ItemSpawn/` |
+| 3 | 网格映射或每帧驱动 | `GridBuilding/` |
+| 4 | tag 映射或 tag 读写工具 | `TagMapping/` |
+| 5 | 装置状态适配器（装置属性 ↔ tag） | `DeviceState/` |
+| 6 | 装置实例管理 | `DeviceServices/` |
+| 7 | 配置模型或展示模型（items.json / sprites.json / tooltip） | `Content/` |
+| 8 | 创建或更新 Unity UI 对象 | `Visual/` |
+| 9 | 游戏 / 物品适配工具（坐标 / 方向 / tag 提交） | `Common/Game/`、`Common/Item/` |
+| 10 | 对原版的功能接入 patch | 跟随所属功能目录 |
+| 11 | mod 进程入口或每帧宿主 | `Bootstrap/` |
+| 12 | 无状态、无依赖的工具类 | `Common/<场景>/` |
 
-顺序不能换：`GridCreatedPatch` 虽然带 `[HarmonyPatch]`，但它属于「网格出现」这个生命周期事件，所以落 `GridBuilding/`；patch 不单独建顶层目录。
+例外：存档边界与进程生命周期放 `Bootstrap/`；`EmporiumDestroyed` 是商城主场景销毁，归 `GridBuilding/Lifecycle/`。`GridCreatedPatch` 虽然带 `[HarmonyPatch]`，但属于网格生命周期，仍归 `GridBuilding/`；patch 不单独建顶层目录。
 
-## 目录
+### 新增或修改一个装置（Mod 侧）
 
-### `Bootstrap/` — 进程入口
+1. 先按 [`src/Logic/Devices/README.md`](../Logic/Devices/README.md) 写好 Logic 装置类。
+2. 在 `src/Mod/DeviceState/Adapters/XxxStateAdapter.cs` 加适配器：
 
-| 文件 | 职责 |
+   ```csharp
+   [DeviceAdapter("xxx")]
+   public sealed class XxxStateAdapter : DeviceStateAdapter<XxxDevice>
+   ```
+
+   - `CreateDevice(GameItem)` 只负责按 tag 构造一台完整装置。
+   - 需要持久化的成员用 `TagFields.Int/Double(tag, device => ..., (device, value) => ...)` 显式声明；不要用 `Expression.Compile`。
+   - 有整份聚合状态时覆写 `LoadDevice` / `SaveDevice`（参考 `CollectorStateAdapter`）。
+   - 适配器无实例字段，由 `DeviceAdapterCatalog` 启动扫描并复用单例；不在适配器里做登记、生命周期或 `DeviceRegistry` 调用。
+3. 在 `assets/items.json` 声明 `"device": "xxx"`、`"anchorX"`、`"anchorY"` 和 `"attachments": ["device"]`；要进流量机网格再加 `"itemTypes": ["FLOW_DEVICE"]`。
+4. 不要在物品创建或附件里手动 `new` 装置。统一走 `ItemDeviceBinding.Bind`：
+   - 没有 Host：`DeviceHost.Create` → `adapter.Create`，只创建一次；
+   - 已有 Host 且未脏：`LoadAll`，用 tag 更新已有实例；
+   - 已有 Host 且脏：跳过 `LoadAll`，等帧末回写。
+5. 装置状态同步不要手写。Logic 装置只发 `IFlowNotifier.Changed` / `Exhausted`：
+
+   ```text
+   Changed   → DeviceStateSync.MarkDirty → 帧末 host.SaveAll → 有变化才 ItemTagCommit.Commit
+   Exhausted → SaveAll → DeviceRegistry.Unregister → Expel
+   ```
+
+   游戏侧直接改 tag 后的回灌由 `DeviceStateReconcilePatch`（`ValidateShapeState` 后、未脏时 `LoadAll`）和 `FlowRuntime`（`FlowStock.Write` 后 `LoadAll`）负责。
+6. 运行测试：
+
+   ```powershell
+   dotnet test tests\FluxForge.Tests\FluxForge.Tests.csproj -c Release
+   ```
+
+   测试工程会编入 Logic、Presentation，以及 Mod 的 tag 工具、适配器和挂载编排。
+
+### 新增或修改 tag 读写
+
+- 单 tag 只用 `GameItemTags`：读 `modifiedState`、写 `state`，缺失按 0，等值或「不存在且写 0」不产生写入。没有 `ITagStore` / `GameItemTagStore` / `FakeTagStore`。
+- 流源 / 容器整份属性用 `FlowStock.Read` / `Write` / `Total`；装置私有状态只走适配器。
+- 写完 tag 交给 `ItemTagCommit.Commit`，不要自己拼 `SyncModifiedState` 和贴图刷新。
+- tag 名由 `FlowTagNaming.ForProperty` 生成，不要手写。
+
+### 新增生命周期钩子
+
+一个事件一个切片（对称事件如 `#3b` / `#3c` 可共用一个文件），放 `GridBuilding/Lifecycle/`；完整事件表和反向索引见 [`GridBuilding/Lifecycle/README.md`](GridBuilding/Lifecycle/README.md)。批量拖拽只在 `StartGroupDrag`（`#3c`）注销，不要新增结束 / 取消 patch：结束走 `Expel` + `UncheckedAccept`，已有 `#3` / `#2` 会恢复登记。
+
+### 扫描器约束
+
+`manifest.xml` 的 `<Capabilities />` 保持为空；新增代码必须满足：
+
+- 禁止 `Expression.Compile`。
+- 禁止对计算出的 `Type` 做反射。
+- 允许：本程序集 `Assembly.GetTypes()`、`Activator.CreateInstance(Type)`、字面量游戏类型上的 `AccessTools`，以及 Harmony 的 `___field` 注入（如 `___selectedItems`）。
+- 对游戏代码打 Harmony patch 本身不受限；受限的是动态代码与计算类型反射。
+
+## 常用 API
+
+| API | 提供 |
 |---|---|
-| `FFModEntry.cs` | `IMod` 入口：初始化、订阅、启停宿主；只做接线（生命周期 #9，`OnDisable` → `FlowDriver.Shutdown` + `FlowVisualLayer.Shutdown`） |
-| `ModHost.cs` | 每帧宿主（`Update` / `LateUpdate` / 场景卸载，生命周期 #8） |
-| `SaveExited.cs` | 生命周期 #5：退出存档（`EscapeUIManager.OnMainMenu` + `GameMaster.QuitToMenu`）→ `FlowDriver.Shutdown`；不能挂 `PlayerStore.Reset`，它会在构造/预读档时误清网格 |
-| `SaveLoaded.cs` | 生命周期 #6：读档完成 → `Bind` + `Rebuild` |
+| `DeviceAdapterCatalog.Keys` / `TryGet` / `Get` / `FindFor` | key → `DeviceDefinition`，以及按物品 tag 找装置定义 |
+| `DeviceStateAdapter` / `DeviceStateAdapter<TDevice>` | `Create` / `Load` / `Save`；字段表与 `CreateDevice` / `LoadDevice` / `SaveDevice` |
+| `TagFields.Int` / `Double` | 成员 ↔ tag 的显式 getter / setter 字段 |
+| `DeviceHost.Create` / `LoadAll` / `SaveAll` / `Bindings` | 每件物品的 `DeviceBinding(Adapter, Device)` 列表与聚合读写；`Create` 是唯一出生入口 |
+| `ItemDeviceBinding.Bind` | 确保装置存在；重复调用安全，已有实例不重建 |
+| `DeviceRegistry.Register` / `Unregister` / `Clear` / `GetHost` / `GetRouter` / `GetReactor` / `GetItemForDevice` | 物品 ↔ Host、装置反查，并订阅 `IFlowNotifier` |
+| `DeviceStateSync.MarkDirty` / `Flush` / `Exhausted` / `Forget` / `Clear` | 标脏、帧末回写、耗尽清理；通常由编排调用 |
+| `GameItemTags.ReadInt` / `ReadDouble` / `WriteInt` / `WriteDouble` | 单 tag 读写；读快照、写活动状态 |
+| `FlowTagNaming.ForProperty` / `FlowPropertyTags.All` | 属性 id + 种类 → 原版 tag 名；启动期只读缓存 |
+| `FlowStock.Read` / `Write` / `Total` | 整份流源 / 容器属性 ↔ 原生液体 tag |
+| `ItemTagCommit.Commit` | tag 写入后的统一提交与表现刷新 |
+| `GridRegistry.Register` / `Get` / `Emit` / `Unregister` / `Clear` | 网格 ↔ `FlowRuntime` 注册与发射入口 |
+| `FlowDriver.Update` / `LateUpdateVisuals` / `Reset` / `Shutdown` / `RetireByGrid` | 每帧驱动与场景 / 存档 / 网格边界清理 |
 
-### `ItemSpawn/` — 物品出生
+## 为什么 / 不做会怎样
 
-| 路径 | 职责 |
-|---|---|
-| `Setup/ItemSetup.cs` | 入口：装配件调度（反射发现 + 名字查表） |
-| `Services/Factory/ItemFactory.cs` | 工厂：把 `FlowItemDefinition` 的通用属性 / 贴图 / 文本 / 类型 / tag 装配到已存在的 `GameItem`（不创建物品） |
-| `Services/Attachments/Base/ItemAttachment.cs` | 附件基类 |
-| `Services/Attachments/*` | 各能力附件（device / emitter / flow_container / water_bottle） |
-
-工厂、附件、调度是一个整体：新增一种能力 = 加一个附件 + 在 items.json 声明。
-
-### `GridBuilding/` — 网格映射与驱动
-
-| 路径 | 职责 |
-|---|---|
-| `Core/FlowDriver.cs` | 入口：遍历所有网格，推进流源与视觉；`Reset` / `Shutdown` 的清理边界见生命周期表 |
-| `Lifecycle/GridCreatedPatch.cs` | #1 网格创建：全部 public 构造函数 + 全部 public `SetShape` 重载 → 注册，保证所有构造都被捕获 |
-| `Lifecycle/GridLifetime.cs` | #7 网格注销：哨兵节点销毁 → 注销 |
-| `Lifecycle/ItemAttached.cs` | #2 物品进入：`AddParent` → `Bind` + `Register` |
-| `Lifecycle/ItemDetached.cs` | #3 物品离开：`RemoveParent` → `Unregister` |
-| `Lifecycle/ItemPickedUp.cs` | #3b 物品拿起：`StartDrag` → `Unregister` |
-| `Lifecycle/InventorySorted.cs` | #4 排序：`Sort` → `Rebuild` |
-| `Lifecycle/EmporiumDestroyed.cs` | #5b 商城场景销毁 → `FlowDriver.Shutdown`（退档兜底，2026-11 新增） |
-| `Services/GridRegistry.cs` | `GameGridInventory` ↔ `FlowRuntime` |
-| `Services/FlowRuntime.cs` | 一块网格的运行环境（流源 + 运动 + 视觉），`Emit` 也从这里发起 |
-| `Services/FlowGridAdapter.cs` | 网格 → `IFlowGrid`：anchor 格表缓存 |
-
-完整生命周期总表与反向索引见 [`GridBuilding/Lifecycle/README.md`](GridBuilding/Lifecycle/README.md)。
-
-### `TagMapping/` — 流源 / 容器 tag 映射
-
-| 路径 | 职责 |
-|---|---|
-| `Core/FlowStock.cs` | 入口：流源 / 容器 `FlowProperties` ↔ 原生液体 tag；不碰装置私有状态 |
-| `Core/GameItemTagStore.cs` | `ITagStore` 实现：读 `modifiedState`、写 `state`，等值/零值跳过 |
-| `Definitions/FlowTags.cs` | 纯定义：液体容器身份 + anchor 等非流源 tag 常量 |
-
-流源属性 tag 名由 `DeviceState/Naming/FlowTagNaming.cs` 定义；`FlowPropertyTags` 启动时
-按注册表生成一次只读缓存，`FlowStock` / 适配器热路径直接读，不再重复拼字符串。
-不再有 `FlowTagMap` 映射表。
-
-### `DeviceState/` — 装置状态适配器
-
-| 路径 | 职责 |
-|---|---|
-| `Contracts/DeviceStateContracts.cs` | `ITagStore` / `DeviceStateAdapter`：装置状态的最小读写契约 |
-| `Naming/FlowTagNaming.cs` | 流源属性 id + 种类 → 原版 tag 名；唯一命名规则 |
-| `Naming/FlowPropertyTags.cs` | 启动时生成一次属性 → tag 名只读缓存；热路径不拼字符串 |
-| `Catalog/DeviceAdapterCatalog.cs` | 启动扫描 `[DeviceAdapter]` 子类；`device key → 装置类型 → 适配器` 自动登记 |
-| `Adapters/*StateAdapter.cs` | 每个有状态装置一个适配器；`Load` / `Save` 只搬自己那几个字段 |
-| `Sync/DeviceStateSync.cs` | 事件 → 标脏 → 帧末批量 `Save`；`Exhausted` 先同步 flush；有变化才 `ItemTagCommit.Commit`（内部先 `SyncModifiedState`） |
-| `Sync/DeviceStateReconcilePatch.cs` | `ValidateShapeState` postfix → `DeviceStateSync.Load(host)`，只回灌不写回 |
-
-适配器不依赖 `DeviceRegistry`、不刷新快照、不做生命周期；组合由
-`ItemDeviceBinding` / `DeviceRegistry` 完成，事件订阅在 `DeviceRegistry`，
-标脏与 flush 在 `DeviceStateSync`。游戏侧改 tag 后的回灌由 `DeviceStateReconcilePatch`
-（`ValidateShapeState` postfix，只 `Load`）负责。
-
-### `DeviceServices/` — 装置服务
-
-| 文件 | 职责 |
-|---|---|
-| `Core/DeviceRegistry.cs` | 存储：只接收已构建的 `DeviceHost`；`GameItem → DeviceHost` 与装置反查 |
-| `Core/DeviceHost.cs` | 唯一构建入口 `Create`：为装置创建适配器并 `Load`；同时聚合 Router / Reactor / 适配器与事件回调 |
-| `Core/ItemDeviceBinding.cs` | 建立：物品 tag → 装置角色集合 → 适配器 `Load` → 一个 DeviceHost |
-| `Audio/DeviceAudioService.cs` | 消费 `FlowAudio.Played`，语义 ID → 实际音效 |
-| `Animation/DeviceAnimationService.cs` | 消费 `FlowAnimation.Played`，当前为空壳 |
-
-装置没有独立的生命周期 patch——建立由「物品进入」(#2) / 「读档完成」(#6) 触发。
-`DeviceRegistry` 订阅 `IFlowNotifier.Changed` / `IFlowNotifier.Exhausted`；`DeviceStateSync` 只做标脏、
-帧末 flush 与 `Exhausted` 的同步回写。
-音效和动画由 Logic 的 `FlowAudio` / `FlowAnimation` 事件驱动，`DeviceHost` 只负责角色聚合。
-
-**注意**：物品被销毁时没有对应的 patch（`ItemDestroyed` 评估后未采用），`DeviceRegistry` 的条目只在
-`FlowDriver.Reset` / `Shutdown` 或装置 `Exhausted` 时清理；这是有界保留，详见
-`docs/review-pending-fixes.md` P2-2。
-
-### `Content/` — 配置与展示模型
-
-| 路径 | 职责 |
-|---|---|
-| `Items/FlowItemRegistry.cs` | items.json 解析 + `FlowItemDefinition` |
-| `Items/ItemTypeLocalization.cs` | 物品类型显示名（运行时补本地化表） |
-| `Tooltip/*` | tooltip 状态行模型 + 渲染 helper |
-| `Tooltip/FlowTooltipPatch.cs` | `GetTooltipBasic` → 追加流源状态行 |
-| `Sprites/*` | sprites.json 解析 + 贴图缓存 |
-| `Sprites/LoadFromAtlasPatch.cs` | `RenderHandler.LoadFromAtlas` → 自定义图集 |
-
-### `Visual/` — 渲染
-
-| 路径 | 职责 |
-|---|---|
-| `Core/FlowVisualLayer.cs` | 每网格的视觉视图：流源快照 → 绘制项 |
-| `Internal/FlowAtlasLayer.cs` | 图集层的 Image 池与像素对齐 |
-| `Internal/FlowAtlasTexture.cs` | 图集贴图 / Sprite 缓存 |
-| `Internal/FlowParticleRenderer.cs` | 粒子层 |
-
-`Internal/` 表示「只给 `Visual/` 内部用，外部不要直接引用」。
-
-### `Common/` — 无状态工具
-
-| 路径 | 职责 |
-|---|---|
-| `Game/FlowFacingAdapter.cs` | 游戏 `orientation` → 方向码 |
-| `Game/FlowGameSpaceAdapter.cs` | 像素坐标 ↔ 网格坐标 |
-| `Item/ItemTagCommit.cs` | tag 写入后的统一提交：`SyncModifiedState` + 容器/贴图表现刷新 |
-| `Resources/EmbeddedResources.cs` | 从程序集读嵌入资源 |
-| `Serialization/SystemTextJsonCompat.cs` | JSON 兼容层 |
-
-工具类按作用的场景分组；`FlowFacingAdapter` / `FlowGameSpaceAdapter` 是游戏适配，
-不是领域模型；`ItemTagCommit` 是物品 tag 提交，不属于 `TagMapping`。
-
-## 命名空间
-
-所有类统一在 `FluxForge.Mod` 命名空间下。目录只表达职责，不参与命名——移动文件不需要改 `namespace` 或 `using`。
+- 依赖方向只能是 `src/Mod → src/Logic` 和 `src/Mod → src/Presentation`。Logic 或 Presentation 引用游戏 / Unity 类型后，纯 C# 测试无法编译。
+- 手写 tag 同步会绕过 `ItemTagCommit.Commit`，`modifiedState`、tooltip 和存档可能停在旧值；给不存在的 tag 写 0 还会制造噪声。
+- 在 `Load` 中重建装置，`DeviceRegistry` 的设备反查、音频和动画引用会全部失效；只允许更新已有实例。
+- 适配器缺少 `[DeviceAdapter]`、key 重复，或 key 与 `items.json` 的 `device` 不一致时会抛异常；`DeviceAdapterCatalog.Get` 未命中也会抛 `ArgumentException`。key 同时是持久化 tag，改名等于换物品，旧存档状态丢失。
+- 不给物品绑定就直接查 `DeviceRegistry`，拿不到 Router / Reactor；装置只由 `ItemDeviceBinding.Bind` 建立。
+- 物品销毁没有 `ItemDestroyed` patch。`DeviceRegistry` 条目只在 `FlowDriver.Reset` / `Shutdown` 的 `Clear` 或装置 `Exhausted` 时清理，这是有界保留，不要当成即时销毁钩子。
+- 批量拖拽补结束 / 取消 patch 会与 `Expel` + `UncheckedAccept` 触发的 `#3` / `#2` 重复处理。
+- 使用 `Expression.Compile` 或对计算出的 `Type` 反射，会被 ModScanner 判为越权；`<Capabilities />` 为空时直接拒绝加载。
