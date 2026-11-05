@@ -2,60 +2,64 @@ using System.Collections.Generic;
 
 namespace FluxForge.Mod
 {
+    /// <summary>Host 内的一条装置绑定：key、单例适配器、该物品自己的装置实例。</summary>
+    public readonly struct DeviceBinding
+    {
+        public readonly DeviceStateAdapter Adapter;
+        public readonly object Device;
+
+        public DeviceBinding(DeviceStateAdapter adapter, object device)
+        {
+            Adapter = adapter;
+            Device = device;
+        }
+    }
+
     /// <summary>
-    /// 一件物品对应的全部装置角色与状态适配器。
+    /// 一件物品对应的全部装置实例与绑定。
     ///
-    /// 角色聚合：流程查询从这里取 Router / Reactor。
-    /// 状态聚合：每个 Logic 装置各有一个 <see cref="DeviceStateAdapter"/>，
-    /// 回灌 / 回写都按这个列表逐台执行。
-    ///
-    /// 事件订阅由 <see cref="DeviceRegistry"/> 完成；Changed 只标脏，
-    /// Exhausted 同步回写后注销并从载体移除。
+    /// 装置由 <see cref="DeviceStateAdapter.Create"/> 在 <see cref="Create"/> 中创建一次；
+    /// 之后的 Load / Save 只更新这些已有实例，绝不重建，保证 Registry / 音频反查
+    /// 使用的装置引用始终不变。
     /// </summary>
     public sealed class DeviceHost
     {
-        private readonly List<object> _components;
-        private readonly List<DeviceStateAdapter> _adapters;
+        private readonly DeviceBinding[] _bindings;
 
-        private DeviceHost(GameItem item, List<object> components, List<DeviceStateAdapter> adapters)
+        private DeviceHost(GameItem item, DeviceBinding[] bindings)
         {
             Item = item;
-            _components = components;
-            _adapters = adapters;
+            _bindings = bindings;
 
-            for (int i = 0; i < components.Count; i++)
+            for (int i = 0; i < bindings.Length; i++)
             {
-                object component = components[i];
+                object device = bindings[i].Device;
 
                 if (Router == null)
                 {
-                    Router = component as IFlowRouter;
+                    Router = device as IFlowRouter;
                 }
 
                 if (Reactor == null)
                 {
-                    Reactor = component as IFlowDevice;
+                    Reactor = device as IFlowDevice;
                 }
             }
         }
 
-        /// <summary>
-        /// 唯一构建入口：为每个装置创建适配器并从 tag 回灌一次。
-        /// 绑定与注册分离，<see cref="DeviceRegistry"/> 不再重复创建适配器。
-        /// </summary>
-        public static DeviceHost Create(GameItem item, List<object> components)
+        /// <summary>唯一出生入口：每个定义由适配器创建一台完整初始化的装置。</summary>
+        public static DeviceHost Create(GameItem item, List<DeviceDefinition> definitions)
         {
-            GameItemTagStore tags = new GameItemTagStore(item);
-            List<DeviceStateAdapter> adapters = new List<DeviceStateAdapter>(components.Count);
+            DeviceBinding[] bindings = new DeviceBinding[definitions.Count];
 
-            for (int i = 0; i < components.Count; i++)
+            for (int i = 0; i < definitions.Count; i++)
             {
-                DeviceStateAdapter adapter = DeviceAdapterCatalog.CreateAdapter(components[i]);
-                adapter.Load(tags);
-                adapters.Add(adapter);
+                DeviceDefinition definition = definitions[i];
+                object device = definition.Adapter.Create(item);
+                bindings[i] = new DeviceBinding(definition.Adapter, device);
             }
 
-            return new DeviceHost(item, components, adapters);
+            return new DeviceHost(item, bindings);
         }
 
         public GameItem Item { get; }
@@ -64,28 +68,45 @@ namespace FluxForge.Mod
 
         public IFlowDevice Reactor { get; private set; }
 
-        /// <summary>本物品上的全部 Logic 装置实例。</summary>
-        public IReadOnlyList<object> Components
+        public IReadOnlyList<DeviceBinding> Bindings
         {
-            get { return _components; }
-        }
-
-        /// <summary>与 <see cref="Components"/> 一一对应的状态适配器。</summary>
-        public IReadOnlyList<DeviceStateAdapter> Adapters
-        {
-            get { return _adapters; }
+            get { return _bindings; }
         }
 
         /// <summary>是否有尚未回写的装置状态；由 <see cref="DeviceStateSync"/> 维护。</summary>
         public bool IsDirty { get; set; }
 
-        /// <summary>装置 Changed 订阅入口；委托身份按 target + method 比较，退订可用同一方法组。</summary>
+        /// <summary>tag → 已有装置；不重新创建。</summary>
+        public void LoadAll()
+        {
+            for (int i = 0; i < _bindings.Length; i++)
+            {
+                DeviceBinding binding = _bindings[i];
+                binding.Adapter.Load(Item, binding.Device);
+            }
+        }
+
+        /// <summary>已有装置 → tag；返回是否有任一适配器实际写入。</summary>
+        public bool SaveAll()
+        {
+            bool changed = false;
+
+            for (int i = 0; i < _bindings.Length; i++)
+            {
+                DeviceBinding binding = _bindings[i];
+                changed |= binding.Adapter.Save(Item, binding.Device);
+            }
+
+            return changed;
+        }
+
+        /// <summary>装置 Changed 订阅入口；委托身份按 target + method 比较。</summary>
         public void OnDeviceChanged(IFlowNotifier sender)
         {
             DeviceStateSync.MarkDirty(this);
         }
 
-        /// <summary>装置 Exhausted 订阅入口：同步回写后注销并移除物品。</summary>
+        /// <summary>装置 Exhausted 订阅入口：同步回写后注销并从载体移除。</summary>
         public void OnDeviceExhausted(IFlowNotifier sender)
         {
             DeviceStateSync.Exhausted(this);

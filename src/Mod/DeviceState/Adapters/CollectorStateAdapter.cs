@@ -1,43 +1,59 @@
+using System.Collections.Generic;
+
 namespace FluxForge.Mod
 {
-    /// <summary>收集装置适配器：按属性注册表读写全部液体与标量存量。</summary>
-    [DeviceAdapter("collector", typeof(CollectorDevice))]
+    /// <summary>
+    /// 收集装置适配器：存量是整份 <see cref="FlowProperties"/>，无法用单成员字段表表达，
+    /// 因此覆写 Load / Save，按属性注册表逐槽读写。
+    /// </summary>
+    [DeviceAdapter("collector")]
     public sealed class CollectorStateAdapter : DeviceStateAdapter<CollectorDevice>
     {
-        public CollectorStateAdapter(CollectorDevice device)
-            : base(device)
+        /// <summary>按 tag 读出完整存量构造装置。</summary>
+        protected override CollectorDevice CreateDevice(GameItem item)
         {
+            return new CollectorDevice(ReadStock(item));
         }
 
-        /// <summary>回灌全部存量槽位；缺 tag 时读取为 0。</summary>
-        public override void Load(ITagStore tags)
+        /// <summary>整体替换已有装置的存量，不重建装置。</summary>
+        protected override void LoadDevice(GameItem item, CollectorDevice device)
         {
-            foreach (FlowPropertyTag property in FlowPropertyTags.All)
-            {
-                double value = property.Kind == FlowPropertyKind.Liquid
-                    ? tags.ReadInt(property.Tag)
-                    : tags.ReadDouble(property.Tag);
-                TypedDevice.Stock.Set(property.Key, value);
-            }
+            device.ReplaceStock(ReadStock(item));
         }
 
-        /// <summary>写回全部属性，返回是否有值实际变化。</summary>
-        public override bool Save(ITagStore tags)
+        /// <summary>写回全部属性槽；液体按 int、标量按 double，返回是否有值实际变化。</summary>
+        protected override bool SaveDevice(GameItem item, CollectorDevice device)
         {
             bool changed = false;
+            FlowProperties stock = device.Stock;
+
             foreach (FlowPropertyTag property in FlowPropertyTags.All)
             {
-                if (property.Kind == FlowPropertyKind.Liquid)
-                {
-                    changed |= tags.WriteInt(property.Tag, (int)TypedDevice.Stock.Get(property.Key));
-                }
-                else
-                {
-                    changed |= tags.WriteDouble(property.Tag, TypedDevice.Stock.Get(property.Key));
-                }
+                double value = stock.Get(property.Key);
+
+                changed |= property.Kind == FlowPropertyKind.Liquid
+                    ? GameItemTags.WriteInt(item, property.Tag, (int)value)
+                    : GameItemTags.WriteDouble(item, property.Tag, value);
             }
 
             return changed;
+        }
+
+        /// <summary>缺 tag 读作 0，写不进任何未声明的属性。</summary>
+        private static FlowProperties ReadStock(GameItem item)
+        {
+            FlowProperties stock = new FlowProperties();
+
+            foreach (FlowPropertyTag property in FlowPropertyTags.All)
+            {
+                double value = property.Kind == FlowPropertyKind.Liquid
+                    ? GameItemTags.ReadInt(item, property.Tag)
+                    : GameItemTags.ReadDouble(item, property.Tag);
+
+                stock.Set(property.Key, value);
+            }
+
+            return stock;
         }
     }
 }

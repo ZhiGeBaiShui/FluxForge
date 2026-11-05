@@ -1,27 +1,41 @@
+using System.Collections.Generic;
+
 namespace FluxForge.Mod
 {
-    /// <summary>冰块装置适配器：水量用 int tag，温度用 double tag。</summary>
-    [DeviceAdapter("ice_block", typeof(IceBlockDevice))]
+    /// <summary>
+    /// 冰块装置适配器：水量走 int tag，温度走 double tag。
+    ///
+    /// Create 按 tag 直接构造装置；Load / Save 由字段表驱动，不重建装置。
+    /// </summary>
+    [DeviceAdapter("ice_block")]
     public sealed class IceBlockStateAdapter : DeviceStateAdapter<IceBlockDevice>
     {
-        public IceBlockStateAdapter(IceBlockDevice device)
-            : base(device)
+        /// <summary>成员映射；适配器本身无实例字段。</summary>
+        private static readonly TagField<IceBlockDevice>[] Fields =
         {
+            TagFields.Int<IceBlockDevice>(
+                FlowTagNaming.Water,
+                device => device.Water,
+                (device, value) => device.Water = value),
+
+            TagFields.Double<IceBlockDevice>(
+                FlowTagNaming.ContainerTemperature,
+                device => device.Temperature,
+                (device, value) => device.Temperature = value),
+        };
+
+        /// <inheritdoc/>
+        protected override IReadOnlyList<TagField<IceBlockDevice>> FieldMap
+        {
+            get { return Fields; }
         }
 
-        /// <summary>回灌水量与温度；缺 tag 时读取为 0。</summary>
-        public override void Load(ITagStore tags)
+        /// <summary>水量按 int tag 读取，温度按 double tag 读取。</summary>
+        protected override IceBlockDevice CreateDevice(GameItem item)
         {
-            TypedDevice.Water = tags.ReadInt(FlowTagNaming.Water);
-            TypedDevice.Temperature = tags.ReadDouble(FlowTagNaming.ContainerTemperature);
-        }
-
-        /// <summary>写回全部状态，返回是否有值实际变化。</summary>
-        public override bool Save(ITagStore tags)
-        {
-            bool changed = tags.WriteInt(FlowTagNaming.Water, (int)TypedDevice.Water);
-            changed |= tags.WriteDouble(FlowTagNaming.ContainerTemperature, TypedDevice.Temperature);
-            return changed;
+            return new IceBlockDevice(
+                GameItemTags.ReadInt(item, FlowTagNaming.Water),
+                GameItemTags.ReadDouble(item, FlowTagNaming.ContainerTemperature));
         }
     }
 }

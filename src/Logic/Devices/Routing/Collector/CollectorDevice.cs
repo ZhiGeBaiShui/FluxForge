@@ -40,9 +40,10 @@ namespace FluxForge
             remove { }
         }
 
-        public CollectorDevice()
+        /// <summary>按一份已有存量初始化；入口默认朝上。</summary>
+        public CollectorDevice(FlowProperties stock)
         {
-            _stock = new FlowProperties();
+            _stock = stock;
             _facing = 0;   // 默认入口朝上
         }
 
@@ -70,6 +71,15 @@ namespace FluxForge
         public FlowProperties Stock
         {
             get { return _stock; }
+        }
+
+        /// <summary>
+        /// 整体替换存量：<see cref="Stock"/> 每次吸收后都会换成新对象，
+        /// 回灌只能替换引用，不能指望旧对象被就地改写。回灌不播报 <see cref="Changed"/>。
+        /// </summary>
+        public void ReplaceStock(FlowProperties stock)
+        {
+            _stock = stock;
         }
 
         /// <inheritdoc/>

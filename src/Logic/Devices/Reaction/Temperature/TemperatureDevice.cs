@@ -14,7 +14,7 @@ namespace FluxForge
     ///
     /// 只改属性、不改流向，所以不实现 <see cref="IFlowRouter"/>（没有 Facing）。
     /// 温度是装置定义的一部分、运行期不变，所以也没有状态播报事件；
-    /// 初始温度由 mod 层适配器直接写进公开的 <see cref="Temperature"/>。
+    /// 初始温度由 mod 层适配器在创建时给出（构造函数或公开的 <see cref="Temperature"/>）。
     /// </summary>
     public sealed class TemperatureDevice : IFlowDevice
     {
@@ -23,6 +23,12 @@ namespace FluxForge
         /// 正 = 升温这么多度，负 = 降温这么多度，0 = 什么都不做。
         /// </summary>
         public double Temperature { get; set; }
+
+        /// <summary>按给定温度增量初始化。</summary>
+        public TemperatureDevice(double temperature)
+        {
+            Temperature = temperature;
+        }
 
         /// <summary>
         /// 反应入口：把 <see cref="Temperature"/> 加到流源温度上。

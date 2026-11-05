@@ -1,181 +1,139 @@
-using System.Collections.Generic;
+using System;
+using FluxForge;
 using FluxForge.Mod;
 using Xunit;
 
 namespace FluxForge.Tests
 {
     /// <summary>
-    /// 装置状态适配器 + tag 命名契约。
+    /// 装置状态适配器 + tag 命名契约：Create / Load / Save 与 GameItem 的映射。
     ///
-    /// 测试用 <see cref="FakeTagStore"/> 复刻 <c>GameItemTagStore</c> 的「不存在不读、
-    /// 零值不建 tag、等值不写」语义，因此这些用例同时钉住了适配器的读写范围和跳过规则。
-    /// 全部是纯内存对象，无全局状态、无随机、无时序依赖。
+    /// 测试用 GameStubs.cs 的最小 <see cref="GameItem"/> / <see cref="TagSystem"/> /
+    /// <see cref="TagState"/> 复刻游戏语义：读 modifiedState、写 state、缺失读 0、
+    /// 零值不建 tag、等值不写。全部是纯内存对象，无全局状态、无随机、无时序依赖。
     /// </summary>
     public class DeviceStateAdapterTests
     {
-        /// <summary>
-        /// 内存版 <see cref="ITagStore"/>，语义与 <c>GameItemTagStore</c> 一致：
-        ///   · 读不存在的 tag 返回 0；
-        ///   · 写不存在的零值直接返回 false，不创建 tag；
-        ///   · 写已有 tag 且值相等返回 false，否则写值并 Enable。
-        /// 一个 tag 同时持有 int / double 两个槽位，对应原版 <c>TagState</c>。
-        /// </summary>
-        private sealed class FakeTagStore : ITagStore
-        {
-            private sealed class Entry
-            {
-                public int IntValue;
-                public double DoubleValue;
-                public bool Enabled;
-            }
-
-            private readonly Dictionary<string, Entry> _entries = new Dictionary<string, Entry>();
-
-            /// <summary>当前存在的 tag 数。用来验证「不把零值写成新 tag」。</summary>
-            public int Count
-            {
-                get { return _entries.Count; }
-            }
-
-            public bool Exists(string tag)
-            {
-                return _entries.ContainsKey(tag);
-            }
-
-            public int ReadInt(string tag)
-            {
-                Entry entry;
-                return _entries.TryGetValue(tag, out entry) ? entry.IntValue : 0;
-            }
-
-            public double ReadDouble(string tag)
-            {
-                Entry entry;
-                return _entries.TryGetValue(tag, out entry) ? entry.DoubleValue : 0d;
-            }
-
-            public bool WriteInt(string tag, int value)
-            {
-                Entry entry;
-                if (_entries.TryGetValue(tag, out entry))
-                {
-                    if (entry.IntValue == value)
-                    {
-                        return false;
-                    }
-                }
-                else
-                {
-                    if (value == 0)
-                    {
-                        return false;
-                    }
-
-                    entry = new Entry();
-                    _entries.Add(tag, entry);
-                }
-
-                entry.Enabled = true;
-                entry.IntValue = value;
-                return true;
-            }
-
-            public bool WriteDouble(string tag, double value)
-            {
-                Entry entry;
-                if (_entries.TryGetValue(tag, out entry))
-                {
-                    if (entry.DoubleValue == value)
-                    {
-                        return false;
-                    }
-                }
-                else
-                {
-                    if (value == 0d)
-                    {
-                        return false;
-                    }
-
-                    entry = new Entry();
-                    _entries.Add(tag, entry);
-                }
-
-                entry.Enabled = true;
-                entry.DoubleValue = value;
-                return true;
-            }
-
-            /// <summary>tag 是否处于 enabled 状态（写入方 Enable 后的预期）。</summary>
-            public bool IsEnabled(string tag)
-            {
-                return _entries[tag].Enabled;
-            }
-        }
-
         [Fact]
-        public void IceBlock_Load_ReadsWaterIntAndTemperatureDouble()
+        public void IceBlock_Create_ReadsWaterIntAndTemperatureDouble()
         {
-            FakeTagStore tags = new FakeTagStore();
-            tags.WriteInt(FlowTagNaming.Water, 7);
-            tags.WriteDouble(FlowTagNaming.ContainerTemperature, -3.5d);
+            GameItem item = new GameItem();
+            item.SetModifiedTag(FlowTagNaming.Water, 7);
+            item.SetModifiedTag(FlowTagNaming.ContainerTemperature, -3.5d);
 
-            IceBlockDevice device = new IceBlockDevice();
-            IceBlockStateAdapter adapter = new IceBlockStateAdapter(device);
+            IceBlockDevice device = Assert.IsType<IceBlockDevice>(
+                new IceBlockStateAdapter().Create(item));
 
-            adapter.Load(tags);
-
-            Assert.Same(device, adapter.Device);
             Assert.Equal(7d, device.Water);
             Assert.Equal(-3.5d, device.Temperature);
         }
 
         [Fact]
-        public void IceBlock_Save_WritesBothTags_AndSecondSaveIsUnchanged()
+        public void IceBlock_Load_UpdatesExistingInstance_WithoutRecreating()
         {
-            IceBlockDevice device = new IceBlockDevice(5d, -2d);
-            IceBlockStateAdapter adapter = new IceBlockStateAdapter(device);
-            FakeTagStore tags = new FakeTagStore();
+            IceBlockStateAdapter adapter = new IceBlockStateAdapter();
 
-            Assert.True(adapter.Save(tags));
+            GameItem oldItem = new GameItem();
+            oldItem.SetModifiedTag(FlowTagNaming.Water, 7);
+            oldItem.SetModifiedTag(FlowTagNaming.ContainerTemperature, -3.5d);
+            IceBlockDevice device = Assert.IsType<IceBlockDevice>(adapter.Create(oldItem));
 
-            Assert.Equal(2, tags.Count);
-            Assert.True(tags.Exists(FlowTagNaming.Water));
-            Assert.True(tags.Exists(FlowTagNaming.ContainerTemperature));
-            Assert.Equal(5, tags.ReadInt(FlowTagNaming.Water));
-            Assert.Equal(-2d, tags.ReadDouble(FlowTagNaming.ContainerTemperature));
-            Assert.True(tags.IsEnabled(FlowTagNaming.Water));
-            Assert.True(tags.IsEnabled(FlowTagNaming.ContainerTemperature));
+            GameItem newItem = new GameItem();
+            newItem.SetModifiedTag(FlowTagNaming.Water, 2);
+            newItem.SetModifiedTag(FlowTagNaming.ContainerTemperature, -4.5d);
+
+            adapter.Load(newItem, device);
+
+            Assert.Equal(2d, device.Water);
+            Assert.Equal(-4.5d, device.Temperature);
+        }
+
+        [Fact]
+        public void IceBlock_Save_WritesStateTags_AndSecondSaveIsUnchanged()
+        {
+            IceBlockStateAdapter adapter = new IceBlockStateAdapter();
+            GameItem item = new GameItem();
+            IceBlockDevice device = Assert.IsType<IceBlockDevice>(adapter.Create(item));
+
+            // Water 是 double 成员、tag 是 int：写回按旧行为截断。
+            device.Water = 5.9d;
+            device.Temperature = -2.5d;
+
+            Assert.True(adapter.Save(item, device));
+
+            Assert.Equal(2, item.state.dict.Count);
+            TagState water = item.state.dict[FlowTagNaming.Water];
+            TagState temperature = item.state.dict[FlowTagNaming.ContainerTemperature];
+            Assert.Equal(5, water.GetInt());
+            Assert.True(water.Enabled);
+            Assert.Equal(-2.5d, temperature.GetDouble());
+            Assert.True(temperature.Enabled);
+
+            // Save 只写 state；读快照 modifiedState 仍为空。
+            Assert.False(item.modifiedState.dict.ContainsKey(FlowTagNaming.Water));
+            Assert.False(item.modifiedState.dict.ContainsKey(FlowTagNaming.ContainerTemperature));
 
             // 第二次 Save 值没变：每个 WriteXxx 都返回 false，聚合结果也必须是 false。
-            Assert.False(adapter.Save(tags));
+            Assert.False(adapter.Save(item, device));
         }
 
         [Fact]
         public void IceBlock_Save_ZeroState_DoesNotCreateTags()
         {
-            IceBlockDevice device = new IceBlockDevice();
-            IceBlockStateAdapter adapter = new IceBlockStateAdapter(device);
-            FakeTagStore tags = new FakeTagStore();
+            IceBlockStateAdapter adapter = new IceBlockStateAdapter();
+            GameItem item = new GameItem();
+            IceBlockDevice device = Assert.IsType<IceBlockDevice>(adapter.Create(item));
 
-            Assert.False(adapter.Save(tags));
-            Assert.Equal(0, tags.Count);
+            Assert.False(adapter.Save(item, device));
+            Assert.Empty(item.state.dict);
         }
 
         [Fact]
-        public void Collector_Load_AppliesAllTagValues_IncludingAbsentAsZero()
+        public void GameItemTags_WriteInt_ExistingNonZeroTag_AcceptsZero()
         {
-            FakeTagStore tags = new FakeTagStore();
-            tags.WriteInt(FlowTagNaming.Water, 30);
-            tags.WriteDouble(FlowTagNaming.ContainerTemperature, 12.5d);
+            // 冰块耗尽路径：CURRENT_PART_WATER 已存在且非零，必须能写回 0 并触发提交。
+            GameItem item = new GameItem();
+            Assert.True(GameItemTags.WriteInt(item, FlowTagNaming.Water, 3));
 
-            CollectorDevice device = new CollectorDevice();
+            Assert.True(GameItemTags.WriteInt(item, FlowTagNaming.Water, 0));
 
-            // 存量里已有一份值，但对应 tag 不存在——适配器只执行同步，缺失读作 0。
-            device.Stock.Set(FlowProps.Fat, 99d);
+            TagState water = item.state.dict[FlowTagNaming.Water];
+            Assert.Equal(0, water.GetInt());
+            Assert.True(water.Enabled);
 
-            CollectorStateAdapter adapter = new CollectorStateAdapter(device);
-            adapter.Load(tags);
+            // 已经是 0：值没变，不再返回 true。
+            Assert.False(GameItemTags.WriteInt(item, FlowTagNaming.Water, 0));
+        }
+
+        [Fact]
+        public void IceBlock_Create_MatchesDefaultThenLoad_ForSameTags()
+        {
+            GameItem item = new GameItem();
+            item.SetModifiedTag(FlowTagNaming.Water, 7);
+            item.SetModifiedTag(FlowTagNaming.ContainerTemperature, -3.5d);
+
+            DeviceStateAdapter adapter = DeviceAdapterCatalog.Get("ice_block").Adapter;
+            IceBlockDevice created = Assert.IsType<IceBlockDevice>(adapter.Create(item));
+
+            // 有状态装置：Create 等价于「默认构造 + Load」同一份 tag。
+            IceBlockDevice loaded = new IceBlockDevice(0d, 0d);
+            adapter.Load(item, loaded);
+
+            Assert.Equal(created.Water, loaded.Water);
+            Assert.Equal(created.Temperature, loaded.Temperature);
+            Assert.Equal(7d, created.Water);
+            Assert.Equal(-3.5d, created.Temperature);
+        }
+
+        [Fact]
+        public void Collector_Create_ReadsStockFromTags()
+        {
+            GameItem item = new GameItem();
+            item.SetModifiedTag(FlowTagNaming.Water, 30);
+            item.SetModifiedTag(FlowTagNaming.ContainerTemperature, 12.5d);
+
+            CollectorDevice device = Assert.IsType<CollectorDevice>(
+                new CollectorStateAdapter().Create(item));
 
             Assert.Equal(30d, device.Stock.Get(FlowProps.Water));
             Assert.Equal(12.5d, device.Stock.Get(FlowProps.Temperature));
@@ -183,97 +141,208 @@ namespace FluxForge.Tests
         }
 
         [Fact]
-        public void Collector_Save_OnlyWaterValue_WritesExactlyOneTag()
+        public void Collector_Create_MatchesDefaultThenLoad_ForSameTags()
         {
-            CollectorDevice device = new CollectorDevice();
-            device.Stock.Set(FlowProps.Water, 42d);
+            GameItem item = new GameItem();
+            item.SetModifiedTag(FlowTagNaming.Water, 30);
+            item.SetModifiedTag(FlowTagNaming.ContainerTemperature, 12.5d);
 
-            CollectorStateAdapter adapter = new CollectorStateAdapter(device);
-            FakeTagStore tags = new FakeTagStore();
+            DeviceStateAdapter adapter = DeviceAdapterCatalog.Get("collector").Adapter;
+            CollectorDevice created = Assert.IsType<CollectorDevice>(adapter.Create(item));
 
-            Assert.True(adapter.Save(tags));
+            // 默认空存量 + Load 必须得到与 Create 完全相同的整份存量。
+            CollectorDevice loaded = new CollectorDevice(new FlowProperties());
+            adapter.Load(item, loaded);
 
-            // 其余 36 个槽位都是 0：WriteXxx 的「不存在 + 零值」规则应拒绝建 tag。
-            Assert.Equal(1, tags.Count);
-            Assert.Equal(42, tags.ReadInt(FlowTagNaming.Water));
-            Assert.False(tags.Exists(FlowTagNaming.ContainerTemperature));
-            Assert.False(tags.Exists(FlowTagNaming.ForProperty("fat", FlowPropertyKind.Liquid)));
+            foreach (FlowPropertyTag property in FlowPropertyTags.All)
+            {
+                Assert.Equal(
+                    created.Stock.Get(property.Key),
+                    loaded.Stock.Get(property.Key));
+            }
+
+            Assert.Equal(30d, created.Stock.Get(FlowProps.Water));
+            Assert.Equal(12.5d, created.Stock.Get(FlowProps.Temperature));
         }
 
         [Fact]
-        public void Collector_TemperatureScalar_RoundTripsThroughExistingDoubleTag()
+        public void Collector_Load_ReplacesExistingStock()
         {
-            CollectorDevice source = new CollectorDevice();
+            CollectorStateAdapter adapter = new CollectorStateAdapter();
+
+            GameItem oldItem = new GameItem();
+            oldItem.SetModifiedTag(FlowTagNaming.Water, 5);
+            CollectorDevice device = Assert.IsType<CollectorDevice>(adapter.Create(oldItem));
+            device.Stock.Set(FlowProps.Fat, 99d);
+            FlowProperties stockBefore = device.Stock;
+
+            GameItem item = new GameItem();
+            item.SetModifiedTag(FlowTagNaming.Water, 30);
+            item.SetModifiedTag(FlowTagNaming.ContainerTemperature, 12.5d);
+
+            adapter.Load(item, device);
+
+            // 回灌整体替换存量引用，不改写旧对象。
+            Assert.NotSame(stockBefore, device.Stock);
+            Assert.Equal(30d, device.Stock.Get(FlowProps.Water));
+            Assert.Equal(12.5d, device.Stock.Get(FlowProps.Temperature));
+            Assert.Equal(0d, device.Stock.Get(FlowProps.Fat));
+        }
+
+        [Fact]
+        public void Collector_Save_SparseStock_WritesExactlyOneTag()
+        {
+            CollectorStateAdapter adapter = new CollectorStateAdapter();
+            GameItem item = new GameItem();
+            CollectorDevice device = Assert.IsType<CollectorDevice>(adapter.Create(item));
+            device.Stock.Set(FlowProps.Water, 42d);
+
+            Assert.True(adapter.Save(item, device));
+
+            // 其余 36 个槽位都是 0：WriteXxx 的「不存在 + 零值」规则应拒绝建 tag。
+            Assert.Single(item.state.dict);
+            Assert.Equal(42, item.state.dict[FlowTagNaming.Water].GetInt());
+            Assert.True(item.state.dict[FlowTagNaming.Water].Enabled);
+            Assert.False(item.state.dict.ContainsKey(FlowTagNaming.ContainerTemperature));
+            Assert.False(item.state.dict.ContainsKey(
+                FlowTagNaming.ForProperty("fat", FlowPropertyKind.Liquid)));
+        }
+
+        [Fact]
+        public void Collector_TemperatureScalar_RoundTripsThroughDoubleTag()
+        {
+            CollectorStateAdapter adapter = new CollectorStateAdapter();
+            GameItem item = new GameItem();
+            CollectorDevice source = Assert.IsType<CollectorDevice>(adapter.Create(item));
             source.Stock.Set(FlowProps.Temperature, 12.5d);
 
-            CollectorStateAdapter saveAdapter = new CollectorStateAdapter(source);
-            FakeTagStore tags = new FakeTagStore();
-            tags.WriteDouble(FlowTagNaming.ContainerTemperature, 0.1d);
+            Assert.True(adapter.Save(item, source));
+            Assert.Single(item.state.dict);
+            Assert.Equal(12.5d, item.state.dict[FlowTagNaming.ContainerTemperature].GetDouble());
 
-            Assert.True(saveAdapter.Save(tags));
-            Assert.Equal(1, tags.Count);
-            Assert.True(tags.Exists(FlowTagNaming.ContainerTemperature));
-            Assert.Equal(12.5d, tags.ReadDouble(FlowTagNaming.ContainerTemperature));
-
-            CollectorDevice restored = new CollectorDevice();
-            CollectorStateAdapter loadAdapter = new CollectorStateAdapter(restored);
-            loadAdapter.Load(tags);
+            // modifiedState 是读快照：模拟游戏把 state 同步过去后重新创建装置。
+            item.modifiedState = item.state;
+            CollectorDevice restored = Assert.IsType<CollectorDevice>(adapter.Create(item));
 
             Assert.Equal(12.5d, restored.Stock.Get(FlowProps.Temperature));
             Assert.Equal(0d, restored.Stock.Get(FlowProps.Water));
         }
 
         [Fact]
-        public void TemperatureConfig_Load_AppliesTag_AndSaveIsFalse()
+        public void Temperature_Create_UsesTag_AndLoadOverwrites()
         {
-            FakeTagStore tags = new FakeTagStore();
-            tags.WriteDouble(FlowTagNaming.ContainerTemperature, 8.5d);
+            TemperatureConfigAdapter adapter = new TemperatureConfigAdapter();
 
-            TemperatureDevice device = new TemperatureDevice();
-            device.Temperature = 3d;
-
-            TemperatureConfigAdapter adapter = new TemperatureConfigAdapter(device);
-
-            adapter.Load(tags);
-            Assert.Same(device, adapter.Device);
+            GameItem initial = new GameItem();
+            initial.SetModifiedTag(FlowTagNaming.ContainerTemperature, 8.5d);
+            TemperatureDevice device = Assert.IsType<TemperatureDevice>(adapter.Create(initial));
             Assert.Equal(8.5d, device.Temperature);
 
-            // 适配器不做存在性判断：缺失 tag 读到 0，覆盖当前配置值。
-            FakeTagStore emptyTags = new FakeTagStore();
-            adapter.Load(emptyTags);
+            GameItem overwrite = new GameItem();
+            overwrite.SetModifiedTag(FlowTagNaming.ContainerTemperature, -2.25d);
+            adapter.Load(overwrite, device);
+            Assert.Equal(-2.25d, device.Temperature);
+
+            // 缺失 tag 读到 0，覆盖当前配置值。
+            adapter.Load(new GameItem(), device);
             Assert.Equal(0d, device.Temperature);
-
-            // 温度是 items.json 配置：Save 永远 false，也不写 tag。
-            Assert.False(adapter.Save(emptyTags));
-            Assert.Equal(0, emptyTags.Count);
         }
 
         [Fact]
-        public void Filter_LoadIsNoOp_AndSaveIsFalse()
+        public void Temperature_Create_MatchesDefaultThenLoad_ForSameTag()
         {
-            FilterDevice device = new FilterDevice();
-            FilterStateAdapter adapter = new FilterStateAdapter(device);
-            FakeTagStore tags = new FakeTagStore();
+            GameItem item = new GameItem();
+            item.SetModifiedTag(FlowTagNaming.ContainerTemperature, 8.5d);
 
-            adapter.Load(tags);
+            DeviceStateAdapter adapter = DeviceAdapterCatalog.Get("temperature").Adapter;
+            TemperatureDevice created = Assert.IsType<TemperatureDevice>(adapter.Create(item));
 
-            Assert.Same(device, adapter.Device);
-            Assert.False(adapter.Save(tags));
-            Assert.Equal(0, tags.Count);
+            TemperatureDevice loaded = new TemperatureDevice(0d);
+            adapter.Load(item, loaded);
+
+            Assert.Equal(created.Temperature, loaded.Temperature);
+            Assert.Equal(8.5d, created.Temperature);
         }
 
         [Fact]
-        public void Turn_LoadIsNoOp_AndSaveIsFalse()
+        public void Temperature_Save_IsFalse_AndDoesNotWriteTags()
         {
-            TurnDevice device = new TurnDevice();
-            TurnStateAdapter adapter = new TurnStateAdapter(device);
-            FakeTagStore tags = new FakeTagStore();
+            TemperatureConfigAdapter adapter = new TemperatureConfigAdapter();
+            GameItem item = new GameItem();
+            TemperatureDevice device = Assert.IsType<TemperatureDevice>(adapter.Create(item));
+            device.Temperature = 12.5d;
 
-            adapter.Load(tags);
+            Assert.False(adapter.Save(item, device));
+            Assert.Empty(item.state.dict);
+        }
 
-            Assert.Same(device, adapter.Device);
-            Assert.False(adapter.Save(tags));
-            Assert.Equal(0, tags.Count);
+        [Fact]
+        public void Filter_CreateReturnsFilter_AndLoadSaveAreNoOps()
+        {
+            FilterStateAdapter adapter = new FilterStateAdapter();
+            GameItem item = new GameItem();
+            FilterDevice device = Assert.IsType<FilterDevice>(adapter.Create(item));
+
+            adapter.Load(item, device);
+
+            Assert.False(adapter.Save(item, device));
+            Assert.Empty(item.state.dict);
+        }
+
+        [Fact]
+        public void TJunction_CreateReturnsTJunction_AndLoadSaveAreNoOps()
+        {
+            TJunctionStateAdapter adapter = new TJunctionStateAdapter();
+            GameItem item = new GameItem();
+            TJunctionDevice device = Assert.IsType<TJunctionDevice>(adapter.Create(item));
+
+            adapter.Load(item, device);
+
+            Assert.False(adapter.Save(item, device));
+            Assert.Empty(item.state.dict);
+        }
+
+        /// <summary>TagFields 映射的测试目标：字段与可写属性各一个。</summary>
+        private sealed class TagFieldTarget
+        {
+            public int Count;
+            public double Ratio { get; set; }
+        }
+
+        [Fact]
+        public void TagFields_SimpleMembers_MapLoadAndSave()
+        {
+            TagField<TagFieldTarget> count
+                = TagFields.Int<TagFieldTarget>(
+                    "TEST_COUNT",
+                    target => target.Count,
+                    (target, value) => target.Count = value);
+
+            TagField<TagFieldTarget> ratio
+                = TagFields.Double<TagFieldTarget>(
+                    "TEST_RATIO",
+                    target => target.Ratio,
+                    (target, value) => target.Ratio = value);
+
+            GameItem item = new GameItem();
+            item.SetModifiedTag("TEST_COUNT", 11);
+            item.SetModifiedTag("TEST_RATIO", 0.25d);
+
+            TagFieldTarget target = new TagFieldTarget();
+            count.Load(item, target);
+            ratio.Load(item, target);
+            Assert.Equal(11, target.Count);
+            Assert.Equal(0.25d, target.Ratio);
+
+            target.Count = 12;
+            target.Ratio = 0.5d;
+            Assert.True(count.Save(item, target));
+            Assert.True(ratio.Save(item, target));
+            Assert.Equal(12, item.state.dict["TEST_COUNT"].GetInt());
+            Assert.Equal(0.5d, item.state.dict["TEST_RATIO"].GetDouble());
+
+            Assert.False(count.Save(item, target));
+            Assert.False(ratio.Save(item, target));
         }
 
         [Fact]

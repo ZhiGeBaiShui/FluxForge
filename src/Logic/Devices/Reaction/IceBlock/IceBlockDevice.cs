@@ -47,12 +47,6 @@ namespace FluxForge
         /// <summary>温度（摄氏度）。</summary>
         public double Temperature { get; set; }
 
-        /// <summary>目录工厂用：空冰块（0 冰、0 ℃），实际状态随后由 tag 回灌覆盖。</summary>
-        public IceBlockDevice()
-            : this(0d, 0d)
-        {
-        }
-
         public IceBlockDevice(double water, double temperature)
         {
             Water = water;

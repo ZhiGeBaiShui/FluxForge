@@ -5,14 +5,8 @@ namespace FluxForge.Mod
     /// <summary>
     /// GameItem → DeviceHost 的唯一注册表。
     ///
-    /// 一件物品只有一个 Host；Host 内部同时持有全部 Logic 装置、
-    /// Router / Reactor 角色和一一对应的状态适配器。
-    ///
-    /// 生命周期：
-    ///   DeviceHost.Create 构建装置与适配器（先回灌 tag）
-    ///   Register    建立正 / 反查表，订阅 IFlowNotifier.Changed / Exhausted
-    ///   Unregister  退订、摘除全部反查项、清掉脏标记
-    ///   Clear       整体失效
+    /// Host 内部持有 (Key, Adapter, Device) 绑定；Registry 只负责正反查与事件订阅。
+    /// 装置由 Adapter 在 Host.Create 中创建一次，之后 Load/Save 不重建。
     /// </summary>
     public static class DeviceRegistry
     {
@@ -23,15 +17,14 @@ namespace FluxForge.Mod
         private static readonly Dictionary<object, GameItem> _deviceItems
             = new Dictionary<object, GameItem>();
 
-        /// <summary>Host 已由 <see cref="DeviceHost.Create"/> 构建并完成 tag 回灌。</summary>
         public static void Register(DeviceHost host)
         {
             _hosts.Add(host.Item, host);
 
-            IReadOnlyList<object> components = host.Components;
-            for (int i = 0; i < components.Count; i++)
+            IReadOnlyList<DeviceBinding> bindings = host.Bindings;
+            for (int i = 0; i < bindings.Count; i++)
             {
-                _deviceItems.Add(components[i], host.Item);
+                _deviceItems.Add(bindings[i].Device, host.Item);
             }
 
             Subscribe(host);
@@ -42,10 +35,10 @@ namespace FluxForge.Mod
             DeviceHost host = _hosts[item];
             Unsubscribe(host);
 
-            IReadOnlyList<object> components = host.Components;
-            for (int i = 0; i < components.Count; i++)
+            IReadOnlyList<DeviceBinding> bindings = host.Bindings;
+            for (int i = 0; i < bindings.Count; i++)
             {
-                _deviceItems.Remove(components[i]);
+                _deviceItems.Remove(bindings[i].Device);
             }
 
             _hosts.Remove(item);
@@ -91,16 +84,13 @@ namespace FluxForge.Mod
             return host == null ? null : host.Reactor;
         }
 
-        /// <summary>订阅装置播报；Changed 只标脏，Exhausted 同步回写后注销。</summary>
         private static void Subscribe(DeviceHost host)
         {
-            IReadOnlyList<DeviceStateAdapter> adapters = host.Adapters;
+            IReadOnlyList<DeviceBinding> bindings = host.Bindings;
 
-            for (int i = 0; i < adapters.Count; i++)
+            for (int i = 0; i < bindings.Count; i++)
             {
-                object device = adapters[i].Device;
-
-                IFlowNotifier notifier = device as IFlowNotifier;
+                IFlowNotifier notifier = bindings[i].Device as IFlowNotifier;
                 if (notifier != null)
                 {
                     notifier.Changed += host.OnDeviceChanged;
@@ -109,16 +99,13 @@ namespace FluxForge.Mod
             }
         }
 
-        /// <summary>退订；与 <see cref="Subscribe"/> 使用同一组方法组委托，按 target + method 相等退订。</summary>
         private static void Unsubscribe(DeviceHost host)
         {
-            IReadOnlyList<DeviceStateAdapter> adapters = host.Adapters;
+            IReadOnlyList<DeviceBinding> bindings = host.Bindings;
 
-            for (int i = 0; i < adapters.Count; i++)
+            for (int i = 0; i < bindings.Count; i++)
             {
-                object device = adapters[i].Device;
-
-                IFlowNotifier notifier = device as IFlowNotifier;
+                IFlowNotifier notifier = bindings[i].Device as IFlowNotifier;
                 if (notifier != null)
                 {
                     notifier.Changed -= host.OnDeviceChanged;

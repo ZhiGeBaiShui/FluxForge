@@ -21,7 +21,7 @@ namespace FluxForge.Mod
                 return;
             }
 
-            DeviceStateSync.Load(host);
+            host.LoadAll();
         }
     }
 }

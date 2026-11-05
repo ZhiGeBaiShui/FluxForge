@@ -111,7 +111,7 @@ namespace FluxForge.Mod
             DeviceHost host = DeviceRegistry.GetHost(item);
             if (host != null)
             {
-                DeviceStateSync.Load(host);
+                host.LoadAll();
             }
 
             return true;

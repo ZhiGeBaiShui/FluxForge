@@ -53,8 +53,9 @@ namespace FluxForge.Mod
                 runtime.Flows.KillAll();
 
                 // AddParent 时 ItemAttached 已经绑过装置；这里再调一次 Bind。
-                // 绑定是幂等的：已登记的 Host 不重建，只按读档后的 tag 重灌全部适配器，
-                // 因此不依赖挂载钩子的触发时序，也不会丢掉存档里的装置状态。
+                // 绑定是幂等的：已登记的 Host 不重建；未脏时按读档后的 tag 重灌适配器，
+                // 脏状态留待帧末 Flush，避免用旧快照覆盖待写状态。
+                // 因此不依赖挂载钩子的触发时机，也不会丢掉存档里的装置状态。
                 List<GameItem> items = runtime.Inventory.childItems;
                 if (items != null)
                 {

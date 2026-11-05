@@ -23,7 +23,7 @@ namespace FluxForge.Tests
         public void PositiveTemperatureHeatsFlow()
         {
             FlowEntity entity = MakeEntity(20d);
-            TemperatureDevice device = new TemperatureDevice { Temperature = 10d };
+            TemperatureDevice device = new TemperatureDevice(10d);
 
             bool blocked = device.TryReact(entity);
 
@@ -35,7 +35,7 @@ namespace FluxForge.Tests
         public void NegativeTemperatureCoolsFlow()
         {
             FlowEntity entity = MakeEntity(120d);
-            TemperatureDevice device = new TemperatureDevice { Temperature = -10d };
+            TemperatureDevice device = new TemperatureDevice(-10d);
 
             device.TryReact(entity);
 
@@ -46,7 +46,7 @@ namespace FluxForge.Tests
         public void ZeroTemperatureLeavesFlowUnchanged()
         {
             FlowEntity entity = MakeEntity(50d);
-            TemperatureDevice device = new TemperatureDevice();
+            TemperatureDevice device = new TemperatureDevice(0d);
 
             device.TryReact(entity);
 
@@ -57,7 +57,7 @@ namespace FluxForge.Tests
         public void RepeatedPassesAccumulate()
         {
             FlowEntity entity = MakeEntity(20d);
-            TemperatureDevice device = new TemperatureDevice { Temperature = 10d };
+            TemperatureDevice device = new TemperatureDevice(10d);
 
             device.TryReact(entity);
             device.TryReact(entity);
@@ -73,7 +73,7 @@ namespace FluxForge.Tests
             entity.Properties.Set(FlowProps.ChemicalContaminant, 500d);
             entity.Properties.Set(FlowProps.Water, 2000d);
 
-            TemperatureDevice device = new TemperatureDevice { Temperature = 30d };
+            TemperatureDevice device = new TemperatureDevice(30d);
             device.TryReact(entity);
 
             Assert.Equal(500d, entity.Properties.Get(FlowProps.ChemicalContaminant));
@@ -83,7 +83,7 @@ namespace FluxForge.Tests
         [Fact]
         public void TemperatureIsPublicConfigAndNotConsumedByReaction()
         {
-            TemperatureDevice device = new TemperatureDevice { Temperature = -15d };
+            TemperatureDevice device = new TemperatureDevice(-15d);
 
             device.TryReact(MakeEntity(10d));
 

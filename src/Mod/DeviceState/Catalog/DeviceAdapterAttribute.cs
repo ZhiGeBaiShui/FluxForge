@@ -11,15 +11,11 @@ namespace FluxForge.Mod
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = true, Inherited = false)]
     public sealed class DeviceAdapterAttribute : Attribute
     {
-        public DeviceAdapterAttribute(string key, Type deviceType)
+        public DeviceAdapterAttribute(string key)
         {
             Key = key;
-            DeviceType = deviceType;
         }
 
         public string Key { get; }
-
-        /// <summary>key 对应的具体装置类型。</summary>
-        public Type DeviceType { get; }
     }
 }

@@ -334,7 +334,7 @@ namespace FluxForge.Tests
         [Fact]
         public void CollectorDeathDuringMotion_IsNotSampledAfterStopAt()
         {
-            CollectorDevice collector = new CollectorDevice();
+            CollectorDevice collector = new CollectorDevice(new FlowProperties());
             collector.Facing = 3;   // 入口朝左，接收向右移动（direction 1）的流源
             _grid.SetRouter(1, 0, collector);
             FlowEntity entity = CreateEntity();

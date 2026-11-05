@@ -1,21 +1,13 @@
 namespace FluxForge.Mod
 {
-    /// <summary>T 形分流装置没有持久化状态，适配器只提供统一入口。</summary>
-    [DeviceAdapter("t_junction", typeof(TJunctionDevice))]
+    /// <summary>T 形分流装置没有持久化状态：只负责创建，Load / Save 为空操作。</summary>
+    [DeviceAdapter("t_junction")]
     public sealed class TJunctionStateAdapter : DeviceStateAdapter<TJunctionDevice>
     {
-        public TJunctionStateAdapter(TJunctionDevice device)
-            : base(device)
+        /// <summary>无参构造的无状态装置。</summary>
+        protected override TJunctionDevice CreateDevice(GameItem item)
         {
-        }
-
-        public override void Load(ITagStore tags)
-        {
-        }
-
-        public override bool Save(ITagStore tags)
-        {
-            return false;
+            return new TJunctionDevice();
         }
     }
 }

@@ -1,21 +1,13 @@
 namespace FluxForge.Mod
 {
-    /// <summary>转向装置没有持久化状态，适配器只提供统一入口。</summary>
-    [DeviceAdapter("turn", typeof(TurnDevice))]
+    /// <summary>转向装置没有持久化状态：只负责创建，Load / Save 为空操作。</summary>
+    [DeviceAdapter("turn")]
     public sealed class TurnStateAdapter : DeviceStateAdapter<TurnDevice>
     {
-        public TurnStateAdapter(TurnDevice device)
-            : base(device)
+        /// <summary>无参构造的无状态装置。</summary>
+        protected override TurnDevice CreateDevice(GameItem item)
         {
-        }
-
-        public override void Load(ITagStore tags)
-        {
-        }
-
-        public override bool Save(ITagStore tags)
-        {
-            return false;
+            return new TurnDevice();
         }
     }
 }

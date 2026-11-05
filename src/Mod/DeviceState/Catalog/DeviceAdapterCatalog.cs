@@ -4,102 +4,103 @@ using System.Collections.Generic;
 namespace FluxForge.Mod
 {
     /// <summary>
-    /// 装置 key → 装置类型 → 状态适配器。
+    /// 装置 key → <see cref="DeviceDefinition"/>（key + 单例适配器）。
     ///
-    /// 启动时扫描本程序集里的全部 <see cref="DeviceStateAdapter{TDevice}"/> 子类，
-    /// 读取 <see cref="DeviceAdapterAttribute"/> 建立：
-    ///   key → 装置类型
-    ///   装置类型 → 适配器类型
-    ///
-    /// 新增装置只需要写装置类、适配器类和 items.json；Logic 不再维护 key 目录。
-    /// 没有 key、key 重复、装置类型与泛型不一致都会在启动扫描时直接抛错。
+    /// 启动时扫描本程序集里的 DeviceStateAdapter&lt;&gt; 子类，读取 key-only
+    /// [DeviceAdapter] 并实例化一个适配器单例。不检查实例字段、不反射成员，
+    /// 因此不需要 dynamic-code / reflection-external capability。
     /// </summary>
     public static class DeviceAdapterCatalog
     {
-        private static readonly Catalog _catalog;
+        private static readonly Catalog _catalog = Build();
 
-        static DeviceAdapterCatalog()
-        {
-            _catalog = Build();
-        }
-
-        /// <summary>已登记的 device key。</summary>
+        /// <summary>已登记的 device key，按 ordinal 排序。</summary>
         public static IReadOnlyCollection<string> Keys
         {
-            get { return _catalog.DeviceTypes.Keys; }
+            get { return _catalog.Keys; }
         }
 
-        /// <summary>按 key 创建一台新的 Logic 装置。</summary>
-        public static object CreateDevice(string key)
+        /// <summary>按 key 取装置定义；未登记返回 false。</summary>
+        public static bool TryGet(string key, out DeviceDefinition definition)
         {
-            Type deviceType;
-            if (!_catalog.DeviceTypes.TryGetValue(key, out deviceType))
+            return _catalog.ByKey.TryGetValue(key, out definition);
+        }
+
+        /// <summary>按 key 取装置定义；未登记抛 <see cref="ArgumentException"/>。</summary>
+        public static DeviceDefinition Get(string key)
+        {
+            DeviceDefinition definition;
+            if (!_catalog.ByKey.TryGetValue(key, out definition))
             {
                 throw new ArgumentException(
                     "没有登记该装置 key：" + key,
                     nameof(key));
             }
 
-            return Activator.CreateInstance(deviceType);
+            return definition;
         }
 
-        /// <summary>按装置实例创建对应的状态适配器。</summary>
-        public static DeviceStateAdapter CreateAdapter(object device)
+        /// <summary>
+        /// 返回物品携带的全部装置定义（按 key ordinal 排序）。
+        /// 顺序稳定，Host 的 Router / Reactor 也按这个顺序取第一个。
+        /// </summary>
+        public static List<DeviceDefinition> FindFor(GameItem item)
         {
-            Type adapterType = ResolveAdapterType(device.GetType());
+            DeviceDefinition[] ordered = _catalog.Ordered;
+            List<DeviceDefinition> definitions = new List<DeviceDefinition>();
 
-            return (DeviceStateAdapter)Activator.CreateInstance(
-                adapterType,
-                System.Reflection.BindingFlags.Instance
-                    | System.Reflection.BindingFlags.Public
-                    | System.Reflection.BindingFlags.NonPublic,
-                null,
-                new object[] { device },
-                null);
+            for (int i = 0; i < ordered.Length; i++)
+            {
+                if (item.IsTag(ordered[i].Key))
+                {
+                    definitions.Add(ordered[i]);
+                }
+            }
+
+            return definitions;
         }
 
         private static Catalog Build()
         {
-            Catalog catalog = new Catalog();
+            List<DeviceDefinition> definitions = new List<DeviceDefinition>();
+            Dictionary<string, DeviceDefinition> byKey
+                = new Dictionary<string, DeviceDefinition>(StringComparer.Ordinal);
+
             Type[] types = typeof(DeviceAdapterCatalog).Assembly.GetTypes();
 
             for (int i = 0; i < types.Length; i++)
             {
                 Type type = types[i];
-                Type deviceType;
 
-                if (!TryGetAdapterDeviceType(type, out deviceType))
+                if (type.IsAbstract || type.ContainsGenericParameters)
                 {
                     continue;
                 }
 
-                AddKeyMappings(catalog, type, deviceType);
-            }
-
-            return catalog;
-        }
-
-        /// <summary>
-        /// 找出具体适配器声明的泛型装置基类；普通类型返回 false。
-        /// </summary>
-        private static bool TryGetAdapterDeviceType(Type type, out Type deviceType)
-        {
-            for (Type baseType = type.BaseType; baseType != null; baseType = baseType.BaseType)
-            {
-                if (baseType.IsGenericType
-                    && baseType.GetGenericTypeDefinition() == typeof(DeviceStateAdapter<>))
+                if (!IsAdapterType(type))
                 {
-                    deviceType = baseType.GetGenericArguments()[0];
-                    return true;
+                    continue;
                 }
+
+                AddAdapter(definitions, byKey, type);
             }
 
-            deviceType = null;
-            return false;
+            definitions.Sort(CompareByKey);
+
+            string[] keys = new string[definitions.Count];
+            for (int i = 0; i < definitions.Count; i++)
+            {
+                keys[i] = definitions[i].Key;
+            }
+
+            return new Catalog(byKey, definitions.ToArray(), keys);
         }
 
-        /// <summary>把一个适配器上的全部 key 写入目录，并校验装置类型。</summary>
-        private static void AddKeyMappings(Catalog catalog, Type adapterType, Type genericDeviceType)
+        /// <summary>把一个具体适配器上的全部 key 登记进目录。</summary>
+        private static void AddAdapter(
+            List<DeviceDefinition> definitions,
+            Dictionary<string, DeviceDefinition> byKey,
+            Type adapterType)
         {
             object[] attributes = adapterType.GetCustomAttributes(
                 typeof(DeviceAdapterAttribute),
@@ -111,44 +112,64 @@ namespace FluxForge.Mod
                     "状态适配器没有登记 DeviceAdapterAttribute：" + adapterType.FullName);
             }
 
+            DeviceStateAdapter adapter = (DeviceStateAdapter)Activator.CreateInstance(adapterType);
+
             for (int i = 0; i < attributes.Length; i++)
             {
                 DeviceAdapterAttribute attribute = (DeviceAdapterAttribute)attributes[i];
-                Type deviceType = attribute.DeviceType;
 
-                if (!genericDeviceType.IsAssignableFrom(deviceType) || deviceType.IsAbstract)
+                if (byKey.ContainsKey(attribute.Key))
                 {
                     throw new InvalidOperationException(
-                        "DeviceAdapter 的装置类型与适配器泛型不一致：" + adapterType.FullName
-                        + " / " + deviceType.FullName);
+                        "装置 key 重复登记：" + attribute.Key + "（" + adapterType.FullName + "）");
                 }
 
-                catalog.DeviceTypes.Add(attribute.Key, deviceType);
-                catalog.AdapterTypes.Add(deviceType, adapterType);
+                DeviceDefinition definition = new DeviceDefinition(
+                    attribute.Key,
+                    adapter);
+
+                byKey.Add(attribute.Key, definition);
+                definitions.Add(definition);
             }
         }
 
-        /// <summary>按具体装置类型精确查适配器。</summary>
-        private static Type ResolveAdapterType(Type deviceType)
+        /// <summary>判断一个具体类型是否继承自 DeviceStateAdapter&lt;&gt;。</summary>
+        private static bool IsAdapterType(Type type)
         {
-            Type adapterType;
-            if (_catalog.AdapterTypes.TryGetValue(deviceType, out adapterType))
+            for (Type baseType = type.BaseType; baseType != null; baseType = baseType.BaseType)
             {
-                return adapterType;
+                if (baseType.IsGenericType
+                    && baseType.GetGenericTypeDefinition() == typeof(DeviceStateAdapter<>))
+                {
+                    return true;
+                }
             }
 
-            throw new ArgumentException(
-                "没有为该装置登记状态适配器：" + deviceType.FullName,
-                nameof(deviceType));
+            return false;
+        }
+
+        private static int CompareByKey(DeviceDefinition left, DeviceDefinition right)
+        {
+            return string.CompareOrdinal(left.Key, right.Key);
         }
 
         private sealed class Catalog
         {
-            public readonly Dictionary<string, Type> DeviceTypes
-                = new Dictionary<string, Type>(StringComparer.OrdinalIgnoreCase);
+            public readonly Dictionary<string, DeviceDefinition> ByKey;
 
-            public readonly Dictionary<Type, Type> AdapterTypes
-                = new Dictionary<Type, Type>();
+            public readonly DeviceDefinition[] Ordered;
+
+            public readonly string[] Keys;
+
+            public Catalog(
+                Dictionary<string, DeviceDefinition> byKey,
+                DeviceDefinition[] ordered,
+                string[] keys)
+            {
+                ByKey = byKey;
+                Ordered = ordered;
+                Keys = keys;
+            }
         }
     }
 }
