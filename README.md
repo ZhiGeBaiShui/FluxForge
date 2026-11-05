@@ -253,7 +253,7 @@ bin/Release/
 dotnet test tests\FluxForge.Tests\FluxForge.Tests.csproj -c Release
 ```
 
-当前基线：**290 / 290**。
+当前基线：**310 / 310**。
 测试覆盖 Logic、Presentation、装置适配器、Catalog 和挂载编排；不替代游戏内读档/拖拽验证。
 
 ### 安装

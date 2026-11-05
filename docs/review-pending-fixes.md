@@ -4,7 +4,7 @@
 - 状态：**P0-1 已实施（有遗留）**、**P1-1 接受现状**、**P1-2 已实施**、**P2-1 backlog**、**P2-2 延后/待调研**、**P3-1 历史记录**、**P4-1 装置状态架构已实施（适配器单例化）**
 - 验证（2026-11-05，本轮）：
   - `dotnet build FluxForge.csproj -c Release --no-incremental -p:GameManagedDir="E:\SteamLibrary\steamapps\common\Probably Stolen\Probably Stolen_Data\Managed"` → 0 warning / 0 error
-  - `dotnet test tests\FluxForge.Tests\FluxForge.Tests.csproj -c Release` → 290 / 290 通过，0 失败 0 跳过
+  - `dotnet test tests\FluxForge.Tests\FluxForge.Tests.csproj -c Release` → 308 / 308 通过，0 失败 0 跳过
 - 本轮变化：`IFlowState` / `FlowTagMap` / `FlowStock.ReadInto` 路径已删除；
   装置状态改走无状态 `DeviceStateAdapter` 单例（`Create` / `Load` / `Save`）+ 静态 `GameItemTags`，
   过渡期的 `ITagStore` / `GameItemTagStore` 封装也已删除，详见 P4-1 与 `docs/device-state-architecture.md`。
@@ -384,7 +384,7 @@ Select-String -Path README.md,src/Mod/GridBuilding/Lifecycle/README.md `
 - **Mod / TagMapping** 只保留流源 / 容器的 `FlowProperties` ↔ 原生字段 tag：
   `FlowStock` + 静态 `GameItemTags`；
 - **流源 / 容器 tag 是原版字段级协议**：`CURRENT_PART_<ID>`（int µL）、
-  `CONTAINER_TEMP_TAG`（double °C），由 `FlowTagNaming.ForProperty` 定义并缓存到 `FlowPropertyTags`；
+  `CONTAINER_TEMP_TAG`（double °C）只表示流源 / 容器实际温度；装置温度变化配置用独立 `FLUXFORGE_TEMPERATURE_DELTA`；
 - **装置私有状态是适配器的一帧**：`Create` 建装置、`Load` 只更新已有实例、
   `Save` 写回 tag，事件驱动，不经过 `FlowStock`。
 
@@ -429,7 +429,7 @@ dotnet build FluxForge.csproj -c Release --no-incremental -p:GameManagedDir="E:\
 dotnet test tests\FluxForge.Tests\FluxForge.Tests.csproj -c Release
 ```
 
-本轮结果：**build 0 warning / 0 error；test 290 / 290 通过**。
+本轮结果：**build 0 warning / 0 error；test 310 / 310 通过**。
 
 ## 剩余风险 / 未覆盖
 
@@ -453,7 +453,7 @@ dotnet test tests\FluxForge.Tests\FluxForge.Tests.csproj -c Release
 本轮已完成：
   P0-1 构造期注册
   P1-2 SaveExited + EmporiumDestroyed
-  P4-1 装置状态适配器单例化 + Create/Load/Save（构建 / 290 单测通过，实机读档待验）
+  P4-1 装置状态适配器单例化 + Create/Load/Save（构建 / 308 单测通过，实机读档待验）
   P3-1 文档同步（历史记录，见上文）
 
 本轮不做：

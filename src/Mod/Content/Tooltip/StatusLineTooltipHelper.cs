@@ -51,7 +51,9 @@ namespace FluxForge.Mod
             for (int i = 0; i < def.statusLines.Length; i++)
             {
                 StatusLine line = def.statusLines[i];
-                if (line == null || line.tag != FlowTagNaming.ContainerTemperature)
+                if (line == null
+                    || (line.tag != FlowTagNaming.ContainerTemperature
+                        && line.tag != FlowTags.TemperatureDelta))
                 {
                     continue;
                 }

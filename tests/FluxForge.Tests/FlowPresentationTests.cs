@@ -49,7 +49,7 @@ namespace FluxForge.Tests
         [Fact]
         public void TemperaturePublishesHeatedOrCooled()
         {
-            TemperatureDevice device = new TemperatureDevice(0d);
+            TemperatureDevice device = new TemperatureDevice(0d, 160d, -20d);
             device.Temperature = -12d;
 
             FlowEntity entity = new FlowEntity(
@@ -79,7 +79,7 @@ namespace FluxForge.Tests
         [Fact]
         public void TemperaturePublishesHeatedWhenPositive()
         {
-            TemperatureDevice device = new TemperatureDevice(0d);
+            TemperatureDevice device = new TemperatureDevice(0d, 160d, -20d);
             device.Temperature = 12d;
 
             FlowEntity entity = new FlowEntity(
@@ -100,7 +100,7 @@ namespace FluxForge.Tests
         [Fact]
         public void TemperatureDoesNotPublishAtZero()
         {
-            TemperatureDevice device = new TemperatureDevice(0d);
+            TemperatureDevice device = new TemperatureDevice(0d, 160d, -20d);
             int count = 0;
             System.Action<FlowAudioEvent> handler = evt => count++;
 

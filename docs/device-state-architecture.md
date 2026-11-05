@@ -39,7 +39,9 @@ tag 是存档契约，但两类 tag 的读写路径不同：
 | tag | 类型 / 单位 | 来源 |
 |---|---|---|
 | `CURRENT_PART_<ID>` | int，µL（0.001 mL） | 游戏 `InitLiquidContainerItem` 创建；`FlowStock` 读写 |
-| `CONTAINER_TEMP_TAG` | double，摄氏度 | 容器 / 装置配置；`FlowStock` 读写 |
+| `CONTAINER_TEMP_TAG` | double，摄氏度 | 流源 / 容器实际温度；`FlowStock` 读写 |
+| `FLUXFORGE_TEMPERATURE_DELTA` | double，摄氏度 | 温度变化装置配置（冷阱 / 升温 / 降温共用）；正值升温，负值降温 |
+| `FLUXFORGE_TEMPERATURE_MAX` / `_MIN` | double，摄氏度 | 升温 / 降温装置的温度上下限 |
 
 tag 名只由 `FlowTagNaming.ForProperty(id, kind)` 生成；`FlowPropertyTags`
 启动时按注册表生成一次只读缓存，热路径不再拼字符串：

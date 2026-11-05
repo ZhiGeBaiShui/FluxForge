@@ -21,6 +21,12 @@ namespace FluxForge.Mod
         /// <summary>制冷元件启动。</summary>
         public const string Cooler = "fluxforge.cooler";
 
+        /// <summary>冷萃：未跨阈值的短滴落。</summary>
+        public const string ColdTrapBase = "fluxforge.coldtrap.base";
+
+        /// <summary>冷萃：跨阈值的短机械点击。</summary>
+        public const string ColdTrapCross = "fluxforge.coldtrap.cross";
+
         /// <summary>加载并登记全部自定义音效；每次 OnEnable 调用一次。</summary>
         public static void Initialize()
         {
@@ -30,6 +36,8 @@ namespace FluxForge.Mod
             Register(prefix, "sfx_filter_chemical.wav", FilterChemical);
             Register(prefix, "sfx_heater.wav", Heater);
             Register(prefix, "sfx_cooler.wav", Cooler);
+            Register(prefix, "sfx_coldtrap_base.wav", ColdTrapBase);
+            Register(prefix, "sfx_coldtrap_cross.wav", ColdTrapCross);
         }
 
         private static void Register(string prefix, string fileName, string identifier)

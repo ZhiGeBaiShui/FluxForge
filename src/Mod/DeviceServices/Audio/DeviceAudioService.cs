@@ -73,6 +73,14 @@ namespace FluxForge.Mod
                     audioId = AudioHelper.POUR_WATER2;
                     break;
 
+                case FlowSoundIds.Extracted:
+                    audioId = DeviceAudioClips.ColdTrapBase;
+                    break;
+
+                case FlowSoundIds.ExtractedCross:
+                    audioId = DeviceAudioClips.ColdTrapCross;
+                    break;
+
                 case FlowSoundIds.Melted:
                     audioId = AudioHelper.DEBRIS_IMPACT;
                     break;

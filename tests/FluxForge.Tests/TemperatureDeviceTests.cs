@@ -23,7 +23,7 @@ namespace FluxForge.Tests
         public void PositiveTemperatureHeatsFlow()
         {
             FlowEntity entity = MakeEntity(20d);
-            TemperatureDevice device = new TemperatureDevice(10d);
+            TemperatureDevice device = new TemperatureDevice(10d, 160d, -20d);
 
             bool blocked = device.TryReact(entity);
 
@@ -35,7 +35,7 @@ namespace FluxForge.Tests
         public void NegativeTemperatureCoolsFlow()
         {
             FlowEntity entity = MakeEntity(120d);
-            TemperatureDevice device = new TemperatureDevice(-10d);
+            TemperatureDevice device = new TemperatureDevice(-10d, 160d, -20d);
 
             device.TryReact(entity);
 
@@ -46,7 +46,7 @@ namespace FluxForge.Tests
         public void ZeroTemperatureLeavesFlowUnchanged()
         {
             FlowEntity entity = MakeEntity(50d);
-            TemperatureDevice device = new TemperatureDevice(0d);
+            TemperatureDevice device = new TemperatureDevice(0d, 160d, -20d);
 
             device.TryReact(entity);
 
@@ -57,7 +57,7 @@ namespace FluxForge.Tests
         public void RepeatedPassesAccumulate()
         {
             FlowEntity entity = MakeEntity(20d);
-            TemperatureDevice device = new TemperatureDevice(10d);
+            TemperatureDevice device = new TemperatureDevice(10d, 160d, -20d);
 
             device.TryReact(entity);
             device.TryReact(entity);
@@ -73,7 +73,7 @@ namespace FluxForge.Tests
             entity.Properties.Set(FlowProps.ChemicalContaminant, 500d);
             entity.Properties.Set(FlowProps.Water, 2000d);
 
-            TemperatureDevice device = new TemperatureDevice(30d);
+            TemperatureDevice device = new TemperatureDevice(30d, 160d, -20d);
             device.TryReact(entity);
 
             Assert.Equal(500d, entity.Properties.Get(FlowProps.ChemicalContaminant));
@@ -83,12 +83,34 @@ namespace FluxForge.Tests
         [Fact]
         public void TemperatureIsPublicConfigAndNotConsumedByReaction()
         {
-            TemperatureDevice device = new TemperatureDevice(-15d);
+            TemperatureDevice device = new TemperatureDevice(-15d, 160d, -20d);
 
             device.TryReact(MakeEntity(10d));
 
             // 装置温度是 items.json 的静态配置：反应只改流源，不回写装置
             Assert.Equal(-15d, device.Temperature);
+        }
+
+        [Fact]
+        public void UpperLimitClampsHeating()
+        {
+            FlowEntity entity = MakeEntity(155d);
+            TemperatureDevice device = new TemperatureDevice(10d, 160d, -20d);
+
+            device.TryReact(entity);
+
+            Assert.Equal(160d, entity.Properties.Get(FlowProps.Temperature));
+        }
+
+        [Fact]
+        public void LowerLimitClampsCooling()
+        {
+            FlowEntity entity = MakeEntity(-15d);
+            TemperatureDevice device = new TemperatureDevice(-10d, 160d, -20d);
+
+            device.TryReact(entity);
+
+            Assert.Equal(-20d, entity.Properties.Get(FlowProps.Temperature));
         }
     }
 }

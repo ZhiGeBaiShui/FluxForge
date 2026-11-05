@@ -12,7 +12,7 @@ namespace FluxForge.Mod
         {
             WaterHelper.InitLiquidContainerItem(
                 item,
-                def.capacityMl,
+                FlowCapacity.ToMillilitres(def.capacityMicrolitres),
                 0,
                 isFilterContainer: false,
                 isGraduated: false,

@@ -43,8 +43,8 @@
       "shapeWidth": 1
     },
     {
-      "key": "chem_reactor_top",
-      "atlas": "chem_reactor_top_atlas",
+      "key": "cold_trap",
+      "atlas": "cold_trap_atlas",
       "file": "chem_reactor_top.png",
       "shape": "010111010",
       "shapeWidth": 3

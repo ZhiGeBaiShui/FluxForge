@@ -10,7 +10,7 @@
       "anchorY": 0,
       "sprite": "ice_block",
       "name": "冰块",
-      "desc": "吸收流源的热量，自身逐渐融化。\n融化后水分随流源带走。",
+      "desc": "吸收流源的热量，自身逐渐融化。\n融化后水分会被流源带走。",
       "flavor": "握在手里有股刺骨的凉意。",
       "itemTypes": [
         "FLOW_DEVICE"
@@ -52,15 +52,50 @@
       ]
     },
     {
+      "key": "flow_cold_trap",
+      "device": "cold_trap",
+      "anchorX": 1,
+      "anchorY": 1,
+      "capacityMicrolitres": 1000,
+      "sprite": "cold_trap",
+      "name": "冷萃装置",
+      "desc": "会进行冷萃，抽取流源中含量最低的液体成分，存入自身。",
+      "flavor": "也许某些条件下会有更高的冷萃效率。",
+      "itemTypes": [
+        "FLOW_DEVICE"
+      ],
+      "attachments": [
+        "flow_container",
+        "device"
+      ],
+      "tags": [
+        {
+          "valueName": "FLUXFORGE_TEMPERATURE_DELTA",
+          "valueDouble": -5.0
+        },
+        {
+          "valueName": "COLD_TRAP_PHASE_THRESHOLD",
+          "valueDouble": 0.0
+        },
+        {
+          "valueName": "COLD_TRAP_BASE_EXTRACTION",
+          "valueInt": 1
+        },
+        {
+          "valueName": "COLD_TRAP_EFFICIENCY",
+          "valueDouble": 20.0
+        }
+      ]
+    },
+    {
       "key": "flow_emitter",
       "device": "collector",
       "anchorX": 1,
       "anchorY": 0,
-      "capacityMl": 1000000,
+      "capacityMicrolitres": 1000000000,
       "sprite": "flow_emitter_2x3",
       "name": "发射装置",
-      "desc": "从水容器接收水分，启动后持续向上发射流源。",
-      "flavor": "它不讲道理，只讲方向。",
+      "desc": "从容器接收液体，启动后把存量液体一次性发射出去",
       "itemTypes": [
         "FLOW_DEVICE"
       ],
@@ -106,8 +141,8 @@
       "anchorY": 0,
       "sprite": "chem_reactor_alkali",
       "name": "过滤装置",
-      "desc": "流源穿过时去除化学污染与重金属。\n温度越高，能净化到的下限越低；流速越慢，单次去除越多。",
-      "flavor": "滤芯里积着一层说不清颜色的东西。",
+      "desc": "让流源多次穿过时，可以让化学污染和重金属污染降低到一定浓度。\n流速越慢，温度越高，净化效率越高。",
+      "flavor": "高温下，净化效果更好，但也会因蒸发而损失液体。",
       "itemTypes": [
         "FLOW_DEVICE"
       ],
@@ -122,8 +157,7 @@
       "anchorY": 0,
       "sprite": "chem_reactor_heat",
       "name": "升温装置",
-      "desc": "流源经过时被加热。",
-      "flavor": "摸上去烫手，但没人敢松手。",
+      "desc": "会加热经过的流源。",
       "itemTypes": [
         "FLOW_DEVICE"
       ],
@@ -132,13 +166,21 @@
       ],
       "tags": [
         {
-          "valueName": "CONTAINER_TEMP_TAG",
+          "valueName": "FLUXFORGE_TEMPERATURE_DELTA",
           "valueDouble": 10.0
+        },
+        {
+          "valueName": "FLUXFORGE_TEMPERATURE_MAX",
+          "valueDouble": 160.0
+        },
+        {
+          "valueName": "FLUXFORGE_TEMPERATURE_MIN",
+          "valueDouble": -20.0
         }
       ],
       "statusLines": [
         {
-          "tag": "CONTAINER_TEMP_TAG",
+          "tag": "FLUXFORGE_TEMPERATURE_DELTA",
           "label": "温度变化",
           "scale": 1,
           "format": "0.#",
@@ -155,8 +197,7 @@
       "anchorY": 0,
       "sprite": "chem_reactor_cool",
       "name": "降温装置",
-      "desc": "流源经过时被冷却。",
-      "flavor": "结着一层永远化不掉的白霜。",
+      "desc": "会冷却经过的流源。",
       "itemTypes": [
         "FLOW_DEVICE"
       ],
@@ -165,13 +206,21 @@
       ],
       "tags": [
         {
-          "valueName": "CONTAINER_TEMP_TAG",
+          "valueName": "FLUXFORGE_TEMPERATURE_DELTA",
           "valueDouble": -10.0
+        },
+        {
+          "valueName": "FLUXFORGE_TEMPERATURE_MAX",
+          "valueDouble": 160.0
+        },
+        {
+          "valueName": "FLUXFORGE_TEMPERATURE_MIN",
+          "valueDouble": -20.0
         }
       ],
       "statusLines": [
         {
-          "tag": "CONTAINER_TEMP_TAG",
+          "tag": "FLUXFORGE_TEMPERATURE_DELTA",
           "label": "温度变化",
           "scale": 1,
           "format": "0.#",
@@ -188,7 +237,7 @@
       "anchorY": 0,
       "sprite": "l_turn_device",
       "name": "L 型转向装置",
-      "desc": "测试用 L 型转向装置。",
+      "desc": "可以改变流源的方向。",
       "itemTypes": [
         "FLOW_DEVICE"
       ],
@@ -200,18 +249,7 @@
       "key": "flow_straight",
       "sprite": "flow_straight",
       "name": "直通装置",
-      "desc": "流源从中间直穿而过，不改变方向或属性。",
-      "itemTypes": [
-        "FLOW_DEVICE"
-      ],
-      "attachments": []
-    },
-    {
-      "key": "chem_reactor_top",
-      "sprite": "chem_reactor_top",
-      "name": "化学反应装置（预览）",
-      "desc": "无 attachment 的视觉测试物品，用来观察流源经过通道时的透明覆盖效果。",
-      "flavor": "玻璃后面好像有什么在流动。",
+      "desc": "看起来只是一根好看的管。",
       "itemTypes": [
         "FLOW_DEVICE"
       ],
@@ -220,7 +258,7 @@
     {
       "key": "fluxforge_test_water",
       "sprite": "fluxforge_450ml_bottle",
-      "capacityMl": 450,
+      "capacityMicrolitres": 450000,
       "name": "FluxForgeTest水",
       "desc": "FluxForge 测试容器：100% 纯 水，450 mL。",
       "attachments": [
@@ -236,7 +274,7 @@
     {
       "key": "fluxforge_test_heavy_metal",
       "sprite": "fluxforge_450ml_bottle",
-      "capacityMl": 450,
+      "capacityMicrolitres": 450000,
       "name": "FluxForgeTest重金属",
       "desc": "FluxForge 测试容器：100% 纯 重金属，450 mL。",
       "attachments": [
@@ -252,7 +290,7 @@
     {
       "key": "fluxforge_test_organic_waste",
       "sprite": "fluxforge_450ml_bottle",
-      "capacityMl": 450,
+      "capacityMicrolitres": 450000,
       "name": "FluxForgeTest有机废物",
       "desc": "FluxForge 测试容器：100% 纯 有机废物，450 mL。",
       "attachments": [
@@ -268,7 +306,7 @@
     {
       "key": "fluxforge_test_microplastic",
       "sprite": "fluxforge_450ml_bottle",
-      "capacityMl": 450,
+      "capacityMicrolitres": 450000,
       "name": "FluxForgeTest微塑料",
       "desc": "FluxForge 测试容器：100% 纯 微塑料，450 mL。",
       "attachments": [
@@ -284,7 +322,7 @@
     {
       "key": "fluxforge_test_microbe",
       "sprite": "fluxforge_450ml_bottle",
-      "capacityMl": 450,
+      "capacityMicrolitres": 450000,
       "name": "FluxForgeTest微生物",
       "desc": "FluxForge 测试容器：100% 纯 微生物，450 mL。",
       "attachments": [
@@ -300,7 +338,7 @@
     {
       "key": "fluxforge_test_chemical_contaminant",
       "sprite": "fluxforge_450ml_bottle",
-      "capacityMl": 450,
+      "capacityMicrolitres": 450000,
       "name": "FluxForgeTest化学污染物",
       "desc": "FluxForge 测试容器：100% 纯 化学污染物，450 mL。",
       "attachments": [
@@ -316,7 +354,7 @@
     {
       "key": "fluxforge_test_physical_contaminant",
       "sprite": "fluxforge_450ml_bottle",
-      "capacityMl": 450,
+      "capacityMicrolitres": 450000,
       "name": "FluxForgeTest物理污染物",
       "desc": "FluxForge 测试容器：100% 纯 物理污染物，450 mL。",
       "attachments": [
@@ -332,7 +370,7 @@
     {
       "key": "fluxforge_test_mineral",
       "sprite": "fluxforge_450ml_bottle",
-      "capacityMl": 450,
+      "capacityMicrolitres": 450000,
       "name": "FluxForgeTest矿物质",
       "desc": "FluxForge 测试容器：100% 纯 矿物质，450 mL。",
       "attachments": [
@@ -348,7 +386,7 @@
     {
       "key": "fluxforge_test_dream_cap_mush",
       "sprite": "fluxforge_450ml_bottle",
-      "capacityMl": 450,
+      "capacityMicrolitres": 450000,
       "name": "FluxForgeTest梦帽菇糊",
       "desc": "FluxForge 测试容器：100% 纯 梦帽菇糊，450 mL。",
       "attachments": [
@@ -364,7 +402,7 @@
     {
       "key": "fluxforge_test_dream_cap_extract",
       "sprite": "fluxforge_450ml_bottle",
-      "capacityMl": 450,
+      "capacityMicrolitres": 450000,
       "name": "FluxForgeTest梦帽菇萃取液",
       "desc": "FluxForge 测试容器：100% 纯 梦帽菇萃取液，450 mL。",
       "attachments": [
@@ -380,7 +418,7 @@
     {
       "key": "fluxforge_test_plant_matter",
       "sprite": "fluxforge_450ml_bottle",
-      "capacityMl": 450,
+      "capacityMicrolitres": 450000,
       "name": "FluxForgeTest植物质",
       "desc": "FluxForge 测试容器：100% 纯 植物质，450 mL。",
       "attachments": [
@@ -396,7 +434,7 @@
     {
       "key": "fluxforge_test_alcohol",
       "sprite": "fluxforge_450ml_bottle",
-      "capacityMl": 450,
+      "capacityMicrolitres": 450000,
       "name": "FluxForgeTest酒精",
       "desc": "FluxForge 测试容器：100% 纯 酒精，450 mL。",
       "attachments": [
@@ -412,7 +450,7 @@
     {
       "key": "fluxforge_test_caffeine",
       "sprite": "fluxforge_450ml_bottle",
-      "capacityMl": 450,
+      "capacityMicrolitres": 450000,
       "name": "FluxForgeTest咖啡因",
       "desc": "FluxForge 测试容器：100% 纯 咖啡因，450 mL。",
       "attachments": [
@@ -428,7 +466,7 @@
     {
       "key": "fluxforge_test_protein",
       "sprite": "fluxforge_450ml_bottle",
-      "capacityMl": 450,
+      "capacityMicrolitres": 450000,
       "name": "FluxForgeTest蛋白质",
       "desc": "FluxForge 测试容器：100% 纯 蛋白质，450 mL。",
       "attachments": [
@@ -444,7 +482,7 @@
     {
       "key": "fluxforge_test_fat",
       "sprite": "fluxforge_450ml_bottle",
-      "capacityMl": 450,
+      "capacityMicrolitres": 450000,
       "name": "FluxForgeTest脂肪/油脂",
       "desc": "FluxForge 测试容器：100% 纯 脂肪/油脂，450 mL。",
       "attachments": [
@@ -460,7 +498,7 @@
     {
       "key": "fluxforge_test_starch",
       "sprite": "fluxforge_450ml_bottle",
-      "capacityMl": 450,
+      "capacityMicrolitres": 450000,
       "name": "FluxForgeTest淀粉",
       "desc": "FluxForge 测试容器：100% 纯 淀粉，450 mL。",
       "attachments": [
@@ -476,7 +514,7 @@
     {
       "key": "fluxforge_test_sugar",
       "sprite": "fluxforge_450ml_bottle",
-      "capacityMl": 450,
+      "capacityMicrolitres": 450000,
       "name": "FluxForgeTest糖",
       "desc": "FluxForge 测试容器：100% 纯 糖，450 mL。",
       "attachments": [
@@ -492,7 +530,7 @@
     {
       "key": "fluxforge_test_coffee_mush",
       "sprite": "fluxforge_450ml_bottle",
-      "capacityMl": 450,
+      "capacityMicrolitres": 450000,
       "name": "FluxForgeTest咖啡豆糊",
       "desc": "FluxForge 测试容器：100% 纯 咖啡豆糊，450 mL。",
       "attachments": [
@@ -508,7 +546,7 @@
     {
       "key": "fluxforge_test_contraceptive",
       "sprite": "fluxforge_450ml_bottle",
-      "capacityMl": 450,
+      "capacityMicrolitres": 450000,
       "name": "FluxForgeTest避孕激素",
       "desc": "FluxForge 测试容器：100% 纯 避孕激素，450 mL。",
       "attachments": [
@@ -524,7 +562,7 @@
     {
       "key": "fluxforge_test_zyanide",
       "sprite": "fluxforge_450ml_bottle",
-      "capacityMl": 450,
+      "capacityMicrolitres": 450000,
       "name": "FluxForgeTest山奈德",
       "desc": "FluxForge 测试容器：100% 纯 山奈德，450 mL。",
       "attachments": [
@@ -540,7 +578,7 @@
     {
       "key": "fluxforge_test_nightmare_extract",
       "sprite": "fluxforge_450ml_bottle",
-      "capacityMl": 450,
+      "capacityMicrolitres": 450000,
       "name": "FluxForgeTest梦魇帽菇萃取液",
       "desc": "FluxForge 测试容器：100% 纯 梦魇帽菇萃取液，450 mL。",
       "attachments": [
@@ -556,7 +594,7 @@
     {
       "key": "fluxforge_test_nightmare_cap_mush",
       "sprite": "fluxforge_450ml_bottle",
-      "capacityMl": 450,
+      "capacityMicrolitres": 450000,
       "name": "FluxForgeTest梦魇帽菇糊",
       "desc": "FluxForge 测试容器：100% 纯 梦魇帽菇糊，450 mL。",
       "attachments": [
@@ -572,7 +610,7 @@
     {
       "key": "fluxforge_test_chlorine",
       "sprite": "fluxforge_450ml_bottle",
-      "capacityMl": 450,
+      "capacityMicrolitres": 450000,
       "name": "FluxForgeTest氯",
       "desc": "FluxForge 测试容器：100% 纯 氯，450 mL。",
       "attachments": [
@@ -588,7 +626,7 @@
     {
       "key": "fluxforge_test_synaprest",
       "sprite": "fluxforge_450ml_bottle",
-      "capacityMl": 450,
+      "capacityMicrolitres": 450000,
       "name": "FluxForgeTest赛纳普斯",
       "desc": "FluxForge 测试容器：100% 纯 赛纳普斯，450 mL。",
       "attachments": [
@@ -604,7 +642,7 @@
     {
       "key": "fluxforge_test_fanta",
       "sprite": "fluxforge_450ml_bottle",
-      "capacityMl": 450,
+      "capacityMicrolitres": 450000,
       "name": "FluxForgeTest芬太",
       "desc": "FluxForge 测试容器：100% 纯 芬太，450 mL。",
       "attachments": [
@@ -620,7 +658,7 @@
     {
       "key": "fluxforge_test_methylol",
       "sprite": "fluxforge_450ml_bottle",
-      "capacityMl": 450,
+      "capacityMicrolitres": 450000,
       "name": "FluxForgeTestN-羟甲基碱",
       "desc": "FluxForge 测试容器：100% 纯 N-羟甲基碱，450 mL。",
       "attachments": [
@@ -636,7 +674,7 @@
     {
       "key": "fluxforge_test_reducing_agent",
       "sprite": "fluxforge_450ml_bottle",
-      "capacityMl": 450,
+      "capacityMicrolitres": 450000,
       "name": "FluxForgeTest还原剂",
       "desc": "FluxForge 测试容器：100% 纯 还原剂，450 mL。",
       "attachments": [
@@ -652,7 +690,7 @@
     {
       "key": "fluxforge_test_acid",
       "sprite": "fluxforge_450ml_bottle",
-      "capacityMl": 450,
+      "capacityMicrolitres": 450000,
       "name": "FluxForgeTest酸",
       "desc": "FluxForge 测试容器：100% 纯 酸，450 mL。",
       "attachments": [
@@ -668,7 +706,7 @@
     {
       "key": "fluxforge_test_base",
       "sprite": "fluxforge_450ml_bottle",
-      "capacityMl": 450,
+      "capacityMicrolitres": 450000,
       "name": "FluxForgeTest碱",
       "desc": "FluxForge 测试容器：100% 纯 碱，450 mL。",
       "attachments": [
@@ -684,7 +722,7 @@
     {
       "key": "fluxforge_test_stabilizing_agent",
       "sprite": "fluxforge_450ml_bottle",
-      "capacityMl": 450,
+      "capacityMicrolitres": 450000,
       "name": "FluxForgeTest稳定剂",
       "desc": "FluxForge 测试容器：100% 纯 稳定剂，450 mL。",
       "attachments": [
@@ -700,7 +738,7 @@
     {
       "key": "fluxforge_test_debris",
       "sprite": "fluxforge_450ml_bottle",
-      "capacityMl": 450,
+      "capacityMicrolitres": 450000,
       "name": "FluxForgeTest不溶性碎屑",
       "desc": "FluxForge 测试容器：100% 纯 不溶性碎屑，450 mL。",
       "attachments": [
@@ -716,7 +754,7 @@
     {
       "key": "fluxforge_test_lipobond_agent",
       "sprite": "fluxforge_450ml_bottle",
-      "capacityMl": 450,
+      "capacityMicrolitres": 450000,
       "name": "FluxForgeTest脂合剂",
       "desc": "FluxForge 测试容器：100% 纯 脂合剂，450 mL。",
       "attachments": [
@@ -732,7 +770,7 @@
     {
       "key": "fluxforge_test_livestock_steroid",
       "sprite": "fluxforge_450ml_bottle",
-      "capacityMl": 450,
+      "capacityMicrolitres": 450000,
       "name": "FluxForgeTest牲畜类固醇血清",
       "desc": "FluxForge 测试容器：100% 纯 牲畜类固醇血清，450 mL。",
       "attachments": [
@@ -748,7 +786,7 @@
     {
       "key": "fluxforge_test_livestock_immunity",
       "sprite": "fluxforge_450ml_bottle",
-      "capacityMl": 450,
+      "capacityMicrolitres": 450000,
       "name": "FluxForgeTest牲畜免疫血清",
       "desc": "FluxForge 测试容器：100% 纯 牲畜免疫血清，450 mL。",
       "attachments": [
@@ -764,7 +802,7 @@
     {
       "key": "fluxforge_test_wine_extract",
       "sprite": "fluxforge_450ml_bottle",
-      "capacityMl": 450,
+      "capacityMicrolitres": 450000,
       "name": "FluxForgeTest果酿萃取液",
       "desc": "FluxForge 测试容器：100% 纯 果酿萃取液，450 mL。",
       "attachments": [
@@ -780,7 +818,7 @@
     {
       "key": "fluxforge_test_nomore",
       "sprite": "fluxforge_450ml_bottle",
-      "capacityMl": 450,
+      "capacityMicrolitres": 450000,
       "name": "FluxForgeTest奥克莫吸",
       "desc": "FluxForge 测试容器：100% 纯 奥克莫吸，450 mL。",
       "attachments": [

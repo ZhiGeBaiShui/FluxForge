@@ -7,6 +7,8 @@ namespace FluxForge
         public const string Heated = "temperature.heated";
         public const string Cooled = "temperature.cooled";
         public const string Absorbed = "collector.absorbed";
+        public const string Extracted = "cold_trap.extracted";
+        public const string ExtractedCross = "cold_trap.extracted.cross";
         public const string Melted = "ice.melted";
         public const string Exhausted = "device.exhausted";
     }

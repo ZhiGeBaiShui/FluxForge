@@ -25,5 +25,29 @@ namespace FluxForge.Mod
 
         /// <summary>中心格的局部 Y 坐标，与 <see cref="AnchorX"/> 成对使用。</summary>
         public const string AnchorY = "FLUXFORGE_DEVICE_ANCHOR_Y";
+
+        /// <summary>原版液体容器的容量上限，单位 µL。</summary>
+        public const string LiquidContainerCapacity = "LIQUID_CONTAINER_CAPACITY";
+
+        /// <summary>
+        /// 装置配置：每次经过时对流源施加的温度变化（°C）。
+        /// 正值 = 升温，负值 = 降温；冷阱与温度装置共用。
+        /// </summary>
+        public const string TemperatureDelta = "FLUXFORGE_TEMPERATURE_DELTA";
+
+        /// <summary>温度装置：流源经过后允许达到的最高温度（°C）。</summary>
+        public const string TemperatureMax = "FLUXFORGE_TEMPERATURE_MAX";
+
+        /// <summary>温度装置：流源经过后允许达到的最低温度（°C）。</summary>
+        public const string TemperatureMin = "FLUXFORGE_TEMPERATURE_MIN";
+
+        /// <summary>冷阱：相变温度阈值（°C）。</summary>
+        public const string ColdTrapPhaseThreshold = "COLD_TRAP_PHASE_THRESHOLD";
+
+        /// <summary>冷阱：未跨阈值时的基础抽提量（µL）。</summary>
+        public const string ColdTrapBaseExtraction = "COLD_TRAP_BASE_EXTRACTION";
+
+        /// <summary>冷阱：跨阈值时的效率倍率。</summary>
+        public const string ColdTrapEfficiency = "COLD_TRAP_EFFICIENCY";
     }
 }

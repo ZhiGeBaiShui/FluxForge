@@ -156,6 +156,8 @@ namespace FluxForge.Mod
         public string sprite { get; set; }
 
         /// <summary>显示名（空则留空）。</summary>
+        // TODO(l10n): name / desc / flavor / statusLines.label 目前直接存中文；
+        // 支持多语言前应改为 key + 分语言资源，不要把这些显示文本当技术 tag。
         public string name { get; set; }
 
         /// <summary>正文说明（写入 shortDescription；空则留空）。支持 \n 换行与富文本标签。</summary>
@@ -194,7 +196,7 @@ namespace FluxForge.Mod
         /// <c>WaterHelper.InitLiquidContainerItem</c>；
         /// 不声明 = 0，即不给这件物品容器身份。
         /// </summary>
-        public int capacityMl { get; set; }
+        public int capacityMicrolitres { get; set; }
 
         /// <summary>
         /// 行为装配件名列表（对应 <see cref="ItemAttachment.Name"/>），按声明顺序执行。

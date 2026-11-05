@@ -4,11 +4,13 @@ namespace FluxForge.Mod
     [DeviceAdapter("temperature")]
     public sealed class TemperatureConfigAdapter : DeviceStateAdapter<TemperatureDevice>
     {
-        /// <summary>按 tag 里的温度增量构造装置。</summary>
+        /// <summary>按装置配置 tag 里的温度增量构造装置。</summary>
         protected override TemperatureDevice CreateDevice(GameItem item)
         {
             return new TemperatureDevice(
-                GameItemTags.ReadDouble(item, FlowTagNaming.ContainerTemperature));
+                GameItemTags.ReadDouble(item, FlowTags.TemperatureDelta),
+                GameItemTags.ReadDouble(item, FlowTags.TemperatureMax),
+                GameItemTags.ReadDouble(item, FlowTags.TemperatureMin));
         }
 
         /// <summary>运行期回灌配置值，不重建装置。</summary>
@@ -16,7 +18,7 @@ namespace FluxForge.Mod
         {
             device.Temperature = GameItemTags.ReadDouble(
                 item,
-                FlowTagNaming.ContainerTemperature);
+                FlowTags.TemperatureDelta);
         }
 
         /// <summary>温度配置来自 items.json，运行期不回写。</summary>

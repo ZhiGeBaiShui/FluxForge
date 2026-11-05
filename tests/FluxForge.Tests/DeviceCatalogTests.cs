@@ -14,6 +14,7 @@ namespace FluxForge.Tests
     {
         private static readonly string[] ExpectedKeys =
         {
+            "cold_trap",
             "collector",
             "filter",
             "temperature",
@@ -27,6 +28,7 @@ namespace FluxForge.Tests
         private static readonly Dictionary<string, Type> ExpectedDeviceTypes =
             new Dictionary<string, Type>(StringComparer.Ordinal)
             {
+                { "cold_trap", typeof(ColdTrapDevice) },
                 { "collector", typeof(CollectorDevice) },
                 { "filter", typeof(FilterDevice) },
                 { "temperature", typeof(TemperatureDevice) },

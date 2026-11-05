@@ -234,12 +234,18 @@ namespace FluxForge.Tests
             TemperatureConfigAdapter adapter = new TemperatureConfigAdapter();
 
             GameItem initial = new GameItem();
-            initial.SetModifiedTag(FlowTagNaming.ContainerTemperature, 8.5d);
+            initial.SetModifiedTag(FlowTags.TemperatureDelta, 8.5d);
+            initial.SetModifiedTag(FlowTags.TemperatureMax, 160d);
+            initial.SetModifiedTag(FlowTags.TemperatureMin, -20d);
             TemperatureDevice device = Assert.IsType<TemperatureDevice>(adapter.Create(initial));
             Assert.Equal(8.5d, device.Temperature);
+            Assert.Equal(160d, device.MaxTemperature);
+            Assert.Equal(-20d, device.MinTemperature);
 
             GameItem overwrite = new GameItem();
-            overwrite.SetModifiedTag(FlowTagNaming.ContainerTemperature, -2.25d);
+            overwrite.SetModifiedTag(FlowTags.TemperatureDelta, -2.25d);
+            overwrite.SetModifiedTag(FlowTags.TemperatureMax, 160d);
+            overwrite.SetModifiedTag(FlowTags.TemperatureMin, -20d);
             adapter.Load(overwrite, device);
             Assert.Equal(-2.25d, device.Temperature);
 
@@ -252,12 +258,14 @@ namespace FluxForge.Tests
         public void Temperature_Create_MatchesDefaultThenLoad_ForSameTag()
         {
             GameItem item = new GameItem();
-            item.SetModifiedTag(FlowTagNaming.ContainerTemperature, 8.5d);
+            item.SetModifiedTag(FlowTags.TemperatureDelta, 8.5d);
+            item.SetModifiedTag(FlowTags.TemperatureMax, 160d);
+            item.SetModifiedTag(FlowTags.TemperatureMin, -20d);
 
             DeviceStateAdapter adapter = DeviceAdapterCatalog.Get("temperature").Adapter;
             TemperatureDevice created = Assert.IsType<TemperatureDevice>(adapter.Create(item));
 
-            TemperatureDevice loaded = new TemperatureDevice(0d);
+            TemperatureDevice loaded = new TemperatureDevice(0d, 160d, -20d);
             adapter.Load(item, loaded);
 
             Assert.Equal(created.Temperature, loaded.Temperature);

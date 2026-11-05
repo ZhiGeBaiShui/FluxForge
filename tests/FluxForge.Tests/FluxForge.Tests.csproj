@@ -39,8 +39,10 @@
     <Compile Include="..\..\src\Mod\DeviceState\Contracts\DeviceStateFields.cs" />
     <Compile Include="..\..\src\Mod\DeviceState\Naming\FlowTagNaming.cs" />
     <Compile Include="..\..\src\Mod\DeviceState\Naming\FlowPropertyTags.cs" />
+    <Compile Include="..\..\src\Mod\TagMapping\Definitions\FlowTags.cs" />
     <Compile Include="..\..\src\Mod\DeviceState\Adapters\IceBlockStateAdapter.cs" />
     <Compile Include="..\..\src\Mod\DeviceState\Adapters\CollectorStateAdapter.cs" />
+    <Compile Include="..\..\src\Mod\DeviceState\Adapters\ColdTrapStateAdapter.cs" />
     <Compile Include="..\..\src\Mod\DeviceState\Adapters\TemperatureConfigAdapter.cs" />
     <Compile Include="..\..\src\Mod\DeviceState\Adapters\FilterStateAdapter.cs" />
     <Compile Include="..\..\src\Mod\DeviceState\Adapters\TurnStateAdapter.cs" />
