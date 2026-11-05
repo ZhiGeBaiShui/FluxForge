@@ -32,7 +32,7 @@
 - D2: Superseded: `[DeviceAdapter(key)]`; device type comes from the adapter generic.
 - D3: Add `CollectorDevice(FlowProperties)` + `ReplaceStock`.
 - D4: Remove parameterless constructors from IceBlock/Temperature/Collector after cutover.
-- D5: Skip `LoadAll` when `host.IsDirty` during rebind.
+- D5: Superseded: no dirty flag; rebind always calls `LoadAll`.
 - D6: Superseded: `TagFields.Int/Double` takes explicit getter/setter delegates (no `Expression.Compile`).
 - D7: Delete Mod tag-store wrappers; keep game `TagState`.
 - D8: Accept one extra Load after initial Create/reconcile.

@@ -1,6 +1,9 @@
 # 装置适配器单例化与 Create/Load 迁移设计
 
 > 状态：**已实施**（2026-11-05）
+>
+> 2026-11-06 更新：本文中的 `IsDirty` / 帧末 `Flush` 已删除；
+> 当前实现是 `Changed` 立即 `SaveAll`、`ValidateShapeState` 立即 `LoadAll`。
 > 基线：commit `2a4c2fa`；实施后 build 0 warning / 0 error，test 290 / 290
 
 ## 1. 结论
@@ -396,7 +399,7 @@ Create 和 Load 各写一份 tag 读取
 | D2 | 已废止：attribute 只保留 key；装置类型由适配器泛型参数确定。 |
 | D3 | Collector 使用 `CollectorDevice(FlowProperties stock)` + `ReplaceStock`，Create 直接完整初始化。 |
 | D4 | 切换后删除 `IceBlockDevice` / `TemperatureDevice` / `CollectorDevice` 的无参构造。 |
-| D5 | 已有 Host 重新 Bind 且 `IsDirty` 时跳过 `LoadAll`。 |
+| D5 | 已废止：已有 Host 重新 Bind 时立即 `LoadAll`。 |
 | D6 | 已废止：字段表使用 `TagFields.Int/Double(tag, getter, setter)` 显式委托，避免 `Expression.Compile` 触发 dynamic-code。 |
 | D7 | 删除 Mod 的 `ITagStore` / `GameItemTagStore` / `FakeTagStore`；游戏自身 `TagState` 作为内部实现保留。 |
 | D8 | 接受首次 Create 后的 ValidateShapeState 再 Load 一次；不在 Host 上增加“首次 reconcile 跳过”状态。 |

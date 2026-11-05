@@ -40,16 +40,15 @@
 3. 在 `assets/items.json` 声明 `"device": "xxx"`、`"anchorX"`、`"anchorY"` 和 `"attachments": ["device"]`；要进流量机网格再加 `"itemTypes": ["FLOW_DEVICE"]`。
 4. 不要在物品创建或附件里手动 `new` 装置。统一走 `ItemDeviceBinding.Bind`：
    - 没有 Host：`DeviceHost.Create` → `adapter.Create`，只创建一次；
-   - 已有 Host 且未脏：`LoadAll`，用 tag 更新已有实例；
-   - 已有 Host 且脏：跳过 `LoadAll`，等帧末回写。
+   - 已有 Host：立即 `LoadAll`，用 tag 更新已有实例。
 5. 装置状态同步不要手写。Logic 装置只发 `IFlowNotifier.Changed` / `Exhausted`：
 
    ```text
-   Changed   → DeviceStateSync.MarkDirty → 帧末 host.SaveAll → 有变化才 ItemTagCommit.Commit
+   Changed   → host.SaveAll → 有变化才 ItemTagCommit.Commit
    Exhausted → SaveAll → DeviceRegistry.Unregister → Expel
    ```
 
-   游戏侧直接改 tag 后的回灌由 `DeviceStateReconcilePatch`（`ValidateShapeState` 后、未脏时 `LoadAll`）和 `FlowRuntime`（`FlowStock.Write` 后 `LoadAll`）负责。
+   游戏侧直接改 tag 后的回灌由 `DeviceStateReconcilePatch`（`ValidateShapeState` 后立即 `LoadAll`）和 `FlowRuntime`（`FlowStock.Write` 后 `LoadAll`）负责。
 6. 运行测试：
 
    ```powershell
@@ -88,7 +87,7 @@
 | `DeviceHost.Create` / `LoadAll` / `SaveAll` / `Bindings` | 每件物品的 `DeviceBinding(Adapter, Device)` 列表与聚合读写；`Create` 是唯一出生入口 |
 | `ItemDeviceBinding.Bind` | 确保装置存在；重复调用安全，已有实例不重建 |
 | `DeviceRegistry.Register` / `Unregister` / `Clear` / `GetHost` / `GetRouter` / `GetReactor` / `GetItemForDevice` | 物品 ↔ Host、装置反查，并订阅 `IFlowNotifier` |
-| `DeviceStateSync.MarkDirty` / `Flush` / `Exhausted` / `Forget` / `Clear` | 标脏、帧末回写、耗尽清理；通常由编排调用 |
+| `DeviceStateSync.Save` / `Exhausted` | Changed 立即回写、耗尽清理；通常由编排调用 |
 | `GameItemTags.ReadInt` / `ReadDouble` / `WriteInt` / `WriteDouble` | 单 tag 读写；读快照、写活动状态 |
 | `FlowTagNaming.ForProperty` / `FlowPropertyTags.All` | 属性 id + 种类 → 原版 tag 名；启动期只读缓存 |
 | `FlowStock.Read` / `Write` / `Total` | 整份流源 / 容器属性 ↔ 原生液体 tag |

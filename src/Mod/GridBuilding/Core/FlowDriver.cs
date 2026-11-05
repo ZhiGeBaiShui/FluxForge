@@ -39,9 +39,6 @@ namespace FluxForge.Mod
                     Retire(runtime);
                 }
             }
-
-            // 一帧内所有装置变化聚合到帧末统一回写；干净时这里不遍历任何装置。
-            DeviceStateSync.Flush();
         }
 
         /// <summary>

@@ -20,11 +20,7 @@ namespace FluxForge.Mod
             DeviceHost bound = DeviceRegistry.GetHost(item);
             if (bound != null)
             {
-                if (!bound.IsDirty)
-                {
-                    bound.LoadAll();
-                }
-
+                bound.LoadAll();
                 return true;
             }
 

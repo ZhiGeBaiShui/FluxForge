@@ -42,7 +42,6 @@ namespace FluxForge.Mod
             }
 
             _hosts.Remove(item);
-            DeviceStateSync.Forget(host);
         }
 
         public static void Clear()
@@ -54,7 +53,6 @@ namespace FluxForge.Mod
 
             _hosts.Clear();
             _deviceItems.Clear();
-            DeviceStateSync.Clear();
         }
 
         /// <summary>取该物品的 Host；普通物品没有 Host，返回 null。</summary>

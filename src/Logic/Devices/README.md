@@ -74,4 +74,4 @@
 - 在 `Load` 里重建装置会让 `DeviceRegistry` 的设备反查、音频和动画引用全部失效；`Load` 只更新已有实例。
 - 手写 tag 同步会绕过 `DeviceStateSync`；使用 `Expression.Compile` 还可能触发扫描器的权限拒绝。状态变化只发 `Changed`。
 - 状态字段不公开，或适配器字段表漏项，`Load` 回灌不到、`Save` 也写不回；`DeviceStateAdapter<TDevice>` 只按声明的字段表搬运。
-- 不实现 `IFlowNotifier`，状态变化不会标脏，帧末不会回写，tooltip 与存档会停在旧值。
+- 不实现 `IFlowNotifier`，状态变化不会回写 tag，tooltip 与存档会停在旧值。

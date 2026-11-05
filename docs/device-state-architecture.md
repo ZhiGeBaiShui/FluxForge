@@ -26,7 +26,7 @@ tag 是存档契约，但两类 tag 的读写路径不同：
 | 层 | 拥有 | 不拥有 |
 |---|---|---|
 | **Logic**（`src/Logic`） | 语义状态（`IceBlockDevice.Water`、`CollectorDevice.Stock` 等）、行为（`TryReact` / `Route`）、事件（`IFlowNotifier`） | `GameItem`、`TagState`、tag 名、存档、Unity |
-| **Mod / DeviceState**（`src/Mod/DeviceState`） | `DeviceStateAdapter` / `DeviceStateAdapter<TDevice>`、`DeviceDefinition`、`DeviceAdapterCatalog`（启动扫描 + 单例适配器）、每个装置的适配器、`FlowTagNaming`、`FlowPropertyTags`、`DeviceStateSync`（脏标记 + 帧末 flush） | 生命周期、注册表、事件源 |
+| **Mod / DeviceState**（`src/Mod/DeviceState`） | `DeviceStateAdapter` / `DeviceStateAdapter<TDevice>`、`DeviceDefinition`、`DeviceAdapterCatalog`（启动扫描 + 单例适配器）、每个装置的适配器、`FlowTagNaming`、`FlowPropertyTags`、`DeviceStateSync`（Changed 立即回写） | 生命周期、注册表、事件源 |
 | **Mod / DeviceServices**（`src/Mod/DeviceServices`） | 装置实例的构造与登记、`DeviceHost`（`(Key, Adapter, Device)` 绑定）/ `DeviceRegistry` | tag 名与槽位语义 |
 | **Mod / TagMapping**（`src/Mod/TagMapping`） | 流源 / 容器的 `FlowProperties` ↔ 原生字段 tag、`GameItemTags`（单 tag 读写） | 装置私有状态 |
 
@@ -155,7 +155,7 @@ DeviceStateAdapter<TDevice> 子类
 ```text
 ItemDeviceBinding.Bind(item)
   → 已有 Host
-      → IsDirty ? 跳过 : host.LoadAll()
+      → host.LoadAll()
       → 返回 true（幂等，不重建装置）
   → definitions = DeviceAdapterCatalog.FindFor(item)
   → definitions.Count == 0 → 返回 false（普通物品）
@@ -169,7 +169,7 @@ ItemDeviceBinding.Bind(item)
 `Load` 只更新已有装置实例，绝不重新创建。绑定发生在「物品进入网格」(#2)
 与「读档完成」(#6)；`ItemAttachment` 只负责把 `device` / anchor 等身份信息写成 tag。
 
-### 4.2 装置变化上传：脏标记 + 帧末 flush
+### 4.2 装置变化上传：立即回写
 
 `DeviceRegistry` 订阅每个装置的 `IFlowNotifier.Changed` / `IFlowNotifier.Exhausted`，
 经 `DeviceHost` 转给 `DeviceStateSync`：
@@ -178,7 +178,7 @@ ItemDeviceBinding.Bind(item)
 装置修改语义状态
   ├─ IFlowNotifier.Changed（sender = 装置实例）
   │   → DeviceHost.OnDeviceChanged
-  │   → DeviceStateSync.MarkDirty(host)（不写 tag）
+  │   → DeviceStateSync.Save(host)（立即写 tag）
   └─ IFlowNotifier.Exhausted（sender = 装置实例）
       → DeviceHost.OnDeviceExhausted
       → DeviceStateSync.Exhausted(host)
@@ -186,18 +186,12 @@ ItemDeviceBinding.Bind(item)
           → 有变化才 ItemTagCommit.Commit（内部先 SyncModifiedState）
       → DeviceRegistry.Unregister(item)
       → item.parentInventory.Expel(item)
-
-每次 FlowDriver.Update 末尾（一帧一次，遍历完全部网格之后）
-  → DeviceStateSync.Flush()
-      → 遍历 dirty 的 DeviceHost（先清 IsDirty）
-      → changed = host.SaveAll()
-      → changed 才 ItemTagCommit.Commit(item)（内部先 SyncModifiedState）
 ```
 
 要点：
 
 - 事件是 `Action<IFlowNotifier>`，sender 是装置实例；Mod 用 sender 反查 Host；
-- 普通的 `Changed` 只标脏，不在事件栈里写 tag；一帧内的多次变化合并成一次写入；
+- `Changed` 在事件栈里立即写 tag，不做帧末合并；
 - `Exhausted` 是例外：必须**先同步回写**再注销 / 移出，否则物品离开后写不进 tag；
 - 先播报 `Changed` 再播报 `Exhausted`（冰块化完的顺序），保证最终状态先落 tag；
 - `host.SaveAll()` 遍历全部 `DeviceBinding` 调 `adapter.Save(item, device)`；
@@ -209,9 +203,8 @@ ItemDeviceBinding.Bind(item)
 
 游戏原版会直接改物品 tag（倒水、药物溶解、环境降温等），不经过装置事件。
 `DeviceStateReconcilePatch`（`GameItem.ValidateShapeState` postfix）在快照刷新后
-只做一件事：`DeviceRegistry.GetHost(item)` 取到 Host，且 Host 未脏时调
-`host.LoadAll()`，把 tag 的新值灌回已有装置。它**不写 tag、不做 finalize**；
-Host 已脏时跳过，避免用旧快照覆盖尚未 flush 的装置状态。
+只做一件事：`DeviceRegistry.GetHost(item)` 取到 Host 后立即 `host.LoadAll()`，
+把 tag 的新值灌回已有装置。它**不写 tag、不做 finalize**。
 
 这条规则沿用旧 `DeviceTagSyncPatch` 的时机：**挂在快照刷新之后**，而不是挂在
 `ModifyTag` 上；否则 `modifiedState` 可能还是上一轮快照。
@@ -277,7 +270,7 @@ FlowRuntime.Emit(item)
 3. Mod：不需要额外注册；`DeviceAdapterCatalog` 启动扫描会建立
    `key → DeviceDefinition`。重复 key 在扫描时抛错；未登记 key 的 `Get` 抛
    `ArgumentException`。
-4. Mod：`DeviceRegistry` 订阅事件、`DeviceStateSync` 标脏并在帧末 `SaveAll`；
+4. Mod：`DeviceRegistry` 订阅事件、`DeviceStateSync` 在 `Changed` 时立即 `SaveAll`；
    `ItemTagCommit.Commit`（内部先 `SyncModifiedState`）由 `DeviceStateSync` 统一调用。
 5. `items.json`：声明 `device` key、anchor、附件。
 6. 测试：`DeviceAdapterCatalog` 契约测试 + 适配器测试 + 挂载编排测试（最小 `GameItem` 桩，

@@ -174,11 +174,10 @@ tooltip 显示新值，装置仍用旧状态
 
 ### 装置状态回写
 
-装置变化只标脏，帧末统一：
+装置变化立即回写：
 
 ```text
-Changed → DeviceStateSync.MarkDirty
-帧末 → host.SaveAll()
+Changed → host.SaveAll()
 有变化 → ItemTagCommit.Commit
 ```
 
@@ -216,7 +215,7 @@ Changed → DeviceStateSync.MarkDirty
 | `DeviceRegistry` | 物品 ↔ 装置、Router / Reactor 反查 |
 | `FlowStock` | 流源/容器整份属性 ↔ 原生 tag |
 | `GameItemTags` | 单 tag 静态读写；读 `modifiedState`，写 `state` |
-| `DeviceStateSync` | Changed 标脏、帧末 flush、Exhausted 处理 |
+| `DeviceStateSync` | Changed 立即 SaveAll、Exhausted 处理 |
 
 各模块的完整 API 与扩展步骤见：
 

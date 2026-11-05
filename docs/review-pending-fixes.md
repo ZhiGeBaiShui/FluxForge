@@ -403,7 +403,7 @@ Select-String -Path README.md,src/Mod/GridBuilding/Lifecycle/README.md `
 | `src/Mod/DeviceState/Naming/FlowPropertyTags.cs` | 启动期属性 → tag 名只读缓存；热路径不再拼字符串 |
 | `src/Mod/DeviceState/Catalog/DeviceDefinition.cs` | key / 装置类型 / 单例适配器 |
 | `src/Mod/DeviceState/Catalog/DeviceAdapterCatalog.cs` | 扫描并校验适配器；`Keys` / `TryGet` / `Get` / `FindFor` |
-| `src/Mod/DeviceState/Sync/DeviceStateSync.cs` | 标脏 + `FlowDriver.Update` 帧末 `SaveAll`；`Exhausted` 同步回写 |
+| `src/Mod/DeviceState/Sync/DeviceStateSync.cs` | `Changed` 立即 `SaveAll`；`Exhausted` 同步回写 |
 | `src/Mod/DeviceState/Adapters/*StateAdapter.cs` | 8 个无状态适配器：Create / Load / Save 各装置字段 ↔ tag |
 | `src/Mod/TagMapping/Core/GameItemTags.cs` | 静态单 tag 工具：读 `modifiedState` / 写 `state` / 等值与零值跳过 |
 | `src/Mod/TagMapping/Core/FlowStock.cs` | 流源 / 容器 `FlowProperties` 读写 |

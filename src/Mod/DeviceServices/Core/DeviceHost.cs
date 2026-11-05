@@ -73,9 +73,6 @@ namespace FluxForge.Mod
             get { return _bindings; }
         }
 
-        /// <summary>是否有尚未回写的装置状态；由 <see cref="DeviceStateSync"/> 维护。</summary>
-        public bool IsDirty { get; set; }
-
         /// <summary>tag → 已有装置；不重新创建。</summary>
         public void LoadAll()
         {
@@ -100,10 +97,10 @@ namespace FluxForge.Mod
             return changed;
         }
 
-        /// <summary>装置 Changed 订阅入口；委托身份按 target + method 比较。</summary>
+        /// <summary>装置 Changed 订阅入口：立即写 tag，不排队。</summary>
         public void OnDeviceChanged(IFlowNotifier sender)
         {
-            DeviceStateSync.MarkDirty(this);
+            DeviceStateSync.Save(this);
         }
 
         /// <summary>装置 Exhausted 订阅入口：同步回写后注销并从载体移除。</summary>

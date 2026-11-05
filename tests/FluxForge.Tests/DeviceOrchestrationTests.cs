@@ -7,12 +7,11 @@ using Xunit;
 namespace FluxForge.Tests
 {
     /// <summary>
-    /// 装置挂载编排：Bind → Host/Registry → Load/Save → Dirty/Flush → Exhausted。
+    /// 装置挂载编排：Bind → Host/Registry → Load/Save → Exhausted。
     ///
-    /// 覆盖 Mod 层的静态流程（<see cref="ItemDeviceBinding"/> / <see cref="DeviceRegistry"/> /
-    /// <see cref="DeviceStateSync"/>），全部使用 GameStubs.cs 的最小 <see cref="GameItem"/>
-    /// 与 <see cref="ItemTagCommit"/> 桩。Registry / Sync 是进程级静态状态，因此每个用例
-    /// 前后都清空，避免用例之间互相污染。
+    /// Load 由 Bind / ValidateShapeState 立即触发；Save 由 Changed 立即触发。
+    /// 全部使用 GameStubs.cs 的最小 <see cref="GameItem"/> 与
+    /// <see cref="ItemTagCommit"/> 桩。Registry 是进程级静态状态，每个用例前后清空。
     /// </summary>
     public class DeviceOrchestrationTests : IDisposable
     {
@@ -26,10 +25,8 @@ namespace FluxForge.Tests
             ResetStaticState();
         }
 
-        /// <summary>清空 Registry / 脏队列并重置提交计数；用例开始与结束各调用一次。</summary>
         private static void ResetStaticState()
         {
-            DeviceStateSync.Clear();
             DeviceRegistry.Clear();
             ItemTagCommit.CommitCount = 0;
         }
@@ -70,25 +67,16 @@ namespace FluxForge.Tests
         }
 
         [Fact]
-        public void Bind_OnDirtyHost_SkipsStaleLoad_AndCleanHostLoadsAgain()
+        public void Bind_OnExistingHost_AlwaysReloadsLatestTags()
         {
             GameItem item = NewIceItem();
             DeviceHost host = BindIceItem(item);
             IceBlockDevice device = Assert.IsType<IceBlockDevice>(host.Bindings[0].Device);
+
             device.Water = 5d;
             device.Temperature = -1d;
-
-            // 装置有尚未回写的改动：旧的 modifiedState 快照不能覆盖它。
-            host.IsDirty = true;
             item.SetModifiedTag(FlowTagNaming.Water, 99);
             item.SetModifiedTag(FlowTagNaming.ContainerTemperature, -9.5d);
-
-            Assert.True(ItemDeviceBinding.Bind(item));
-            Assert.Equal(5d, device.Water);
-            Assert.Equal(-1d, device.Temperature);
-
-            // 回写完成后 IsDirty=false，Bind 恢复 Load。
-            host.IsDirty = false;
 
             Assert.True(ItemDeviceBinding.Bind(item));
             Assert.Equal(99d, device.Water);
@@ -105,7 +93,7 @@ namespace FluxForge.Tests
         }
 
         [Fact]
-        public void MarkDirtyThenFlush_WritesStateTags_AndCommitsOnce()
+        public void Changed_WritesStateTagsImmediately_AndCommitsOnce()
         {
             GameItem item = NewIceItem();
             DeviceHost host = BindIceItem(item);
@@ -113,14 +101,8 @@ namespace FluxForge.Tests
             device.Water = 7.9d;
             device.Temperature = -3.5d;
 
-            DeviceStateSync.MarkDirty(host);
+            host.OnDeviceChanged(device);
 
-            Assert.True(host.IsDirty);
-            Assert.Equal(0, ItemTagCommit.CommitCount);
-
-            DeviceStateSync.Flush();
-
-            Assert.False(host.IsDirty);
             Assert.Equal(1, ItemTagCommit.CommitCount);
             Assert.Equal(7, item.state.dict[FlowTagNaming.Water].GetInt());
             Assert.True(item.state.dict[FlowTagNaming.Water].Enabled);
@@ -132,8 +114,8 @@ namespace FluxForge.Tests
                 -3.5d,
                 item.modifiedState.dict[FlowTagNaming.ContainerTemperature].GetDouble());
 
-            // 脏队列已清空：再 Flush 不会重复提交。
-            DeviceStateSync.Flush();
+            // 值未变化时 SaveAll 返回 false，不重复提交。
+            host.OnDeviceChanged(device);
             Assert.Equal(1, ItemTagCommit.CommitCount);
         }
 
@@ -149,7 +131,6 @@ namespace FluxForge.Tests
             device.Water = 0d;
             device.Temperature = -4.5d;
 
-            DeviceStateSync.MarkDirty(host);
             DeviceStateSync.Exhausted(host);
 
             // Save → Commit：state 落盘，快照同步后可被后续 Load 读到。
@@ -166,7 +147,6 @@ namespace FluxForge.Tests
             Assert.Equal(1, ItemTagCommit.CommitCount);
 
             // Registry：Host 与装置反查都已摘除。
-            Assert.False(host.IsDirty);
             Assert.Null(DeviceRegistry.GetHost(item));
             Assert.Throws<KeyNotFoundException>(() =>
             {
@@ -176,10 +156,6 @@ namespace FluxForge.Tests
             // 从载体移除。
             Assert.True(item.parentInventory.WasExpelled);
             Assert.Same(item, item.parentInventory.ExpelledItem);
-
-            // Unregister → Forget 已把 Host 移出脏队列，帧末 Flush 不再重复落盘。
-            DeviceStateSync.Flush();
-            Assert.Equal(1, ItemTagCommit.CommitCount);
         }
     }
 }
