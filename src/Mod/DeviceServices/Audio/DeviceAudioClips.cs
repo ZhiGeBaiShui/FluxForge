@@ -21,10 +21,10 @@ namespace FluxForge.Mod
         /// <summary>制冷元件启动。</summary>
         public const string Cooler = "fluxforge.cooler";
 
-        /// <summary>冷萃：未跨阈值的短滴落。</summary>
+        /// <summary>冷萃：未跨阈值的常态短点击。</summary>
         public const string ColdTrapBase = "fluxforge.coldtrap.base";
 
-        /// <summary>冷萃：跨阈值的短机械点击。</summary>
+        /// <summary>冷萃：跨阈值的清脆玻璃/结晶音。</summary>
         public const string ColdTrapCross = "fluxforge.coldtrap.cross";
 
         /// <summary>加载并登记全部自定义音效；每次 OnEnable 调用一次。</summary>
