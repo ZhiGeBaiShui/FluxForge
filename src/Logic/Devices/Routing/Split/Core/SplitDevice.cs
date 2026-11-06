@@ -22,7 +22,7 @@ namespace FluxForge
     ///   · 基类不决定音效/动画；某个具体变体需要表现时，由该变体自己调用
     ///     <see cref="FlowAudio"/> / <see cref="FlowAnimation"/>
     /// </summary>
-    public abstract class SplitDevice : IFlowRouter, IFlowNotifier
+    public abstract class SplitDevice : IFlowRouter, IFlowNotifier, IFacing
     {
         /// <summary>通道方向集（相对 Facing）。数组长度即装置通道数。</summary>
         private readonly int[] _relativeDirs;
@@ -35,6 +35,9 @@ namespace FluxForge
 
         /// <summary>旋转（0=上 1=右 2=下 3=左）。赋值后立即重算旋转后的通道方向。</summary>
         private int _facing;
+
+        /// <summary>原版右键镜像翻转；必须在旋转之前应用。</summary>
+        private bool _flipped;
 
         /// <summary>
         /// 由变体提供通道常量。基类不公开构造：通道配置是装置类型的固有属性，
@@ -80,6 +83,17 @@ namespace FluxForge
             }
         }
 
+        /// <inheritdoc/>
+        public bool Flipped
+        {
+            get { return _flipped; }
+            set
+            {
+                _flipped = value;
+                RecalculateRotatedChannelDirs();
+            }
+        }
+
         /// <summary>没有存量，不会播报状态变化。空访问器 = 订阅方拿到它是安全的空操作。</summary>
         public event Action<IFlowNotifier> Changed
         {
@@ -98,8 +112,28 @@ namespace FluxForge
         {
             for (int i = 0; i < _rotatedChannelDirs.Length; i++)
             {
-                _rotatedChannelDirs[i] = (_relativeDirs[i] + _facing) % 4;
+                int relative = _flipped
+                    ? FlipHorizontal(_relativeDirs[i])
+                    : _relativeDirs[i];
+
+                _rotatedChannelDirs[i] = (relative + _facing) % 4;
             }
+        }
+
+        /// <summary>水平镜像：0/2 不变，1↔3。</summary>
+        private static int FlipHorizontal(int direction)
+        {
+            if (direction == 1)
+            {
+                return 3;
+            }
+
+            if (direction == 3)
+            {
+                return 1;
+            }
+
+            return direction;
         }
 
         /// <inheritdoc/>

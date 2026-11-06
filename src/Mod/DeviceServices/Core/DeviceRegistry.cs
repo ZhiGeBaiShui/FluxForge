@@ -82,6 +82,16 @@ namespace FluxForge.Mod
             return host == null ? null : host.Reactor;
         }
 
+        /// <summary>把物品朝向和镜像位广播给该物品的所有 IFacing 装置。</summary>
+        public static void SetFacing(GameItem item, int facing, bool flipped)
+        {
+            DeviceHost host = GetHost(item);
+            if (host != null)
+            {
+                host.SetFacing(facing, flipped);
+            }
+        }
+
         private static void Subscribe(DeviceHost host)
         {
             IReadOnlyList<DeviceBinding> bindings = host.Bindings;

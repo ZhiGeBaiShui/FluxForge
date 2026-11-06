@@ -26,6 +26,8 @@ namespace FluxForge.Mod
         }
 
         /// <summary>把 items.json 里声明的所有类型显示名补进本地化表。</summary>
+        // TODO(l10n): 目前只向当前 locale 的 Mechanic 表 AddEntry，且没有订阅
+        // SelectedLocaleChanged；切换语言或表重载后 type_* 条目会丢失。发布多语言前补齐。
         public static void RegisterAll()
         {
             foreach (KeyValuePair<string, string> pair in FlowItemRegistry.Instance.ItemTypes)

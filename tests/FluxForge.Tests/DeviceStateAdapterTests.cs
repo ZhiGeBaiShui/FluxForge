@@ -310,6 +310,25 @@ namespace FluxForge.Tests
             Assert.Empty(item.state.dict);
         }
 
+        [Fact]
+        public void StraightSpeed_Create_UsesConfigTags_AndSaveIsFalse()
+        {
+            StraightSpeedStateAdapter adapter = new StraightSpeedStateAdapter();
+            GameItem item = new GameItem();
+            item.SetModifiedTag(FlowTags.StraightSpeedChange, 1.5d);
+            item.SetModifiedTag(FlowTags.StraightSpeedMax, 10d);
+            item.SetModifiedTag(FlowTags.StraightSpeedMin, 0.5d);
+
+            StraightSpeedDevice device =
+                Assert.IsType<StraightSpeedDevice>(adapter.Create(item));
+
+            Assert.Equal(1.5d, device.SpeedChange);
+            Assert.Equal(10d, device.MaxSpeed);
+            Assert.Equal(0.5d, device.MinSpeed);
+            Assert.False(adapter.Save(item, device));
+            Assert.Empty(item.state.dict);
+        }
+
         /// <summary>TagFields 映射的测试目标：字段与可写属性各一个。</summary>
         private sealed class TagFieldTarget
         {

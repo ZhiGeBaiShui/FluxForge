@@ -55,8 +55,8 @@ namespace FluxForge.Mod
             switch (soundId)
             {
                 case FlowSoundIds.FilterCleaned:
-                    // 自定义音效：一次过滤动作只播一次
-                    audioId = DeviceAudioClips.FilterChemical;
+                    // 过滤装置使用独立的裁短净化音
+                    audioId = DeviceAudioClips.FilterCrystal;
                     break;
 
                 case FlowSoundIds.Heated:
@@ -67,6 +67,14 @@ namespace FluxForge.Mod
                 case FlowSoundIds.Cooled:
                     // 自定义音效：制冷元件启动
                     audioId = DeviceAudioClips.Cooler;
+                    break;
+
+                case FlowSoundIds.SpeedUp:
+                    audioId = DeviceAudioClips.SpeedUp;
+                    break;
+
+                case FlowSoundIds.SpeedDown:
+                    audioId = DeviceAudioClips.SpeedDown;
                     break;
 
                 case FlowSoundIds.Absorbed:

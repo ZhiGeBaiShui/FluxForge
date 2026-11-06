@@ -35,6 +35,8 @@
 | 3 | 物品离开 | `ItemDetached.cs` | `GameItem.RemoveParent`（Prefix） | `FlowGridAdapter.Unregister` |
 | 3b | 物品拿起 | `ItemPickedUp.cs` | `ItemMouseDragHandler.StartDrag`（Postfix） | `FlowGridAdapter.Unregister` |
 | 3c | 批量框选拿起 | `ItemPickedUp.cs` | `ItemMultiSelectHandler.StartGroupDrag`（Postfix，注入 `___selectedItems`） | 对全部选中物品 `FlowGridAdapter.Unregister` |
+| 3d | 单件拖拽结束 / 中止 | `ItemDropped.cs` | `ItemMouseDragHandler.EndDrag`（Postfix）/ `AbortDrag`（Prefix 取物品 + Postfix） | `FlowGridAdapter.Register` 幂等补登记 |
+| 3e | 批量拖拽恢复 | `ItemDropped.cs` | `ItemMultiSelectHandler.RestoreGhosts`（Postfix，注入 `___selectedItems`） | 对全部仍属于网格的物品补登记 |
 | 4 | 排序 | `InventorySorted.cs` | `InventorySortHelper.Sort`（Postfix，`__result == true` 才继续） | `FlowGridAdapter.Rebuild` |
 | 7 | 网格销毁 | `GridLifetime.cs` | 网格 `rectTransform` 下的哨兵节点 `OnDestroy` | `FlowDriver.RetireByGrid` |
 
@@ -112,7 +114,7 @@ DeviceRegistry.Clear()
 | `GridRegistry.Get` | #2、#3、#3b、#3c、#4 |
 | `GridRegistry.Runtimes` | #6、#8、#9（直接遍历或由 `FlowDriver` 取快照） |
 | `ItemDeviceBinding.Bind` | #2、#6 |
-| `FlowGridAdapter.Register` | #2（单件）、#4 / #6（经 `Rebuild` 内部的 `RegisterCore`） |
+| `FlowGridAdapter.Register` | #2（单件）、#3d / #3e（拖拽收尾补登记）、#4 / #6（经 `Rebuild` 内部的 `RegisterCore`） |
 | `FlowGridAdapter.Unregister` | #3、#3b、#3c |
 | `FlowGridAdapter.Rebuild` | #4、#6 |
 | `FlowDriver.RetireByGrid` | #7 |
@@ -123,9 +125,9 @@ DeviceRegistry.Clear()
 
 ## 为什么 / 不做会怎样
 
-- 漏掉 `#2` / `#3` / `#3b` / `#3c` / `#4` / `#6` 中任意一环，`FlowGridAdapter` 的格表就会过期：物品已经被拿起、移动或排序，流源仍会撞到旧格上的装置。
+- 漏掉 `#2` / `#3` / `#3b` / `#3c` / `#3d` / `#3e` / `#4` / `#6` 中任意一环，`FlowGridAdapter` 的格表就会过期：物品已经被拿起、移动或排序，流源仍会撞到旧格上的装置。
 - 把 `#5` 挂到 `PlayerStore.Reset` 或 `GameMaster.CloseAllScenes`，会在开始游戏 / 读档过程中清空刚登记的 runtime，网格直接失效。
 - 用 `Reset` 清网格登记，场景卸载后仍存活的网格会变成没有运行环境的死网格。
-- 给批量拖拽补结束 / 取消 patch，会和 `Expel` + `UncheckedAccept` 已有的 `#3` / `#2` 重复处理。
+- 单件拖拽成功时 `EndDrag` 仍会走 `Expel` + `UncheckedAccept` 的 `#3` / `#2`；`#3d` 的补登记必须幂等，不能假设 `AddParent` 一定没发生。批量拖拽的 `#3e` 同理，只处理“恢复到原容器/原位”的路径。
 - `#1` 把计算出的 `Type` 传给反射辅助方法，会被 ModScanner 判为 `reflection-external`；`<Capabilities />` 为空时直接拒绝加载。
 - 期望物品销毁时自动清 `DeviceRegistry` 会留下静态引用；当前只有 `Clear` / `Exhausted` 两个清理点。

@@ -49,5 +49,14 @@ namespace FluxForge.Mod
 
         /// <summary>冷阱：跨阈值时的效率倍率。</summary>
         public const string ColdTrapEfficiency = "COLD_TRAP_EFFICIENCY";
+
+        /// <summary>直通变速装置：速度改变基础值。</summary>
+        public const string StraightSpeedChange = "STRAIGHT_SPEED_CHANGE";
+
+        /// <summary>直通变速装置：速度上限。</summary>
+        public const string StraightSpeedMax = "STRAIGHT_SPEED_MAX";
+
+        /// <summary>直通变速装置：速度下限。</summary>
+        public const string StraightSpeedMin = "STRAIGHT_SPEED_MIN";
     }
 }

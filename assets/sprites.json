@@ -22,6 +22,13 @@
       "shapeWidth": 2
     },
     {
+      "key": "flow_emitter_1x2",
+      "atlas": "flow_emitter_1x2_atlas",
+      "file": "flow_emitter_1x2.png",
+      "shape": "11",
+      "shapeWidth": 1
+    },
+    {
       "key": "flow_collector",
       "atlas": "flow_collector_atlas",
       "file": "flow_collector.png",
@@ -39,6 +46,13 @@
       "key": "flow_straight",
       "atlas": "flow_straight_atlas",
       "file": "flow_straight.png",
+      "shape": "1",
+      "shapeWidth": 1
+    },
+    {
+      "key": "flow_straight_speed",
+      "atlas": "flow_straight_speed_atlas",
+      "file": "flow_straight_speed.png",
       "shape": "1",
       "shapeWidth": 1
     },

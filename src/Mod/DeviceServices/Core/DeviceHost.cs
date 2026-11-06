@@ -25,12 +25,14 @@ namespace FluxForge.Mod
     public sealed class DeviceHost
     {
         private readonly DeviceBinding[] _bindings;
+        private readonly IFacing[] _facings;
 
         private DeviceHost(GameItem item, DeviceBinding[] bindings)
         {
             Item = item;
             _bindings = bindings;
 
+            List<IFacing> facings = new List<IFacing>();
             for (int i = 0; i < bindings.Length; i++)
             {
                 object device = bindings[i].Device;
@@ -44,7 +46,15 @@ namespace FluxForge.Mod
                 {
                     Reactor = device as IFlowDevice;
                 }
+
+                IFacing facing = device as IFacing;
+                if (facing != null)
+                {
+                    facings.Add(facing);
+                }
             }
+
+            _facings = facings.ToArray();
         }
 
         /// <summary>唯一出生入口：每个定义由适配器创建一台完整初始化的装置。</summary>
@@ -68,9 +78,25 @@ namespace FluxForge.Mod
 
         public IFlowDevice Reactor { get; private set; }
 
+        /// <summary>本物品的全部朝向装置；一个物品可以挂多个 IFacing。</summary>
+        public IReadOnlyList<IFacing> Facings
+        {
+            get { return _facings; }
+        }
+
         public IReadOnlyList<DeviceBinding> Bindings
         {
             get { return _bindings; }
+        }
+
+        /// <summary>把物品的当前朝向和镜像位广播给所有实现 IFacing 的装置。</summary>
+        public void SetFacing(int facing, bool flipped)
+        {
+            for (int i = 0; i < _facings.Length; i++)
+            {
+                _facings[i].Facing = facing;
+                _facings[i].Flipped = flipped;
+            }
         }
 
         /// <summary>tag → 已有装置；不重新创建。</summary>

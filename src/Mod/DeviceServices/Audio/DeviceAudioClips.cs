@@ -27,6 +27,15 @@ namespace FluxForge.Mod
         /// <summary>冷萃：跨阈值的清脆玻璃/结晶音。</summary>
         public const string ColdTrapCross = "fluxforge.coldtrap.cross";
 
+        /// <summary>过滤装置：独立裁短的清脆净化音。</summary>
+        public const string FilterCrystal = "fluxforge.filter.crystal";
+
+        /// <summary>变速装置：截断后的涡轮加速音。</summary>
+        public const string SpeedUp = "fluxforge.speed.up";
+
+        /// <summary>变速装置：降调、低通的涡轮减速音。</summary>
+        public const string SpeedDown = "fluxforge.speed.down";
+
         /// <summary>加载并登记全部自定义音效；每次 OnEnable 调用一次。</summary>
         public static void Initialize()
         {
@@ -38,6 +47,9 @@ namespace FluxForge.Mod
             Register(prefix, "sfx_cooler.wav", Cooler);
             Register(prefix, "sfx_coldtrap_base.wav", ColdTrapBase);
             Register(prefix, "sfx_coldtrap_cross.wav", ColdTrapCross);
+            Register(prefix, "sfx_filter_crystal.wav", FilterCrystal);
+            Register(prefix, "sfx_speed_up.wav", SpeedUp);
+            Register(prefix, "sfx_speed_down.wav", SpeedDown);
         }
 
         private static void Register(string prefix, string fileName, string identifier)

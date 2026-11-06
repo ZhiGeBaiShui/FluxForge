@@ -90,12 +90,13 @@
     {
       "key": "flow_emitter",
       "device": "collector",
-      "anchorX": 1,
+      "anchorX": 0,
       "anchorY": 0,
       "capacityMicrolitres": 1000000000,
-      "sprite": "flow_emitter_2x3",
-      "name": "发射装置",
-      "desc": "从容器接收液体，启动后把存量液体一次性发射出去",
+      "sprite": "flow_emitter_1x2",
+      "name": "流源发射器",
+      "desc": "接收流入的流源并暂存，也可从液体容器补充；启动后把存量一次性发射出去。",
+      "flavor": "流源在哪都能跑，但为了美观，也许可以用管道为他们设计“马路”。",
       "itemTypes": [
         "FLOW_DEVICE"
       ],
@@ -183,7 +184,7 @@
           "tag": "FLUXFORGE_TEMPERATURE_DELTA",
           "label": "温度变化",
           "scale": 1,
-          "format": "0.#",
+          "format": "+0.#",
           "unit": "℃",
           "color": "LightCyan",
           "valueType": "double"
@@ -243,6 +244,36 @@
       ],
       "attachments": [
         "device"
+      ]
+    },
+    {
+      "key": "flow_straight_speed",
+      "device": "straight_speed",
+      "anchorX": 0,
+      "anchorY": 0,
+      "sprite": "flow_straight_speed",
+      "name": "变速装置",
+      "desc": "只对沿自身轴向流动的流源加减速。\n从箭头方向进入加速，反向进入减速；不改变流向。",
+      "flavor": "它不拐弯，只催人快走或慢走。",
+      "itemTypes": [
+        "FLOW_DEVICE"
+      ],
+      "attachments": [
+        "device"
+      ],
+      "tags": [
+        {
+          "valueName": "STRAIGHT_SPEED_CHANGE",
+          "valueDouble": 1.0
+        },
+        {
+          "valueName": "STRAIGHT_SPEED_MAX",
+          "valueDouble": 10.0
+        },
+        {
+          "valueName": "STRAIGHT_SPEED_MIN",
+          "valueDouble": 0.1
+        }
       ]
     },
     {

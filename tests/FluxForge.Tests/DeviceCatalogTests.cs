@@ -23,6 +23,7 @@ namespace FluxForge.Tests
             "l_right_down",
             "t_junction",
             "double_emit",
+            "straight_speed",
         };
 
         private static readonly Dictionary<string, Type> ExpectedDeviceTypes =
@@ -37,6 +38,7 @@ namespace FluxForge.Tests
                 { "l_right_down", typeof(LRightDownDevice) },
                 { "t_junction", typeof(TJunctionDevice) },
                 { "double_emit", typeof(DoubleEmitDevice) },
+                { "straight_speed", typeof(StraightSpeedDevice) },
             };
 
         public static IEnumerable<object[]> RegisteredKeys
@@ -165,6 +167,16 @@ namespace FluxForge.Tests
             Assert.True(device is IFlowRouter);
             Assert.False(device is IFlowDevice);
             Assert.True(device is IFlowNotifier);
+        }
+
+        [Fact]
+        public void StraightSpeed_IsRoutingOnly()
+        {
+            object device = Create("straight_speed");
+
+            Assert.True(device is IFlowRouter);
+            Assert.False(device is IFlowDevice);
+            Assert.False(device is IFlowNotifier);
         }
 
         [Fact]

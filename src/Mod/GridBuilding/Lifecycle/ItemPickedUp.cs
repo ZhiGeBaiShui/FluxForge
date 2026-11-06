@@ -13,6 +13,7 @@ namespace FluxForge.Mod
     /// 这里只撤格表条目，装置实例不销毁：松手落回容器时 EndDrag 会走
     /// RemoveParent + AddParent，<see cref="ItemDetached"/> 与
     /// <see cref="ItemAttached"/> 会再各触发一次并重新登记格表。
+    /// 失败放回原处 / 拖拽中止不会触发 AddParent，由 ItemDropped 补登记。
     /// </summary>
     [HarmonyPatch(typeof(ItemMouseDragHandler), "StartDrag")]
     public static class ItemPickedUp

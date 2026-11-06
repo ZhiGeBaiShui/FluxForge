@@ -49,6 +49,7 @@
     <Compile Include="..\..\src\Mod\DeviceState\Adapters\LRightDownStateAdapter.cs" />
     <Compile Include="..\..\src\Mod\DeviceState\Adapters\TJunctionStateAdapter.cs" />
     <Compile Include="..\..\src\Mod\DeviceState\Adapters\DoubleEmitStateAdapter.cs" />
+    <Compile Include="..\..\src\Mod\DeviceState\Adapters\StraightSpeedStateAdapter.cs" />
     <Compile Include="..\..\src\Mod\DeviceState\Catalog\DeviceDefinition.cs" />
     <Compile Include="..\..\src\Mod\DeviceState\Catalog\DeviceAdapterAttribute.cs" />
     <Compile Include="..\..\src\Mod\DeviceState\Catalog\DeviceAdapterCatalog.cs" />

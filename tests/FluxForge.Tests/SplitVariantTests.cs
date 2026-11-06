@@ -75,6 +75,18 @@ namespace FluxForge.Tests
         }
 
         [Fact]
+        public void Turn_Flipped_MirrorsChannelsBeforeFacing()
+        {
+            // Flipped 后相对通道 { 左(3), 下(2) } 镜像为 { 右(1), 下(2) }。
+            // 世界向左(3)进入 → 入口通道右(1)，出口下(2)。
+            TurnDevice turn = new TurnDevice { Flipped = true };
+            (FlowEntity incoming, FlowSpawner flows) = Start(3);
+
+            Assert.True(turn.Route(incoming, flows, DeviceCellX, DeviceCellY));
+            Assert.Equal(2, incoming.Motion.Direction);
+        }
+
+        [Fact]
         public void Turn_UpIn_ExitsLeftInPlace()
         {
             // 向上(0)进入 → 入口通道下(2)，出口左(3)

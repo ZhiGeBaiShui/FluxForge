@@ -20,7 +20,7 @@ namespace FluxForge
     /// 每次吸收都返回新对象，所以必须写回字段，不能指望原对象被就地修改。
     /// </summary>
     public sealed class CollectorDevice
-        : IFlowRouter, IFlowNotifier
+        : IFlowRouter, IFlowNotifier, IFacing
     {
         private FlowProperties _stock;
 
@@ -57,6 +57,9 @@ namespace FluxForge
             get { return _facing; }
             set { _facing = value; }
         }
+
+        /// <inheritdoc/>
+        public bool Flipped { get; set; }
 
         /// <summary>
         /// 本装置接受的流源移动方向，恒为入口朝向的反向。

@@ -119,12 +119,11 @@ namespace FluxForge.Mod
                 return;
             }
 
-            // 路由装置才有方向：朝向跟随物品旋转，装置内部据此把「相对通道」
-            // 换算成世界方向。纯反应装置（只改属性）没有 Facing。
-            if (router != null)
-            {
-                router.Facing = FlowFacingAdapter.FromOrientation(shape.orientation);
-            }
+            // 朝向和镜像位跟物品变换走；同一个物品上的所有 IFacing 装置都收到同一状态。
+            DeviceRegistry.SetFacing(
+                item,
+                FlowFacingAdapter.FromOrientation(shape.orientation),
+                shape.flipped);
 
             // DeviceAttachment 保证每个 device 都有 anchor tag；
             // 缺 anchor 属于非法物品，直接让字典索引失败，不做 fallback。
