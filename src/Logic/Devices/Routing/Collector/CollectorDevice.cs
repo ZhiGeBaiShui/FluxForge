@@ -22,9 +22,15 @@ namespace FluxForge
     public sealed class CollectorDevice
         : IFlowRouter, IFlowNotifier, IFacing
     {
+        /// <summary>发射速度的默认值（格/秒），也是没有配置 tag 时的回退值。</summary>
+        public const double DefaultEmitSpeed = 2d;
+
         private FlowProperties _stock;
 
         private int _facing;
+
+        /// <summary>发射装置：流源出射速度（格/秒）。收集器本身不发射，但发射器复用本装置。</summary>
+        public double EmitSpeed { get; set; } = DefaultEmitSpeed;
 
         /// <inheritdoc/>
         public event Action<IFlowNotifier> Changed;

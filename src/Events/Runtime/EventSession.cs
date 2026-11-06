@@ -105,7 +105,11 @@ namespace FluxForge.Events
             }
 
             _items.Clear();
-            FlowEventApi.EventCompleted?.Invoke(Grid);
+            GameGridInventory grid = Grid;
+            if (FlowEventApi.EventCompleted != null)
+            {
+                FlowEventApi.EventCompleted(grid);
+            }
         }
     }
 }

@@ -58,5 +58,8 @@ namespace FluxForge.Mod
 
         /// <summary>直通变速装置：速度下限。</summary>
         public const string StraightSpeedMin = "STRAIGHT_SPEED_MIN";
+
+        /// <summary>发射装置：流源出射速度（格/秒）。</summary>
+        public const string EmitterSpeed = "FLOW_EMITTER_SPEED";
     }
 }

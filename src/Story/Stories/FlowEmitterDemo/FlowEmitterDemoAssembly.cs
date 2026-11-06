@@ -10,13 +10,17 @@ namespace FluxForge.Story.FlowEmitterDemo
 
         internal FlowEmitterDemoAssembly()
         {
+            StoryNode greetingNode
+                = new StoryNode(FlowEmitterDemoTexts.Greeting);
             StoryNode root = new StoryNode(FlowEmitterDemoTexts.DevicePrompt);
 
             FlowEmitterGreetingEdge greeting = new FlowEmitterGreetingEdge();
+            FlowEmitterAskEdge ask = new FlowEmitterAskEdge();
             FlowEmitterDemoEdge demo = new FlowEmitterDemoEdge();
             FlowEmitterExitEdge exit = new FlowEmitterExitEdge();
 
-            greeting.Connect(null, root);
+            greeting.Connect(null, greetingNode);
+            ask.Connect(greetingNode, root);
             demo.Connect(root, root);
             exit.Connect(root, null);
 

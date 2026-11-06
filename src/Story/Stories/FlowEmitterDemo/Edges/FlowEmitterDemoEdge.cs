@@ -13,12 +13,11 @@ namespace FluxForge.Story.FlowEmitterDemo
 
         internal override async Task Execute(StoryPlayer player)
         {
-            await player.SayNpc(FlowEmitterDemoTexts.EmitterIntro);
+            player.SayNpc(FlowEmitterDemoTexts.EmitterIntro);
             await player.RunFlow(FlowEventApi.RunBoundaryEmitter);
-            await player.Wait(0.75f);
-            await player.SayNpc(FlowEmitterDemoTexts.RelayIntro);
+
+            player.SayNpc(FlowEmitterDemoTexts.RelayIntro);
             await player.RunFlow(FlowEventApi.RunTwoEmitterRelay);
-            await player.Wait(0.75f);
         }
     }
 }

@@ -6,8 +6,14 @@ namespace FluxForge.Story.FlowEmitterDemo
         internal const string Greeting
             = "您好，我这里有一套新潮的科学装置，你有没有兴趣购买。";
 
+        internal const string Question
+            = "他们有什么用";
+
+        internal const string CanDemo
+            = "我可以为您演示一遍。";
+
         internal const string DevicePrompt
-            = "您想看哪个呢。";
+            = "目前有“流源发射器”，“过滤装置”可以购买。";
 
         internal const string EmitterIntro
             = "这个装置，可以将存储的液体全部发射出去，我们这一行把发射出去的液体叫“流源”。";

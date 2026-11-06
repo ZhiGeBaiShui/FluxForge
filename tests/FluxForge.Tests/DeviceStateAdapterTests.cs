@@ -389,6 +389,44 @@ namespace FluxForge.Tests
         }
 
         [Fact]
+        public void Collector_Create_ReadsConfiguredEmitterSpeed()
+        {
+            GameItem item = new GameItem();
+            item.SetModifiedTag(FlowTags.EmitterSpeed, 5.5d);
+
+            CollectorDevice device = Assert.IsType<CollectorDevice>(
+                new CollectorStateAdapter().Create(item));
+
+            Assert.Equal(5.5d, device.EmitSpeed);
+        }
+
+        [Fact]
+        public void Collector_Create_WithoutEmitterSpeedTagReadsZero()
+        {
+            GameItem item = new GameItem();
+
+            CollectorDevice device = Assert.IsType<CollectorDevice>(
+                new CollectorStateAdapter().Create(item));
+
+            Assert.Equal(0d, device.EmitSpeed);
+        }
+
+        [Fact]
+        public void Collector_Load_UpdatesEmitterSpeed()
+        {
+            CollectorStateAdapter adapter = new CollectorStateAdapter();
+            GameItem oldItem = new GameItem();
+            CollectorDevice device = Assert.IsType<CollectorDevice>(adapter.Create(oldItem));
+
+            GameItem newItem = new GameItem();
+            newItem.SetModifiedTag(FlowTags.EmitterSpeed, 3.25d);
+
+            adapter.Load(newItem, device);
+
+            Assert.Equal(3.25d, device.EmitSpeed);
+        }
+
+        [Fact]
         public void FlowTagNaming_PinsOriginalTagNames()
         {
             Assert.Equal("CURRENT_PART_WATER", FlowTagNaming.Water);

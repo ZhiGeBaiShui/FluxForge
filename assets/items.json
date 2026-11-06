@@ -113,6 +113,10 @@
         {
           "valueName": "CONTAINER_TEMP_TAG",
           "valueDouble": 25.0
+        },
+        {
+          "valueName": "FLOW_EMITTER_SPEED",
+          "valueDouble": 5.0
         }
       ],
       "statusLines": [

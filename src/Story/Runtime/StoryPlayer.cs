@@ -15,6 +15,8 @@ namespace FluxForge.Story
         private readonly GameGridInventory _grid;
         private readonly Func<string> _npcName;
         private readonly Action _onExit;
+        private Dialogue _speechTail;
+        private TaskCompletionSource<bool> _speechCompletion;
 
         internal StoryPlayer(
             GameGridInventory grid,
@@ -38,6 +40,14 @@ namespace FluxForge.Story
             {
                 Debug.Log("[FluxForge][Story] start edge " + edge.Label);
                 await edge.Execute(this);
+
+                if (edge.To == null)
+                {
+                    await WaitForSpeech();
+                    _onExit();
+                    return;
+                }
+
                 Arrive(edge.To);
             }
             catch (Exception exception)
@@ -55,6 +65,21 @@ namespace FluxForge.Story
                 return;
             }
 
+            Dialogue dialogue = BuildNodeDialogue(node);
+
+            if (_speechTail != null)
+            {
+                _speechTail.SetNextDialogue(dialogue);
+                _speechTail = null;
+                _speechCompletion = null;
+                return;
+            }
+
+            DialogUIManager.Instance.StartDialogue(dialogue, forcedStart: true);
+        }
+
+        private Dialogue BuildNodeDialogue(StoryNode node)
+        {
             Dialogue dialogue = new Dialogue();
             dialogue.SetText(_npcName(), node.Prompt);
 
@@ -63,29 +88,32 @@ namespace FluxForge.Story
                 Dialogue label = new Dialogue()
                     .SetText(PlayerName, option.Label);
 
+                Dialogue selected = new Dialogue()
+                    .SetText("PLAYER", option.Label);
+
+                label.SetNextDialogue(selected);
+                selected.SetEndAction(() => _ = Start(option));
+
                 dialogue.AddChoice(
                     DirectoryMaster.Item(option.IconItemKey),
                     option.Label,
-                    choiceNextDialogue: label,
-                    choiceAction: () =>
-                        DialogUIManager.Instance.StartCoroutine(
-                            StartAfterChoice(option)));
+                    choiceNextDialogue: label);
             }
 
-            DialogUIManager.Instance.StartDialogue(dialogue, forcedStart: true);
+            return dialogue;
         }
 
-        internal Task SayNpc(string content)
+        internal void SayNpc(string content)
         {
-            return Say(_npcName(), content);
+            Say(_npcName(), content);
         }
 
-        internal Task SayPlayer(string content)
+        internal void SayPlayer(string content)
         {
-            return Say(PlayerName, content);
+            Say(PlayerName, content);
         }
 
-        private Task Say(string speaker, string content)
+        private void Say(string speaker, string content)
         {
             TaskCompletionSource<bool> completion
                 = new TaskCompletionSource<bool>();
@@ -94,13 +122,36 @@ namespace FluxForge.Story
             line.SetText(speaker, content);
             line.SetEndAction(() => completion.TrySetResult(true));
             Debug.Log("[FluxForge][Story] say: " + content);
-            DialogUIManager.Instance.StartDialogue(line, forcedStart: true);
 
-            return completion.Task;
+            if (_speechTail == null)
+            {
+                _speechTail = line;
+                _speechCompletion = completion;
+                DialogUIManager.Instance.StartDialogue(line, forcedStart: true);
+                return;
+            }
+
+            _speechTail.SetNextDialogue(line);
+            _speechTail = line;
+            _speechCompletion = completion;
         }
 
-        internal Task RunFlow(Func<GameGridInventory, bool> flow)
+        private async Task WaitForSpeech()
         {
+            TaskCompletionSource<bool> completion = _speechCompletion;
+            _speechTail = null;
+            _speechCompletion = null;
+
+            if (completion != null)
+            {
+                await completion.Task;
+            }
+        }
+
+        internal async Task RunFlow(Func<GameGridInventory, bool> flow)
+        {
+            await WaitForSpeech();
+
             TaskCompletionSource<bool> completion
                 = new TaskCompletionSource<bool>();
 
@@ -127,7 +178,7 @@ namespace FluxForge.Story
                 completion.TrySetResult(false);
             }
 
-            return completion.Task;
+            await completion.Task;
         }
 
         internal Task Wait(float seconds)
@@ -139,13 +190,6 @@ namespace FluxForge.Story
                 WaitRoutine(seconds, completion));
 
             return completion.Task;
-        }
-
-        private IEnumerator StartAfterChoice(StoryEdge edge)
-        {
-            Debug.Log("[FluxForge][Story] choice selected: " + edge.Label);
-            yield return new WaitForSeconds(0.45f);
-            _ = Start(edge);
         }
 
         private static string PlayerName

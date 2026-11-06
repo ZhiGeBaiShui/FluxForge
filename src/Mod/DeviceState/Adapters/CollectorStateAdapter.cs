@@ -12,13 +12,17 @@ namespace FluxForge.Mod
         /// <summary>按 tag 读出完整存量构造装置。</summary>
         protected override CollectorDevice CreateDevice(GameItem item)
         {
-            return new CollectorDevice(ReadStock(item));
+            return new CollectorDevice(ReadStock(item))
+            {
+                EmitSpeed = ReadEmitSpeed(item),
+            };
         }
 
         /// <summary>整体替换已有装置的存量，不重建装置。</summary>
         protected override void LoadDevice(GameItem item, CollectorDevice device)
         {
             device.ReplaceStock(ReadStock(item));
+            device.EmitSpeed = ReadEmitSpeed(item);
         }
 
         /// <summary>写回全部属性槽；液体按 int、标量按 double，返回是否有值实际变化。</summary>
@@ -54,6 +58,11 @@ namespace FluxForge.Mod
             }
 
             return stock;
+        }
+
+        private static double ReadEmitSpeed(GameItem item)
+        {
+            return GameItemTags.ReadDouble(item, FlowTags.EmitterSpeed);
         }
     }
 }

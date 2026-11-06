@@ -12,9 +12,6 @@ namespace FluxForge.Mod
     /// </summary>
     public sealed class FlowRuntime
     {
-        /// <summary>流源速度（格/秒）。发射唯一的运动参数。</summary>
-        private const double EmitSpeed = 2d;
-
         public FlowRuntime(GameGridInventory inventory)
         {
             Inventory = inventory ?? throw new ArgumentNullException(nameof(inventory));
@@ -84,9 +81,13 @@ namespace FluxForge.Mod
             // 不经过任何装置事件，缓存的存量会过期。
             FlowProperties payload = FlowStock.Read(item);
 
+            CollectorDevice collector =
+                (CollectorDevice)DeviceRegistry.GetRouter(item);
+            double emitSpeed = collector.EmitSpeed;
+
             FlowEntity entity = new FlowEntity(
                 origin,
-                new FlowMotionData(direction, EmitSpeed),
+                new FlowMotionData(direction, emitSpeed),
                 payload);
 
             Flows.Accept(entity);
