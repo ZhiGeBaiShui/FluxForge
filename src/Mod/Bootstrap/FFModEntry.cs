@@ -1,5 +1,6 @@
 using System;
 using FluxForge.Mod.Visual;
+using FluxForge.Story.FlowEmitterDemo;
 using FluxForge.Traits;
 using UnityEngine;
 
@@ -54,6 +55,7 @@ namespace FluxForge.Mod
             // 直接委托：Mono 下 ModHook 的事件就是普通 C# 事件，不需要 DelegateSupport。
             ModHook.OnModItemDirectoryInit += OnModItemDirectoryInit;
             SaveLoaded.Subscribe();
+            FlowEmitterDemoNpc.Subscribe();
             TraitLayer.Initialize();
 
             // 先把自定义 WAV 登记进 AudioDirectory，再启动音效服务。
@@ -70,6 +72,7 @@ namespace FluxForge.Mod
         {
             ModHook.OnModItemDirectoryInit -= OnModItemDirectoryInit;
             SaveLoaded.Unsubscribe();
+            FlowEmitterDemoNpc.Unsubscribe();
             TraitLayer.Shutdown();
 
             DeviceAudioService.Shutdown();

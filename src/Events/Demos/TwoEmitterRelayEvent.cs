@@ -5,12 +5,14 @@ using UnityEngine;
 namespace FluxForge.Events
 {
     /// <summary>
-    /// 演示二：左侧发射器注水后发射，等待流源到达右侧，再让右侧发射器发射。
+    /// 演示二：左右各放一个相对朝向的发射器；左侧先发射，右侧接收后再发射。
+    /// Start 只启动协程；全部事件逻辑在 Run 里。
     /// </summary>
     internal static class TwoEmitterRelayEvent
     {
         private const string EmitterKey = "flow_emitter";
         private const int WaterMicrolitres = 1000000;
+        private const float FirstEmitDelaySeconds = 2f;
         private const float RelayDelaySeconds = 2f;
         private const float FlowSpeedCellsPerSecond = 2f;
 
@@ -18,13 +20,18 @@ namespace FluxForge.Events
         {
             FlowRuntime runtime = GridRegistry.Get(grid);
             EventSession session = new EventSession(grid, runtime);
+            session.RunRoutine(Run(session));
+            return true;
+        }
 
-            int middleY = grid.inventoryShape.height / 2;
-            int rightX = grid.inventoryShape.width - 2;
+        private static IEnumerator Run(EventSession session)
+        {
+            int middleY = session.Grid.inventoryShape.height / 2;
+            int rightX = session.Grid.inventoryShape.width - 2;
 
             GameItem left = DemoPlacement.Spawn(
                 session,
-                grid,
+                session.Grid,
                 EmitterKey,
                 1,
                 middleY,
@@ -34,14 +41,14 @@ namespace FluxForge.Events
             if (left == null)
             {
                 session.Fail("演示发射器放置失败");
-                return false;
+                yield break;
             }
 
             DemoPlacement.FillWater(left, WaterMicrolitres);
 
             GameItem right = DemoPlacement.Spawn(
                 session,
-                grid,
+                session.Grid,
                 EmitterKey,
                 rightX,
                 middleY,
@@ -51,30 +58,22 @@ namespace FluxForge.Events
             if (right == null)
             {
                 session.Fail("演示发射器放置失败");
-                return false;
+                yield break;
             }
 
-            session.RunRoutine(RelayRoutine(session, left, right, rightX));
-            return true;
-        }
+            float travelSeconds = (rightX - 1) / FlowSpeedCellsPerSecond;
 
-        private static IEnumerator RelayRoutine(
-            EventSession session,
-            GameItem left,
-            GameItem right,
-            int rightX)
-        {
+            yield return new WaitForSeconds(FirstEmitDelaySeconds);
             session.Runtime.Emit(left);
 
-            float travelSeconds = (rightX - 1) / FlowSpeedCellsPerSecond;
             yield return new WaitForSeconds(travelSeconds);
-
-            // 让出当前帧，确保 FlowDriver 已完成本帧推进/接收，再进入 2 秒等待。
             yield return null;
             yield return new WaitForSeconds(RelayDelaySeconds);
-            session.Runtime.Emit(right);
 
-            yield return new WaitForSeconds(RelayDelaySeconds);
+            session.Runtime.Emit(right);
+            yield return new WaitForSeconds(travelSeconds);
+            yield return null;
+
             session.Complete();
         }
     }
