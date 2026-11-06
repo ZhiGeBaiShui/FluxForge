@@ -10,9 +10,13 @@ namespace FluxForge.Story.FlowEmitterDemo
         {
         }
 
+        internal override string IntroLine
+        {
+            get { return FlowEmitterDemoTexts.Farewell; }
+        }
+
         internal override Task Execute(StoryPlayer player)
         {
-            player.SayNpc(FlowEmitterDemoTexts.Farewell);
             return Task.CompletedTask;
         }
     }

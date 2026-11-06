@@ -65,13 +65,15 @@ namespace FluxForge.Story
                 return;
             }
 
+            Dialogue previousTail = _speechTail;
+            _speechTail = null;
+            _speechCompletion = null;
+
             Dialogue dialogue = BuildNodeDialogue(node);
 
-            if (_speechTail != null)
+            if (previousTail != null)
             {
-                _speechTail.SetNextDialogue(dialogue);
-                _speechTail = null;
-                _speechCompletion = null;
+                previousTail.SetNextDialogue(dialogue);
                 return;
             }
 
@@ -92,7 +94,33 @@ namespace FluxForge.Story
                     .SetText("PLAYER", option.Label);
 
                 label.SetNextDialogue(selected);
-                selected.SetEndAction(() => _ = Start(option));
+
+                if (option.IntroLine != null)
+                {
+                    TaskCompletionSource<bool> completion
+                        = new TaskCompletionSource<bool>();
+
+                    Dialogue response = new Dialogue()
+                        .SetText(_npcName(), option.IntroLine);
+
+                    response.SetEndAction(() =>
+                    {
+                        completion.TrySetResult(true);
+                        _ = Start(option);
+                    });
+
+                    selected.SetStartAction(() =>
+                    {
+                        _speechTail = response;
+                        _speechCompletion = completion;
+                    });
+
+                    selected.SetNextDialogue(response);
+                }
+                else
+                {
+                    selected.SetEndAction(() => _ = Start(option));
+                }
 
                 dialogue.AddChoice(
                     DirectoryMaster.Item(option.IconItemKey),
