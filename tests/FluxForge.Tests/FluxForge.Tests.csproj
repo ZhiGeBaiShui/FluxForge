@@ -53,6 +53,7 @@
     <Compile Include="..\..\src\Mod\DeviceState\Catalog\DeviceDefinition.cs" />
     <Compile Include="..\..\src\Mod\DeviceState\Catalog\DeviceAdapterAttribute.cs" />
     <Compile Include="..\..\src\Mod\DeviceState\Catalog\DeviceAdapterCatalog.cs" />
+    <Compile Include="..\..\src\Events\Placement\PlacementMath.cs" />
   </ItemGroup>
 
 </Project>
