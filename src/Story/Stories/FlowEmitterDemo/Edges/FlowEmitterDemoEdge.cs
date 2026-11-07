@@ -19,6 +19,8 @@ namespace FluxForge.Story.FlowEmitterDemo
 
             player.SayNpc(FlowEmitterDemoTexts.RelayIntro);
             await player.RunFlow(FlowEventApi.RunTwoEmitterRelay);
+
+            FlowEmitterDemoProgress.MarkEmitterDemo();
         }
     }
 }

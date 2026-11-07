@@ -5,13 +5,15 @@ namespace FluxForge.Story.FlowEmitterDemo
 {
     /// <summary>
     /// 流源发射机剧情的 NPC。
-    /// 负责创建 StoreClient、在到店时启动剧情、退出时移除自己。
+    /// 首次到店播放剧情并上破旧库存；之后到店跳过剧情，上正常库存。
     /// </summary>
     internal static class FlowEmitterDemoNpc
     {
         private const string Identifier = "fluxforge_flow_emitter_demo";
-        private const string CompletedKey = "fluxforge.flowEmitterDemo.completed";
+        private const string StorySeenKey = "fluxforge.flowEmitterDemo.storySeen";
         private const string DisplayName = "装置推销员";
+
+        private static bool _firstStory;
 
         internal static void Subscribe()
         {
@@ -28,11 +30,6 @@ namespace FluxForge.Story.FlowEmitterDemo
         private static void Queue()
         {
             PlayerStore store = PlayerStore.Instance;
-
-            if (store.modData.ContainsKey(CompletedKey))
-            {
-                return;
-            }
 
             if (store.storeClientManager.clientStack.Exists(
                     client => client.identifier == Identifier))
@@ -57,7 +54,7 @@ namespace FluxForge.Story.FlowEmitterDemo
                 identifier = Identifier,
                 displayName = DisplayName,
                 spriteName = SpriteDict.GetRandomMerchantSpriteName(),
-                clientIntent = StoreClient.ClientIntent.DIALOGUE,
+                clientIntent = StoreClient.ClientIntent.SELL,
                 dismissable = true,
                 arrestable = false,
                 mainDialogue = null,
@@ -71,6 +68,18 @@ namespace FluxForge.Story.FlowEmitterDemo
 
         private static void StartStory()
         {
+            PlayerStore store = PlayerStore.Instance;
+            _firstStory = !store.modData.ContainsKey(StorySeenKey);
+
+            PlayerStore.Instance.currentClientInstance
+                .GetClientBlueprint().dismissable = false;
+
+            if (!_firstStory)
+            {
+                OpenShop();
+                return;
+            }
+
             string npcName = GetCurrentClientName();
 
             StoryPlayer player = new StoryPlayer(
@@ -79,6 +88,14 @@ namespace FluxForge.Story.FlowEmitterDemo
                 FinishStory);
 
             _ = player.Start(new FlowEmitterDemoAssembly().Entry);
+        }
+
+        private static void OpenShop()
+        {
+            PlayerStore.Instance.currentClientInstance
+                .GetClientBlueprint().dismissable = true;
+
+            FlowEmitterDemoStock.Place(_firstStory);
         }
 
         private static string GetCurrentClientName()
@@ -90,8 +107,12 @@ namespace FluxForge.Story.FlowEmitterDemo
         private static void FinishStory()
         {
             PlayerStore store = PlayerStore.Instance;
-            store.modData[CompletedKey] = "1";
-            store.DismissCurrentClient(callNextWhenPossible: false);
+            store.modData[StorySeenKey] = "1";
+
+            FlowEmitterDemoStock.Place(_firstStory);
+
+            store.currentClientInstance
+                .GetClientBlueprint().dismissable = true;
         }
     }
 }

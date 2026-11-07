@@ -30,6 +30,8 @@ namespace FluxForge.Story.FlowEmitterDemo
             player.SayNpc(FlowEmitterDemoTexts.FilterSpeedUnknown);
 
             await filter;
+
+            FlowEmitterDemoProgress.MarkFilterDemo();
         }
     }
 }

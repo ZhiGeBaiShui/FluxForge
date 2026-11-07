@@ -5,6 +5,7 @@
   "items": [
     {
       "key": "ice_block",
+      "value": 10,
       "device": "ice_block",
       "anchorX": 0,
       "anchorY": 0,
@@ -53,6 +54,7 @@
     },
     {
       "key": "flow_cold_trap",
+      "value": 150,
       "device": "cold_trap",
       "anchorX": 1,
       "anchorY": 1,
@@ -89,6 +91,7 @@
     },
     {
       "key": "flow_emitter",
+      "value": 90,
       "device": "collector",
       "anchorX": 0,
       "anchorY": 0,
@@ -141,6 +144,7 @@
     },
     {
       "key": "flow_filter",
+      "value": 110,
       "device": "filter",
       "anchorX": 0,
       "anchorY": 0,
@@ -157,6 +161,7 @@
     },
     {
       "key": "flow_heater",
+      "value": 60,
       "device": "temperature",
       "anchorX": 0,
       "anchorY": 0,
@@ -197,6 +202,7 @@
     },
     {
       "key": "flow_cooler",
+      "value": 60,
       "device": "temperature",
       "anchorX": 0,
       "anchorY": 0,
@@ -237,6 +243,7 @@
     },
     {
       "key": "l_turn_device",
+      "value": 20,
       "device": "l_right_down",
       "anchorX": 0,
       "anchorY": 0,
@@ -252,6 +259,7 @@
     },
     {
       "key": "flow_straight_speed",
+      "value": 40,
       "device": "straight_speed",
       "anchorX": 0,
       "anchorY": 0,
@@ -282,6 +290,7 @@
     },
     {
       "key": "flow_straight",
+      "value": 15,
       "sprite": "flow_straight",
       "name": "直通装置",
       "desc": "看起来只是一根好看的管。",
