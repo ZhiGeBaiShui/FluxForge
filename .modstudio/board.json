@@ -8,7 +8,7 @@
     "scriptingBackend": "il2cpp",
     "loader": "MelonLoader 0.7.3",
     "createdAt": "2026-10-20T12:12:31.898Z",
-    "updatedAt": "2026-10-20T18:01:48.227Z"
+    "updatedAt": "2026-11-07T02:02:37.452Z"
   },
   "phase": "discovery",
   "gates": {
@@ -663,6 +663,263 @@
           "text": "19 文件按方案 A 移动（3 个已跟踪用 git mv，16 个未跟踪用 Move-Item），6 个 namespace 改写，26 个文件仅 namespace/using 行变化；build 0/0，test 107/107，旧命名空间/路径 0 命中。"
         }
       ]
+    },
+    {
+      "id": "T-EVT-001",
+      "title": "Event layer architecture and public contract",
+      "role": "architecture",
+      "priority": "P0",
+      "status": "claimed",
+      "files": [
+        "docs/event-layer-design.md"
+      ],
+      "acceptance": [
+        "Defines dependency direction: Events -> Mod/Logic/Presentation only",
+        "Defines public API for lock, unlock, run event",
+        "Defines placement/orientation/tag lifecycle and failure behavior",
+        "Defines event-driven completion without per-frame scanning",
+        "Identifies game locking primitives and rollback risks"
+      ],
+      "dependsOn": [],
+      "requiredEvidence": [
+        "design",
+        "review"
+      ],
+      "owner": "chief-architect",
+      "leaseUntil": "2026-11-06T16:48:15.185Z",
+      "createdAt": "2026-11-06T14:47:52.436Z",
+      "updatedAt": "2026-11-06T14:48:15.185Z",
+      "completedAt": "",
+      "notes": [
+        {
+          "at": "2026-11-06T14:48:15.185Z",
+          "by": "chief-architect",
+          "text": "claimed for 120m"
+        }
+      ]
+    },
+    {
+      "id": "T-EVT-002",
+      "title": "Directory and layer layout proposal",
+      "role": "design",
+      "priority": "P0",
+      "status": "todo",
+      "files": [
+        "docs/event-layer-layout.md"
+      ],
+      "acceptance": [
+        "Maps Events layer folders to existing Logic/Mod/Presentation conventions",
+        "Lists public vs internal entry points",
+        "Defines file ownership and test locations",
+        "Avoids adding References from Mod/Logic/Presentation back to Events"
+      ],
+      "dependsOn": [
+        "T-EVT-001"
+      ],
+      "requiredEvidence": [
+        "design",
+        "review"
+      ],
+      "owner": "",
+      "leaseUntil": "",
+      "createdAt": "2026-11-06T14:47:57.956Z",
+      "updatedAt": "2026-11-06T14:47:57.957Z",
+      "completedAt": "",
+      "notes": []
+    },
+    {
+      "id": "T-EVT-003",
+      "title": "Implement event core, locks, placement, cleanup",
+      "role": "systems",
+      "priority": "P0",
+      "status": "todo",
+      "files": [
+        "src/Events/Core",
+        "src/Events/Placement",
+        "tests/FluxForge.Tests/EventLayerTests.cs"
+      ],
+      "acceptance": [
+        "Public API exposes RunAsync/Lock/Unlock only",
+        "Locks grid and placed items without breaking rollback",
+        "Places at coordinates with orientation/tags and reports fit failure",
+        "Cleans up all demo items on success/cancel",
+        "No per-frame polling for event completion"
+      ],
+      "dependsOn": [
+        "T-EVT-001",
+        "T-EVT-002"
+      ],
+      "requiredEvidence": [
+        "build",
+        "test",
+        "review"
+      ],
+      "owner": "",
+      "leaseUntil": "",
+      "createdAt": "2026-11-06T14:47:57.964Z",
+      "updatedAt": "2026-11-06T14:47:57.964Z",
+      "completedAt": "",
+      "notes": []
+    },
+    {
+      "id": "T-EVT-004",
+      "title": "Implement two demo flow events",
+      "role": "gameplay",
+      "priority": "P0",
+      "status": "todo",
+      "files": [
+        "src/Events/Demos"
+      ],
+      "acceptance": [
+        "Event 1 places right-facing emitter at far-left, fills liquid, activates, ends on emitted flow removal",
+        "Event 2 places two opposing emitters, left emits, right receives, waits 2 seconds, then emits after receiver stock appears",
+        "No per-frame scanning; completion driven by FlowSpawner events/coroutine waits",
+        "Items are destroyed after events"
+      ],
+      "dependsOn": [
+        "T-EVT-003"
+      ],
+      "requiredEvidence": [
+        "build",
+        "test",
+        "review"
+      ],
+      "owner": "",
+      "leaseUntil": "",
+      "createdAt": "2026-11-06T14:47:57.972Z",
+      "updatedAt": "2026-11-06T14:47:57.972Z",
+      "completedAt": "",
+      "notes": []
+    },
+    {
+      "id": "T-EVT-005",
+      "title": "Defensive code review against project conventions",
+      "role": "review",
+      "priority": "P0",
+      "status": "todo",
+      "files": [
+        "docs/event-layer-review.md"
+      ],
+      "acceptance": [
+        "Flags unnecessary null/if/try checks in hot paths",
+        "Separates boundary validation from logic invariants",
+        "Checks cleanup/rollback and subscription leak paths",
+        "Checks no Mod/Logic/Presentation reference back to Events"
+      ],
+      "dependsOn": [
+        "T-EVT-003",
+        "T-EVT-004"
+      ],
+      "requiredEvidence": [
+        "review"
+      ],
+      "owner": "",
+      "leaseUntil": "",
+      "createdAt": "2026-11-06T14:47:57.979Z",
+      "updatedAt": "2026-11-06T14:47:57.979Z",
+      "completedAt": "",
+      "notes": []
+    },
+    {
+      "id": "T-MER-001",
+      "title": "Story phase metadata and catalog runtime",
+      "role": "architecture",
+      "priority": "P1",
+      "status": "done",
+      "files": [
+        "src/Story/Runtime/StoryAssembly.cs",
+        "src/Story/Runtime/StoryPlayer.cs",
+        "src/Story/Runtime/StoryPhase.cs"
+      ],
+      "acceptance": [
+        "StoryAssembly exposes phase and CanPlay metadata",
+        "StoryPlayer starts an assembly and invokes Complete through the assembly boundary",
+        "Build and tests pass"
+      ],
+      "dependsOn": [],
+      "requiredEvidence": [
+        "design",
+        "build",
+        "test"
+      ],
+      "owner": "",
+      "leaseUntil": "",
+      "createdAt": "2026-11-07T01:58:33.998Z",
+      "updatedAt": "2026-11-07T02:02:37.452Z",
+      "completedAt": "2026-11-07T02:02:37.452Z",
+      "notes": [
+        {
+          "at": "2026-11-07T01:58:43.036Z",
+          "by": "director",
+          "text": "claimed for 90m"
+        }
+      ]
+    },
+    {
+      "id": "T-MER-002",
+      "title": "Migrate merchant lifecycle to story phase catalog",
+      "role": "systems",
+      "priority": "P1",
+      "status": "todo",
+      "files": [
+        "src/Story/Npcs/FlowEmitterMerchant/FlowEmitterMerchantNpc.cs",
+        "src/Story/Npcs/FlowEmitterMerchant/FlowEmitterMerchantPlan.cs",
+        "src/Story/Npcs/FlowEmitterMerchant/Events/FlowEmitterDemo/FlowEmitterDemoAssembly.cs",
+        "src/Story/Npcs/FlowEmitterMerchant/Events/FlowEmitterFarewell/FlowEmitterFarewellAssembly.cs"
+      ],
+      "acceptance": [
+        "Merchant NPC has an explicit story catalog and TryPlay(phase) controller",
+        "First-visit story and farewell story are selected by their own Phase/CanPlay metadata",
+        "Arrival story completion does not restock; repeat arrival opens shop",
+        "Sold-out farewell triggers once and then leaves",
+        "Build and tests pass"
+      ],
+      "dependsOn": [
+        "T-MER-001"
+      ],
+      "requiredEvidence": [
+        "design",
+        "build",
+        "test",
+        "review"
+      ],
+      "owner": "",
+      "leaseUntil": "",
+      "createdAt": "2026-11-07T01:58:36.496Z",
+      "updatedAt": "2026-11-07T01:58:36.496Z",
+      "completedAt": "",
+      "notes": []
+    },
+    {
+      "id": "T-MER-003",
+      "title": "Defensive code deletion and refactor review",
+      "role": "review",
+      "priority": "P1",
+      "status": "todo",
+      "files": [
+        "src/Story/Runtime",
+        "src/Story/Npcs/FlowEmitterMerchant"
+      ],
+      "acceptance": [
+        "Defensive checks in merchant/story refactor are compared against existing project conventions",
+        "Only redundant defensive code is removed; no new defensive code is added",
+        "Build and tests pass after deletion",
+        "Final correctness review reports no unresolved blocker"
+      ],
+      "dependsOn": [
+        "T-MER-002"
+      ],
+      "requiredEvidence": [
+        "review",
+        "build",
+        "test"
+      ],
+      "owner": "",
+      "leaseUntil": "",
+      "createdAt": "2026-11-07T01:58:38.729Z",
+      "updatedAt": "2026-11-07T01:58:38.729Z",
+      "completedAt": "",
+      "notes": []
     }
   ]
 }

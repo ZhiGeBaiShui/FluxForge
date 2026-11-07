@@ -3,6 +3,8 @@
 《Probably Stolen》0.46 的 Mono mod。
 当前提供流源属性、装置、发射器、收集器和基础视觉层。
 
+> AI / 接手开发者先读 [`AI_CONTEXT.md`](AI_CONTEXT.md)：项目索引、分层、机制和常见坑。
+
 > 状态：Logic / Presentation 与装置适配器有单元测试；游戏生命周期和 Harmony patch 需要进游戏验证；视觉层仍是实验性内容。
 
 ## 1. 先做什么

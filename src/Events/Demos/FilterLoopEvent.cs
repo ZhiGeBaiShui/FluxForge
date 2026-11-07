@@ -95,7 +95,7 @@ namespace FluxForge.Events
             {
                 for (int pass = 0; pass < 2; pass++)
                 {
-                    session.Runtime.Emit(emitter);
+                    emitter.ActivateSlotItem();
 
                     while (session.Runtime.Flows.Active.Count > 0)
                     {

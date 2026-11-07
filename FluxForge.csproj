@@ -60,11 +60,24 @@
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="assets\*.png" />
-    <EmbeddedResource Include="assets\*.json" />
-    <EmbeddedResource Include="assets\*.wav" />
-    <!-- 旧彩色图集只作设计期对拍基准，不进运行时（A 方案改用 flow_mask_*） -->
-    <EmbeddedResource Remove="assets\flow_atlas.*" />
+    <!-- 运行时真正读取的嵌入资源；不要用 assets\*.png 通配，
+         否则候选立绘、旧图集和设计稿都会进 DLL。 -->
+    <EmbeddedResource Include="assets\items.json" />
+    <EmbeddedResource Include="assets\sprites.json" />
+    <EmbeddedResource Include="assets\flow_mask.json" />
+    <EmbeddedResource Include="assets\flow_mask_body.png" />
+    <EmbeddedResource Include="assets\flow_mask_edge.png" />
+    <EmbeddedResource Include="assets\flow_mask_accent.png" />
+    <EmbeddedResource Include="assets\flow_mask_wall.png" />
+    <EmbeddedResource Include="assets\sfx_filter_chemical.wav" />
+    <EmbeddedResource Include="assets\sfx_heater.wav" />
+    <EmbeddedResource Include="assets\sfx_cooler.wav" />
+    <EmbeddedResource Include="assets\sfx_coldtrap_base.wav" />
+    <EmbeddedResource Include="assets\sfx_coldtrap_cross.wav" />
+    <EmbeddedResource Include="assets\sfx_filter_crystal.wav" />
+    <EmbeddedResource Include="assets\sfx_speed_up.wav" />
+    <EmbeddedResource Include="assets\sfx_speed_down.wav" />
+    <EmbeddedResource Include="assets\sfx_emitter_fire.wav" />
   </ItemGroup>
 
   <ItemGroup>

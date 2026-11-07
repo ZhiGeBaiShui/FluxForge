@@ -65,7 +65,7 @@ namespace FluxForge.Events
             GameItem right)
         {
             yield return new WaitForSeconds(FirstEmitDelaySeconds);
-            session.Runtime.Emit(left);
+            left.ActivateSlotItem();
 
             while (session.Runtime.Flows.Active.Count > 0)
             {
@@ -73,7 +73,7 @@ namespace FluxForge.Events
             }
 
             yield return new WaitForSeconds(RelayDelaySeconds);
-            session.Runtime.Emit(right);
+            right.ActivateSlotItem();
 
             while (session.Runtime.Flows.Active.Count > 0)
             {

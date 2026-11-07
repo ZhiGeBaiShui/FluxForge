@@ -13,7 +13,7 @@ namespace FluxForge.Story.FlowEmitterGenericVisit
         internal override Task Execute(StorySequence player)
         {
             player.SayNpc("你好，我又来了。");
-            player.SayNpc("我多带了一些“小玩意”，看看有没有你想要的吧。");
+            player.SayNpc("这次多带了些小玩意儿，看看有没有你喜欢的？");
             return Task.CompletedTask;
         }
     }

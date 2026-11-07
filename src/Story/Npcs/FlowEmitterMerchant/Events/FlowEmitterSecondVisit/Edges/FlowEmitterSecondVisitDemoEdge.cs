@@ -17,6 +17,21 @@ namespace FluxForge.Story.FlowEmitterSecondVisit
         {
         }
 
+        internal override bool RequiresEmptyGrid
+        {
+            get { return true; }
+        }
+
+        internal override bool LocksGrid
+        {
+            get { return true; }
+        }
+
+        internal override string GridBusyMessage
+        {
+            get { return FlowEmitterSecondVisitTexts.GridBusy; }
+        }
+
         internal override Task Execute(StorySequence player)
         {
             player.SayNpc(FlowEmitterSecondVisitTexts.DemoIntro);

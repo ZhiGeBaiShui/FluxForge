@@ -44,7 +44,7 @@ namespace FluxForge.Events
         {
             yield return new WaitForSeconds(FirstEmitDelaySeconds);
 
-            session.Runtime.Emit(emitter);
+            emitter.ActivateSlotItem();
 
             while (session.Runtime.Flows.Active.Count > 0)
             {

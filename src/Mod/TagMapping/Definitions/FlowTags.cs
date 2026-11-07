@@ -29,6 +29,9 @@ namespace FluxForge.Mod
         /// <summary>原版液体容器的容量上限，单位 µL。</summary>
         public const string LiquidContainerCapacity = "LIQUID_CONTAINER_CAPACITY";
 
+        /// <summary>Mod 装置容器身份；不启用原版 LIQUID_CONTAINER_TAG。</summary>
+        public const string DeviceContainerTag = "FLUXFORGE_DEVICE_CONTAINER_TAG";
+
         /// <summary>
         /// 装置配置：每次经过时对流源施加的温度变化（°C）。
         /// 正值 = 升温，负值 = 降温；冷阱与温度装置共用。

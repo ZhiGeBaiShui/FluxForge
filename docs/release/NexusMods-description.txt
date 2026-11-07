@@ -1,0 +1,161 @@
+FluxForge - Fluid Processing and Chemistry (Beta)
+Nexus Mods 发布文本
+
+【Mod name / 英文名称】
+FluxForge - Fluid Processing and Chemistry (Beta)
+
+【Short description / 英文短描述】
+Build liquid-processing routes in your inventory. Reduce chemical and heavy-metal contamination in acids and bases, fine-tune mixtures with trace extraction, and meet a new merchant with device demonstrations. Public beta.
+
+【中文短描述】
+在物品网格中搭建液体处理路线，净化酸、碱中的化学污染与重金属污染，用冷萃微调成分比例。新增商人奥雅、装置商品与演示剧情。内测交流QQ群：568324459。
+
+【使用方法】
+名称和短描述分别填入对应字段。下面正文采用 BBCode，可复制到描述编辑器的源码模式中。中文在前、英文在后，可以按发布需要保留两种语言或删去其中一种。
+
+==================== DESCRIPTION / 正文开始 ====================
+
+[center][b][size=6]FluxForge[/size][/b]
+[size=4]把背包，变成你的流体实验室[/size]
+Probably Stolen · 装置与液体处理 Mod · 内测版
+
+[b][size=6][color=#ffcc66]内测交流 QQ 群：568324459[/color][/size][/b]
+[b]欢迎入群参与测试、反馈问题、交流玩法与提供灵感！[/b][/center]
+
+[b][size=5]为原版化学提供更多处理手段[/size][/b]
+
+FluxForge 让你在物品网格中搭建液体处理路线，为原版化学提供净化、温控和成分微调工具。
+
+[list]
+[*][b]净化化学原料[/b]：降低酸、碱等液体中的化学污染和重金属污染，为后续反应准备更干净的原料。
+[*][b]微调化学产物[/b]：产物制成后，如果污染影响了浓度达标，可以尝试用冷萃装置减少极少量污染，调整成分比例。
+[*][b]组合处理流程[/b]：配合温控、过滤、冷萃与变速装置，设计适合自己需求的液体处理路线。
+[/list]
+
+[b][size=5]目前可以怎么玩？[/size][/b]
+
+把容器中的液体装入发射器，启动后，液体会以“流源”的形式移动。利用 L 型转向装置和通道规划路线，让流源经过不同的处理装置，也可以搭建闭环，反复处理同一份液体。
+
+[list]
+[*][b]流源发射器[/b]：发射液体，也能接收、暂存流源，方便回收和再次使用。
+[*][b]过滤装置[/b]：降低化学污染和重金属污染。低流速、高温能提高过滤效率，但高温也可能带来蒸发损失。
+[*][b]升温与降温装置[/b]：调整流源温度，为处理和反应创造条件。
+[*][b]冷萃装置[/b]：抽取含量最低的非零液体成分，存入装置。用于污染微调时，需要留意实际成分比例。
+[*][b]变速装置[/b]：根据进入方向加速或减速，调整经过装置时的流速。
+[*][b]L 型转向与直通通道[/b]：转向装置改变流向；直通管主要负责美观，让路线更直观、整齐。
+[/list]
+
+商人[b]奥雅[/b]会带着装置、商品和演示到访，逐步介绍这些玩法。
+
+[b][size=5]安装[/size][/b]
+
+适配版本：[b]Probably Stolen 0.46[/b]
+加载方式：[b]游戏官方 ModLoader[/b]
+
+[list=1]
+[*]将下载包中的 FluxForge 文件夹放入游戏目录的 Mods 文件夹。
+[*]确认路径为 Mods/FluxForge/FluxForge.dll，manifest.xml 和 Textures 文件夹也应位于 FluxForge 文件夹内。
+[*]启动游戏并确认模组已加载。
+[/list]
+
+本次发布为内测版本，建议备份存档后体验。
+
+[b][size=5]后续扩展计划[/size][/b]
+
+[b]以下为开发方向，不代表本次内测已包含这些内容，具体设计会根据反馈调整。[/b]
+
+[list]
+[*][b]更多 NPC 剧情与互动[/b]：增加代入感，让装置玩法与游戏中的人物和选择产生更多联系。
+[*][b]更多反应装置与特殊产物[/b]：添加流源特殊反应，制作原版之外的新产物。也欢迎大家提供灵感。
+[*][b]工业化玩法[/b]：添加支持自定义内部网格的机器，在其中铺设通道、组织处理流程；加入流源终端，实时查看属性变化。
+[/list]
+
+更长远的构想，是加入具有“表演”性质的手工制作路线：记录玩家实时操作，为制作过程设计评分，让操作表现与最终成分共同影响产物，制作不同特色的饮料和酒，并配套 NPC 剧情。
+
+未来也希望发展出更完整的剧情与结局路线，例如制作药品拯救生命、工业化制作高浓度违禁品，或成为上层区闻名的手工调酒师。这些路线计划彼此兼容，由玩家自行决定目标。
+
+[b][size=5]为什么需要内测？[/size][/b]
+
+[list]
+[*][b]剧情和 NPC[/b]：需要实际体验来判断人物、对话和互动设计是否合适，才能及时修改。
+[*][b]美术效果[/b]：个人美术能力有限，目前贴图与立绘主要依靠 AI 生成和个人修图。希望收到风格、辨识度和显示效果方面的反馈，[b]十分欢迎画师合作[/b]。
+[*][b]玩法乐趣[/b]：开发者很难重新站在玩家的角度体验自己的系统。希望了解哪些机制有趣、哪些繁琐、哪些缺少实际用途。
+[*][b]灵感支持[/b]：个人的想法有限，欢迎分享希望解决的原版问题，以及装置、产物和剧情建议。
+[/list]
+
+报错、截图、游玩感受和普通建议都欢迎。反馈异常时，尽量附上游戏与 Mod 版本、问题发生前的操作，以及截图或日志。
+
+[b][size=5]致谢与交流[/size][/b]
+
+感谢每一位愿意花时间体验、反馈和提供灵感的玩家。如果你对本 Mod 感兴趣，希望为后续发展提供帮助，欢迎加入群内参与测试。
+
+[center][b][size=6][color=#ffcc66]QQ 群：568324459[/color][/size][/b]
+[b]欢迎测试、反馈、提建议，也欢迎画师与创作者交流合作。[/b][/center]
+
+
+[b][size=6]English Overview[/size][/b]
+
+[b]FluxForge — Turn your inventory into a fluid laboratory.[/b]
+
+FluxForge adds modular liquid processing to Probably Stolen. Build routes in your inventory grid to filter, heat, cool and extract components from liquids used in vanilla chemistry.
+
+[b][size=5]What does it help with?[/size][/b]
+
+[list]
+[*][b]Cleaner ingredients[/b]: reduce chemical and heavy-metal contamination in liquids such as acids and bases before using them in further reactions.
+[*][b]Fine-tuning products[/b]: when contamination prevents a finished product from meeting a concentration target, the extraction device may help remove tiny amounts of contamination and adjust its composition.
+[*][b]Custom processing routes[/b]: combine temperature control, filtration, extraction and speed control to suit your materials.
+[/list]
+
+[b][size=5]Current gameplay[/size][/b]
+
+Load liquid from a container into an emitter and activate it. The liquid travels through the grid as a moving flow. Use turns to guide it through processing devices, or build a closed loop for repeated treatment.
+
+[list]
+[*][b]Emitter[/b]: launches liquid and can also receive and store incoming flows.
+[*][b]Filter[/b]: reduces chemical and heavy-metal contamination. Slower flows and higher temperatures improve filtration, while excessive heat can cause evaporation losses.
+[*][b]Heater / Cooler[/b]: changes flow temperature.
+[*][b]Cold Extraction Device[/b]: extracts the smallest non-zero liquid component into its own storage. Check the mixture before using it to remove contaminants; it does not let you freely select a component.
+[*][b]Speed Controller[/b]: speeds up or slows down a flow depending on its entry direction.
+[*][b]L-shaped Turn / Straight Channel[/b]: turns redirect flows; straight channels are primarily decorative and make routes easier to follow.
+[/list]
+
+A new merchant, [b]奥雅[/b], visits with devices, goods and demonstrations to introduce the system.
+
+[b][size=5]Installation[/size][/b]
+
+Requires [b]Probably Stolen 0.46[/b] and the game's [b]built-in ModLoader[/b].
+
+[list=1]
+[*]Extract the FluxForge folder into the game's Mods folder.
+[*]Check that Mods/FluxForge/ contains FluxForge.dll, manifest.xml and the Textures folder.
+[*]Launch the game and check that the mod has loaded.
+[/list]
+
+This is a public beta. Back up your save before testing.
+
+[b][size=5]Roadmap — planned, not included in full in this beta[/size][/b]
+
+[list]
+[*]More NPC stories and interactions.
+[*]More reaction devices, special flow reactions and new products beyond vanilla chemistry.
+[*]An industrial machine with a customizable internal grid for building processing routes.
+[*]A flow terminal for monitoring changing properties in real time.
+[*]Longer term: scored manual crafting, specialty drinks and cocktails, and related NPC stories.
+[*]Potential story and ending routes involving life-saving medicines, industrial contraband production or becoming a renowned bartender in the upper district. These routes are intended to coexist, leaving players free to choose their goals.
+[/list]
+
+These are development goals and may change with testing and feedback.
+
+[b][size=5]Why a beta?[/size][/b]
+
+I need player feedback to judge whether the NPCs, stories and mechanics are enjoyable, understandable and useful in normal play. I would also appreciate new ideas for devices, products and stories.
+
+[b]AI disclosure:[/b] textures and portraits are primarily AI-generated with manual edits, and promotional images are AI-generated. Feedback on the visuals is welcome, and artists interested in collaborating are especially welcome.
+
+When reporting an issue, please include your game and mod versions, what you were doing, and screenshots or logs where possible. General impressions are just as useful.
+
+[center][b][size=6][color=#ffcc66]QQ Group: 568324459[/color][/size][/b]
+[b]Join to test, share feedback and suggest ideas. Thank you for helping shape FluxForge![/b][/center]
+
+==================== 正文结束 / END ====================

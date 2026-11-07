@@ -4,13 +4,13 @@ namespace FluxForge.Story.FlowEmitterFarewell
     internal static class FlowEmitterFarewellTexts
     {
         internal const string Thanks
-            = "都买完了吗，非常感谢你的支持。";
+            = "都买完了？谢谢你这么支持我。";
 
         internal const string Intro
-            = "刚好我这部分装置也要换新了，这次送给你吧。";
+            = "正好我这边要换新装置了，这些就送给你吧。";
 
         internal const string Cooperation
-            = "希望我们以后能多多合作。";
+            = "希望以后还有机会合作。";
 
         internal const string VisitReminder
             = "以后我会每7天来一次。";

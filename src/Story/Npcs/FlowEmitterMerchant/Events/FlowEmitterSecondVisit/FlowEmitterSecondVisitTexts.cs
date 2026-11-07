@@ -7,10 +7,10 @@ namespace FluxForge.Story.FlowEmitterSecondVisit
             = "你好，我又来了。";
 
         internal const string NewDevice
-            = "这次的商品没有折扣了，但我搞到了一个新设备——“冷萃装置”。";
+            = "这次带来的都是全新货和新的东西——“冷萃装置”。";
 
         internal const string CanDemo
-            = "和之前一样，我可以给你演示怎么使用。";
+            = "和之前一样，我可以演示给你看。";
 
         internal const string OptionOk
             = "演示一下吧。";
@@ -19,22 +19,25 @@ namespace FluxForge.Story.FlowEmitterSecondVisit
             = "不用，我知道怎么用。";
 
         internal const string ExitLine
-            = "行，这次有什么想买的吗。";
+            = "行，看看有没有你想要的。";
 
         internal const string DemoIntro
-            = "可以和过滤装置一样，这样摆放使用。";
+            = "它和过滤装置一样摆着用。";
 
         internal const string AfterDemo
-            = "流源经过它时，会萃取占比最少的液体成分。";
+            = "流源经过时，会萃取其中占比最少的液体成分。";
 
         internal const string LoopExplain
-            = "但这个萃取效率很低，我测试过一次只有1μL。";
+            = "不过效率很低，我试过一次，只萃出1 μL。";
 
         internal const string LoopBenefit
-            = "没法用它来萃取所有污染物，得到纯水——净化污染的效率太低。";
+            = "想靠它把所有污染物都滤掉来得到纯水不太现实，效率太低了。";
 
         internal const string RepeatPrompt
-            = "还要看一遍吗。";
+            = "还要再看一遍吗？";
+
+        internal const string GridBusy
+            = "前台得是全空的，我才能放装置，能麻烦收一下东西吗。";
 
         internal const string OptionAgain
             = "再看一遍。";
