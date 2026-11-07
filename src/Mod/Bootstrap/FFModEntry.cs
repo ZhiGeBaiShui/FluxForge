@@ -77,6 +77,7 @@ namespace FluxForge.Mod
 
             DeviceAudioService.Shutdown();
             DeviceAnimationService.Shutdown();
+            NpcPortraitRegistry.Shutdown();
 
             // 先停宿主：停止每帧驱动，再拆登记表与视图。
             if (_host != null)

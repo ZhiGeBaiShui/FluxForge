@@ -14,7 +14,7 @@ namespace FluxForge.Story.FlowEmitterMerchant
         private const string NextVisitDayKey
             = "fluxforge.flowEmitterDemo.nextVisitDay";
         private const int VisitIntervalDays = 7;
-        private const string DisplayName = "装置推销员";
+        private const string DisplayName = "奥雅";
 
         private static bool _farewellStarted;
         private static bool _storyRunning;
@@ -35,6 +35,7 @@ namespace FluxForge.Story.FlowEmitterMerchant
         {
             _storyRunning = false;
             _farewellStarted = false;
+            NpcPortraitRegistry.Apply();
             Queue();
         }
 
@@ -85,7 +86,7 @@ namespace FluxForge.Story.FlowEmitterMerchant
             {
                 identifier = Identifier,
                 displayName = DisplayName,
-                spriteName = SpriteDict.GetRandomMerchantSpriteName(),
+                spriteName = NpcPortraitRegistry.SpriteKey,
                 clientIntent = StoreClient.ClientIntent.SELL,
                 dismissable = true,
                 arrestable = false,

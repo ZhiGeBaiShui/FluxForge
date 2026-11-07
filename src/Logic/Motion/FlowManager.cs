@@ -272,7 +272,12 @@ namespace FluxForge
         /// </summary>
         private static void StopAt(FlowEntity entity, int cellX, int cellY)
         {
-            entity.Position.Set(cellX, cellY);
+            double offsetX = entity.StopOffsetX;
+            double offsetY = entity.StopOffsetY;
+            entity.StopOffsetX = 0d;
+            entity.StopOffsetY = 0d;
+
+            entity.Position.Set(cellX + offsetX, cellY + offsetY);
         }
     }
 }

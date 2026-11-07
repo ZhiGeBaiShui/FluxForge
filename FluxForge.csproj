@@ -75,6 +75,11 @@
       <Link>Textures\Items\%(Filename)%(Extension)</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <!-- 人物立绘使用官方 Textures 根目录；Items 目录由物品贴图加载器读取。 -->
+    <None Update="mod\Textures\*.png">
+      <Link>Textures\%(Filename)%(Extension)</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
   <ItemGroup>

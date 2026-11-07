@@ -26,6 +26,15 @@ namespace FluxForge
         /// <summary>运动数据（方向 / 速度）。</summary>
         public FlowMotionData Motion;
 
+        /// <summary>
+        /// 装置接管流源时附加到格中心的偏移；由路由装置写入，
+        /// 运动层在 StopAt 时消费并清零。范围由装置自己控制。
+        /// </summary>
+        public double StopOffsetX;
+
+        /// <summary>停止位置 Y 偏移；与 <see cref="StopOffsetX"/> 成对使用。</summary>
+        public double StopOffsetY;
+
         /// <summary>流源属性（水量 / 温度……）。</summary>
         public FlowProperties Properties;
 

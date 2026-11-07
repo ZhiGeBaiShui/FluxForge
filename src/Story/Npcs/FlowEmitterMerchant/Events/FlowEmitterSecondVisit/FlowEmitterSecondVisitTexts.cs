@@ -28,7 +28,7 @@ namespace FluxForge.Story.FlowEmitterSecondVisit
             = "流源经过它时，会萃取占比最少的液体成分。";
 
         internal const string LoopExplain
-            = "但这个萃取效率很低，我测试过一次只有0.001ml。";
+            = "但这个萃取效率很低，我测试过一次只有1μL。";
 
         internal const string LoopBenefit
             = "没法用它来萃取所有污染物，得到纯水——净化污染的效率太低。";

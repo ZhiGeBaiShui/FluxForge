@@ -136,6 +136,12 @@ namespace FluxForge
             return direction;
         }
 
+        /// <summary>公用的动态偏移源；只在单出口转向分支使用。</summary>
+        private static readonly Random TurnOffsetRandom = new Random();
+
+        /// <summary>转向后相对格中心的最大偏移。</summary>
+        private const double TurnOffsetRange = 0.1d;
+
         /// <inheritdoc/>
         public bool Route(FlowEntity incoming, FlowSpawner flows, int cellX, int cellY)
         {
@@ -173,6 +179,7 @@ namespace FluxForge
             if (total == 1)
             {
                 incoming.Motion.Direction = exitChannel;
+                ApplyTurnOffset(incoming);
                 return true;
             }
 
@@ -237,6 +244,16 @@ namespace FluxForge
         private static int Opposite(int direction)
         {
             return (direction + 2) % 4;
+        }
+
+        /// <summary>转向后给格中心加一点点随机偏移，避免多条流源完全重合。</summary>
+        private static void ApplyTurnOffset(FlowEntity incoming)
+        {
+            // 逻辑坐标的格中心是整数；偏移保持非负，避免落到相邻格。
+            incoming.StopOffsetX =
+                TurnOffsetRandom.NextDouble() * TurnOffsetRange;
+            incoming.StopOffsetY =
+                TurnOffsetRandom.NextDouble() * TurnOffsetRange;
         }
 
         /// <summary>发射数量：null → 每通道 1 道；否则长度须与通道集一致、每项非负。</summary>
