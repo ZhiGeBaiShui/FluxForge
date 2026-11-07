@@ -12,12 +12,6 @@ namespace FluxForge.Story
         internal string IconItemKey { get; }
         internal StoryNode To { get; private set; }
 
-        /// <summary>选项被选中后，先在同一 Dialogue 里显示的台词。</summary>
-        internal virtual string IntroLine
-        {
-            get { return null; }
-        }
-
         protected StoryEdge(string label, string iconItemKey)
         {
             Label = label;

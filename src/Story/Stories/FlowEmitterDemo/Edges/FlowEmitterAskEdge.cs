@@ -10,11 +10,6 @@ namespace FluxForge.Story.FlowEmitterDemo
         {
         }
 
-        internal override string IntroLine
-        {
-            get { return FlowEmitterDemoTexts.CanDemo; }
-        }
-
         internal override Task Execute(StoryPlayer player)
         {
             return Task.CompletedTask;

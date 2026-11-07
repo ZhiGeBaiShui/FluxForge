@@ -28,5 +28,14 @@ namespace FluxForge.Events
         {
             return BoundaryEmitterEvent.Start(grid);
         }
+
+        /// <summary>
+        /// 演示三：左右发射器相对，中间过滤装置；流源往返 3 个来回后结束。
+        /// 返回 true 只表示事件已启动。
+        /// </summary>
+        public static bool RunFilterLoop(GameGridInventory grid)
+        {
+            return FilterLoopEvent.Start(grid);
+        }
     }
 }

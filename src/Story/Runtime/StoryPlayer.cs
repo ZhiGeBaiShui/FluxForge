@@ -71,7 +71,8 @@ namespace FluxForge.Story
 
             Dialogue dialogue = BuildNodeDialogue(node);
 
-            if (previousTail != null)
+            if (previousTail != null
+                && DialogUIManager.Instance.GetCurrentDialog() == previousTail)
             {
                 previousTail.SetNextDialogue(dialogue);
                 return;
@@ -93,34 +94,18 @@ namespace FluxForge.Story
                 Dialogue selected = new Dialogue()
                     .SetText("PLAYER", option.Label);
 
+                TaskCompletionSource<bool> completion
+                    = new TaskCompletionSource<bool>();
+
+                selected.SetEndAction(() => completion.TrySetResult(true));
+                selected.SetStartAction(() =>
+                {
+                    _speechTail = selected;
+                    _speechCompletion = completion;
+                    _ = Start(option);
+                });
+
                 label.SetNextDialogue(selected);
-
-                if (option.IntroLine != null)
-                {
-                    TaskCompletionSource<bool> completion
-                        = new TaskCompletionSource<bool>();
-
-                    Dialogue response = new Dialogue()
-                        .SetText(_npcName(), option.IntroLine);
-
-                    response.SetEndAction(() =>
-                    {
-                        completion.TrySetResult(true);
-                        _ = Start(option);
-                    });
-
-                    selected.SetStartAction(() =>
-                    {
-                        _speechTail = response;
-                        _speechCompletion = completion;
-                    });
-
-                    selected.SetNextDialogue(response);
-                }
-                else
-                {
-                    selected.SetEndAction(() => _ = Start(option));
-                }
 
                 dialogue.AddChoice(
                     DirectoryMaster.Item(option.IconItemKey),
@@ -179,7 +164,11 @@ namespace FluxForge.Story
         internal async Task RunFlow(Func<GameGridInventory, bool> flow)
         {
             await WaitForSpeech();
+            await StartFlow(flow);
+        }
 
+        internal Task StartFlow(Func<GameGridInventory, bool> flow)
+        {
             TaskCompletionSource<bool> completion
                 = new TaskCompletionSource<bool>();
 
@@ -206,7 +195,7 @@ namespace FluxForge.Story
                 completion.TrySetResult(false);
             }
 
-            await completion.Task;
+            return completion.Task;
         }
 
         internal Task Wait(float seconds)

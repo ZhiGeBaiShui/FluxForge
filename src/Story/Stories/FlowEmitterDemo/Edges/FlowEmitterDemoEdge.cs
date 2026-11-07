@@ -11,13 +11,10 @@ namespace FluxForge.Story.FlowEmitterDemo
         {
         }
 
-        internal override string IntroLine
-        {
-            get { return FlowEmitterDemoTexts.EmitterIntro; }
-        }
-
         internal override async Task Execute(StoryPlayer player)
         {
+            player.SayNpc(FlowEmitterDemoTexts.EmitterIntro);
+            player.SayNpc(FlowEmitterDemoTexts.EmitterFlowName);
             await player.RunFlow(FlowEventApi.RunBoundaryEmitter);
 
             player.SayNpc(FlowEmitterDemoTexts.RelayIntro);
