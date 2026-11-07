@@ -13,25 +13,25 @@ namespace FluxForge.Story.FlowEmitterSecondVisit
             = "和之前一样，我可以给你演示怎么使用。";
 
         internal const string OptionOk
-            = "可以。";
+            = "演示一下吧。";
 
         internal const string OptionSkip
-            = "不用，我听说过这个装置，知道怎么用。";
+            = "不用，我知道怎么用。";
 
         internal const string ExitLine
             = "行，这次有什么想买的吗。";
 
         internal const string DemoIntro
-            = "可以把他当过滤装置一样使用——不过我有个更好的使用方式。";
+            = "可以和过滤装置一样，这样摆放使用。";
 
         internal const string AfterDemo
-            = "但这里位置太小了，我不好给你表演。";
+            = "流源经过它时，会萃取占比最少的液体成分。";
 
         internal const string LoopExplain
-            = "简单说，有个转向用的通道装置，你可以用他造一个自动循环。";
+            = "但这个萃取效率很低，我测试过一次只有0.001ml。";
 
         internal const string LoopBenefit
-            = "这样就不用每次手动启动发射器了。";
+            = "没法用它来萃取所有污染物，得到纯水——净化污染的效率太低。";
 
         internal const string RepeatPrompt
             = "还要看一遍吗。";

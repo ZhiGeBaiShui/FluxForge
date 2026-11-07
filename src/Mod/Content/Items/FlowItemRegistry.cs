@@ -166,6 +166,12 @@ namespace FluxForge.Mod
         /// <summary>风味文本（写入 flavorText，灰绿斜体；空则留空）。</summary>
         public string flavor { get; set; }
 
+        /// <summary>
+        /// 激活音效标识；由负责激活的 attachment 绑定到 GameItem.soundActivate。
+        /// 空则不绑定。
+        /// </summary>
+        public string activateSound { get; set; }
+
         /// <summary>物品类型（MODULE / STORAGE / TOOL / MACHINE / FOOD / WEAPON / MEDICAL / ARMOR …）。</summary>
         public string type { get; set; }
 

@@ -36,6 +36,9 @@ namespace FluxForge.Mod
         /// <summary>变速装置：降调、低通的涡轮减速音。</summary>
         public const string SpeedDown = "fluxforge.speed.down";
 
+        /// <summary>发射器激活时的一次性电流点击。</summary>
+        public const string EmitterFire = "fluxforge.emitter.fire";
+
         /// <summary>加载并登记全部自定义音效；每次 OnEnable 调用一次。</summary>
         public static void Initialize()
         {
@@ -50,6 +53,7 @@ namespace FluxForge.Mod
             Register(prefix, "sfx_filter_crystal.wav", FilterCrystal);
             Register(prefix, "sfx_speed_up.wav", SpeedUp);
             Register(prefix, "sfx_speed_down.wav", SpeedDown);
+            Register(prefix, "sfx_emitter_fire.wav", EmitterFire);
         }
 
         private static void Register(string prefix, string fileName, string identifier)

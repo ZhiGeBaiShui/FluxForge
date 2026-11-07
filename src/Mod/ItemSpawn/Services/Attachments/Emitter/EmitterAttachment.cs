@@ -20,6 +20,11 @@ namespace FluxForge.Mod
 
         public override void Attach(GameItem item, FlowItemDefinition def)
         {
+            if (!string.IsNullOrEmpty(def.activateSound))
+            {
+                item.soundActivate = def.activateSound;
+            }
+
             WireActivation(item);
         }
 

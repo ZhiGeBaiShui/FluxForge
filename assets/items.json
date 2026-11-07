@@ -96,6 +96,7 @@
       "anchorX": 0,
       "anchorY": 0,
       "capacityMicrolitres": 5000000,
+      "activateSound": "fluxforge.emitter.fire",
       "sprite": "flow_emitter_1x2",
       "name": "流源发射器",
       "desc": "接收流入的流源并暂存，也可从液体容器补充；启动后把存量一次性发射出去。",
