@@ -1,4 +1,4 @@
-namespace FluxForge.Story.FlowEmitterDemo
+namespace FluxForge.Story.FlowEmitterMerchant
 {
     /// <summary>一条库存规则：看过某段剧情后，上架哪种货物。</summary>
     internal sealed class StoryStockRule
@@ -22,7 +22,7 @@ namespace FluxForge.Story.FlowEmitterDemo
     }
 
     /// <summary>根据剧情进度计算本次上架的货物。</summary>
-    internal static class FlowEmitterDemoStock
+    internal static class FlowEmitterMerchantStock
     {
         private static readonly StoryStockRule[] FirstVisitRules =
         {
@@ -33,23 +33,33 @@ namespace FluxForge.Story.FlowEmitterDemo
         private static readonly StoryStockRule[] RepeatRules =
         {
             new StoryStockRule(
-                FlowEmitterDemoProgress.EmitterDemoKey,
+                FlowEmitterMerchantProgress.EmitterDemoKey,
                 "flow_emitter",
                 2,
                 false),
             new StoryStockRule(
-                FlowEmitterDemoProgress.FilterDemoKey,
+                FlowEmitterMerchantProgress.FilterDemoKey,
                 "flow_filter",
+                1,
+                false),
+            new StoryStockRule(
+                FlowEmitterMerchantProgress.ColdTrapDemoKey,
+                "flow_cold_trap",
                 1,
                 false),
         };
 
-        internal static void Place(bool firstVisit)
+        internal static void Place()
         {
-            StoryStockRule[] rules = firstVisit
-                ? FirstVisitRules
-                : RepeatRules;
+            StoryStockRule[] rules = FlowEmitterMerchantProgress.HasArrivalSeen
+                ? RepeatRules
+                : FirstVisitRules;
 
+            PlaceRules(rules);
+        }
+
+        private static void PlaceRules(StoryStockRule[] rules)
+        {
             foreach (StoryStockRule rule in rules)
             {
                 if (rule.StoryKey != null

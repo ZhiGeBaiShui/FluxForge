@@ -37,5 +37,14 @@ namespace FluxForge.Events
         {
             return FilterLoopEvent.Start(grid);
         }
+
+        /// <summary>
+        /// 演示四：左右发射器相对，中间冷萃装置；流源往返 3 个来回后结束。
+        /// 返回 true 只表示事件已启动。
+        /// </summary>
+        public static bool RunColdTrapLoop(GameGridInventory grid)
+        {
+            return ColdTrapLoopEvent.Start(grid);
+        }
     }
 }

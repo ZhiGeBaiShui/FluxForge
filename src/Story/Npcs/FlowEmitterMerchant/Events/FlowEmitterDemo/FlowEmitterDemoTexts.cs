@@ -4,16 +4,19 @@ namespace FluxForge.Story.FlowEmitterDemo
     internal static class FlowEmitterDemoTexts
     {
         internal const string Greeting
-            = "您好，我这里有一套新潮的科学装置。";
+            = "你好，这里有一套新潮的科学装置。";
 
         internal const string GreetingAsk
-            = "你有没有兴趣购买。";
+            = "有没有兴趣购买。";
 
         internal const string Question
-            = "他们有什么用";
+            = "它们有什么用";
 
         internal const string CanDemo
-            = "我可以为您演示。";
+            = "我可以演示如何使用它们。";
+
+        internal const string NeedDemo
+            = "有需要了解的装置吗？";
 
         internal const string RepeatPrompt
             = "还需要我演示吗。";
@@ -49,10 +52,10 @@ namespace FluxForge.Story.FlowEmitterDemo
             = "能把化学污染和重金属净化到更低浓度。";
 
         internal const string FilterLoss
-            = "但温度高的话，会损失一些成分。";
+            = "但高温会蒸发液体，可能让污染物占比更高。";
 
         internal const string FilterLossDetail
-            = "水分、酒精等都会损失。";
+            = "而且水分、酒精等成分也会损失。";
 
         internal const string FilterLossControl
             = "得严苛控制。";
@@ -61,7 +64,7 @@ namespace FluxForge.Story.FlowEmitterDemo
             = "我搞不来这么复杂的操作。";
 
         internal const string FilterSimpleAction
-            = "常温反复操作就够我用了。";
+            = "常温下反复操作就够我用了。";
 
         internal const string FilterSpeed
             = "听说流源的速度对净化也有影响。";
@@ -76,9 +79,24 @@ namespace FluxForge.Story.FlowEmitterDemo
             = "净化装置";
 
         internal const string NoDemo
+            = "不用演示";
+
+        internal const string AllKnown
             = "都知道了";
 
-        internal const string Farewell
-            = "那就不打扰您了。";
+        internal const string FirstVisitDiscount
+            = "第一次见面，给你一个好优惠。";
+
+        internal const string DiscountSameFunction
+            = "更便宜的价格，和全新版一个功能。";
+
+        internal const string DiscountOldLook
+            = "就是看起来旧了一点。";
+
+        internal const string DeviceSoundHint
+            = "每个装置生效时会有音效播放。";
+
+        internal const string NoSoundHint
+            = "如果没音效，就说明装置没对流源产生影响。";
     }
 }

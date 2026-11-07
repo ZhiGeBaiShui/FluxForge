@@ -18,7 +18,7 @@ namespace FluxForge.Story
             IconItemKey = iconItemKey;
         }
 
-        internal abstract Task Execute(StoryPlayer player);
+        internal abstract Task Execute(StorySequence sequence);
 
         internal void Connect(StoryNode from, StoryNode to)
         {

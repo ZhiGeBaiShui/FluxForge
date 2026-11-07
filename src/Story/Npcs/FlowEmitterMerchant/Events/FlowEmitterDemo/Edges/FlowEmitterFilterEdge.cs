@@ -1,5 +1,6 @@
 using System.Threading.Tasks;
 using FluxForge.Events;
+using FluxForge.Story.FlowEmitterMerchant;
 
 namespace FluxForge.Story.FlowEmitterDemo
 {
@@ -11,14 +12,17 @@ namespace FluxForge.Story.FlowEmitterDemo
         {
         }
 
-        internal override async Task Execute(StoryPlayer player)
+        internal override Task Execute(StorySequence player)
         {
-            Task filter = player.StartFlow(FlowEventApi.RunFilterLoop);
-
             player.SayNpc(FlowEmitterDemoTexts.FilterIntro);
             player.SayNpc(FlowEmitterDemoTexts.FilterIntroLimit);
             player.SayNpc(FlowEmitterDemoTexts.FilterManual);
             player.SayNpc(FlowEmitterDemoTexts.FilterManualAction);
+
+            player.StartFlow(
+                FlowEventApi.RunFilterLoop,
+                FlowEmitterMerchantProgress.MarkFilterDemo);
+
             player.SayNpc(FlowEmitterDemoTexts.FilterTemperature);
             player.SayNpc(FlowEmitterDemoTexts.FilterTemperatureLimit);
             player.SayNpc(FlowEmitterDemoTexts.FilterLoss);
@@ -29,9 +33,19 @@ namespace FluxForge.Story.FlowEmitterDemo
             player.SayNpc(FlowEmitterDemoTexts.FilterSpeed);
             player.SayNpc(FlowEmitterDemoTexts.FilterSpeedUnknown);
 
-            await filter;
+            if (!FlowEmitterMerchantProgress.HasSoundHintSeen)
+            {
+                player.SayNpc(FlowEmitterDemoTexts.DeviceSoundHint);
+                player.SayNpc(FlowEmitterDemoTexts.NoSoundHint);
+                player.Do(delegate
+                {
+                    FlowEmitterMerchantProgress.MarkSoundHintSeen();
+                });
+            }
 
-            FlowEmitterDemoProgress.MarkFilterDemo();
+            player.SayNpc(FlowEmitterDemoTexts.RepeatPrompt);
+
+            return Task.CompletedTask;
         }
     }
 }

@@ -10,10 +10,11 @@ namespace FluxForge.Story.FlowEmitterDemo
         {
         }
 
-        internal override Task Execute(StoryPlayer player)
+        internal override Task Execute(StorySequence player)
         {
             player.SayNpc(FlowEmitterDemoTexts.Greeting);
             player.SayNpc(FlowEmitterDemoTexts.GreetingAsk);
+            player.SayNpc(FlowEmitterDemoTexts.DevicePrompt);
             return Task.CompletedTask;
         }
     }
