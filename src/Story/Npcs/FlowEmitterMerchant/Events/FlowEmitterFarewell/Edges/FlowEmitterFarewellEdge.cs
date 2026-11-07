@@ -1,8 +1,9 @@
 using System.Threading.Tasks;
+using FluxForge.Story.FlowEmitterMerchant;
 
 namespace FluxForge.Story.FlowEmitterFarewell
 {
-    /// <summary>离场边：说三句话，等说完，标记首次剧情完成并赠送。</summary>
+    /// <summary>离场边：说完赠礼和到访提醒，再赠礼并离开。</summary>
     internal sealed class FlowEmitterFarewellEdge : StoryEdge
     {
         private static readonly string[] GiftItemKeys =
@@ -26,16 +27,17 @@ namespace FluxForge.Story.FlowEmitterFarewell
             player.SayNpc(FlowEmitterFarewellTexts.Thanks);
             player.SayNpc(FlowEmitterFarewellTexts.Intro);
             player.SayNpc(FlowEmitterFarewellTexts.Cooperation);
+            player.SayNpc(FlowEmitterFarewellTexts.VisitReminder);
 
             player.Do(delegate
             {
                 foreach (string itemKey in GiftItemKeys)
                 {
                     GameItem item = DirectoryMaster.Item(itemKey);
-                    ItemFeatureHelper.SetShabby(item);
+                    FlowEmitterMerchantStock.MarkShabby(item);
                     GeneralHelper.SetItemOwned(item, true);
                     GraphUtils.EmporiumTryAdd(
-                        EmporiumEntry.Instance.invElement,
+                        EmporiumEntry.Instance.frontInvinvElement,
                         item);
                 }
             });

@@ -16,7 +16,6 @@ namespace FluxForge.Story.FlowEmitterMerchant
         private const int VisitIntervalDays = 7;
         private const string DisplayName = "装置推销员";
 
-        private static bool _firstStory;
         private static bool _farewellStarted;
         private static bool _storyRunning;
 
@@ -102,7 +101,8 @@ namespace FluxForge.Story.FlowEmitterMerchant
         private static void StartStory()
         {
             PlayerStore store = PlayerStore.Instance;
-            _firstStory = !FlowEmitterMerchantProgress.HasFirstStory;
+
+            FlowEmitterMerchantProgress.IncrementVisitCount();
 
             store.modData[NextVisitDayKey]
                 = (StoreStation.GetDayCounter() + VisitIntervalDays)
@@ -111,7 +111,9 @@ namespace FluxForge.Story.FlowEmitterMerchant
             PlayerStore.Instance.currentClientInstance
                 .GetClientBlueprint().dismissable = false;
 
-            if (!TryPlay(StoryPhase.Arrival))
+            if (!TryPlay(StoryPhase.Arrival)
+                && !TryPlay(StoryPhase.SecondVisit)
+                && !TryPlay(StoryPhase.GenericVisit))
             {
                 OpenShop();
             }
@@ -158,6 +160,18 @@ namespace FluxForge.Story.FlowEmitterMerchant
                 return;
             }
 
+            if (phase == StoryPhase.SecondVisit)
+            {
+                OpenShop();
+                return;
+            }
+
+            if (phase == StoryPhase.GenericVisit)
+            {
+                OpenShop();
+                return;
+            }
+
             if (phase == StoryPhase.SoldOut)
             {
                 DialogUIManager.Instance.CurrentClientLeave();
@@ -166,10 +180,19 @@ namespace FluxForge.Story.FlowEmitterMerchant
 
         private static void OpenShop()
         {
-            PlayerStore.Instance.currentClientInstance
-                .GetClientBlueprint().dismissable = true;
+            StoreClient client = PlayerStore.Instance.currentClientInstance
+                .GetClientBlueprint();
+
+            client.dismissable = true;
+
+            if (FlowEmitterMerchantProgress.HasFirstStory
+                && !FlowEmitterMerchantProgress.HasFarewell)
+            {
+                client.onItemSold = OnItemSold;
+            }
 
             FlowEmitterMerchantStock.Place();
+            TryStartFarewell();
         }
 
         private static string GetCurrentClientName()
@@ -192,7 +215,8 @@ namespace FluxForge.Story.FlowEmitterMerchant
                 return;
             }
 
-            if (_firstStory)
+            if (FlowEmitterMerchantProgress.HasFirstStory
+                && !FlowEmitterMerchantProgress.HasFarewell)
             {
                 client.onItemSold = OnItemSold;
                 TryStartFarewell();

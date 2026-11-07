@@ -4,6 +4,8 @@ namespace FluxForge.Story
     internal enum StoryPhase
     {
         Arrival,
+        SecondVisit,
+        GenericVisit,
         SoldOut,
     }
 }

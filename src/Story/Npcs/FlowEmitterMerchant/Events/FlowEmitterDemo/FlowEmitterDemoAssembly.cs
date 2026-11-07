@@ -23,6 +23,7 @@ namespace FluxForge.Story.FlowEmitterDemo
         internal override void Complete()
         {
             FlowEmitterMerchantProgress.MarkArrivalSeen();
+            FlowEmitterMerchantProgress.MarkFirstStory();
         }
 
         internal FlowEmitterDemoAssembly()

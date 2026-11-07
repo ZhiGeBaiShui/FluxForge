@@ -14,8 +14,8 @@ namespace FluxForge.Story.FlowEmitterFarewell
 
         internal override bool CanPlay()
         {
-            return FlowEmitterMerchantProgress.HasArrivalSeen
-                && !FlowEmitterMerchantProgress.HasFirstStory
+            return FlowEmitterMerchantProgress.HasFirstStory
+                && !FlowEmitterMerchantProgress.HasFarewell
                 && EmporiumEntry.Instance.GetAllNonOwendItemCount() == 0;
         }
 
@@ -29,7 +29,7 @@ namespace FluxForge.Story.FlowEmitterFarewell
         /// <summary>所有退出边最终都会触发这里。</summary>
         internal override void Complete()
         {
-            FlowEmitterMerchantProgress.MarkFirstStory();
+            FlowEmitterMerchantProgress.MarkFarewell();
         }
     }
 }

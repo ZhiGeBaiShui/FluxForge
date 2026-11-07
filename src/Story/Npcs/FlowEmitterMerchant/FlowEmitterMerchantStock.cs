@@ -33,29 +33,50 @@ namespace FluxForge.Story.FlowEmitterMerchant
         private static readonly StoryStockRule[] RepeatRules =
         {
             new StoryStockRule(
-                FlowEmitterMerchantProgress.EmitterDemoKey,
+                FlowEmitterMerchantProgress.FirstStoryKey,
                 "flow_emitter",
                 2,
                 false),
             new StoryStockRule(
-                FlowEmitterMerchantProgress.FilterDemoKey,
+                FlowEmitterMerchantProgress.FirstStoryKey,
                 "flow_filter",
                 1,
                 false),
             new StoryStockRule(
-                FlowEmitterMerchantProgress.ColdTrapDemoKey,
+                FlowEmitterMerchantProgress.SecondVisitKey,
                 "flow_cold_trap",
                 1,
+                false),
+            new StoryStockRule(
+                FlowEmitterMerchantProgress.ThirdVisitKey,
+                "flow_straight_speed",
+                2,
+                false),
+            new StoryStockRule(
+                FlowEmitterMerchantProgress.ThirdVisitKey,
+                "l_turn_device",
+                2,
+                false),
+            new StoryStockRule(
+                FlowEmitterMerchantProgress.ThirdVisitKey,
+                "flow_straight",
+                4,
                 false),
         };
 
         internal static void Place()
         {
-            StoryStockRule[] rules = FlowEmitterMerchantProgress.HasArrivalSeen
-                ? RepeatRules
-                : FirstVisitRules;
+            StoryStockRule[] rules
+                = FlowEmitterMerchantProgress.HasFirstStock
+                    ? RepeatRules
+                    : FirstVisitRules;
 
             PlaceRules(rules);
+
+            if (!FlowEmitterMerchantProgress.HasFirstStock)
+            {
+                FlowEmitterMerchantProgress.MarkFirstStock();
+            }
         }
 
         private static void PlaceRules(StoryStockRule[] rules)
@@ -82,12 +103,32 @@ namespace FluxForge.Story.FlowEmitterMerchant
 
             if (shabby)
             {
-                ItemFeatureHelper.SetShabby(item);
+                MarkShabby(item);
             }
 
             if (!PlayerStore.Instance.TryAddDirectSellingItemToTable(item))
             {
                 item.Destroy();
+            }
+        }
+
+        internal static void MarkShabby(GameItem item)
+        {
+            ItemFeatureHelper.SetShabby(item);
+
+            ItemFeature feature = item.FindItemFeatureByCategory(
+                "CATEGORY_SHABBY");
+
+            if (feature == null)
+            {
+                return;
+            }
+
+            int index = item.itemFeatures.IndexOf(feature);
+            if (index > 0)
+            {
+                item.itemFeatures.RemoveAt(index);
+                item.itemFeatures.Insert(0, feature);
             }
         }
     }

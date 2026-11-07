@@ -43,7 +43,7 @@ namespace FluxForge.Story.FlowEmitterDemo
             = "如果有两个发射装置。";
 
         internal const string FilterManualAction
-            = "可以自己手动这样操作来净化。";
+            = "可以这样操作来净化。";
 
         internal const string FilterTemperature
             = "流源的温度越高，净化装置的上限越高。";

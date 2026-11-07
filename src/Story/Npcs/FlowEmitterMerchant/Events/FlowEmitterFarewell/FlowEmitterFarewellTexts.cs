@@ -11,5 +11,8 @@ namespace FluxForge.Story.FlowEmitterFarewell
 
         internal const string Cooperation
             = "希望我们以后能多多合作。";
+
+        internal const string VisitReminder
+            = "以后我会每7天来一次。";
     }
 }
