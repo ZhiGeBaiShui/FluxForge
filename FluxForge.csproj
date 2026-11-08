@@ -78,6 +78,7 @@
     <EmbeddedResource Include="assets\sfx_speed_up.wav" />
     <EmbeddedResource Include="assets\sfx_speed_down.wav" />
     <EmbeddedResource Include="assets\sfx_emitter_fire.wav" />
+    <EmbeddedResource Include="assets\sfx_centrifuge_spin.wav" />
   </ItemGroup>
 
   <ItemGroup>

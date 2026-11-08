@@ -39,6 +39,9 @@ namespace FluxForge.Mod
         /// <summary>发射器激活时的一次性电流点击。</summary>
         public const string EmitterFire = "fluxforge.emitter.fire";
 
+        /// <summary>离心机分离时的旋转音。</summary>
+        public const string CentrifugeSpin = "fluxforge.centrifuge.spin";
+
         /// <summary>加载并登记全部自定义音效；每次 OnEnable 调用一次。</summary>
         public static void Initialize()
         {
@@ -54,6 +57,7 @@ namespace FluxForge.Mod
             Register(prefix, "sfx_speed_up.wav", SpeedUp);
             Register(prefix, "sfx_speed_down.wav", SpeedDown);
             Register(prefix, "sfx_emitter_fire.wav", EmitterFire);
+            Register(prefix, "sfx_centrifuge_spin.wav", CentrifugeSpin);
         }
 
         private static void Register(string prefix, string fileName, string identifier)

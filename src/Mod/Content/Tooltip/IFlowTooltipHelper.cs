@@ -45,6 +45,7 @@ namespace FluxForge.Mod
 
             _initialized = true;
             Register(new StatusLineTooltipHelper());
+            Register(new DeviceContainerTooltipHelper());
         }
 
         /// <summary>分派：逐个 helper 追加（各自判断是否处理）。</summary>

@@ -1,5 +1,3 @@
-using UnityEngine;
-
 namespace FluxForge.Mod
 {
     /// <summary>
@@ -9,33 +7,14 @@ namespace FluxForge.Mod
     /// </summary>
     public static class DeviceAudioService
     {
-        private static AudioSource _source;
-
         public static void Initialize()
         {
-            GameObject host = new GameObject("FluxForge.DeviceAudio");
-            UnityEngine.Object.DontDestroyOnLoad(host);
-
-            _source = host.AddComponent<AudioSource>();
-            _source.playOnAwake = false;
-            _source.spatialBlend = 0f;
-            _source.bypassEffects = true;
-            _source.bypassListenerEffects = true;
-            _source.bypassReverbZones = true;
-            _source.volume = 1f;
-
             FlowAudio.Played += OnPlayed;
         }
 
         public static void Shutdown()
         {
             FlowAudio.Played -= OnPlayed;
-
-            if (_source != null)
-            {
-                UnityEngine.Object.Destroy(_source.gameObject);
-                _source = null;
-            }
         }
 
         private static void OnPlayed(FlowAudioEvent evt)
@@ -89,6 +68,10 @@ namespace FluxForge.Mod
                     audioId = DeviceAudioClips.ColdTrapCross;
                     break;
 
+                case FlowSoundIds.CentrifugeSpin:
+                    audioId = DeviceAudioClips.CentrifugeSpin;
+                    break;
+
                 case FlowSoundIds.Melted:
                     audioId = AudioHelper.DEBRIS_IMPACT;
                     break;
@@ -101,8 +84,12 @@ namespace FluxForge.Mod
                     return;
             }
 
-            AudioClip clip = AudioManager.Instance.audioDirectory.GetAudioClip(audioId);
-            _source.PlayOneShot(clip);
+            if (!AudioManager.Instance.audioDirectory.HasAudioClip(audioId))
+            {
+                return;
+            }
+
+            AudioManager.Instance.Play2(audioId);
         }
     }
 }

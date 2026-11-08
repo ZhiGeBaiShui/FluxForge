@@ -4,38 +4,58 @@ using System.Collections.Generic;
 namespace FluxForge
 {
     /// <summary>
-    /// 离心机：按进入速度选择可分离粒径，再把可分离成分按固定系数 k 分到重相。
+    /// 离心机：按进入速度选择可分离粒径，把可分离成分按固定系数 k 抽入自身存量。
     ///
     /// 一次通过：
     ///   x = 粒径 >= threshold 的可分离总量
     ///   y = 其余液体总量
     ///   x1 = max(0, x - k*y)
     ///
-    /// 重相 = x1（可分离成分按比例分配）
-    /// 轻相 = 剩余可分离成分 + 全部不可分离成分
+    /// x1 受装置剩余容量限制，按比例从各可分离成分中抽取，存入 <see cref="Extracted"/>。
+    /// 未抽走的可分离成分和全部不可分离成分留在原流源中继续前进。
     ///
-    /// 双出口：轻相继续走 light 方向，重相走 heavy 方向。
-    /// 不判断流源从哪个方向进入，也不改变速度。
+    /// 返回 false = 不截停流源——离心机只改属性、不做双出口分流。
     /// </summary>
-    public sealed class CentrifugeDevice : IFlowRouter
+    public sealed class CentrifugeDevice : IFlowDevice, IFlowNotifier
     {
-        /// <summary>重相出口。</summary>
-        private readonly int _heavyDirection;
+        private readonly double _k;
+        private readonly int _capacityMicrolitres;
 
-        /// <summary>轻相出口。</summary>
-        private readonly int _lightDirection;
+        private FlowProperties _extracted = new FlowProperties();
 
         /// <summary>逻辑粒径；温度等标量不参与。</summary>
         private static readonly Dictionary<string, double> ParticleSizes
             = BuildParticleSizes();
 
-        /// <summary>固定分离系数；越大越偏向保留轻相。</summary>
-        public double K { get; }
+        /// <summary>装置存量：离心出来的可分离成分及其混合温度。</summary>
+        public FlowProperties Extracted
+        {
+            get { return _extracted; }
+        }
 
-        public CentrifugeDevice(
-            double k,
-            int lightDirection,
-            int heavyDirection)
+        /// <summary>固定分离系数；越大越偏向保留轻相。</summary>
+        public double K
+        {
+            get { return _k; }
+        }
+
+        /// <summary>存量上限（微升）。</summary>
+        public int CapacityMicrolitres
+        {
+            get { return _capacityMicrolitres; }
+        }
+
+        /// <inheritdoc/>
+        public event Action<IFlowNotifier> Changed;
+
+        /// <summary>离心机不会耗尽，本事件为接口占位，永不触发。</summary>
+        public event Action<IFlowNotifier> Exhausted
+        {
+            add { }
+            remove { }
+        }
+
+        public CentrifugeDevice(double k, int capacityMicrolitres)
         {
             if (k < 1d || k > 10d)
             {
@@ -43,27 +63,20 @@ namespace FluxForge
                     nameof(k), "离心机系数 k 必须在 1～10 之间");
             }
 
-            ValidateDirection(lightDirection, nameof(lightDirection));
-            ValidateDirection(heavyDirection, nameof(heavyDirection));
+            _k = k;
+            _capacityMicrolitres = capacityMicrolitres;
+        }
 
-            if (lightDirection == heavyDirection)
-            {
-                throw new ArgumentException("轻相和重相出口不能相同");
-            }
-
-            K = k;
-            _lightDirection = lightDirection;
-            _heavyDirection = heavyDirection;
+        /// <summary>整体替换存量（读档 / 适配层回灌），不播报 Changed。</summary>
+        public void ReplaceExtracted(FlowProperties extracted)
+        {
+            _extracted = extracted;
         }
 
         /// <inheritdoc/>
-        public bool Route(
-            FlowEntity incoming,
-            FlowSpawner flows,
-            int cellX,
-            int cellY)
+        public bool TryReact(FlowEntity entity)
         {
-            double speed = incoming.Motion == null ? 0d : incoming.Motion.Speed;
+            double speed = entity.Motion == null ? 0d : entity.Motion.Speed;
             double threshold = ThresholdForSpeed(speed);
 
             double separable = 0d;
@@ -78,7 +91,7 @@ namespace FluxForge
                     continue;
                 }
 
-                double amount = incoming.Properties.Get(def.Key);
+                double amount = entity.Properties.Get(def.Key);
                 if (amount <= 0d)
                 {
                     continue;
@@ -94,67 +107,59 @@ namespace FluxForge
                 }
             }
 
-            double removable = separable - K * nonSeparable;
+            double removable = separable - _k * nonSeparable;
             if (removable <= 0d || separable <= 0d)
             {
-                // 没有足够的可分离物可以带走，原流源正常通过。
                 return false;
             }
 
-            double heavyRatio = removable / separable;
+            int free = _capacityMicrolitres - (int)_extracted.SubstanceTotal;
+            if (free <= 0)
+            {
+                return false;
+            }
 
-            FlowProperties heavy = new FlowProperties();
-            FlowProperties light = new FlowProperties();
+            int removed = (int)Math.Min(removable, free);
+            if (removed <= 0)
+            {
+                return false;
+            }
+
+            double extractionRatio = removed / separable;
+            double inletTemperature = entity.Properties.Get(FlowProps.Temperature);
 
             for (int i = 0; i < defs.Count; i++)
             {
                 FlowPropertyDef def = defs[i];
-                double amount = incoming.Properties.Get(def.Key);
-
                 if (def.Kind != FlowPropertyKind.Liquid)
                 {
-                    // 标量按 Keep 处理，两相都保留原值。
-                    heavy.Set(def.Key, amount);
-                    light.Set(def.Key, amount);
                     continue;
                 }
 
-                if (amount > 0d
-                    && IsSeparable(def.Id, threshold))
+                double amount = entity.Properties.Get(def.Key);
+                if (amount <= 0d || !IsSeparable(def.Id, threshold))
                 {
-                    double heavyAmount = amount * heavyRatio;
-                    heavy.Set(def.Key, heavyAmount);
-                    light.Set(def.Key, amount - heavyAmount);
+                    continue;
                 }
-                else
-                {
-                    light.Set(def.Key, amount);
-                }
+
+                double taken = amount * extractionRatio;
+                entity.Properties.Set(def.Key, amount - taken);
+                _extracted.Set(
+                    def.Key,
+                    _extracted.Get(def.Key) + taken);
             }
 
-            flows.Kill(incoming);
+            double oldVolume = _extracted.SubstanceTotal - removed;
+            double oldTemperature = _extracted.Get(FlowProps.Temperature);
+            double newTemperature = oldVolume <= 0d
+                ? inletTemperature
+                : (oldTemperature * oldVolume + inletTemperature * removed)
+                    / _extracted.SubstanceTotal;
+            _extracted.Set(FlowProps.Temperature, newTemperature);
 
-            double outputSpeed = incoming.Motion == null
-                ? 0d
-                : incoming.Motion.Speed;
-
-            Spawn(
-                flows,
-                cellX,
-                cellY,
-                _heavyDirection,
-                outputSpeed,
-                heavy);
-
-            Spawn(
-                flows,
-                cellX,
-                cellY,
-                _lightDirection,
-                outputSpeed,
-                light);
-
-            return true;
+            FlowAudio.Play(FlowSoundIds.CentrifugeSpin, this, removed);
+            Changed?.Invoke(this);
+            return false;
         }
 
         /// <summary>速度越高，可分离粒径越小；25 以下不处理。</summary>
@@ -179,42 +184,11 @@ namespace FluxForge
             return threshold;
         }
 
-        private static void Spawn(
-            FlowSpawner flows,
-            int cellX,
-            int cellY,
-            int direction,
-            double speed,
-            FlowProperties properties)
-        {
-            if (properties.SubstanceTotal <= 0d)
-            {
-                return;
-            }
-
-            // 输出方向由装置的两个出口决定；速度大小保持不变。
-            FlowEntity entity = new FlowEntity(
-                new FlowPos(cellX, cellY),
-                new FlowMotionData(direction, speed),
-                properties);
-
-            flows.Accept(entity);
-        }
-
         private static bool IsSeparable(string id, double threshold)
         {
             double size;
             return ParticleSizes.TryGetValue(id, out size)
                 && size >= threshold;
-        }
-
-        private static void ValidateDirection(int direction, string paramName)
-        {
-            if (direction < 0 || direction > 3)
-            {
-                throw new ArgumentOutOfRangeException(
-                    paramName, "方向必须是 0～3");
-            }
         }
 
         private static Dictionary<string, double> BuildParticleSizes()

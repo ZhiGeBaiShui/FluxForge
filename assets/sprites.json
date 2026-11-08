@@ -64,6 +64,13 @@
       "shapeWidth": 3
     },
     {
+      "key": "centrifuge",
+      "atlas": "centrifuge_atlas",
+      "file": "centrifuge.png",
+      "shape": "1",
+      "shapeWidth": 1
+    },
+    {
       "key": "chem_reactor_heat",
       "atlas": "chem_reactor_heat_atlas",
       "file": "chem_reactor_heat.png",

@@ -11,6 +11,7 @@ namespace FluxForge
         public const string Absorbed = "collector.absorbed";
         public const string Extracted = "cold_trap.extracted";
         public const string ExtractedCross = "cold_trap.extracted.cross";
+        public const string CentrifugeSpin = "centrifuge.spin";
         public const string Melted = "ice.melted";
         public const string Exhausted = "device.exhausted";
     }

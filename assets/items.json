@@ -67,7 +67,7 @@
         "FLOW_DEVICE"
       ],
       "attachments": [
-        "flow_container",
+        "device_container",
         "device"
       ],
       "tags": [
@@ -86,6 +86,49 @@
         {
           "valueName": "COLD_TRAP_EFFICIENCY",
           "valueDouble": 20.0
+        }
+      ]
+    },
+    {
+      "key": "flow_centrifuge",
+      "value": 200,
+      "device": "centrifuge",
+      "anchorX": 0,
+      "anchorY": 0,
+      "capacityMicrolitres": 5000,
+      "sprite": "centrifuge",
+      "name": "离心机",
+      "desc": "按流源进入速度分离不同粒径的液体，把分离出的成分存入自身。\n分离系数越高，重相产量越低；装置接近满时停止抽取。",
+      "flavor": "转得越快，能甩出的东西越细，但剩下的也越少。",
+      "itemTypes": [
+        "FLOW_DEVICE"
+      ],
+      "attachments": [
+        "device_container",
+        "device"
+      ],
+      "tags": [
+        {
+          "valueName": "FLUXFORGE_CENTRIFUGE_K",
+          "valueDouble": 5.0
+        }
+      ],
+      "statusLines": [
+        {
+          "tag": "FLUXFORGE_CENTRIFUGE_K",
+          "label": "分离系数",
+          "scale": 1,
+          "format": "0.#",
+          "color": "LightCyan",
+          "valueType": "double"
+        },
+        {
+          "tag": "LIQUID_CONTAINER_CAPACITY",
+          "label": "容量",
+          "scale": 0.001,
+          "format": "0.#",
+          "unit": "mL",
+          "color": "LightBlue"
         }
       ]
     },

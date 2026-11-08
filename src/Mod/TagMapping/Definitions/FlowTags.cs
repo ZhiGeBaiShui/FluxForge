@@ -64,5 +64,8 @@ namespace FluxForge.Mod
 
         /// <summary>发射装置：流源出射速度（格/秒）。</summary>
         public const string EmitterSpeed = "FLOW_EMITTER_SPEED";
+
+        /// <summary>离心机：固定分离系数 k。</summary>
+        public const string CentrifugeK = "FLUXFORGE_CENTRIFUGE_K";
     }
 }
