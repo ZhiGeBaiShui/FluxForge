@@ -1,6 +1,13 @@
 {
   "sprites": [
     {
+      "key": "fluxforge_device_manual",
+      "atlas": "fluxforge_device_manual_atlas",
+      "file": "fluxforge_device_manual.png",
+      "shape": "11",
+      "shapeWidth": 1
+    },
+    {
       "key": "ice_block",
       "atlas": "ice_block_atlas",
       "file": "ice_block.png",

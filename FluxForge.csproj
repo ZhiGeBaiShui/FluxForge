@@ -17,7 +17,7 @@
     <GameManagedDir>E:\SteamLibrary\steamapps\common\Probably Stolen\Probably Stolen_Data\Managed</GameManagedDir>
     <!-- 开发参考资料/ 里有同名的 Assembly-CSharp.dll；SDK 会把项目内 None/Content 里的
          DLL 当作候选引用并优先于 HintPath，必须把这套本地资料排除出默认项。 -->
-    <DefaultItemExcludes>$(DefaultItemExcludes);开发参考资料/**</DefaultItemExcludes>
+    <DefaultItemExcludes>$(DefaultItemExcludes);开发参考资料/**;output/**;dist/**</DefaultItemExcludes>
   </PropertyGroup>
 
   <ItemGroup>
@@ -45,6 +45,7 @@
       <HintPath>$(GameManagedDir)\UnityEngine.AudioModule.dll</HintPath>
       <Private>false</Private>
     </Reference>
+    <Reference Include="Unity.TextMeshPro"><HintPath>$(GameManagedDir)\Unity.TextMeshPro.dll</HintPath><Private>false</Private></Reference>
     <Reference Include="Unity.Localization">
       <HintPath>$(GameManagedDir)\Unity.Localization.dll</HintPath>
       <Private>false</Private>

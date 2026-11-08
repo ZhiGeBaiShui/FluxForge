@@ -9,6 +9,8 @@ namespace FluxForge.Events
     {
         public static Action<GameGridInventory> EventCompleted;
 
+        public static void Cancel(GameGridInventory grid) => EventSession.Cancel(grid);
+
         public static void LockGrid(GameGridInventory grid)
         {
             GridLock.Lock(grid);

@@ -918,6 +918,20 @@
           "valueInt": 450000
         }
       ]
+    },
+    {
+      "key": "fluxforge_device_manual",
+      "sprite": "fluxforge_device_manual",
+      "manualTag": "device_guide",
+      "name": "流源装置手册",
+      "desc": "介绍流源装置与液体处理方法，附带演示。",
+      "value": 10,
+      "itemTypes": [
+        "DOCUMENT"
+      ],
+      "attachments": [
+        "manual"
+      ]
     }
   ]
 }

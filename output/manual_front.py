@@ -1,0 +1,2 @@
+from pathlib import Path
+p=Path('src/ItemIntegration/Manual/DeviceManual.cs');s=p.read_text(encoding='utf-8');s=s.replace('            if (current != null) { current.transform.SetAsLastSibling(); return; }','            UIFamilyLayer.BringPanelsToFront();\n            if (current != null) { current.transform.SetAsLastSibling(); return; }');s=s.replace('            drag.moveFrontObjects = new List<GameObject> { root };','            drag.moveFrontObjects = new List<GameObject> { root };\n            root.transform.SetAsLastSibling();');p.write_text(s,encoding='utf-8')

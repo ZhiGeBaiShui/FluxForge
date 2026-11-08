@@ -1,0 +1,61 @@
+{
+  "package": "FluxForge devices",
+  "devices": [
+    {
+      "key": "ice_block",
+      "name": "冰块",
+      "description": "吸收流源的热量，自身逐渐融化。\n融化后水分会被流源带走。",
+      "texture": "Textures/ice_block.png",
+      "sprite": "ice_block",
+      "device": "ice_block"
+    },
+    {
+      "key": "flow_cold_trap",
+      "name": "冷萃装置",
+      "description": "会进行冷萃，抽取流源中含量最低的液体成分，存入自身。",
+      "texture": "Textures/chem_reactor_top.png",
+      "sprite": "cold_trap",
+      "device": "cold_trap"
+    },
+    {
+      "key": "flow_emitter",
+      "name": "发射装置",
+      "description": "从容器接收液体，启动后把存量液体一次性发射出去",
+      "texture": "Textures/flow_emitter_2x3.png",
+      "sprite": "flow_emitter_2x3",
+      "device": "collector"
+    },
+    {
+      "key": "flow_filter",
+      "name": "过滤装置",
+      "description": "让流源多次穿过时，可以让化学污染和重金属污染降低到一定浓度。\n流速越慢，温度越高，净化效率越高。",
+      "texture": "Textures/chem_reactor_alkali.png",
+      "sprite": "chem_reactor_alkali",
+      "device": "filter"
+    },
+    {
+      "key": "flow_heater",
+      "name": "升温装置",
+      "description": "会加热经过的流源。",
+      "texture": "Textures/chem_reactor_heat.png",
+      "sprite": "chem_reactor_heat",
+      "device": "temperature"
+    },
+    {
+      "key": "flow_cooler",
+      "name": "降温装置",
+      "description": "会冷却经过的流源。",
+      "texture": "Textures/chem_reactor_cool.png",
+      "sprite": "chem_reactor_cool",
+      "device": "temperature"
+    },
+    {
+      "key": "l_turn_device",
+      "name": "L 型转向装置",
+      "description": "可以改变流源的方向。",
+      "texture": "Textures/l_turn_device.png",
+      "sprite": "l_turn_device",
+      "device": "l_right_down"
+    }
+  ]
+}

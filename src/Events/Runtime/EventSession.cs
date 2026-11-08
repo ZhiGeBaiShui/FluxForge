@@ -12,6 +12,13 @@ namespace FluxForge.Events
     /// </summary>
     internal sealed class EventSession
     {
+        private static readonly Dictionary<GameGridInventory, EventSession> Active = new Dictionary<GameGridInventory, EventSession>();
+
+        internal static void Cancel(GameGridInventory grid)
+        {
+            if (Active.TryGetValue(grid, out EventSession session)) session.End(false);
+        }
+
         private readonly List<GameItem> _items = new List<GameItem>();
         private readonly List<Action> _cleanups = new List<Action>();
         private readonly List<Coroutine> _routines = new List<Coroutine>();
@@ -20,6 +27,7 @@ namespace FluxForge.Events
 
         internal EventSession(GameGridInventory grid, FlowRuntime runtime)
         {
+            Active.Add(grid, this);
             Grid = grid;
             Runtime = runtime;
         }
@@ -76,7 +84,7 @@ namespace FluxForge.Events
             End();
         }
 
-        private void End()
+        private void End(bool notifyCompletion = true)
         {
             if (_ended)
             {
@@ -84,6 +92,7 @@ namespace FluxForge.Events
             }
 
             _ended = true;
+            Active.Remove(Grid);
 
             for (int i = 0; i < _routines.Count; i++)
             {
@@ -106,7 +115,7 @@ namespace FluxForge.Events
 
             _items.Clear();
             GameGridInventory grid = Grid;
-            if (FlowEventApi.EventCompleted != null)
+            if (notifyCompletion && FlowEventApi.EventCompleted != null)
             {
                 FlowEventApi.EventCompleted(grid);
             }

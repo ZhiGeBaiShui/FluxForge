@@ -52,6 +52,7 @@ namespace FluxForge.Mod
 
         private static void Postfix()
         {
+            DeviceManual.CloseCurrent();
             FlowDriver.Shutdown();
         }
     }

@@ -172,6 +172,8 @@ namespace FluxForge.Mod
         /// </summary>
         public string activateSound { get; set; }
 
+        public string manualTag { get; set; }
+
         /// <summary>物品类型（MODULE / STORAGE / TOOL / MACHINE / FOOD / WEAPON / MEDICAL / ARMOR …）。</summary>
         public string type { get; set; }
 
