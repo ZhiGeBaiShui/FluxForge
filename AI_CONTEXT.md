@@ -55,7 +55,8 @@ dotnet test tests\FluxForge.Tests\FluxForge.Tests.csproj -c Release
 1. AI_CONTEXT.md（本文件）
 2. README.md
 3. src/Logic/README.md
-4. src/Mod/README.md
+4. src/ItemIntegration/README.md
+5. src/LogicIntegration/README.md
 5. src/Story/README.md
 6. src/Story/Npcs/FlowEmitterMerchant/PORTRAIT.md
 7. 按任务读对应子系统
@@ -64,10 +65,12 @@ dotnet test tests\FluxForge.Tests\FluxForge.Tests.csproj -c Release
 ## 3. 分层与依赖规则
 
 ```text
-src/Mod          →  src/Logic
-src/Mod          →  src/Presentation
-src/Story        →  src/Mod / Logic / Presentation
-src/Events       →  src/Logic / Mod
+src/ItemIntegration  →  src/Logic
+src/ItemIntegration  →  src/Presentation
+src/LogicIntegration →  src/Logic
+src/LogicIntegration →  src/Presentation
+src/Story            →  src/ItemIntegration / src/LogicIntegration / Logic / Presentation
+src/Events           →  src/Logic / src/LogicIntegration
 src/Traits       →  官方 StartingPerk API
 ```
 
@@ -98,17 +101,24 @@ src/
 ├─ Presentation/    纯 C# 表现计算
 │  ├─ Flow/Visual/   颜色、图集索引、像素坐标、视觉状态
 │  └─ Flow/Particles/粒子场、粒子规则
-├─ Mod/             游戏适配层
-│  ├─ Bootstrap/     入口、读档、场景、每帧宿主
-│  ├─ Common/        游戏适配工具、嵌入资源、序列化
-│  ├─ Content/       items/sprites/tooltip 内容注册
-│  ├─ DeviceServices/装置实例、绑定、音频、动画
-│  ├─ DeviceState/   Tag ↔ 装置状态适配器
-│  ├─ GridBuilding/  网格、生命周期、FlowRuntime
-│  ├─ ItemSpawn/     物品创建、attachment、工厂
-│  ├─ Portraits/     人物立绘注册
-│  ├─ TagMapping/    tag 常量、库存读写
-│  └─ Visual/        流源视觉层
+├─ ItemIntegration/  游戏物品适配层
+│  ├─ Common/Item/    容量 / tag 提交
+│  ├─ Content/        items/sprites/tooltip 内容注册
+│  ├─ ItemSpawn/
+│  │  ├─ Services/
+│  │  │  ├─ Attachments/ 物品装配件
+│  │  │  └─ Factory/     物品工厂
+│  │  └─ Setup/          物品出生编排
+│  ├─ Portraits/      人物立绘注册
+│  └─ Shared/         嵌入资源、序列化
+├─ LogicIntegration/ 逻辑适配层
+│  ├─ Bootstrap/      入口、读档、场景、每帧宿主
+│  ├─ Common/Game/    坐标 / 方向适配
+│  ├─ DeviceServices/ 装置实例、绑定、音频、动画
+│  ├─ DeviceState/    tag ↔ 装置状态适配
+│  ├─ GridBuilding/   网格、生命周期、FlowRuntime
+│  ├─ TagMapping/     tag 常量、库存读写
+│  └─ Visual/         流源视觉层
 ├─ Events/           事件层
 │  ├─ Public/        公共事件 API
 │  ├─ Runtime/       事件会话、协程宿主
@@ -138,9 +148,9 @@ ModItemDirectory 初始化
 关键文件：
 
 ```text
-src/Mod/ItemSpawn/Setup/ItemSetup.cs
-src/Mod/ItemSpawn/Services/Factory/ItemFactory.cs
-src/Mod/ItemSpawn/Services/Attachments/Base/ItemAttachment.cs
+src/ItemIntegration/ItemSpawn/Setup/ItemSetup.cs
+src/ItemIntegration/ItemSpawn/Services/Factory/ItemFactory.cs
+src/ItemIntegration/ItemSpawn/Services/Attachments/Base/ItemAttachment.cs
 assets/items.json
 ```
 
@@ -175,11 +185,11 @@ DeviceAttachment 写 device tag / anchorX / anchorY
 关键文件：
 
 ```text
-src/Mod/ItemSpawn/Services/Attachments/Device/DeviceAttachment.cs
-src/Mod/DeviceServices/Core/ItemDeviceBinding.cs
-src/Mod/DeviceServices/Core/DeviceRegistry.cs
-src/Mod/DeviceState/Adapters/*.cs
-src/Mod/DeviceState/Catalog/DeviceAdapterCatalog.cs
+src/ItemIntegration/ItemSpawn/Services/Attachments/Device/DeviceAttachment.cs
+src/LogicIntegration/DeviceServices/Core/ItemDeviceBinding.cs
+src/LogicIntegration/DeviceServices/Core/DeviceRegistry.cs
+src/LogicIntegration/DeviceState/Adapters/*.cs
+src/LogicIntegration/DeviceState/Catalog/DeviceAdapterCatalog.cs
 ```
 
 新增装置：
@@ -211,11 +221,11 @@ InventorySorted / 读档
 关键文件：
 
 ```text
-src/Mod/GridBuilding/Lifecycle/*.cs
-src/Mod/GridBuilding/Services/GridRegistry.cs
-src/Mod/GridBuilding/Services/FlowRuntime.cs
-src/Mod/GridBuilding/Services/FlowGridAdapter.cs
-src/Mod/GridBuilding/Core/FlowDriver.cs
+src/LogicIntegration/GridBuilding/Lifecycle/*.cs
+src/LogicIntegration/GridBuilding/Services/GridRegistry.cs
+src/LogicIntegration/GridBuilding/Services/FlowRuntime.cs
+src/LogicIntegration/GridBuilding/Services/FlowGridAdapter.cs
+src/LogicIntegration/GridBuilding/Core/FlowDriver.cs
 ```
 
 ### 6.2 流源生命周期
@@ -300,9 +310,9 @@ FlowVisualLayer
 关键文件：
 
 ```text
-src/Mod/Visual/Core/FlowVisualLayer.cs
-src/Mod/Visual/Internal/FlowAtlasLayer.cs
-src/Mod/Visual/Internal/FlowParticleRenderer.cs
+src/LogicIntegration/Visual/Core/FlowVisualLayer.cs
+src/LogicIntegration/Visual/Internal/FlowAtlasLayer.cs
+src/LogicIntegration/Visual/Internal/FlowParticleRenderer.cs
 src/Presentation/Flow/Visual/*
 src/Presentation/Flow/Particles/*
 ```
@@ -476,7 +486,7 @@ src/Story/Npcs/FlowEmitterMerchant/PORTRAIT.md
 实现：
 
 ```text
-src/Mod/Portraits/NpcPortraitRegistry.cs
+src/ItemIntegration/Portraits/NpcPortraitRegistry.cs
 ```
 
 链路：
@@ -610,40 +620,40 @@ src/Presentation/Flow/Particles/FlowParticleProfile.cs
 ### Mod
 
 ```text
-src/Mod/Bootstrap/FFModEntry.cs
-src/Mod/Bootstrap/ModHost.cs
-src/Mod/Bootstrap/SaveLoaded.cs
-src/Mod/Bootstrap/SaveExited.cs
+src/LogicIntegration/Bootstrap/FFModEntry.cs
+src/LogicIntegration/Bootstrap/ModHost.cs
+src/LogicIntegration/Bootstrap/SaveLoaded.cs
+src/LogicIntegration/Bootstrap/SaveExited.cs
 
-src/Mod/Content/Items/FlowItemRegistry.cs
-src/Mod/Content/Sprites/FlowSpriteRegistry.cs
-src/Mod/Content/Sprites/LoadFromAtlasPatch.cs
-src/Mod/Content/Tooltip/*
+src/ItemIntegration/Content/Items/FlowItemRegistry.cs
+src/ItemIntegration/Content/Sprites/FlowSpriteRegistry.cs
+src/ItemIntegration/Content/Sprites/LoadFromAtlasPatch.cs
+src/ItemIntegration/Content/Tooltip/*
 
-src/Mod/ItemSpawn/Setup/ItemSetup.cs
-src/Mod/ItemSpawn/Services/Factory/ItemFactory.cs
-src/Mod/ItemSpawn/Services/Attachments/*
+src/ItemIntegration/ItemSpawn/Setup/ItemSetup.cs
+src/ItemIntegration/ItemSpawn/Services/Factory/ItemFactory.cs
+src/ItemIntegration/ItemSpawn/Services/Attachments/*
 
-src/Mod/DeviceServices/Core/DeviceRegistry.cs
-src/Mod/DeviceServices/Core/ItemDeviceBinding.cs
-src/Mod/DeviceServices/Core/DeviceHost.cs
-src/Mod/DeviceServices/Audio/DeviceAudioClips.cs
-src/Mod/DeviceServices/Audio/DeviceAudioService.cs
-src/Mod/DeviceServices/Animation/DeviceAnimationService.cs
+src/LogicIntegration/DeviceServices/Core/DeviceRegistry.cs
+src/LogicIntegration/DeviceServices/Core/ItemDeviceBinding.cs
+src/LogicIntegration/DeviceServices/Core/DeviceHost.cs
+src/LogicIntegration/DeviceServices/Audio/DeviceAudioClips.cs
+src/LogicIntegration/DeviceServices/Audio/DeviceAudioService.cs
+src/LogicIntegration/DeviceServices/Animation/DeviceAnimationService.cs
 
-src/Mod/DeviceState/Catalog/DeviceAdapterCatalog.cs
-src/Mod/DeviceState/Adapters/*.cs
-src/Mod/DeviceState/Sync/*.cs
+src/LogicIntegration/DeviceState/Catalog/DeviceAdapterCatalog.cs
+src/LogicIntegration/DeviceState/Adapters/*.cs
+src/LogicIntegration/DeviceState/Sync/*.cs
 
-src/Mod/GridBuilding/Core/FlowDriver.cs
-src/Mod/GridBuilding/Services/GridRegistry.cs
-src/Mod/GridBuilding/Services/FlowRuntime.cs
-src/Mod/GridBuilding/Services/FlowGridAdapter.cs
-src/Mod/GridBuilding/Lifecycle/*.cs
+src/LogicIntegration/GridBuilding/Core/FlowDriver.cs
+src/LogicIntegration/GridBuilding/Services/GridRegistry.cs
+src/LogicIntegration/GridBuilding/Services/FlowRuntime.cs
+src/LogicIntegration/GridBuilding/Services/FlowGridAdapter.cs
+src/LogicIntegration/GridBuilding/Lifecycle/*.cs
 
-src/Mod/Portraits/NpcPortraitRegistry.cs
-src/Mod/TagMapping/**/*.cs
-src/Mod/Visual/**/*.cs
+src/ItemIntegration/Portraits/NpcPortraitRegistry.cs
+src/LogicIntegration/TagMapping/**/*.cs
+src/LogicIntegration/Visual/**/*.cs
 ```
 
 ### Events
@@ -781,3 +791,7 @@ Harmony 生命周期
 读档后的装置与剧情标识
 事件协程与视觉层联动
 ```
+
+
+
+

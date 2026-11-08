@@ -1,4 +1,4 @@
-# GridBuilding/Lifecycle：网格生命周期
+# LogicIntegration/Grid/Lifecycle：网格生命周期
 
 ## 要做什么
 
@@ -131,3 +131,6 @@ DeviceRegistry.Clear()
 - 单件拖拽成功时 `EndDrag` 仍会走 `Expel` + `UncheckedAccept` 的 `#3` / `#2`；`#3d` 的补登记必须幂等，不能假设 `AddParent` 一定没发生。批量拖拽的 `#3e` 同理，只处理“恢复到原容器/原位”的路径。
 - `#1` 把计算出的 `Type` 传给反射辅助方法，会被 ModScanner 判为 `reflection-external`；`<Capabilities />` 为空时直接拒绝加载。
 - 期望物品销毁时自动清 `DeviceRegistry` 会留下静态引用；当前只有 `Clear` / `Exhausted` 两个清理点。
+
+
+

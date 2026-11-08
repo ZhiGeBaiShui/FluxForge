@@ -27,7 +27,7 @@
 
 ```text
 1. Logic：在 src/Logic/Devices/ 写装置类
-2. Mod：在 src/Mod/DeviceState/Adapters/ 写适配器，加 [DeviceAdapter("key")]
+2. LogicIntegration：在 src/LogicIntegration/DeviceState/Adapters/ 写适配器，加 [DeviceAdapter("key")]
 3. 数据：在 assets/items.json 声明 device / anchor / attachments
 4. 贴图：在 assets/sprites.json 登记，PNG 放到 mod/Textures/Items/
 5. 测试：补装置类与适配器测试，进游戏验证读档和拖拽
@@ -38,7 +38,7 @@
 | 要改什么 | 文件 |
 |---|---|
 | 装置行为与状态 | `src/Logic/Devices/<分类>/<名称>/` |
-| 状态 ↔ tag | `src/Mod/DeviceState/Adapters/<名称>StateAdapter.cs` |
+| 状态 ↔ tag | `src/LogicIntegration/DeviceState/Adapters/<名称>StateAdapter.cs` |
 | 物品定义 | `assets/items.json` |
 | 贴图定义 | `assets/sprites.json` + `mod/Textures/Items/*.png` |
 | 目录契约测试 | `tests/FluxForge.Tests/DeviceCatalogTests.cs` |
@@ -62,19 +62,20 @@
 items.json / sprites.json → 编译期嵌入
 PNG → mod/Textures/Items/
 行为 → ItemAttachment
-视觉 → src/Presentation 与 src/Mod/Visual
+视觉 → src/Presentation 与 src/LogicIntegration/Visual
 ```
 
 ## 2. 工程结构
 
 ```text
 src/
-  Logic/          纯 C#：属性、装置语义、反应规则
-  Presentation/   纯 C#：颜色、粒子、图集等表现计算
-  Mod/            游戏适配：Bootstrap、Harmony patch、GameItem/Tag、Unity
+  Logic/            纯 C#：属性、装置语义、反应规则
+  Presentation/     纯 C#：颜色、粒子、图集等表现计算
+  ItemIntegration/  原版物品出生：定义、工厂、附件、内容、helper
+  LogicIntegration/ Logic ↔ 原版：Bootstrap、Harmony、GameItem/Tag、网格、Unity
 
 tests/
-  FluxForge.Tests/   Logic + Presentation + Mod 纯逻辑部分的测试
+  FluxForge.Tests/   Logic + Presentation + 适配层纯逻辑部分的测试
 
 assets/            items.json / sprites.json 等源数据
 mod/               构建时复制的运行时资源
@@ -84,8 +85,10 @@ docs/              设计、架构、评审记录
 ### 分层
 
 ```text
-src/Mod  →  src/Logic
-src/Mod  →  src/Presentation
+src/ItemIntegration  →  src/Logic
+src/ItemIntegration  →  src/Presentation
+src/LogicIntegration →  src/Logic
+src/LogicIntegration →  src/Presentation
 ```
 
 反方向不允许：
@@ -103,10 +106,20 @@ Logic / Presentation 不引用 Assembly-CSharp
 |---|---|---|
 | `src/Logic` | 流源属性、装置行为、反应规则 | GameItem、tag、Unity、存档 |
 | `src/Presentation` | 颜色、粒子、渲染数据 | 游戏对象、生命周期、存档 |
-| `src/Mod` | 游戏入口、patch、tag 映射、装置登记 | 业务规则 |
+| `src/ItemIntegration` | 原版物品出生、内容定义、物品 helper | 业务规则、Logic 装置状态 |
+| `src/LogicIntegration` | Logic ↔ 原版：装置实例、tag、网格、视觉 | 业务规则 |
 | `tests` | 纯 C# 行为与契约测试 | 游戏内集成验证 |
 | `assets` | 物品/贴图源数据 | 运行时加载逻辑 |
 | `mod` | 随 DLL 分发的资源 | 源数据编辑 |
+
+游戏适配层拆成两个顶层：
+
+```text
+src/ItemIntegration/   原版物品出生、items/sprites/tooltip 内容、物品 helper
+src/LogicIntegration/  Logic ↔ 原版：装置状态、网格、tag、视觉、坐标/方向
+```
+
+`LogicIntegration/Bootstrap/` 是入口，`ItemIntegration/Shared/` 是公共嵌入资源和序列化，`ItemIntegration/Portraits/` 是独立人物表现模块。
 
 ## 3. 必须知道的生命周期
 
@@ -223,8 +236,9 @@ Changed → host.SaveAll()
 
 - [`src/Logic/README.md`](src/Logic/README.md)
 - [`src/Logic/Devices/README.md`](src/Logic/Devices/README.md)
-- [`src/Mod/README.md`](src/Mod/README.md)
-- [`src/Mod/GridBuilding/Lifecycle/README.md`](src/Mod/GridBuilding/Lifecycle/README.md)
+- [`src/ItemIntegration/README.md`](src/ItemIntegration/README.md)
+- [`src/LogicIntegration/README.md`](src/LogicIntegration/README.md)
+- [`src/LogicIntegration/GridBuilding/Lifecycle/README.md`](src/LogicIntegration/GridBuilding/Lifecycle/README.md)
 
 ## 5. 构建、测试、安装
 
@@ -303,3 +317,7 @@ dotnet test tests\FluxForge.Tests\FluxForge.Tests.csproj -c Release
 ## 7. 许可
 
 见仓库许可文件。FluxForge 不是游戏官方项目。
+
+
+
+

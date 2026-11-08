@@ -27,33 +27,36 @@
     <!-- 装置状态适配器 + 目录：依赖 GameItem，测试桩由 GameStubs.cs 提供。
          TagMapping 只编入 GameItemTags；FlowStock / FlowRuntime / Sync patch 等
          仍引用游戏类型，测试环境加载不了。 -->
-    <Compile Include="..\..\src\Mod\TagMapping\Core\GameItemTags.cs" />
+    <Compile Include="..\..\src\LogicIntegration\TagMapping\Core\GameItemTags.cs" />
     <!-- 装置挂载编排（Bind → Host → Registry → Sync）同样只依赖 GameItem 桩。
          DeviceStateSync 引用的 ItemTagCommit 由 GameStubs.cs 提供测试桩，
          因此不包含 src/Mod/Common/Item/ItemTagCommit.cs（它引用游戏表现辅助）。 -->
-    <Compile Include="..\..\src\Mod\DeviceState\Sync\DeviceStateSync.cs" />
-    <Compile Include="..\..\src\Mod\DeviceServices\Core\DeviceHost.cs" />
-    <Compile Include="..\..\src\Mod\DeviceServices\Core\DeviceRegistry.cs" />
-    <Compile Include="..\..\src\Mod\DeviceServices\Core\ItemDeviceBinding.cs" />
-    <Compile Include="..\..\src\Mod\DeviceState\Contracts\DeviceStateAdapter.cs" />
-    <Compile Include="..\..\src\Mod\DeviceState\Contracts\DeviceStateFields.cs" />
-    <Compile Include="..\..\src\Mod\DeviceState\Naming\FlowTagNaming.cs" />
-    <Compile Include="..\..\src\Mod\DeviceState\Naming\FlowPropertyTags.cs" />
-    <Compile Include="..\..\src\Mod\TagMapping\Definitions\FlowTags.cs" />
-    <Compile Include="..\..\src\Mod\DeviceState\Adapters\IceBlockStateAdapter.cs" />
-    <Compile Include="..\..\src\Mod\DeviceState\Adapters\CollectorStateAdapter.cs" />
-    <Compile Include="..\..\src\Mod\DeviceState\Adapters\ColdTrapStateAdapter.cs" />
-    <Compile Include="..\..\src\Mod\DeviceState\Adapters\TemperatureConfigAdapter.cs" />
-    <Compile Include="..\..\src\Mod\DeviceState\Adapters\FilterStateAdapter.cs" />
-    <Compile Include="..\..\src\Mod\DeviceState\Adapters\TurnStateAdapter.cs" />
-    <Compile Include="..\..\src\Mod\DeviceState\Adapters\LRightDownStateAdapter.cs" />
-    <Compile Include="..\..\src\Mod\DeviceState\Adapters\TJunctionStateAdapter.cs" />
-    <Compile Include="..\..\src\Mod\DeviceState\Adapters\DoubleEmitStateAdapter.cs" />
-    <Compile Include="..\..\src\Mod\DeviceState\Adapters\StraightSpeedStateAdapter.cs" />
-    <Compile Include="..\..\src\Mod\DeviceState\Catalog\DeviceDefinition.cs" />
-    <Compile Include="..\..\src\Mod\DeviceState\Catalog\DeviceAdapterAttribute.cs" />
-    <Compile Include="..\..\src\Mod\DeviceState\Catalog\DeviceAdapterCatalog.cs" />
+    <Compile Include="..\..\src\LogicIntegration\DeviceState\Sync\DeviceStateSync.cs" />
+    <Compile Include="..\..\src\LogicIntegration\DeviceServices\Core\DeviceHost.cs" />
+    <Compile Include="..\..\src\LogicIntegration\DeviceServices\Core\DeviceRegistry.cs" />
+    <Compile Include="..\..\src\LogicIntegration\DeviceServices\Core\ItemDeviceBinding.cs" />
+    <Compile Include="..\..\src\LogicIntegration\DeviceState\Contracts\DeviceStateAdapter.cs" />
+    <Compile Include="..\..\src\LogicIntegration\DeviceState\Contracts\DeviceStateFields.cs" />
+    <Compile Include="..\..\src\LogicIntegration\DeviceState\Naming\FlowTagNaming.cs" />
+    <Compile Include="..\..\src\LogicIntegration\DeviceState\Naming\FlowPropertyTags.cs" />
+    <Compile Include="..\..\src\LogicIntegration\TagMapping\Definitions\FlowTags.cs" />
+    <Compile Include="..\..\src\LogicIntegration\DeviceState\Adapters\IceBlockStateAdapter.cs" />
+    <Compile Include="..\..\src\LogicIntegration\DeviceState\Adapters\CollectorStateAdapter.cs" />
+    <Compile Include="..\..\src\LogicIntegration\DeviceState\Adapters\ColdTrapStateAdapter.cs" />
+    <Compile Include="..\..\src\LogicIntegration\DeviceState\Adapters\TemperatureConfigAdapter.cs" />
+    <Compile Include="..\..\src\LogicIntegration\DeviceState\Adapters\FilterStateAdapter.cs" />
+    <Compile Include="..\..\src\LogicIntegration\DeviceState\Adapters\TurnStateAdapter.cs" />
+    <Compile Include="..\..\src\LogicIntegration\DeviceState\Adapters\LRightDownStateAdapter.cs" />
+    <Compile Include="..\..\src\LogicIntegration\DeviceState\Adapters\TJunctionStateAdapter.cs" />
+    <Compile Include="..\..\src\LogicIntegration\DeviceState\Adapters\DoubleEmitStateAdapter.cs" />
+    <Compile Include="..\..\src\LogicIntegration\DeviceState\Adapters\StraightSpeedStateAdapter.cs" />
+    <Compile Include="..\..\src\LogicIntegration\DeviceState\Catalog\DeviceDefinition.cs" />
+    <Compile Include="..\..\src\LogicIntegration\DeviceState\Catalog\DeviceAdapterAttribute.cs" />
+    <Compile Include="..\..\src\LogicIntegration\DeviceState\Catalog\DeviceAdapterCatalog.cs" />
     <Compile Include="..\..\src\Events\Placement\PlacementMath.cs" />
   </ItemGroup>
 
 </Project>
+
+
+

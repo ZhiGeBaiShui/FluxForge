@@ -18,7 +18,7 @@
    - `TryReact(...)` 返回 `true` 表示本帧发生反应并截停流源。
    - 分流变体继承 `SplitDevice`，只提供通道常量和发射数量；`Facing`（0..3）由 Mod 层按物品朝向写入。
 4. **在 Mod 层登记**
-   - 新建 `src/Mod/DeviceState/Adapters/XxxStateAdapter.cs`，声明 key 与装置类型：
+   - 新建 `src/LogicIntegration/DeviceState/Adapters/XxxStateAdapter.cs`，声明 key 与装置类型：
 
      ```csharp
      [DeviceAdapter("xxx")]
@@ -75,3 +75,5 @@
 - 手写 tag 同步会绕过 `DeviceStateSync`；使用 `Expression.Compile` 还可能触发扫描器的权限拒绝。状态变化只发 `Changed`。
 - 状态字段不公开，或适配器字段表漏项，`Load` 回灌不到、`Save` 也写不回；`DeviceStateAdapter<TDevice>` 只按声明的字段表搬运。
 - 不实现 `IFlowNotifier`，状态变化不会回写 tag，tooltip 与存档会停在旧值。
+
+
