@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using FluxForge.Mod;
 
@@ -21,7 +22,8 @@ namespace FluxForge.Events
             int anchorCellX,
             int anchorCellY,
             int orientation,
-            bool flipped)
+            bool flipped,
+            Action<GameItem> configure = null)
         {
             GameItem item = DirectoryMaster.Item(itemKey);
             if (item == null)
@@ -63,6 +65,8 @@ namespace FluxForge.Events
             item.modifiedShape = desired;
             item.modifiedXOrigin = 0;
             item.modifiedYOrigin = 0;
+
+            configure?.Invoke(item);
 
             if (!grid.CheckShapePlacement(item, desired, new List<GameItem>()))
             {

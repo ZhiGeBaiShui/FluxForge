@@ -3,7 +3,7 @@
   <ID>fluxforge</ID>
   <Name>FluxForge</Name>
   <Author>FluxForge</Author>
-  <ModVersion>0.1.0</ModVersion>
+  <ModVersion>0.2.0</ModVersion>
   <Description>新增流量机、发射装置、收集装置与液体容器，由可配置的标签驱动。</Description>
   <GameVersions>
     <Version>0.46</Version>

@@ -20,6 +20,7 @@ namespace FluxForge.Story.FlowEmitterArrival
             player.Do(delegate
             {
                 FlowEmitterMerchantStock.Place();
+                FlowEmitterMerchantStock.GiveManual();
             });
 
             player.SayNpc(FlowEmitterArrivalTexts.FirstVisitDiscount);

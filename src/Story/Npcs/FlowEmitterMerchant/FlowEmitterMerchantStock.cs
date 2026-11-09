@@ -30,6 +30,8 @@ namespace FluxForge.Story.FlowEmitterMerchant
             new StoryStockRule(null, "flow_filter", 1, true),
         };
 
+        private const string ManualItemKey = "fluxforge_device_manual";
+
         private static readonly StoryStockRule[] RepeatRules =
         {
             new StoryStockRule(
@@ -45,6 +47,11 @@ namespace FluxForge.Story.FlowEmitterMerchant
             new StoryStockRule(
                 FlowEmitterMerchantProgress.SecondVisitKey,
                 "flow_cold_trap",
+                1,
+                false),
+            new StoryStockRule(
+                FlowEmitterMerchantProgress.SecondVisitKey,
+                "flow_centrifuge",
                 1,
                 false),
             new StoryStockRule(
@@ -77,6 +84,23 @@ namespace FluxForge.Story.FlowEmitterMerchant
             {
                 FlowEmitterMerchantProgress.MarkFirstStock();
             }
+        }
+
+        /// <summary>首次到访赠礼：流源手册直接放到前台，不计入售卖库存。</summary>
+        internal static void GiveManual()
+        {
+            if (FlowEmitterMerchantProgress.HasManualGift)
+            {
+                return;
+            }
+
+            GameItem manual = DirectoryMaster.Item(ManualItemKey);
+            GeneralHelper.SetItemOwned(manual, true);
+            GraphUtils.EmporiumTryAdd(
+                EmporiumEntry.Instance.frontInvinvElement,
+                manual);
+
+            FlowEmitterMerchantProgress.MarkManualGift();
         }
 
         private static void PlaceRules(StoryStockRule[] rules)

@@ -26,6 +26,9 @@ namespace FluxForge.Story.FlowEmitterMerchant
         internal const string ThirdVisitKey
             = "fluxforge.flowEmitterDemo.thirdVisit";
 
+        internal const string ManualGiftKey
+            = "fluxforge.flowEmitterDemo.manualGift";
+
         internal static void MarkArrivalSeen()
         {
             PlayerStore.Instance.modData[ArrivalSeenKey] = "1";
@@ -39,6 +42,20 @@ namespace FluxForge.Story.FlowEmitterMerchant
         internal static void MarkFarewell()
         {
             PlayerStore.Instance.modData[FarewellKey] = "1";
+        }
+
+        internal static void MarkManualGift()
+        {
+            PlayerStore.Instance.modData[ManualGiftKey] = "1";
+        }
+
+        internal static bool HasManualGift
+        {
+            get
+            {
+                return PlayerStore.Instance.modData.ContainsKey(
+                    ManualGiftKey);
+            }
         }
 
         internal static bool HasFarewell

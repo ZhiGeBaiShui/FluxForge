@@ -95,7 +95,7 @@
       "device": "centrifuge",
       "anchorX": 0,
       "anchorY": 0,
-      "capacityMicrolitres": 5000,
+      "capacityMicrolitres": 100000,
       "sprite": "centrifuge",
       "name": "离心机",
       "desc": "按流源进入速度分离不同粒径的液体，把分离出的成分存入自身。\n分离系数越高，重相产量越低；装置接近满时停止抽取。",

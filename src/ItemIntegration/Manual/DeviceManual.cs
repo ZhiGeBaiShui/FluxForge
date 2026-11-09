@@ -83,11 +83,13 @@ namespace FluxForge.Mod
                 pagesRoot.Find("Page_overview").gameObject,
                 pagesRoot.Find("Page_emitter").gameObject,
                 pagesRoot.Find("Page_filter").gameObject,
-                pagesRoot.Find("Page_coldtrap").gameObject
+                pagesRoot.Find("Page_coldtrap").gameObject,
+                pagesRoot.Find("Page_centrifuge").gameObject
             };
             BindEmitterDemos(view.pages[1]);
             BindDemo(view.pages[2], "Demo_filter_loop", FlowEventApi.RunFilterLoop);
             BindDemo(view.pages[3], "Demo_cold_trap_loop", FlowEventApi.RunColdTrapLoop);
+            BindDemo(view.pages[4], "Demo_centrifuge", FlowEventApi.RunCentrifuge);
             view.previousButton = instance.transform.Find("PreviousButton").GetComponent<Button>();
             view.nextButton = instance.transform.Find("NextButton").GetComponent<Button>();
             view.pageNumber = instance.transform.Find("PageNumber").GetComponent<TextMeshProUGUI>();

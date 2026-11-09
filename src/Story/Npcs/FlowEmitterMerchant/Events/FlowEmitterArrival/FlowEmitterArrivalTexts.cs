@@ -4,22 +4,22 @@ namespace FluxForge.Story.FlowEmitterArrival
     internal static class FlowEmitterArrivalTexts
     {
         internal const string Greeting
-            = "你好，我这儿有几样新奇的装置。";
+            = "你好，我带了些新奇的装置。";
 
         internal const string GreetingAsk
-            = "有兴趣看看吗？";
+            = "你可以看看这本操作手册，这里面有介绍。";
 
         internal const string DevicePrompt
-            = "目前有“流源发射器”和“过滤装置”，都可以买。";
+            = "看看你想买吗？";
 
         internal const string FirstVisitDiscount
-            = "第一次见面，给你个实在价。";
+            = "如果你愿意买，第一次见面，我给你一个特别优惠。";
 
         internal const string DiscountSameFunction
-            = "价格更低，功能和新品一样。";
+            = "这批货价格很低，功能和正品一样。";
 
         internal const string DiscountOldLook
-            = "只是外观旧了点。";
+            = "但是外观旧了点。";
     }
 }
 

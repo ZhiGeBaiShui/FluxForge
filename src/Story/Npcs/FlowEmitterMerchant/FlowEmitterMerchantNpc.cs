@@ -1,4 +1,3 @@
-using System.Collections;
 using FluxForge.Story.Portraits;
 using UnityEngine;
 
@@ -16,7 +15,6 @@ namespace FluxForge.Story.FlowEmitterMerchant
         private const int VisitIntervalDays = 7;
         private const string DisplayName = "奥雅";
 
-        private static bool _farewellStarted;
         private static bool _storyRunning;
 
         internal static void Subscribe()
@@ -35,7 +33,6 @@ namespace FluxForge.Story.FlowEmitterMerchant
         private static void OnGameLoaded()
         {
             _storyRunning = false;
-            _farewellStarted = false;
             NpcPortraitRegistry.Apply();
             Queue();
         }
@@ -93,6 +90,7 @@ namespace FluxForge.Story.FlowEmitterMerchant
                 arrestable = false,
                 mainDialogue = null,
                 OnArrival = StartStory,
+                tryInterceptDismiss = TryInterceptFirstDeparture,
             };
 
             client.CompleteClientCreation();
@@ -185,15 +183,7 @@ namespace FluxForge.Story.FlowEmitterMerchant
                 .GetClientBlueprint();
 
             client.dismissable = true;
-
-            if (FlowEmitterMerchantProgress.HasFirstStory
-                && !FlowEmitterMerchantProgress.HasFarewell)
-            {
-                client.onItemSold = OnItemSold;
-            }
-
             FlowEmitterMerchantStock.Place();
-            TryStartFarewell();
         }
 
         private static string GetCurrentClientName()
@@ -210,49 +200,16 @@ namespace FluxForge.Story.FlowEmitterMerchant
                 .GetClientBlueprint();
 
             client.dismissable = true;
-
-            if (!FlowEmitterMerchantProgress.HasArrivalSeen)
-            {
-                return;
-            }
-
-            if (FlowEmitterMerchantProgress.HasFirstStory
-                && !FlowEmitterMerchantProgress.HasFarewell)
-            {
-                client.onItemSold = OnItemSold;
-                TryStartFarewell();
-            }
         }
 
-        private static void OnItemSold(GameItem item, int cost)
+        private static bool TryInterceptFirstDeparture()
         {
-            DialogUIManager.Instance.StartCoroutine(CheckSoldOut());
-        }
-
-        private static IEnumerator CheckSoldOut()
-        {
-            yield return null;
-            TryStartFarewell();
-        }
-
-        private static void TryStartFarewell()
-        {
-            if (_farewellStarted)
+            if (FlowEmitterMerchantProgress.HasSecondVisit)
             {
-                return;
+                return false;
             }
 
-            if (EmporiumEntry.Instance.GetAllNonOwendItemCount() != 0)
-            {
-                return;
-            }
-
-            _farewellStarted = true;
-
-            if (!TryPlay(StoryPhase.SoldOut))
-            {
-                DialogUIManager.Instance.CurrentClientLeave();
-            }
+            return TryPlay(StoryPhase.SoldOut);
         }
     }
 }

@@ -51,7 +51,7 @@ src/Story/
          ├─ FlowEmitterArrival/      首次到访（纯对话）
          ├─ FlowEmitterSecondVisit/  第二次到访（纯对话）
          ├─ FlowEmitterGenericVisit/ 通用到访
-         └─ FlowEmitterFarewell/     卖完后的离场
+         └─ FlowEmitterFarewell/     第一次离开时的赠礼
 ```
 
 ## 3. 核心类型
@@ -160,7 +160,7 @@ _tail = line;
 FlowEmitterArrivalAssembly         首次到访
 FlowEmitterSecondVisitAssembly  第二次到访
 FlowEmitterGenericVisitAssembly 通用到访
-FlowEmitterFarewellAssembly     卖完后的离场
+FlowEmitterFarewellAssembly     第一次离开时的赠礼
 ```
 
 每个装载类自己声明：

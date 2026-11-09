@@ -3,7 +3,7 @@ using System;
 namespace FluxForge.Events
 {
     /// <summary>
-    /// 事件层唯一公开入口。剧情层直接用这三个函数，不经过 Mod 层反射。
+    /// 事件层唯一公开入口。剧情层不调用这里；装置手册和外部演示使用。
     /// </summary>
     public static partial class FlowEventApi
     {
@@ -47,6 +47,15 @@ namespace FluxForge.Events
         public static bool RunColdTrapLoop(GameGridInventory grid)
         {
             return ColdTrapLoopEvent.Start(grid);
+        }
+
+        /// <summary>
+        /// 演示五：左右发射器相对，中间离心机；左侧只发射一次，右侧接收后结束。
+        /// 返回 true 只表示事件已启动。
+        /// </summary>
+        public static bool RunCentrifuge(GameGridInventory grid)
+        {
+            return CentrifugeEvent.Start(grid);
         }
     }
 }

@@ -16,7 +16,7 @@ Events/                          纯对话剧情
 Events/FlowEmitterArrival/         首次到访：见面、介绍货品、上架首批库存
 Events/FlowEmitterSecondVisit/  第二次到访：介绍新货
 Events/FlowEmitterGenericVisit/ 通用到访
-Events/FlowEmitterFarewell/     卖完后的离场
+Events/FlowEmitterFarewell/     第一次离开时的赠礼
 ```
 
 剧情只负责对话、选项和上货，不再演示装置。
@@ -35,7 +35,7 @@ NPC 只维护显式的 `Stories` 目录并按阶段查找：
 FlowEmitterArrivalAssembly         -> Arrival
 FlowEmitterSecondVisitAssembly  -> SecondVisit
 FlowEmitterGenericVisitAssembly -> GenericVisit
-FlowEmitterFarewellAssembly     -> SoldOut
+FlowEmitterFarewellAssembly     -> SoldOut（第一次离开时）
 ```
 
 ## 新增剧情

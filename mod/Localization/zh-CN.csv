@@ -22,3 +22,8 @@ manual.coldtrap.device_name,"冷萃装置"
 manual.coldtrap.intro,"冷萃装置会抽取流源中含量最低的非零液体成分，并将抽取物存入自身。"
 manual.coldtrap.subtitle,"可以通过它来去除高浓度化学原料里面混入的细微杂质。"
 manual.coldtrap.title,"冷萃装置"
+manual.centrifuge.body,医学家一般利用离心机对“咖啡因糊”原料进行离心，用以获取100%纯度的“咖啡因糊”产物——但是存在损耗，离心机无法将所有“咖啡因糊”离心出来，会有少量留在原液体里。
+manual.centrifuge.intro,记得将离心后的产物及时从机器中拿出，避免影响后续离心工作。
+manual.centrifuge.title,离心机
+manual.centrifuge.device_name,离心机
+manual.centrifuge.subtitle,根据“流源”速度决定可分离的物质，被分离物质会留在离心机内。

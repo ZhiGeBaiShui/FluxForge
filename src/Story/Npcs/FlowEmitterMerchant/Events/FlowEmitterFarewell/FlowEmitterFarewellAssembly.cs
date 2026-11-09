@@ -2,7 +2,7 @@ using FluxForge.Story.FlowEmitterMerchant;
 
 namespace FluxForge.Story.FlowEmitterFarewell
 {
-    /// <summary>第二个剧情的装载类：卖空后启动离场赠礼。</summary>
+    /// <summary>第一次离开时的赠礼剧情。</summary>
     internal sealed class FlowEmitterFarewellAssembly : NpcStoryAssembly
     {
         internal override StoryEdge Entry { get; }
@@ -14,9 +14,8 @@ namespace FluxForge.Story.FlowEmitterFarewell
 
         internal override bool CanPlay()
         {
-            return FlowEmitterMerchantProgress.HasFirstStory
-                && !FlowEmitterMerchantProgress.HasFarewell
-                && EmporiumEntry.Instance.GetAllNonOwendItemCount() == 0;
+            return !FlowEmitterMerchantProgress.HasSecondVisit
+                && !FlowEmitterMerchantProgress.HasFarewell;
         }
 
         internal FlowEmitterFarewellAssembly()

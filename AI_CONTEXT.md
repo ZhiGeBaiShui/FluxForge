@@ -418,7 +418,7 @@ NPC：
 Arrival       第一次到访：见面、介绍货品、首次库存、离场赠礼
 SecondVisit   第二次到访：介绍新货
 GenericVisit  无专用剧情时的普通招呼
-SoldOut       首次库存卖完后的赠礼
+SoldOut       第一次离开时的赠礼
 ```
 
 到访流程：
@@ -461,7 +461,7 @@ ThirdVisitKey     第三次到访
 
 ```text
 FirstStoryKey  → 发射器 ×2 + 过滤装置 ×1
-SecondVisitKey → 冷萃装置 ×1
+SecondVisitKey → 冷萃装置 ×1 + 离心机 ×1
 ThirdVisitKey  → 变速装置 ×2 + L 型转弯 ×2 + 直行装置 ×4
 ```
 

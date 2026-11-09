@@ -4,12 +4,12 @@ namespace FluxForge.Story.FlowEmitterSecondVisit
     internal static class FlowEmitterSecondVisitTexts
     {
         internal const string Greeting
-            = "你好，我又来了。";
+            = "你好，这次带来的都是全新货和2个新东西。";
 
         internal const string NewDevice
-            = "这次带来的都是全新货和新的东西——“冷萃装置”。";
+            = "“冷萃装置”和“离心机”。";
 
         internal const string ExitLine
-            = "行，看看有没有你想要的。";
+            = "看看你想要哪些。";
     }
 }

@@ -1,9 +1,33 @@
 using Xunit;
+using FluxForge.Presentation.Flow.Visual;
 
 namespace FluxForge.Tests
 {
     public class CentrifugeDeviceTests
     {
+        [Fact]
+        public void DemoMix_ShrinksFromLargeToMid()
+        {
+            FlowProperties properties = new FlowProperties();
+            properties.Set(FlowProps.Water, 100000d);
+            properties.Set(FlowProps.CoffeeMush, 350000d);
+            properties.Set(FlowProps.Temperature, 20d);
+
+            FlowEntity incoming = new FlowEntity(
+                new FlowPos(0.5d, 0.5d),
+                new FlowMotionData(1, 5d),
+                properties);
+
+            CentrifugeDevice device = new CentrifugeDevice(2d, 100000);
+
+            Assert.Equal(FlowContent.Large, FlowTierMap.ContentFromWater(incoming.Properties.SubstanceTotal));
+            Assert.False(device.TryReact(incoming));
+
+            Assert.Equal(100000d, device.Extracted.SubstanceTotal, 9);
+            Assert.Equal(350000d, incoming.Properties.SubstanceTotal, 9);
+            Assert.Equal(FlowContent.Mid, FlowTierMap.ContentFromWater(incoming.Properties.SubstanceTotal));
+        }
+
         private static FlowEntity Start(
             double organicWaste,
             double chemical,
