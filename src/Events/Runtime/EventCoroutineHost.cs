@@ -14,7 +14,7 @@ namespace FluxForge.Events
         internal static Coroutine Run(IEnumerator routine)
         {
             Ensure();
-            return _instance.StartCoroutine(routine);
+            return _instance.RunOnSelf(routine);
         }
 
         internal static void Stop(Coroutine routine)
@@ -23,6 +23,11 @@ namespace FluxForge.Events
             {
                 _instance.StopCoroutine(routine);
             }
+        }
+
+        private Coroutine RunOnSelf(IEnumerator routine)
+        {
+            return StartCoroutine(routine);
         }
 
         private static void Ensure()
