@@ -16,6 +16,7 @@ namespace FluxForge.Tests
         {
             "cold_trap",
             "collector",
+            "distiller",
             "filter",
             "temperature",
             "ice_block",
@@ -24,6 +25,7 @@ namespace FluxForge.Tests
             "t_junction",
             "double_emit",
             "straight_speed",
+            "straight",
         };
 
         private static readonly Dictionary<string, Type> ExpectedDeviceTypes =
@@ -31,6 +33,7 @@ namespace FluxForge.Tests
             {
                 { "cold_trap", typeof(ColdTrapDevice) },
                 { "collector", typeof(CollectorDevice) },
+                { "distiller", typeof(DistillerDevice) },
                 { "filter", typeof(FilterDevice) },
                 { "temperature", typeof(TemperatureDevice) },
                 { "ice_block", typeof(IceBlockDevice) },
@@ -39,6 +42,7 @@ namespace FluxForge.Tests
                 { "t_junction", typeof(TJunctionDevice) },
                 { "double_emit", typeof(DoubleEmitDevice) },
                 { "straight_speed", typeof(StraightSpeedDevice) },
+                { "straight", typeof(StraightDevice) },
             };
 
         public static IEnumerable<object[]> RegisteredKeys

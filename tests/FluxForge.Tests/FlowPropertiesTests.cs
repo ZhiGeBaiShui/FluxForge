@@ -268,13 +268,28 @@ namespace FluxForge.Tests
         }
 
         [Fact]
-        public void SubstanceTotal_SumsLiquidsOnly_ExcludesTemperature()
+        public void SubstanceTotal_SumsLiquidsAndForeign_ExcludesTemperature()
         {
             FlowProperties p = Make(10d, 100d);
             p.Set(FlowProps.Fat, 5d);
             p.Set(FlowProps.Alcohol, 2d);
+            p.Set(FlowProps.Foreign, 4d);
 
-            Assert.Equal(17d, p.SubstanceTotal);
+            Assert.Equal(21d, p.SubstanceTotal);
+        }
+
+        [Fact]
+        public void Foreign_SplitsAndMergesLikeLiquid()
+        {
+            FlowProperties p = Make(100d, 40d);
+            p.Set(FlowProps.Foreign, 30d);
+
+            List<FlowProperties> parts = p.Split(2);
+            Assert.Equal(15d, parts[0].Get(FlowProps.Foreign));
+            Assert.Equal(15d, parts[1].Get(FlowProps.Foreign));
+
+            FlowProperties merged = parts[0].Merge(parts[1]);
+            Assert.Equal(30d, merged.Get(FlowProps.Foreign));
         }
 
         [Fact]

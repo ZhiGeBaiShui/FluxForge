@@ -40,6 +40,20 @@ namespace FluxForge.Events
 
             DemoPlacement.FillWater(left, WaterMicrolitres);
 
+            session.RunRoutine(SpawnAndRun(session, grid, left, rightX, middleY));
+            return true;
+        }
+
+        private static IEnumerator SpawnAndRun(
+            EventSession session,
+            GameGridInventory grid,
+            GameItem left,
+            int rightX,
+            int middleY)
+        {
+            yield return new WaitForSeconds(
+                DemoPlacement.ItemSpawnIntervalSeconds);
+
             GameItem right = DemoPlacement.Spawn(
                 session,
                 grid,
@@ -52,11 +66,10 @@ namespace FluxForge.Events
             if (right == null)
             {
                 session.Fail("演示发射器放置失败");
-                return false;
+                yield break;
             }
 
             session.RunRoutine(Run(session, left, right));
-            return true;
         }
 
         private static IEnumerator Run(

@@ -109,8 +109,7 @@ src/
 │  │  │  ├─ Attachments/ 物品装配件
 │  │  │  └─ Factory/     物品工厂
 │  │  └─ Setup/          物品出生编排
-│  ├─ Portraits/      人物立绘注册
-│  └─ Shared/         嵌入资源、序列化
+│  ├─ Shared/         嵌入资源、序列化
 ├─ LogicIntegration/ 逻辑适配层
 │  ├─ Bootstrap/      入口、读档、场景、每帧宿主
 │  ├─ Common/Game/    坐标 / 方向适配
@@ -127,6 +126,7 @@ src/
 │  └─ Locks/         网格锁
 ├─ Story/            剧情层
 │  ├─ Runtime/       通用剧情运行时
+│  ├─ Portraits/     人物立绘注册
 │  └─ Npcs/          具体 NPC 剧情
 ├─ Traits/           官方 StartingPerk 特质层
 └─ Presentation/     见上
@@ -292,7 +292,7 @@ src/Logic/Reactions/Formulas/
 属性系统：
 
 ```text
-36 种液体 + 温度
+36 种液体 + 1 个外来液体槽 + 温度
 FlowPropertyRegistry 定义顺序 / 分合规则
 FlowProperties 是纯数据
 ```
@@ -353,8 +353,8 @@ src/Events/Demos/*.cs
 或 session.Fail(reason)
 ```
 
-Story / 外部等待只监听 `EventCompleted`。  
-事件协程不结束时，等待方会一直挂起。
+Story 不再监听 `EventCompleted`，也不负责启动装置演示。  
+事件协程不结束时，只有外部等待方会一直挂起。
 
 ## 9. Story 层机制
 
@@ -375,7 +375,7 @@ StoryNode          只保存玩家选项，没有 NPC 文本
 StoryEdge          一轮命令注册
 
 StoryPlayer        统筹：注册 → 执行 → 等结束 → 下一个节点
-StorySequence      装配对话链、挂事件、等待结束
+StorySequence      装配对话链、挂同步动作、等待最后一句
 StoryNodeDialogue  节点 → 原版 Dialogue 选项
 ```
 
@@ -385,7 +385,6 @@ StoryNodeDialogue  节点 → 原版 Dialogue 选项
 internal override Task Execute(StorySequence player)
 {
     player.SayNpc("...");
-    player.StartFlow(...);
     player.Do(delegate { ... });
     return Task.CompletedTask;
 }
@@ -394,13 +393,13 @@ internal override Task Execute(StorySequence player)
 禁止在边里：
 
 ```text
+player.StartFlow
 await StartFlow
 await WaitForSpeech
 手动 ContinueConversation
 ```
 
-事件边最后一句会在 Flow 完成后播放，然后挂节点选项。  
-普通边最后一句直接挂选项，不重建对话。
+Story 不依赖 `src/Events`，没有事件边、网格锁、空桌检查或 Flow 完成等待。
 
 ## 10. 奥雅 / FlowEmitterMerchant
 
@@ -416,8 +415,8 @@ NPC：
 剧情阶段：
 
 ```text
-Arrival       第一次到访：介绍、演示、首次库存、离场赠礼
-SecondVisit   第二次到访：冷萃装置
+Arrival       第一次到访：见面、介绍货品、首次库存、离场赠礼
+SecondVisit   第二次到访：介绍新货
 GenericVisit  无专用剧情时的普通招呼
 SoldOut       首次库存卖完后的赠礼
 ```
@@ -456,14 +455,7 @@ VisitCountKey     到访次数
 ThirdVisitKey     第三次到访
 ```
 
-演示/提示：
-
-```text
-EmitterDemoKey
-FilterDemoKey
-ColdTrapDemoKey
-SoundHintKey
-```
+演示/提示：不再由 NPC 剧情负责，相关标识已删除。
 
 库存规则：
 
@@ -486,7 +478,7 @@ src/Story/Npcs/FlowEmitterMerchant/PORTRAIT.md
 实现：
 
 ```text
-src/ItemIntegration/Portraits/NpcPortraitRegistry.cs
+src/Story/Portraits/NpcPortraitRegistry.cs
 ```
 
 链路：
@@ -651,7 +643,7 @@ src/LogicIntegration/GridBuilding/Services/FlowRuntime.cs
 src/LogicIntegration/GridBuilding/Services/FlowGridAdapter.cs
 src/LogicIntegration/GridBuilding/Lifecycle/*.cs
 
-src/ItemIntegration/Portraits/NpcPortraitRegistry.cs
+src/Story/Portraits/NpcPortraitRegistry.cs
 src/LogicIntegration/TagMapping/**/*.cs
 src/LogicIntegration/Visual/**/*.cs
 ```
@@ -791,6 +783,7 @@ Harmony 生命周期
 读档后的装置与剧情标识
 事件协程与视觉层联动
 ```
+
 
 
 

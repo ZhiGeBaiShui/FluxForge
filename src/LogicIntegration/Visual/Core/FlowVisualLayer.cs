@@ -354,7 +354,8 @@ namespace FluxForge.Mod.Visual
 
             foreach (FlowPropertyDef def in FlowPropertyRegistry.All)
             {
-                if (def.Kind != FlowPropertyKind.Liquid)
+                if (def.Kind != FlowPropertyKind.Liquid
+                    && def.Kind != FlowPropertyKind.Foreign)
                 {
                     continue;
                 }

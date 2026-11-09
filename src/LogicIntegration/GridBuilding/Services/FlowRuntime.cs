@@ -8,7 +8,7 @@ namespace FluxForge.Mod
     /// 每个 GameGridInventory 一份，由 <see cref="GridRegistry"/> 在构造期创建，
     /// 生命周期与网格对象一致：网格销毁时由 <see cref="FlowDriver"/> 单条退役，
     /// 退出存档 / mod 卸载时由 <see cref="FlowDriver.Shutdown"/> 整体清理。
-    /// 发射是运行环境自己的职责——流源从物品的存量直接生成，不经过装置类。
+    /// 发射由逻辑层 FlowSpawner 执行；此处只适配物品坐标与库存。
     /// </summary>
     public sealed class FlowRuntime
     {
@@ -72,7 +72,7 @@ namespace FluxForge.Mod
                 return false;
             }
 
-            if (!Grid.Contains((int)Math.Floor(origin.X), (int)Math.Floor(origin.Y)))
+            if (!IsAlive)
             {
                 return false;
             }
@@ -85,25 +85,22 @@ namespace FluxForge.Mod
                 (CollectorDevice)DeviceRegistry.GetRouter(item);
             double emitSpeed = collector.EmitSpeed;
 
-            FlowEntity entity = new FlowEntity(
-                origin,
-                new FlowMotionData(direction, emitSpeed),
-                payload);
-
-            Flows.Accept(entity);
+            if (!Flows.TryEmit(payload, origin, direction, emitSpeed, Grid))
+                return false;
 
             // 物质守恒：发出后清空全部液体、保留标量（温度）。
             // 写回 tag 同时完成派生状态与贴图刷新。
             FlowProperties cleared = payload.Clone();
             foreach (FlowPropertyDef def in FlowPropertyRegistry.All)
             {
-                if (def.Kind == FlowPropertyKind.Liquid)
+                if (def.Kind == FlowPropertyKind.Liquid
+                    || def.Kind == FlowPropertyKind.Foreign)
                 {
                     cleared.Set(def.Key, 0d);
                 }
             }
 
-            FlowStock.Write(item, cleared);
+            FlowStock.WriteAfterEmit(item, cleared);
 
             // 发射器可能兼任收集器（flow_emitter 装配 collector）：
             // tag 已经清空，但装置里的库存是独立副本，不同步的话它会保留
@@ -116,6 +113,23 @@ namespace FluxForge.Mod
             }
 
             return true;
+        }
+
+        /// <summary>从物品的局部出口发射液体数据；出口跟随物品的旋转、镜像与移动。
+        /// 不管理加工、计时或库存；调用方仅在返回 true 后清空暂存数据。
+        /// localDirection 使用 0上/1右/2下/3左。
+        /// </summary>
+        public bool TryEmit(GameItem item, FlowProperties payload,
+            int localX, int localY, int localDirection, double speed)
+        {
+            if (!IsAlive || item.modifiedShape == null) return false;
+            var shape = item.modifiedShape;
+            (int x, int y) = shape.ForwardTransform(localX, localY);
+            int dx = FlowMotionData.StepX(localDirection);
+            int dy = FlowMotionData.StepY(localDirection);
+            (int nx, int ny) = shape.ForwardTransform(localX + dx, localY + dy);
+            int direction = nx > x ? 1 : nx < x ? 3 : ny > y ? 2 : 0;
+            return Flows.TryEmit(payload, new FlowPos(x, y), direction, speed, Grid);
         }
 
         /// <summary>

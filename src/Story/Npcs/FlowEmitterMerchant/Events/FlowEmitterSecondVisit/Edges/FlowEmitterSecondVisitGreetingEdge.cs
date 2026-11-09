@@ -2,7 +2,7 @@ using System.Threading.Tasks;
 
 namespace FluxForge.Story.FlowEmitterSecondVisit
 {
-    /// <summary>第二次到访的开场白，然后进入玩家选项。</summary>
+    /// <summary>第二次到访的纯对话开场。</summary>
     internal sealed class FlowEmitterSecondVisitGreetingEdge : StoryEdge
     {
         internal FlowEmitterSecondVisitGreetingEdge()
@@ -14,7 +14,7 @@ namespace FluxForge.Story.FlowEmitterSecondVisit
         {
             player.SayNpc(FlowEmitterSecondVisitTexts.Greeting);
             player.SayNpc(FlowEmitterSecondVisitTexts.NewDevice);
-            player.SayNpc(FlowEmitterSecondVisitTexts.CanDemo);
+            player.SayNpc(FlowEmitterSecondVisitTexts.ExitLine);
             return Task.CompletedTask;
         }
     }

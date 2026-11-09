@@ -67,6 +67,9 @@ namespace FluxForge.Mod
                 runtime.Grid.Rebuild();
             }
 
+            // 电池等子物品已恢复：不能只依赖父物品早期 AddParent 时的空槽快照。
+            DeviceRegistry.ReloadAll();
+
             FFModEntry.Log.Log("[流源] 读档完成，已重建 " + runtimes.Length + " 块网格");
         }
     }

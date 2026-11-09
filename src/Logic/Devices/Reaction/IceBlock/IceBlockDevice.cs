@@ -58,7 +58,13 @@ namespace FluxForge
         /// <returns>是否真的发生了反应（true → 该帧阻挡）。</returns>
         public bool TryReact(FlowEntity entity)
         {
-            return TryReact(entity.Properties);
+            bool reacted = TryReact(entity.Properties);
+            if (reacted)
+            {
+                entity.HoldSeconds = FlowReactionDelay.NextSeconds();
+            }
+
+            return reacted;
         }
 
         /// <summary>只依赖属性的内部核心，供本类和单测使用。</summary>

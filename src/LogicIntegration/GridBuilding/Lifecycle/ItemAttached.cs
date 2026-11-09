@@ -9,8 +9,7 @@ namespace FluxForge.Mod
     /// 而且每个容器子类各写一份实现，GameGridScrollableInventory 还是独立重写的。
     /// AddParent 是 GameItem 上的具体实现，所有容器都会调它，一个补丁覆盖全部。
     ///
-    /// 不按容器类型过滤：装置属于物品，不属于它当下待的容器。
-    /// 唯一的判据是物品身上有没有装置类型 tag（见 <see cref="ItemDeviceBinding"/>）。
+    /// 装置绑定不按容器类型过滤；网格登记覆盖装置与普通物品。
     ///
     /// 注意时序：原版 UncheckedAccept 在 AddParent 之后才 ValidateShapeState，
     /// 这里读到的是挂载瞬间的形状；排序 / 读档这类批量路径结束后仍要 Rebuild 校正。
@@ -29,13 +28,10 @@ namespace FluxForge.Mod
                 return;
             }
 
-            // 先绑定装置：返回 false 表示这是普通物品，不参与格表登记。
-            if (!ItemDeviceBinding.Bind(__instance))
-            {
-                return;
-            }
+            // 有装置则绑定；普通物品同样要登记占位，不能提前返回。
+            ItemDeviceBinding.Bind(__instance);
 
-            // 装置落到格子：在所在网格登记它的 anchor 格。
+            // 落到网格：登记装置 anchor 或普通物品占位。
             GameGridInventory inventory = __instance.parentInventory as GameGridInventory;
             if (inventory == null)
             {

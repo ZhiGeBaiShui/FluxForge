@@ -3,7 +3,7 @@ using System.Collections.Generic;
 namespace FluxForge.Presentation.Flow.Visual
 {
     /// <summary>
-    /// 36 种液体的本体颜色表。
+    /// 36 种已注册液体 + 1 个外来液体兜底色。
     ///
     /// **色值来源与改动**：基础色取自游戏 <c>Liquid.InitLiquid()</c> 的 <c>color</c> 字段，
     /// 但**统一提过一轮饱和度**（HLS 空间：S × 2.85 上限 1.0，L &lt; 0.55 时向 0.55 靠 30%，
@@ -62,6 +62,8 @@ namespace FluxForge.Presentation.Flow.Visual
                 { "livestock_immunity",    new FlowColor(0x08, 0xCE, 0xFF) },
                 { "wine_extract",          new FlowColor(0xD6, 0x19, 0xE2) },
                 { "nomore",                new FlowColor(0xFF, 0x66, 0xB3) },
+                // 未注册液体的统一代表色：只用于显示，装置不处理。
+                { "foreign",               new FlowColor(0x9B, 0x7B, 0xAA) },
             };
 
         /// <summary>

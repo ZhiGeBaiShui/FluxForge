@@ -6,6 +6,12 @@ namespace FluxForge
         /// <summary>液体成分：计入物质总量，随分流/汇聚分合。</summary>
         Liquid,
 
+        /// <summary>
+        /// 未手动注册的外来液体：计入物质总量、可被流源携带，
+        /// 但装置和反应规则不处理它。
+        /// </summary>
+        Foreign,
+
         /// <summary>标量属性：不是物质，不计入物质总量（例：温度）。</summary>
         Scalar,
     }

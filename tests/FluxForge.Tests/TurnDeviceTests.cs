@@ -29,6 +29,7 @@ namespace FluxForge.Tests
 
         private sealed class FakeGrid : IFlowGrid
         {
+            public FlowCellKind GetCellKind(int x, int y) => FlowCellKind.Empty;
             private readonly Dictionary<(int, int), IFlowRouter> _routers
                 = new Dictionary<(int, int), IFlowRouter>();
 

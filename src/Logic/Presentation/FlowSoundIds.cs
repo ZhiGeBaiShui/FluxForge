@@ -14,5 +14,6 @@ namespace FluxForge
         public const string CentrifugeSpin = "centrifuge.spin";
         public const string Melted = "ice.melted";
         public const string Exhausted = "device.exhausted";
+        public const string ItemPlaced = "item.placed";
     }
 }

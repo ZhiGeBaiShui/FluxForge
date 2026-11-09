@@ -1,4 +1,4 @@
-using FluxForge.Story.FlowEmitterDemo;
+using FluxForge.Story.FlowEmitterArrival;
 using FluxForge.Story.FlowEmitterFarewell;
 using FluxForge.Story.FlowEmitterGenericVisit;
 using FluxForge.Story.FlowEmitterSecondVisit;
@@ -10,7 +10,7 @@ namespace FluxForge.Story.FlowEmitterMerchant
     {
         private static readonly NpcStoryAssembly[] Stories =
         {
-            new FlowEmitterDemoAssembly(),
+            new FlowEmitterArrivalAssembly(),
             new FlowEmitterSecondVisitAssembly(),
             new FlowEmitterGenericVisitAssembly(),
             new FlowEmitterFarewellAssembly(),
@@ -22,3 +22,4 @@ namespace FluxForge.Story.FlowEmitterMerchant
         }
     }
 }
+

@@ -19,15 +19,13 @@ namespace FluxForge.Mod
 
         private static void OnPlayed(FlowAudioEvent evt)
         {
-            GameItem item = DeviceRegistry.GetItemForDevice(evt.Source);
-            Resolve(item, evt.SoundId);
+            Resolve(evt.SoundId);
         }
 
         /// <summary>
         /// 按语义音效 ID 选实际音频并播放。
-        /// item 参与反查，逐物品音效差异以后从这里扩展。
         /// </summary>
-        private static void Resolve(GameItem item, string soundId)
+        private static void Resolve(string soundId)
         {
             string audioId;
 
@@ -57,7 +55,7 @@ namespace FluxForge.Mod
                     break;
 
                 case FlowSoundIds.Absorbed:
-                    audioId = AudioHelper.POUR_WATER2;
+                    audioId = DeviceAudioClips.ReceiverReceive;
                     break;
 
                 case FlowSoundIds.Extracted:
@@ -72,6 +70,10 @@ namespace FluxForge.Mod
                     audioId = DeviceAudioClips.CentrifugeSpin;
                     break;
 
+                case FlowSoundIds.ItemPlaced:
+                    audioId = DeviceAudioClips.ItemPlacement;
+                    break;
+
                 case FlowSoundIds.Melted:
                     audioId = AudioHelper.DEBRIS_IMPACT;
                     break;
@@ -82,11 +84,6 @@ namespace FluxForge.Mod
 
                 default:
                     return;
-            }
-
-            if (!AudioManager.Instance.audioDirectory.HasAudioClip(audioId))
-            {
-                return;
             }
 
             AudioManager.Instance.Play2(audioId);

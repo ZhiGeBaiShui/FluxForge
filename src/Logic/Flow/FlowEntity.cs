@@ -39,6 +39,12 @@ namespace FluxForge
         public FlowProperties Properties;
 
         /// <summary>
+        /// 装置设置的主动停顿时长（秒）；由运动层扣减并在 &gt;0 时暂停移动。
+        /// 与受阻挡检测无关，主动停顿不会被报告为 Blocked。
+        /// </summary>
+        public double HoldSeconds;
+
+        /// <summary>
         /// 下一轮化学反应前的剩余等待时间（秒）。
         ///
         /// 出生时由 <see cref="FlowSpawner"/> 写入黄金比例

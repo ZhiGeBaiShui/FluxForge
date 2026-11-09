@@ -52,6 +52,18 @@ namespace FluxForge.Mod
                 {
                     facings.Add(facing);
                 }
+
+                IFlowCellLayout cellLayout = device as IFlowCellLayout;
+                if (cellLayout != null)
+                {
+                    if (CellLayout != null)
+                    {
+                        throw new System.InvalidOperationException(
+                            "同一物品不能绑定多个流源格子布局。");
+                    }
+
+                    CellLayout = cellLayout;
+                }
             }
 
             _facings = facings.ToArray();
@@ -77,6 +89,8 @@ namespace FluxForge.Mod
         public IFlowRouter Router { get; private set; }
 
         public IFlowDevice Reactor { get; private set; }
+
+        public IFlowCellLayout CellLayout { get; private set; }
 
         /// <summary>本物品的全部朝向装置；一个物品可以挂多个 IFacing。</summary>
         public IReadOnlyList<IFacing> Facings

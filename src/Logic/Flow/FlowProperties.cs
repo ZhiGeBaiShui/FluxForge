@@ -48,7 +48,8 @@ namespace FluxForge
                 for (int i = 0; i < defs.Count; i++)
                 {
                     FlowPropertyDef def = defs[i];
-                    if (def.Kind != FlowPropertyKind.Liquid)
+                    if (def.Kind != FlowPropertyKind.Liquid
+                        && def.Kind != FlowPropertyKind.Foreign)
                     {
                         continue;
                     }

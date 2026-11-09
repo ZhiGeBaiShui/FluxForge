@@ -42,6 +42,20 @@ namespace FluxForge.Events
 
             DemoPlacement.FillWater(left, WaterMicrolitres);
 
+            session.RunRoutine(SpawnAndRun(session, grid, left, groupX, middleY));
+            return true;
+        }
+
+        private static IEnumerator SpawnAndRun(
+            EventSession session,
+            GameGridInventory grid,
+            GameItem left,
+            int groupX,
+            int middleY)
+        {
+            yield return new WaitForSeconds(
+                DemoPlacement.ItemSpawnIntervalSeconds);
+
             GameItem coldTrap = DemoPlacement.Spawn(
                 session,
                 grid,
@@ -54,8 +68,11 @@ namespace FluxForge.Events
             if (coldTrap == null)
             {
                 session.Fail("演示冷萃装置放置失败");
-                return false;
+                yield break;
             }
+
+            yield return new WaitForSeconds(
+                DemoPlacement.ItemSpawnIntervalSeconds);
 
             GameItem right = DemoPlacement.Spawn(
                 session,
@@ -69,7 +86,7 @@ namespace FluxForge.Events
             if (right == null)
             {
                 session.Fail("演示发射器放置失败");
-                return false;
+                yield break;
             }
 
             FlowProperties payload = FlowStock.Read(left);
@@ -77,7 +94,6 @@ namespace FluxForge.Events
             FlowStock.Write(left, payload);
 
             session.RunRoutine(Run(session, left, right));
-            return true;
         }
 
         private static IEnumerator Run(

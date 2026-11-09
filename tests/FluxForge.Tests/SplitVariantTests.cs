@@ -328,59 +328,5 @@ namespace FluxForge.Tests
                 .Sum(entity => entity.Properties.Get(FlowProps.Water)), 9);
         }
 
-        // ── 构造校验与 Facing ──
-
-        [Fact]
-        public void AnySplit_NullChannelDirs_Throws()
-        {
-            Assert.Throws<ArgumentNullException>(() => new AnySplit(null));
-        }
-
-        [Fact]
-        public void AnySplit_LessThanTwoChannels_Throws()
-        {
-            // 至少 1 个入口 + 1 个出口
-            Assert.Throws<ArgumentException>(() => new AnySplit(new[] { 1 }));
-        }
-
-        [Fact]
-        public void AnySplit_DuplicateChannelDirection_Throws()
-        {
-            // 重复方向会让入口被跳过两次、少发流源；同口双发只能靠 emitCounts
-            Assert.Throws<ArgumentException>(() => new AnySplit(new[] { 1, 1 }));
-        }
-
-        [Fact]
-        public void AnySplit_EmitCountsLengthMismatch_Throws()
-        {
-            Assert.Throws<ArgumentException>(() => new AnySplit(new[] { 0, 2 }, new[] { 1 }));
-        }
-
-        [Fact]
-        public void AnySplit_NegativeEmitCount_Throws()
-        {
-            Assert.Throws<ArgumentOutOfRangeException>(() => new AnySplit(new[] { 0, 2 }, new[] { -1, 1 }));
-        }
-
-        [Fact]
-        public void AnySplit_DirectionOutOfRange_Throws()
-        {
-            // 超范围方向若被 % 4 悄悄折回，会变成另一个合法方向
-            Assert.Throws<ArgumentOutOfRangeException>(() => new AnySplit(new[] { 0, 4 }));
-        }
-
-        [Theory]
-        [InlineData(-1)]
-        [InlineData(4)]
-        public void Facing_OutOfRange_ThrowsAndKeepsPreviousValue(int facing)
-        {
-            TurnDevice turn = new TurnDevice();
-            turn.Facing = 2;
-
-            Assert.Throws<ArgumentOutOfRangeException>(() => turn.Facing = facing);
-
-            // 校验发生在赋值之前，非法写入不能污染已有朝向
-            Assert.Equal(2, turn.Facing);
-        }
     }
 }

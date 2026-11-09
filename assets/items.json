@@ -334,6 +334,9 @@
     },
     {
       "key": "flow_straight",
+      "device": "straight",
+      "anchorX": 0,
+      "anchorY": 0,
       "value": 15,
       "sprite": "flow_straight",
       "name": "直通装置",
@@ -341,7 +344,7 @@
       "itemTypes": [
         "FLOW_DEVICE"
       ],
-      "attachments": []
+      "attachments": ["device"]
     },
     {
       "key": "fluxforge_test_water",

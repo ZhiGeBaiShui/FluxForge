@@ -7,11 +7,11 @@ namespace FluxForge
     /// 流源属性注册表：属性清单、槽位与分合规则的唯一来源。
     ///
     /// 顺序即槽位顺序，按游戏 <c>Liquid.InitLiquid()</c> 的液体登记顺序排列，
-    /// 最后是标量属性 container_temp（温度）。Logic 只认识这里的稳定标识，
-    /// 游戏 tag 的对应关系由 mod 层维护。
+    /// 随后是外来液体桶 foreign，最后是标量属性 container_temp（温度）。
+    /// Logic 只认识这里的稳定标识，游戏 tag 的对应关系由 mod 层维护。
     ///
-    /// 分合规则按种类统一：液体一律 Divide/Add，标量一律 Keep/WeightedAverage，
-    /// 定义里不单独声明。新增 Scalar 的 tag 名由 Mod 层按 id 自动生成（FlowTagNaming）。
+    /// 分合规则按种类统一：液体和 foreign 一律 Divide/Add，
+    /// 标量一律 Keep/WeightedAverage。foreign 只携带总量，不参与装置处理。
     ///
     /// 新增属性的步骤：
     ///   ① 在 <see cref="Build"/> 的清单里追加一行；
@@ -28,7 +28,7 @@ namespace FluxForge
             get { return _all; }
         }
 
-        /// <summary>属性个数（当前 36 种液体 + 温度 = 37）。</summary>
+        /// <summary>属性个数（当前 36 种液体 + 1 个外来液体槽 + 温度 = 38）。</summary>
         public static int Count
         {
             get { return _all.Length; }
@@ -97,7 +97,7 @@ namespace FluxForge
                 "nomore",
             };
 
-            FlowPropertyDef[] defs = new FlowPropertyDef[liquids.Length + 1];
+            FlowPropertyDef[] defs = new FlowPropertyDef[liquids.Length + 2];
             for (int i = 0; i < liquids.Length; i++)
             {
                 defs[i] = new FlowPropertyDef(
@@ -105,9 +105,15 @@ namespace FluxForge
                     SplitRule.Divide, MergeRule.Add, i + 1);
             }
 
+            // 外来液体桶：总量和分合规则与液体一致，但 Kind 是 Foreign，
+            // 装置遍历只认 Liquid，因此不会处理它。
             defs[liquids.Length] = new FlowPropertyDef(
+                "foreign", FlowPropertyKind.Foreign,
+                SplitRule.Divide, MergeRule.Add, liquids.Length + 1);
+
+            defs[liquids.Length + 1] = new FlowPropertyDef(
                 "container_temp", FlowPropertyKind.Scalar,
-                SplitRule.Keep, MergeRule.WeightedAverage, liquids.Length + 1);
+                SplitRule.Keep, MergeRule.WeightedAverage, liquids.Length + 2);
 
             return defs;
         }

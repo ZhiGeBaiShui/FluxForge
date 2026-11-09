@@ -10,20 +10,21 @@ namespace FluxForge.Mod
     /// <see cref="ItemPickedUp"/> 提前注销。发射路径只做查询，所以运行中拖动、
     /// 新增、卖掉装置都会立即反映到这张表。
     ///
-    /// 登记粒度是 anchor 格（物品定义里的中心格）：一个装置只占表里的一格，
-    /// 流源沿形状的其它格走到中心格才触发路由/反应。
+    /// 装置可按格子布局登记路由 / 反应；普通物品按实际形状登记占位，空洞不登记。
     /// </summary>
     public sealed class FlowGridAdapter : IFlowGrid
     {
         private readonly GameGridInventory _inventory;
 
-        /// <summary>anchor 格 → 物品。</summary>
-        private readonly Dictionary<long, GameItem> _cells
-            = new Dictionary<long, GameItem>();
+        /// <summary>装置格 → 该格自己的路由与反应行为。</summary>
+        private readonly Dictionary<long, FlowCellBehavior> _deviceCells
+            = new Dictionary<long, FlowCellBehavior>();
 
-        /// <summary>物品 → 它登记在哪个格；注销时不用遍历 _cells。</summary>
-        private readonly Dictionary<GameItem, long> _itemCells
-            = new Dictionary<GameItem, long>();
+        /// <summary>物品 → 登记格列表，用于移动、拿起与注销。</summary>
+        private readonly Dictionary<GameItem, List<long>> _itemCells
+            = new Dictionary<GameItem, List<long>>();
+
+        private readonly HashSet<long> _occupied = new HashSet<long>();
 
         public FlowGridAdapter(GameGridInventory inventory)
         {
@@ -52,9 +53,7 @@ namespace FluxForge.Mod
         /// <summary>
         /// 装置落到格子时登记。
         ///
-        /// 只有参与路由/反应的装置才进表；纯数据物品没有 anchor，也没有
-        /// router/reactor，走到这里会直接返回。朝向也在这里同步，因为分流器的
-        /// 通道方向依赖物品当前朝向。
+        /// 装置按格子布局登记并同步朝向；普通物品登记真实形状占位。
         /// </summary>
         public void Register(GameItem item)
         {
@@ -68,6 +67,13 @@ namespace FluxForge.Mod
             RegisterCore(item);
         }
 
+        /// <summary>仅刷新已落地登记的物品；拿起后已注销的物品不能被校验回调重新登记。</summary>
+        public void RefreshRegistered(GameItem item)
+        {
+            if (_itemCells.ContainsKey(item))
+                Register(item);
+        }
+
         /// <summary>
         /// 全量重建格表。
         ///
@@ -78,7 +84,8 @@ namespace FluxForge.Mod
         /// </summary>
         public void Rebuild()
         {
-            _cells.Clear();
+            _deviceCells.Clear();
+            _occupied.Clear();
             _itemCells.Clear();
 
             if (!IsAlive)
@@ -112,10 +119,22 @@ namespace FluxForge.Mod
                 return;
             }
 
-            IFlowRouter router = DeviceRegistry.GetRouter(item);
-            IFlowDevice reactor = DeviceRegistry.GetReactor(item);
-            if (router == null && reactor == null)
+            DeviceHost host = DeviceRegistry.GetHost(item);
+            if (host == null)
             {
+                var keys = new List<long>();
+                for (int y = 0; y < shape.height; y++)
+                {
+                    for (int x = 0; x < shape.width; x++)
+                    {
+                        if (shape.GetLocal(x, y) == 0) continue;
+                        (int worldX, int worldY) = shape.ForwardTransform(x, y);
+                        long occupiedKey = Pack(worldX, worldY);
+                        _occupied.Add(occupiedKey);
+                        keys.Add(occupiedKey);
+                    }
+                }
+                _itemCells[item] = keys;
                 return;
             }
 
@@ -133,9 +152,30 @@ namespace FluxForge.Mod
             (int anchorX, int anchorY) =
                 shape.ForwardTransform(anchorXState.GetInt(), anchorYState.GetInt());
 
-            long key = Pack(anchorX, anchorY);
-            _cells[key] = item;
-            _itemCells[item] = key;
+            var deviceCells = new List<long>();
+            if (host.CellLayout == null)
+            {
+                long key = Pack(anchorX, anchorY);
+                _deviceCells[key] = new FlowCellBehavior(host.Router, host.Reactor);
+                deviceCells.Add(key);
+            }
+            else
+            {
+                for (int y = 0; y < shape.height; y++)
+                {
+                    for (int x = 0; x < shape.width; x++)
+                    {
+                        if (shape.GetLocal(x, y) == 0) continue;
+                        (int worldX, int worldY) = shape.ForwardTransform(x, y);
+                        long cellKey = Pack(worldX, worldY);
+                        var context = new FlowCellContext(
+                            x, y, worldX, worldY, anchorX, anchorY);
+                        _deviceCells.Add(cellKey, host.CellLayout.GetCellBehavior(context));
+                        deviceCells.Add(cellKey);
+                    }
+                }
+            }
+            _itemCells[item] = deviceCells;
         }
 
         /// <summary>装置离开网格时注销。</summary>
@@ -146,36 +186,41 @@ namespace FluxForge.Mod
                 return;
             }
 
-            long key;
-            if (!_itemCells.TryGetValue(item, out key))
+            List<long> keys;
+            if (!_itemCells.TryGetValue(item, out keys))
             {
                 return;
             }
 
             _itemCells.Remove(item);
-            _cells.Remove(key);
+            foreach (long key in keys)
+            {
+                _deviceCells.Remove(key);
+                _occupied.Remove(key);
+            }
+        }
+
+        public FlowCellKind GetCellKind(int cellX, int cellY)
+        {
+            long key = Pack(cellX, cellY);
+            if (_occupied.Contains(key)) return FlowCellKind.Occupied;
+            return _deviceCells.ContainsKey(key) ? FlowCellKind.Device : FlowCellKind.Empty;
         }
 
         public IFlowRouter GetRouterAt(int cellX, int cellY)
         {
-            GameItem item;
-            if (!_cells.TryGetValue(Pack(cellX, cellY), out item))
-            {
-                return null;
-            }
-
-            return DeviceRegistry.GetRouter(item);
+            FlowCellBehavior behavior;
+            return _deviceCells.TryGetValue(Pack(cellX, cellY), out behavior)
+                ? behavior.Router
+                : null;
         }
 
         public IFlowDevice GetReactorAt(int cellX, int cellY)
         {
-            GameItem item;
-            if (!_cells.TryGetValue(Pack(cellX, cellY), out item))
-            {
-                return null;
-            }
-
-            return DeviceRegistry.GetReactor(item);
+            FlowCellBehavior behavior;
+            return _deviceCells.TryGetValue(Pack(cellX, cellY), out behavior)
+                ? behavior.Reactor
+                : null;
         }
 
         /// <summary>把两个 int 打包成 long 当字典 key（避免 ValueTuple 的额外分配）。</summary>

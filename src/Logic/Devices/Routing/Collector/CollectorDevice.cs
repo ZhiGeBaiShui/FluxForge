@@ -6,7 +6,7 @@ namespace FluxForge
     /// 收集装置：吸收从入口方向撞上来的流源，把它们的属性累积成一份存量。
     ///
     /// 有方向：<see cref="Facing"/> 表示**入口朝向**（0=上 1=右 2=下 3=左），
-    /// 即「流源从哪一侧来」。方向不对的流源直接放行，让它继续走。
+    /// 即「流源从哪一侧来」。方向不对时由运动层在调用 Route 前销毁流源。
     /// 新建时默认入口朝上（接受从上方来、向下移动的流源）。
     ///
     /// 路由语义：接受 0 个新流源 = 吸收，所以本装置同时是流源的终点——
@@ -20,7 +20,7 @@ namespace FluxForge
     /// 每次吸收都返回新对象，所以必须写回字段，不能指望原对象被就地修改。
     /// </summary>
     public sealed class CollectorDevice
-        : IFlowRouter, IFlowNotifier, IFacing
+        : IFlowRouter, IFlowNotifier, IFacing, IFlowInlet
     {
         /// <summary>发射速度的默认值（格/秒），也是没有配置 tag 时的回退值。</summary>
         public const double DefaultEmitSpeed = 2d;
@@ -75,6 +75,8 @@ namespace FluxForge
         {
             get { return (_facing + 2) % 4; }
         }
+
+        public bool CanEnter(int direction) => direction == AcceptedDirection;
 
         /// <summary>累积的属性。每次吸收后换成新对象，读取方应重新取属性而非缓存引用。</summary>
         public FlowProperties Stock

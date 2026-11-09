@@ -14,8 +14,13 @@ namespace FluxForge
     /// 返回 false = 不截停流源——冷阱只改属性、不改流向。
     /// 本类不认识 GameItem / 适配层 / 物品定义。
     /// </summary>
-    public sealed class ColdTrapDevice : IFlowDevice, IFlowNotifier
+    public sealed class ColdTrapDevice : IFlowDevice, IFlowNotifier, IFlowCellLayout
     {
+        private static readonly IFlowRouter VerticalChannel =
+            new FixedAxisStraightRouter(FlowAxis.Vertical);
+        private static readonly IFlowRouter HorizontalChannel =
+            new FixedAxisStraightRouter(FlowAxis.Horizontal);
+
         private readonly double _temperatureDeltaCelsius;
         private readonly double _phaseThresholdCelsius;
         private readonly int _baseExtractionMicrolitres;
@@ -67,6 +72,28 @@ namespace FluxForge
         public void ReplaceExtracted(FlowProperties extracted)
         {
             _extracted = extracted;
+        }
+
+        /// <summary>中心格反应；其余实体格作为固定世界轴线的直通管道。</summary>
+        public FlowCellBehavior GetCellBehavior(FlowCellContext cell)
+        {
+            if (cell.WorldX == cell.AnchorX && cell.WorldY == cell.AnchorY)
+            {
+                return new FlowCellBehavior(null, this);
+            }
+
+            if (cell.WorldX == cell.AnchorX)
+            {
+                return new FlowCellBehavior(VerticalChannel, null);
+            }
+
+            if (cell.WorldY == cell.AnchorY)
+            {
+                return new FlowCellBehavior(HorizontalChannel, null);
+            }
+
+            throw new System.InvalidOperationException(
+                "冷萃装置的实体格必须位于中心格的同一行或同一列。");
         }
 
         /// <summary>
@@ -139,6 +166,8 @@ namespace FluxForge
             {
                 properties.Set(FlowProps.Temperature, outlet);
             }
+
+            entity.HoldSeconds = FlowReactionDelay.NextSeconds();
 
             FlowAudio.Play(
                 crossed ? FlowSoundIds.ExtractedCross : FlowSoundIds.Extracted,

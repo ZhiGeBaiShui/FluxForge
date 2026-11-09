@@ -232,6 +232,74 @@ namespace FluxForge.Tests
         }
 
         [Fact]
+        public void Acceleration_AddsRandomHoldBelowOneTenthSecond()
+        {
+            FlowEntity entity = MakeEntity(0, 2d);
+            StraightSpeedDevice device = new StraightSpeedDevice(
+                1d, 10d, 0d, new Random(1234));
+
+            device.Route(entity, new FlowSpawner(), 0, 0);
+
+            // 2 / 10 -> 基础 0.08s，再乘 0.9～1.1。
+            Assert.InRange(entity.HoldSeconds, 0.072d, 0.0880001d);
+        }
+
+        [Fact]
+        public void SpeedFive_HasAboutFiftyMillisecondHold()
+        {
+            FlowEntity entity = MakeEntity(0, 5d);
+            StraightSpeedDevice device = new StraightSpeedDevice(
+                1d, 10d, 0d, new Random(1234));
+
+            device.Route(entity, new FlowSpawner(), 0, 0);
+
+            // 5 / 10 -> 基础 0.05s，再乘 0.9～1.1。
+            Assert.InRange(entity.HoldSeconds, 0.045d, 0.0550001d);
+        }
+
+        [Fact]
+        public void HigherSpeed_ProducesShorterMaximumHold()
+        {
+            FlowEntity slow = MakeEntity(0, 2d);
+            FlowEntity fast = MakeEntity(0, 9d);
+
+            StraightSpeedDevice slowDevice = new StraightSpeedDevice(
+                1d, 10d, 0d, new Random(1234));
+            StraightSpeedDevice fastDevice = new StraightSpeedDevice(
+                1d, 10d, 0d, new Random(1234));
+
+            slowDevice.Route(slow, new FlowSpawner(), 0, 0);
+            fastDevice.Route(fast, new FlowSpawner(), 0, 0);
+
+            Assert.True(fast.HoldSeconds < slow.HoldSeconds);
+        }
+
+        [Fact]
+        public void Deceleration_AddsNoHold()
+        {
+            FlowEntity entity = MakeEntity(2, 2d);
+            StraightSpeedDevice device = new StraightSpeedDevice(
+                1d, 10d, 0d, new Random(1234));
+
+            device.Route(entity, new FlowSpawner(), 0, 0);
+
+            Assert.Equal(0d, entity.HoldSeconds);
+        }
+
+        [Fact]
+        public void AtMaxSpeed_AddsNoHold()
+        {
+            FlowEntity entity = MakeEntity(0, 10d);
+            StraightSpeedDevice device = new StraightSpeedDevice(
+                1d, 10d, 0d, new Random(1234));
+
+            device.Route(entity, new FlowSpawner(), 0, 0);
+
+            Assert.Equal(10d, entity.Motion.Speed);
+            Assert.Equal(0d, entity.HoldSeconds);
+        }
+
+        [Fact]
         public void HasNoParameterlessConstructor()
         {
             ConstructorInfo constructor = typeof(StraightSpeedDevice)

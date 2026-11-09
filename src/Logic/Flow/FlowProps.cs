@@ -44,6 +44,7 @@ namespace FluxForge
         public static readonly FlowPropertyKey LivestockImmunity = FlowPropertyRegistry.Key("livestock_immunity");
         public static readonly FlowPropertyKey WineExtract = FlowPropertyRegistry.Key("wine_extract");
         public static readonly FlowPropertyKey Nomore = FlowPropertyRegistry.Key("nomore");
+        public static readonly FlowPropertyKey Foreign = FlowPropertyRegistry.Key("foreign");
         public static readonly FlowPropertyKey Temperature = FlowPropertyRegistry.Key("container_temp");
     }
 }

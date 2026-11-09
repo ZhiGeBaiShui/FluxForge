@@ -62,6 +62,14 @@ namespace FluxForge.Mod
             return _hosts.TryGetValue(item, out host) ? host : null;
         }
 
+        /// <summary>读档子物品全部恢复后重新回灌；也覆盖暂时不在网格中的机器。</summary>
+        public static void ReloadAll()
+        {
+            var hosts = new List<DeviceHost>(_hosts.Values);
+            foreach (DeviceHost host in hosts)
+                host.LoadAll();
+        }
+
         /// <summary>任意装置实例反查所属物品；FlowAudio / FlowAnimation 使用。</summary>
         public static GameItem GetItemForDevice(object device)
         {

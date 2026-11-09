@@ -41,6 +41,7 @@ namespace FluxForge.Tests
             Assert.False(blocked);
             Assert.True(entity.Properties.Get(FlowProps.ChemicalContaminant) < 1500d);
             Assert.True(entity.Properties.Get(FlowProps.HeavyMetal) < 500d);
+            Assert.InRange(entity.HoldSeconds, 0.05d, 0.3000001d);
         }
 
         [Fact]

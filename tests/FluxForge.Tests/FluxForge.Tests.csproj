@@ -28,6 +28,7 @@
          TagMapping 只编入 GameItemTags；FlowStock / FlowRuntime / Sync patch 等
          仍引用游戏类型，测试环境加载不了。 -->
     <Compile Include="..\..\src\LogicIntegration\TagMapping\Core\GameItemTags.cs" />
+    <Compile Include="..\..\src\LogicIntegration\TagMapping\Core\FlowStock.cs" />
     <!-- 装置挂载编排（Bind → Host → Registry → Sync）同样只依赖 GameItem 桩。
          DeviceStateSync 引用的 ItemTagCommit 由 GameStubs.cs 提供测试桩，
          因此不包含 src/Mod/Common/Item/ItemTagCommit.cs（它引用游戏表现辅助）。 -->
@@ -45,6 +46,9 @@
     <Compile Include="..\..\src\LogicIntegration\DeviceState\Adapters\ColdTrapStateAdapter.cs" />
     <Compile Include="..\..\src\LogicIntegration\DeviceState\Adapters\TemperatureConfigAdapter.cs" />
     <Compile Include="..\..\src\LogicIntegration\DeviceState\Adapters\FilterStateAdapter.cs" />
+    <Compile Include="..\..\src\LogicIntegration\DeviceState\Adapters\DistillerStateAdapter.cs" />
+    <Compile Include="..\..\src\LogicIntegration\DeviceState\Adapters\StraightStateAdapter.cs" />
+    <Compile Include="..\..\src\LogicIntegration\DeviceState\Mappings\BatteryEnergyMapping.cs" />
     <Compile Include="..\..\src\LogicIntegration\DeviceState\Adapters\TurnStateAdapter.cs" />
     <Compile Include="..\..\src\LogicIntegration\DeviceState\Adapters\LRightDownStateAdapter.cs" />
     <Compile Include="..\..\src\LogicIntegration\DeviceState\Adapters\TJunctionStateAdapter.cs" />
@@ -54,6 +58,8 @@
     <Compile Include="..\..\src\LogicIntegration\DeviceState\Catalog\DeviceAdapterAttribute.cs" />
     <Compile Include="..\..\src\LogicIntegration\DeviceState\Catalog\DeviceAdapterCatalog.cs" />
     <Compile Include="..\..\src\Events\Placement\PlacementMath.cs" />
+    <Compile Include="..\..\src\LogicIntegration\GridBuilding\Services\FlowGridAdapter.cs" />
+    <Compile Include="..\..\src\LogicIntegration\Common\Game\FlowFacingAdapter.cs" />
   </ItemGroup>
 
 </Project>

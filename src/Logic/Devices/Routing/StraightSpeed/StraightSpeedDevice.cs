@@ -10,22 +10,28 @@ namespace FluxForge
     ///
     /// 速度改变量、速度上限、速度下限都由构造参数给出；没有默认值，也没有无参构造。
     /// </summary>
-    public sealed class StraightSpeedDevice : IFlowRouter, IFacing
+    public sealed class StraightSpeedDevice : IFlowRouter, IFacing, IFlowInlet
     {
+        /// <summary>加速后的最大随机停顿；最终值还会再乘随机浮动。</summary>
+        private const double MaxAccelerationHoldSeconds = 0.1d;
+
         private readonly double _speedChange;
         private readonly double _maxSpeed;
         private readonly double _minSpeed;
+        private readonly System.Random _random;
         private int _facing;
 
         /// <summary>按速度改变基础值、上限、下限初始化。</summary>
         public StraightSpeedDevice(
             double speedChange,
             double maxSpeed,
-            double minSpeed)
+            double minSpeed,
+            System.Random random = null)
         {
             _speedChange = speedChange;
             _maxSpeed = maxSpeed;
             _minSpeed = minSpeed;
+            _random = random ?? new System.Random();
         }
 
         /// <summary>朝向（0=上 1=右 2=下 3=左）；只影响局部轴线方向。</summary>
@@ -37,6 +43,8 @@ namespace FluxForge
 
         /// <inheritdoc/>
         public bool Flipped { get; set; }
+
+        public bool CanEnter(int direction) => direction % 2 == Facing % 2;
 
         /// <summary>每次经过时的速度改变基础值。</summary>
         public double SpeedChange
@@ -57,7 +65,7 @@ namespace FluxForge
         }
 
         /// <summary>
-        /// 只处理沿局部轴线进入的流源；横向经过的流源原样放行。
+        /// 只处理沿局部轴线进入的流源；横向流源由运动层在调用前销毁。
         /// 恒返回 false：变速不截停流源，由运动层继续推进。
         /// </summary>
         public bool Route(FlowEntity incoming, FlowSpawner flows, int cellX, int cellY)
@@ -87,6 +95,14 @@ namespace FluxForge
             }
 
             incoming.Motion.Speed = next;
+
+            if (next > current)
+            {
+                double ratio = _maxSpeed > 0d ? current / _maxSpeed : 1d;
+                double baseHold = MaxAccelerationHoldSeconds * (1d - ratio);
+                double jitter = 0.9d + _random.NextDouble() * 0.2d;
+                incoming.HoldSeconds = System.Math.Min(0.099d, baseHold * jitter);
+            }
 
             FlowAudio.Play(
                 localDirection == 0

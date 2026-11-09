@@ -11,7 +11,6 @@ ItemSpawn/
   Setup/                 物品出生编排
 Content/                 items / sprites / tooltip 内容注册
 Common/Item/             容量、tag 提交等物品侧 helper
-Portraits/               人物立绘注册
 Shared/                  嵌入资源、序列化
 ```
 
@@ -25,6 +24,6 @@ Shared/                  嵌入资源、序列化
 
 1. `assets/items.json` 增加定义。
 2. `assets/sprites.json` 登记贴图，PNG 放到 `mod/Textures/Items/`。
-3. 需要新行为时新增 `ItemAttachment` 子类到 `Attachments/`。
-4. tag 写完统一走 `Helpers/ItemTagCommit.Commit`，不要自己拼 `SyncModifiedState`。
+3. 需要新行为时新增 `ItemAttachment` 子类到 `ItemSpawn/Services/Attachments/`。
+4. tag 写完统一走 `Common/Item/ItemTagCommit.Commit`，不要自己拼 `SyncModifiedState`。
 

@@ -30,6 +30,7 @@ namespace FluxForge.Tests
         /// </summary>
         private sealed class FakeGrid : IFlowGrid
         {
+            public FlowCellKind GetCellKind(int x, int y) => FlowCellKind.Empty;
             private readonly Dictionary<(int, int), IFlowRouter> _routers
                 = new Dictionary<(int, int), IFlowRouter>();
 
@@ -207,6 +208,19 @@ namespace FluxForge.Tests
             Assert.Equal(110d, flow.Get(FlowProps.Water));
             // (100×25 + 10×(-5)) / 110 ≈ 22.273
             Assert.Equal(22.273d, flow.Get(FlowProps.Temperature), 3);
+        }
+
+        [Fact]
+        public void IceBlock_EntityReactionRequestsHold()
+        {
+            IceBlockDevice ice = new IceBlockDevice(10d, -5d);
+            FlowEntity entity = new FlowEntity(
+                new FlowPos(0d, 0d),
+                new FlowMotionData(1, 1d),
+                TestFlow.Make(100d, 25d));
+
+            Assert.True(ice.TryReact(entity));
+            Assert.InRange(entity.HoldSeconds, 0.05d, 0.3000001d);
         }
 
         [Fact]
@@ -511,10 +525,10 @@ namespace FluxForge.Tests
         }
 
         [Fact]
-        public void Split_NeverTakesControl_LeavesPositionUntouched()
+        public void Split_InvalidEntryDiesAtBoundary()
         {
             // 装置放在 (3,4)，通道只有左右(1/3)；流源向上(0)运动，
-            // 入口通道需要是下(2)，装置不收 → Route 返回 false。
+            // 入口通道需要是下(2)，装置未开口，应在进入边界时销毁。
             SplitDevice split = new AnySplit(new int[] { 1, 3 });
             _grid.SetRouter(3, 4, split);
 
@@ -524,10 +538,7 @@ namespace FluxForge.Tests
             _flows.Accept(entity);
             _motion.Tick(1d, _flows);      // 一帧走一格，正好穿过装置格
 
-            // 位置必须按正常移动走到 4.5：既不能被截停在格边缘，也不能被回滚丢步
-            Assert.Single(_flows.Active);
-            Assert.Equal(3.5d, entity.Position.X, 3);
-            Assert.Equal(4.5d, entity.Position.Y, 3);
+            Assert.Empty(_flows.Active);
         }
 
         [Fact]

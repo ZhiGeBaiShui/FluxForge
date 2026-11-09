@@ -11,6 +11,9 @@ namespace FluxForge.Events
     /// </summary>
     internal static class DemoPlacement
     {
+        /// <summary>多个演示物品之间的生成间隔。</summary>
+        internal const float ItemSpawnIntervalSeconds = 1f;
+
         internal static GameItem Spawn(
             EventSession session,
             GameGridInventory grid,
@@ -91,6 +94,7 @@ namespace FluxForge.Events
 
             GridLock.Track(item);
             session.TrackItem(item);
+            FlowAudio.Play(FlowSoundIds.ItemPlaced, item);
             return item;
         }
 

@@ -1,0 +1,6582 @@
+[
+  {
+    "name": "1steel_addon_1armor.png",
+    "size": [
+      91,
+      80
+    ]
+  },
+  {
+    "name": "1steel_addon_2blade.png",
+    "size": [
+      91,
+      80
+    ]
+  },
+  {
+    "name": "1steel_hand_1normal.png",
+    "size": [
+      91,
+      80
+    ]
+  },
+  {
+    "name": "1steel_hand_2wear.png",
+    "size": [
+      91,
+      80
+    ]
+  },
+  {
+    "name": "1steel_hand_3damage.png",
+    "size": [
+      91,
+      80
+    ]
+  },
+  {
+    "name": "1steel_int_full_emg.png",
+    "size": [
+      91,
+      80
+    ]
+  },
+  {
+    "name": "1steel_int_full_emgp.png",
+    "size": [
+      91,
+      80
+    ]
+  },
+  {
+    "name": "1steel_int_full_ni.png",
+    "size": [
+      91,
+      80
+    ]
+  },
+  {
+    "name": "1steel_int_syml_emg.png",
+    "size": [
+      91,
+      80
+    ]
+  },
+  {
+    "name": "1steel_int_syml_emgp.png",
+    "size": [
+      91,
+      80
+    ]
+  },
+  {
+    "name": "1steel_int_syml_ni.png",
+    "size": [
+      91,
+      80
+    ]
+  },
+  {
+    "name": "2carbon_addon_1armor.png",
+    "size": [
+      91,
+      80
+    ]
+  },
+  {
+    "name": "2carbon_addon_2blade.png",
+    "size": [
+      91,
+      80
+    ]
+  },
+  {
+    "name": "2carbon_hand_1normal.png",
+    "size": [
+      91,
+      80
+    ]
+  },
+  {
+    "name": "2carbon_hand_2wear.png",
+    "size": [
+      91,
+      80
+    ]
+  },
+  {
+    "name": "2carbon_hand_3damage.png",
+    "size": [
+      91,
+      80
+    ]
+  },
+  {
+    "name": "2carbon_int_full_emg.png",
+    "size": [
+      91,
+      80
+    ]
+  },
+  {
+    "name": "2carbon_int_full_emgp.png",
+    "size": [
+      91,
+      80
+    ]
+  },
+  {
+    "name": "2carbon_int_full_ni.png",
+    "size": [
+      91,
+      80
+    ]
+  },
+  {
+    "name": "2carbon_int_symboll_emg.png",
+    "size": [
+      91,
+      80
+    ]
+  },
+  {
+    "name": "2carbon_int_symboll_emgp.png",
+    "size": [
+      91,
+      80
+    ]
+  },
+  {
+    "name": "2carbon_int_symboll_ni.png",
+    "size": [
+      91,
+      80
+    ]
+  },
+  {
+    "name": "2perkSet2.png",
+    "size": [
+      215,
+      9
+    ]
+  },
+  {
+    "name": "3gold_addon_1armor.png",
+    "size": [
+      91,
+      80
+    ]
+  },
+  {
+    "name": "3gold_addon_2blade.png",
+    "size": [
+      91,
+      80
+    ]
+  },
+  {
+    "name": "3gold_hand_1normal.png",
+    "size": [
+      91,
+      80
+    ]
+  },
+  {
+    "name": "3gold_hand_2wear.png",
+    "size": [
+      91,
+      80
+    ]
+  },
+  {
+    "name": "3gold_hand_3damage.png",
+    "size": [
+      91,
+      80
+    ]
+  },
+  {
+    "name": "3gold_interface_emg.png",
+    "size": [
+      91,
+      80
+    ]
+  },
+  {
+    "name": "3gold_interface_emgp.png",
+    "size": [
+      91,
+      80
+    ]
+  },
+  {
+    "name": "3gold_interface_ni.png",
+    "size": [
+      91,
+      80
+    ]
+  },
+  {
+    "name": "3gold_interface_symbol_emg.png",
+    "size": [
+      91,
+      80
+    ]
+  },
+  {
+    "name": "3gold_interface_symbol_emgp.png",
+    "size": [
+      91,
+      80
+    ]
+  },
+  {
+    "name": "3gold_interface_symbol_ni.png",
+    "size": [
+      91,
+      80
+    ]
+  },
+  {
+    "name": "addiction_narcotic.png",
+    "size": [
+      32,
+      32
+    ]
+  },
+  {
+    "name": "additionc_alcohol.png",
+    "size": [
+      32,
+      32
+    ]
+  },
+  {
+    "name": "additionc_gambling.png",
+    "size": [
+      32,
+      32
+    ]
+  },
+  {
+    "name": "additionc_nicotine.png",
+    "size": [
+      32,
+      32
+    ]
+  },
+  {
+    "name": "alert.png",
+    "size": [
+      32,
+      32
+    ]
+  },
+  {
+    "name": "appraisal_panel.png",
+    "size": [
+      165,
+      80
+    ]
+  },
+  {
+    "name": "aqua_scan.png",
+    "size": [
+      55,
+      80
+    ]
+  },
+  {
+    "name": "aqua_scan_button.png",
+    "size": [
+      73,
+      19
+    ]
+  },
+  {
+    "name": "AreaTex.png",
+    "size": [
+      23,
+      80
+    ]
+  },
+  {
+    "name": "arrow__shared1_26.png",
+    "size": [
+      16,
+      12
+    ]
+  },
+  {
+    "name": "arrow__shared1_600.png",
+    "size": [
+      80,
+      80
+    ]
+  },
+  {
+    "name": "arrow_left.png",
+    "size": [
+      32,
+      16
+    ]
+  },
+  {
+    "name": "arrow_next_hover.png",
+    "size": [
+      32,
+      32
+    ]
+  },
+  {
+    "name": "arrow_next_normal.png",
+    "size": [
+      32,
+      32
+    ]
+  },
+  {
+    "name": "arrow_prev_hover.png",
+    "size": [
+      32,
+      32
+    ]
+  },
+  {
+    "name": "arrow_prev_normal.png",
+    "size": [
+      32,
+      32
+    ]
+  },
+  {
+    "name": "arrow_right.png",
+    "size": [
+      32,
+      16
+    ]
+  },
+  {
+    "name": "arrows.png",
+    "size": [
+      60,
+      80
+    ]
+  },
+  {
+    "name": "Back_White.png",
+    "size": [
+      32,
+      32
+    ]
+  },
+  {
+    "name": "background__resources_18.png",
+    "size": [
+      160,
+      80
+    ]
+  },
+  {
+    "name": "background__resources_26.png",
+    "size": [
+      109,
+      80
+    ]
+  },
+  {
+    "name": "Background__shared0_52.png",
+    "size": [
+      32,
+      32
+    ]
+  },
+  {
+    "name": "background_fill__resources_19.png",
+    "size": [
+      32,
+      32
+    ]
+  },
+  {
+    "name": "background_fill__resources_60.png",
+    "size": [
+      16,
+      16
+    ]
+  },
+  {
+    "name": "bad_lease.png",
+    "size": [
+      32,
+      32
+    ]
+  },
+  {
+    "name": "bar_code.png",
+    "size": [
+      204,
+      80
+    ]
+  },
+  {
+    "name": "bargain.png",
+    "size": [
+      39,
+      80
+    ]
+  },
+  {
+    "name": "bargain_active.png",
+    "size": [
+      16,
+      16
+    ]
+  },
+  {
+    "name": "bargain_plate.png",
+    "size": [
+      37,
+      80
+    ]
+  },
+  {
+    "name": "bargain_spine.png",
+    "size": [
+      6,
+      80
+    ]
+  },
+  {
+    "name": "bazaar.png",
+    "size": [
+      142,
+      80
+    ]
+  },
+  {
+    "name": "beer_case.png",
+    "size": [
+      80,
+      80
+    ]
+  },
+  {
+    "name": "bell_button_sheet.png",
+    "size": [
+      101,
+      34
+    ]
+  },
+  {
+    "name": "berry_1normal.png",
+    "size": [
+      82,
+      80
+    ]
+  },
+  {
+    "name": "berry_2under1.png",
+    "size": [
+      82,
+      80
+    ]
+  },
+  {
+    "name": "berry_2under2.png",
+    "size": [
+      82,
+      80
+    ]
+  },
+  {
+    "name": "berry_3over.png",
+    "size": [
+      82,
+      80
+    ]
+  },
+  {
+    "name": "berry_4mold.png",
+    "size": [
+      82,
+      80
+    ]
+  },
+  {
+    "name": "berry_5small.png",
+    "size": [
+      82,
+      80
+    ]
+  },
+  {
+    "name": "bevel_frame.png",
+    "size": [
+      4,
+      4
+    ]
+  },
+  {
+    "name": "blabbermouth.png",
+    "size": [
+      32,
+      32
+    ]
+  },
+  {
+    "name": "blackmail.png",
+    "size": [
+      32,
+      32
+    ]
+  },
+  {
+    "name": "blue_button_2x.png",
+    "size": [
+      160,
+      44
+    ]
+  },
+  {
+    "name": "blue_close_button.png",
+    "size": [
+      16,
+      16
+    ]
+  },
+  {
+    "name": "BMREA Atlas.png",
+    "size": [
+      80,
+      80
+    ]
+  },
+  {
+    "name": "body.png",
+    "size": [
+      90,
+      48
+    ]
+  },
+  {
+    "name": "bookBack.png",
+    "size": [
+      48,
+      64
+    ]
+  },
+  {
+    "name": "bookBack_white.png",
+    "size": [
+      48,
+      64
+    ]
+  },
+  {
+    "name": "border-export.png",
+    "size": [
+      88,
+      34
+    ]
+  },
+  {
+    "name": "border.png",
+    "size": [
+      88,
+      34
+    ]
+  },
+  {
+    "name": "borderOld.png",
+    "size": [
+      88,
+      34
+    ]
+  },
+  {
+    "name": "bottom_bun.png",
+    "size": [
+      204,
+      80
+    ]
+  },
+  {
+    "name": "box_ok.png",
+    "size": [
+      47,
+      80
+    ]
+  },
+  {
+    "name": "bubble_sci_p.png",
+    "size": [
+      48,
+      40
+    ]
+  },
+  {
+    "name": "bubble_sheet2.png",
+    "size": [
+      80,
+      80
+    ]
+  },
+  {
+    "name": "business_card_template.png",
+    "size": [
+      128,
+      80
+    ]
+  },
+  {
+    "name": "button.png",
+    "size": [
+      48,
+      16
+    ]
+  },
+  {
+    "name": "button_back_blue_m.png",
+    "size": [
+      32,
+      32
+    ]
+  },
+  {
+    "name": "button_bargain-Sheet.png",
+    "size": [
+      48,
+      16
+    ]
+  },
+  {
+    "name": "button_confront.png",
+    "size": [
+      61,
+      15
+    ]
+  },
+  {
+    "name": "button_confront_2x.png",
+    "size": [
+      122,
+      30
+    ]
+  },
+  {
+    "name": "button_contact.png",
+    "size": [
+      124,
+      12
+    ]
+  },
+  {
+    "name": "button_dismiss.png",
+    "size": [
+      16,
+      16
+    ]
+  },
+  {
+    "name": "button_generic_x2.png",
+    "size": [
+      32,
+      32
+    ]
+  },
+  {
+    "name": "button_glass.png",
+    "size": [
+      32,
+      32
+    ]
+  },
+  {
+    "name": "button_hover.png",
+    "size": [
+      6,
+      6
+    ]
+  },
+  {
+    "name": "button_integoration.png",
+    "size": [
+      32,
+      32
+    ]
+  },
+  {
+    "name": "button_load.png",
+    "size": [
+      47,
+      20
+    ]
+  },
+  {
+    "name": "button_load_hl.png",
+    "size": [
+      47,
+      20
+    ]
+  },
+  {
+    "name": "button_main_menu_h.png",
+    "size": [
+      215,
+      34
+    ]
+  },
+  {
+    "name": "button_main_menu_n.png",
+    "size": [
+      215,
+      34
+    ]
+  },
+  {
+    "name": "button_main_menu_p.png",
+    "size": [
+      215,
+      34
+    ]
+  },
+  {
+    "name": "button_normal.png",
+    "size": [
+      6,
+      6
+    ]
+  },
+  {
+    "name": "button_pressed.png",
+    "size": [
+      8,
+      8
+    ]
+  },
+  {
+    "name": "button_rewind_disabled.png",
+    "size": [
+      16,
+      16
+    ]
+  },
+  {
+    "name": "button_rewind_highlight.png",
+    "size": [
+      16,
+      16
+    ]
+  },
+  {
+    "name": "button_rewind_normal.png",
+    "size": [
+      16,
+      16
+    ]
+  },
+  {
+    "name": "button_rewind_pressed.png",
+    "size": [
+      16,
+      16
+    ]
+  },
+  {
+    "name": "button_sec.png",
+    "size": [
+      16,
+      16
+    ]
+  },
+  {
+    "name": "button_transfer.png",
+    "size": [
+      16,
+      16
+    ]
+  },
+  {
+    "name": "button_unavaible.png",
+    "size": [
+      48,
+      16
+    ]
+  },
+  {
+    "name": "button_zoom.png",
+    "size": [
+      48,
+      16
+    ]
+  },
+  {
+    "name": "calendar wire.png",
+    "size": [
+      142,
+      80
+    ]
+  },
+  {
+    "name": "calendar.png",
+    "size": [
+      142,
+      80
+    ]
+  },
+  {
+    "name": "calendar_stripped.png",
+    "size": [
+      118,
+      80
+    ]
+  },
+  {
+    "name": "calendar_top-Sheet.png",
+    "size": [
+      215,
+      33
+    ]
+  },
+  {
+    "name": "cap.png",
+    "size": [
+      215,
+      36
+    ]
+  },
+  {
+    "name": "card__shared1_110.png",
+    "size": [
+      114,
+      80
+    ]
+  },
+  {
+    "name": "card__shared1_199.png",
+    "size": [
+      134,
+      80
+    ]
+  },
+  {
+    "name": "card_blank_2x.png",
+    "size": [
+      134,
+      80
+    ]
+  },
+  {
+    "name": "card_header_plate__shared0_160.png",
+    "size": [
+      64,
+      42
+    ]
+  },
+  {
+    "name": "card_header_plate__shared1_656.png",
+    "size": [
+      12,
+      12
+    ]
+  },
+  {
+    "name": "card_outline_normal.png",
+    "size": [
+      12,
+      12
+    ]
+  },
+  {
+    "name": "card_outline_selected.png",
+    "size": [
+      12,
+      12
+    ]
+  },
+  {
+    "name": "card_outline_unavailable.png",
+    "size": [
+      12,
+      12
+    ]
+  },
+  {
+    "name": "card_plate__shared0_56.png",
+    "size": [
+      64,
+      64
+    ]
+  },
+  {
+    "name": "card_plate__shared1_77.png",
+    "size": [
+      12,
+      12
+    ]
+  },
+  {
+    "name": "card_rev.png",
+    "size": [
+      128,
+      80
+    ]
+  },
+  {
+    "name": "card_ripped_2x.png",
+    "size": [
+      122,
+      80
+    ]
+  },
+  {
+    "name": "card_wild.png",
+    "size": [
+      129,
+      80
+    ]
+  },
+  {
+    "name": "cartridge.png",
+    "size": [
+      206,
+      80
+    ]
+  },
+  {
+    "name": "case_enjoyer.png",
+    "size": [
+      109,
+      80
+    ]
+  },
+  {
+    "name": "cassette.png",
+    "size": [
+      32,
+      32
+    ]
+  },
+  {
+    "name": "cat.png",
+    "size": [
+      32,
+      32
+    ]
+  },
+  {
+    "name": "Caveat-Medium SDF Atlas.png",
+    "size": [
+      80,
+      80
+    ]
+  },
+  {
+    "name": "cell.png",
+    "size": [
+      16,
+      16
+    ]
+  },
+  {
+    "name": "check__shared0_180.png",
+    "size": [
+      20,
+      20
+    ]
+  },
+  {
+    "name": "Check__shared1_47.png",
+    "size": [
+      27,
+      21
+    ]
+  },
+  {
+    "name": "checkbox__shared0_144.png",
+    "size": [
+      16,
+      16
+    ]
+  },
+  {
+    "name": "checkbox__shared0_197.png",
+    "size": [
+      32,
+      32
+    ]
+  },
+  {
+    "name": "checkbox__shared1_619.png",
+    "size": [
+      13,
+      13
+    ]
+  },
+  {
+    "name": "checkbox_arrow.png",
+    "size": [
+      16,
+      16
+    ]
+  },
+  {
+    "name": "checkbox_checked.png",
+    "size": [
+      13,
+      13
+    ]
+  },
+  {
+    "name": "checkbox_checked_orange.png",
+    "size": [
+      13,
+      13
+    ]
+  },
+  {
+    "name": "checkbox_hl.png",
+    "size": [
+      32,
+      32
+    ]
+  },
+  {
+    "name": "checkbox_mark.png",
+    "size": [
+      32,
+      32
+    ]
+  },
+  {
+    "name": "checkbox_orange.png",
+    "size": [
+      13,
+      13
+    ]
+  },
+  {
+    "name": "Checkmark.png",
+    "size": [
+      64,
+      64
+    ]
+  },
+  {
+    "name": "chem_scan.png",
+    "size": [
+      55,
+      80
+    ]
+  },
+  {
+    "name": "chem_scan_button.png",
+    "size": [
+      73,
+      19
+    ]
+  },
+  {
+    "name": "chip color.png",
+    "size": [
+      114,
+      80
+    ]
+  },
+  {
+    "name": "chip correct.png",
+    "size": [
+      114,
+      80
+    ]
+  },
+  {
+    "name": "chip damaged.png",
+    "size": [
+      114,
+      80
+    ]
+  },
+  {
+    "name": "chip_cracked.png",
+    "size": [
+      114,
+      80
+    ]
+  },
+  {
+    "name": "cigarette_color_card_item.png",
+    "size": [
+      70,
+      80
+    ]
+  },
+  {
+    "name": "client_counter-Sheet.png",
+    "size": [
+      150,
+      25
+    ]
+  },
+  {
+    "name": "client_display.png",
+    "size": [
+      142,
+      80
+    ]
+  },
+  {
+    "name": "client_shadow_small.png",
+    "size": [
+      48,
+      64
+    ]
+  },
+  {
+    "name": "clientele-Sheet.png",
+    "size": [
+      105,
+      48
+    ]
+  },
+  {
+    "name": "clipboard__shared0_111.png",
+    "size": [
+      80,
+      80
+    ]
+  },
+  {
+    "name": "clipboard__shared1_198.png",
+    "size": [
+      48,
+      69
+    ]
+  },
+  {
+    "name": "close.png",
+    "size": [
+      16,
+      16
+    ]
+  },
+  {
+    "name": "close_button_h.png",
+    "size": [
+      16,
+      16
+    ]
+  },
+  {
+    "name": "close_button_n.png",
+    "size": [
+      16,
+      16
+    ]
+  },
+  {
+    "name": "close_button_p.png",
+    "size": [
+      16,
+      16
+    ]
+  },
+  {
+    "name": "close_normal.png",
+    "size": [
+      16,
+      16
+    ]
+  },
+  {
+    "name": "close_pressed.png",
+    "size": [
+      16,
+      16
+    ]
+  },
+  {
+    "name": "close_pressed_down.png",
+    "size": [
+      16,
+      16
+    ]
+  },
+  {
+    "name": "color_high_quality.png",
+    "size": [
+      206,
+      80
+    ]
+  },
+  {
+    "name": "color_normal.png",
+    "size": [
+      206,
+      80
+    ]
+  },
+  {
+    "name": "color_poor1.png",
+    "size": [
+      206,
+      80
+    ]
+  },
+  {
+    "name": "color_poor2.png",
+    "size": [
+      206,
+      80
+    ]
+  },
+  {
+    "name": "colorChecker.png",
+    "size": [
+      55,
+      63
+    ]
+  },
+  {
+    "name": "colorful.png",
+    "size": [
+      32,
+      32
+    ]
+  },
+  {
+    "name": "commissary.png",
+    "size": [
+      142,
+      80
+    ]
+  },
+  {
+    "name": "condition_crack1.png",
+    "size": [
+      206,
+      80
+    ]
+  },
+  {
+    "name": "condition_heavy_wear.png",
+    "size": [
+      206,
+      80
+    ]
+  },
+  {
+    "name": "condition_reinforced.png",
+    "size": [
+      206,
+      80
+    ]
+  },
+  {
+    "name": "condition_screws.png",
+    "size": [
+      206,
+      80
+    ]
+  },
+  {
+    "name": "condition_wear.png",
+    "size": [
+      206,
+      80
+    ]
+  },
+  {
+    "name": "confirmation_dialog_2x.png",
+    "size": [
+      190,
+      80
+    ]
+  },
+  {
+    "name": "connected.png",
+    "size": [
+      32,
+      32
+    ]
+  },
+  {
+    "name": "connectimg wire.png",
+    "size": [
+      142,
+      80
+    ]
+  },
+  {
+    "name": "connector__shared0_238.png",
+    "size": [
+      24,
+      4
+    ]
+  },
+  {
+    "name": "connector__shared1_243.png",
+    "size": [
+      61,
+      80
+    ]
+  },
+  {
+    "name": "container_tag_2x.png",
+    "size": [
+      92,
+      20
+    ]
+  },
+  {
+    "name": "contractBack.png",
+    "size": [
+      55,
+      80
+    ]
+  },
+  {
+    "name": "convict.png",
+    "size": [
+      32,
+      32
+    ]
+  },
+  {
+    "name": "cost_area.png",
+    "size": [
+      19,
+      9
+    ]
+  },
+  {
+    "name": "cost_area_bought.png",
+    "size": [
+      19,
+      9
+    ]
+  },
+  {
+    "name": "Courrier.png",
+    "size": [
+      109,
+      80
+    ]
+  },
+  {
+    "name": "credit_display.png",
+    "size": [
+      142,
+      80
+    ]
+  },
+  {
+    "name": "credit_line.png",
+    "size": [
+      66,
+      80
+    ]
+  },
+  {
+    "name": "cropped-color-ok.png",
+    "size": [
+      55,
+      25
+    ]
+  },
+  {
+    "name": "cropped-color-saturation.png",
+    "size": [
+      55,
+      25
+    ]
+  },
+  {
+    "name": "cropped-letter-correct.png",
+    "size": [
+      63,
+      16
+    ]
+  },
+  {
+    "name": "cropped-letter-font.png",
+    "size": [
+      62,
+      10
+    ]
+  },
+  {
+    "name": "cropped-letter-incorrect3.png",
+    "size": [
+      56,
+      16
+    ]
+  },
+  {
+    "name": "cropped-logo-correct.png",
+    "size": [
+      75,
+      65
+    ]
+  },
+  {
+    "name": "cropped-logo-simple.png",
+    "size": [
+      71,
+      65
+    ]
+  },
+  {
+    "name": "cropped-seal-broke.png",
+    "size": [
+      83,
+      28
+    ]
+  },
+  {
+    "name": "cropped-seal-correct.png",
+    "size": [
+      83,
+      28
+    ]
+  },
+  {
+    "name": "cross__shared0_224.png",
+    "size": [
+      20,
+      20
+    ]
+  },
+  {
+    "name": "cross__shared0_227.png",
+    "size": [
+      32,
+      32
+    ]
+  },
+  {
+    "name": "cross__shared1_258.png",
+    "size": [
+      79,
+      80
+    ]
+  },
+  {
+    "name": "cross__shared1_464.png",
+    "size": [
+      28,
+      28
+    ]
+  },
+  {
+    "name": "cross_hover__shared0_173.png",
+    "size": [
+      32,
+      32
+    ]
+  },
+  {
+    "name": "cross_hover__shared0_189.png",
+    "size": [
+      32,
+      32
+    ]
+  },
+  {
+    "name": "cross_hover__shared1_127.png",
+    "size": [
+      28,
+      28
+    ]
+  },
+  {
+    "name": "cross_normal.png",
+    "size": [
+      32,
+      32
+    ]
+  },
+  {
+    "name": "davre_logo_correct.png",
+    "size": [
+      204,
+      80
+    ]
+  },
+  {
+    "name": "davre_logo_incorrect1.png",
+    "size": [
+      204,
+      80
+    ]
+  },
+  {
+    "name": "davre_logo_incorrect2.png",
+    "size": [
+      204,
+      80
+    ]
+  },
+  {
+    "name": "davre_logo_incorrect3.png",
+    "size": [
+      204,
+      80
+    ]
+  },
+  {
+    "name": "davre_logo_incorrect4.png",
+    "size": [
+      204,
+      80
+    ]
+  },
+  {
+    "name": "davre_logo_incorrect5.png",
+    "size": [
+      204,
+      80
+    ]
+  },
+  {
+    "name": "davre_logo_incorrect6.png",
+    "size": [
+      204,
+      80
+    ]
+  },
+  {
+    "name": "davre_logo_incorrect7.png",
+    "size": [
+      204,
+      80
+    ]
+  },
+  {
+    "name": "day.png",
+    "size": [
+      51,
+      80
+    ]
+  },
+  {
+    "name": "deepArea2.png",
+    "size": [
+      215,
+      38
+    ]
+  },
+  {
+    "name": "deepArea_2x.png",
+    "size": [
+      64,
+      80
+    ]
+  },
+  {
+    "name": "delete_save_button.png",
+    "size": [
+      16,
+      16
+    ]
+  },
+  {
+    "name": "delete_save_button_hl.png",
+    "size": [
+      16,
+      16
+    ]
+  },
+  {
+    "name": "depression_section_x2.png",
+    "size": [
+      114,
+      22
+    ]
+  },
+  {
+    "name": "desk animations1.png",
+    "size": [
+      215,
+      17
+    ]
+  },
+  {
+    "name": "desk animations2.png",
+    "size": [
+      160,
+      15
+    ]
+  },
+  {
+    "name": "desk animations3.png",
+    "size": [
+      180,
+      15
+    ]
+  },
+  {
+    "name": "desk animations4.png",
+    "size": [
+      215,
+      7
+    ]
+  },
+  {
+    "name": "desk.png",
+    "size": [
+      142,
+      80
+    ]
+  },
+  {
+    "name": "dialogue_bubble2_pink_pointed.png",
+    "size": [
+      48,
+      40
+    ]
+  },
+  {
+    "name": "dialogue_bubble_science.png",
+    "size": [
+      32,
+      32
+    ]
+  },
+  {
+    "name": "diplomatic.png",
+    "size": [
+      32,
+      32
+    ]
+  },
+  {
+    "name": "discord.png",
+    "size": [
+      105,
+      80
+    ]
+  },
+  {
+    "name": "display_case.png",
+    "size": [
+      142,
+      80
+    ]
+  },
+  {
+    "name": "display_case_large.png",
+    "size": [
+      142,
+      80
+    ]
+  },
+  {
+    "name": "display_case_medium.png",
+    "size": [
+      142,
+      80
+    ]
+  },
+  {
+    "name": "door lock.png",
+    "size": [
+      142,
+      80
+    ]
+  },
+  {
+    "name": "door.png",
+    "size": [
+      142,
+      80
+    ]
+  },
+  {
+    "name": "dossier.png",
+    "size": [
+      80,
+      80
+    ]
+  },
+  {
+    "name": "dotted_line.png",
+    "size": [
+      10,
+      2
+    ]
+  },
+  {
+    "name": "double_meat.png",
+    "size": [
+      204,
+      80
+    ]
+  },
+  {
+    "name": "DragArrow.png",
+    "size": [
+      80,
+      80
+    ]
+  },
+  {
+    "name": "drjackson.png",
+    "size": [
+      142,
+      80
+    ]
+  },
+  {
+    "name": "drjackson2.png",
+    "size": [
+      142,
+      80
+    ]
+  },
+  {
+    "name": "dropdown_2x.png",
+    "size": [
+      206,
+      32
+    ]
+  },
+  {
+    "name": "dropdown_arrow.png",
+    "size": [
+      40,
+      40
+    ]
+  },
+  {
+    "name": "dropdown_box.png",
+    "size": [
+      101,
+      14
+    ]
+  },
+  {
+    "name": "dropdown_button__shared0_203.png",
+    "size": [
+      16,
+      16
+    ]
+  },
+  {
+    "name": "dropdown_button__shared0_78.png",
+    "size": [
+      16,
+      16
+    ]
+  },
+  {
+    "name": "dropdown_option.png",
+    "size": [
+      101,
+      15
+    ]
+  },
+  {
+    "name": "dropdown_panel.png",
+    "size": [
+      101,
+      14
+    ]
+  },
+  {
+    "name": "dropdown_template_bg.png",
+    "size": [
+      133,
+      80
+    ]
+  },
+  {
+    "name": "dropdownElement.png",
+    "size": [
+      215,
+      22
+    ]
+  },
+  {
+    "name": "dumping_ground.png",
+    "size": [
+      142,
+      80
+    ]
+  },
+  {
+    "name": "dust.png",
+    "size": [
+      3,
+      3
+    ]
+  },
+  {
+    "name": "eleanor1.png",
+    "size": [
+      109,
+      80
+    ]
+  },
+  {
+    "name": "eleanor2.png",
+    "size": [
+      109,
+      80
+    ]
+  },
+  {
+    "name": "eleanor3.png",
+    "size": [
+      109,
+      80
+    ]
+  },
+  {
+    "name": "eleanor_rev.png",
+    "size": [
+      109,
+      80
+    ]
+  },
+  {
+    "name": "eleanor_scav.png",
+    "size": [
+      109,
+      80
+    ]
+  },
+  {
+    "name": "element_bg.png",
+    "size": [
+      215,
+      34
+    ]
+  },
+  {
+    "name": "element_bg_single.png",
+    "size": [
+      215,
+      20
+    ]
+  },
+  {
+    "name": "elements_inner__resources_20.png",
+    "size": [
+      80,
+      80
+    ]
+  },
+  {
+    "name": "elements_inner__resources_83.png",
+    "size": [
+      80,
+      80
+    ]
+  },
+  {
+    "name": "elements_outer__resources_21.png",
+    "size": [
+      160,
+      80
+    ]
+  },
+  {
+    "name": "elements_outer__resources_49.png",
+    "size": [
+      80,
+      80
+    ]
+  },
+  {
+    "name": "emoji_angry.png",
+    "size": [
+      11,
+      11
+    ]
+  },
+  {
+    "name": "emoji_happy.png",
+    "size": [
+      11,
+      11
+    ]
+  },
+  {
+    "name": "emoji_sad.png",
+    "size": [
+      11,
+      11
+    ]
+  },
+  {
+    "name": "emoji_skull.png",
+    "size": [
+      11,
+      11
+    ]
+  },
+  {
+    "name": "emoji_smile.png",
+    "size": [
+      11,
+      11
+    ]
+  },
+  {
+    "name": "emoji_star.png",
+    "size": [
+      11,
+      11
+    ]
+  },
+  {
+    "name": "EmojiOne.png",
+    "size": [
+      80,
+      80
+    ]
+  },
+  {
+    "name": "end.png",
+    "size": [
+      82,
+      19
+    ]
+  },
+  {
+    "name": "end_top.png",
+    "size": [
+      82,
+      19
+    ]
+  },
+  {
+    "name": "ending.png",
+    "size": [
+      48,
+      48
+    ]
+  },
+  {
+    "name": "endofday.png",
+    "size": [
+      63,
+      80
+    ]
+  },
+  {
+    "name": "EP Outline logo.png",
+    "size": [
+      215,
+      68
+    ]
+  },
+  {
+    "name": "event.png",
+    "size": [
+      76,
+      19
+    ]
+  },
+  {
+    "name": "event_top.png",
+    "size": [
+      76,
+      19
+    ]
+  },
+  {
+    "name": "example_chip1.png",
+    "size": [
+      21,
+      17
+    ]
+  },
+  {
+    "name": "example_chip2.png",
+    "size": [
+      21,
+      17
+    ]
+  },
+  {
+    "name": "example_letter1.png",
+    "size": [
+      127,
+      80
+    ]
+  },
+  {
+    "name": "example_letter2.png",
+    "size": [
+      43,
+      27
+    ]
+  },
+  {
+    "name": "example_letter3.png",
+    "size": [
+      42,
+      27
+    ]
+  },
+  {
+    "name": "example_logo1.png",
+    "size": [
+      55,
+      39
+    ]
+  },
+  {
+    "name": "example_logo2.png",
+    "size": [
+      55,
+      39
+    ]
+  },
+  {
+    "name": "example_seal.png",
+    "size": [
+      9,
+      12
+    ]
+  },
+  {
+    "name": "exchange.png",
+    "size": [
+      57,
+      80
+    ]
+  },
+  {
+    "name": "exghange_logo.png",
+    "size": [
+      60,
+      42
+    ]
+  },
+  {
+    "name": "facility.png",
+    "size": [
+      204,
+      80
+    ]
+  },
+  {
+    "name": "farBackpack.png",
+    "size": [
+      128,
+      45
+    ]
+  },
+  {
+    "name": "farBandana.png",
+    "size": [
+      128,
+      45
+    ]
+  },
+  {
+    "name": "farGasmask.png",
+    "size": [
+      128,
+      45
+    ]
+  },
+  {
+    "name": "farPuncho.png",
+    "size": [
+      128,
+      45
+    ]
+  },
+  {
+    "name": "farTrechCoat.png",
+    "size": [
+      128,
+      45
+    ]
+  },
+  {
+    "name": "femaleBM__shared1_525.png",
+    "size": [
+      215,
+      53
+    ]
+  },
+  {
+    "name": "femaleBM__shared1_88.png",
+    "size": [
+      215,
+      32
+    ]
+  },
+  {
+    "name": "femaleChef.png",
+    "size": [
+      215,
+      79
+    ]
+  },
+  {
+    "name": "femaleEng.png",
+    "size": [
+      215,
+      79
+    ]
+  },
+  {
+    "name": "femaleFarmer.png",
+    "size": [
+      215,
+      79
+    ]
+  },
+  {
+    "name": "femaleLower__shared1_519.png",
+    "size": [
+      215,
+      32
+    ]
+  },
+  {
+    "name": "femaleLower__shared1_663.png",
+    "size": [
+      215,
+      53
+    ]
+  },
+  {
+    "name": "femaleMed.png",
+    "size": [
+      215,
+      79
+    ]
+  },
+  {
+    "name": "femaleMerc.png",
+    "size": [
+      215,
+      39
+    ]
+  },
+  {
+    "name": "femaleRev.png",
+    "size": [
+      215,
+      23
+    ]
+  },
+  {
+    "name": "femaleSci.png",
+    "size": [
+      215,
+      79
+    ]
+  },
+  {
+    "name": "femaleSec.png",
+    "size": [
+      215,
+      32
+    ]
+  },
+  {
+    "name": "femaleSecCorpo.png",
+    "size": [
+      215,
+      79
+    ]
+  },
+  {
+    "name": "femaleSecOff.png",
+    "size": [
+      215,
+      79
+    ]
+  },
+  {
+    "name": "femaleUpper__shared1_326.png",
+    "size": [
+      215,
+      32
+    ]
+  },
+  {
+    "name": "femaleUpper__shared1_422.png",
+    "size": [
+      215,
+      53
+    ]
+  },
+  {
+    "name": "femGenericsDec3.png",
+    "size": [
+      109,
+      80
+    ]
+  },
+  {
+    "name": "finalelog.png",
+    "size": [
+      32,
+      32
+    ]
+  },
+  {
+    "name": "flat.png",
+    "size": [
+      2,
+      2
+    ]
+  },
+  {
+    "name": "foil.png",
+    "size": [
+      6,
+      6
+    ]
+  },
+  {
+    "name": "frame.png",
+    "size": [
+      215,
+      22
+    ]
+  },
+  {
+    "name": "frame_2__shared1_201.png",
+    "size": [
+      6,
+      6
+    ]
+  },
+  {
+    "name": "frame_2__shared1_42.png",
+    "size": [
+      6,
+      6
+    ]
+  },
+  {
+    "name": "frame_2_square__shared0_158.png",
+    "size": [
+      6,
+      6
+    ]
+  },
+  {
+    "name": "frame_2_square__shared0_248.png",
+    "size": [
+      6,
+      6
+    ]
+  },
+  {
+    "name": "frame_hl.png",
+    "size": [
+      215,
+      22
+    ]
+  },
+  {
+    "name": "frame_notched.png",
+    "size": [
+      12,
+      12
+    ]
+  },
+  {
+    "name": "front_counter.png",
+    "size": [
+      142,
+      80
+    ]
+  },
+  {
+    "name": "galaxy.png",
+    "size": [
+      32,
+      32
+    ]
+  },
+  {
+    "name": "gen_button_2x_h.png",
+    "size": [
+      194,
+      68
+    ]
+  },
+  {
+    "name": "gen_button_2x_n.png",
+    "size": [
+      194,
+      68
+    ]
+  },
+  {
+    "name": "gen_button_2x_p.png",
+    "size": [
+      194,
+      68
+    ]
+  },
+  {
+    "name": "general_button_2x.png",
+    "size": [
+      84,
+      32
+    ]
+  },
+  {
+    "name": "general_button_2x_c.png",
+    "size": [
+      84,
+      32
+    ]
+  },
+  {
+    "name": "general_button_2x_d.png",
+    "size": [
+      84,
+      32
+    ]
+  },
+  {
+    "name": "general_button_2x_hl.png",
+    "size": [
+      84,
+      32
+    ]
+  },
+  {
+    "name": "Georgio.png",
+    "size": [
+      109,
+      80
+    ]
+  },
+  {
+    "name": "glass_button.png",
+    "size": [
+      48,
+      16
+    ]
+  },
+  {
+    "name": "glass_door.png",
+    "size": [
+      142,
+      80
+    ]
+  },
+  {
+    "name": "gp_2x.png",
+    "size": [
+      126,
+      80
+    ]
+  },
+  {
+    "name": "grandpa_cheng.png",
+    "size": [
+      109,
+      80
+    ]
+  },
+  {
+    "name": "green_bar.png",
+    "size": [
+      24,
+      1
+    ]
+  },
+  {
+    "name": "grey2_2x.png",
+    "size": [
+      83,
+      80
+    ]
+  },
+  {
+    "name": "grey_2x.png",
+    "size": [
+      83,
+      80
+    ]
+  },
+  {
+    "name": "Gugi-Regular SDF Atlas 1.png",
+    "size": [
+      80,
+      80
+    ]
+  },
+  {
+    "name": "Gugi-Regular SDF Atlas.png",
+    "size": [
+      80,
+      80
+    ]
+  },
+  {
+    "name": "guide.png",
+    "size": [
+      64,
+      80
+    ]
+  },
+  {
+    "name": "guide_clean.png",
+    "size": [
+      57,
+      80
+    ]
+  },
+  {
+    "name": "guide_color_guide.png",
+    "size": [
+      12,
+      21
+    ]
+  },
+  {
+    "name": "guide_davre_logo.png",
+    "size": [
+      29,
+      26
+    ]
+  },
+  {
+    "name": "guide_davre_logo_incorrect.png",
+    "size": [
+      29,
+      27
+    ]
+  },
+  {
+    "name": "guide_grid.png",
+    "size": [
+      57,
+      80
+    ]
+  },
+  {
+    "name": "guide_indicator_green.png",
+    "size": [
+      15,
+      6
+    ]
+  },
+  {
+    "name": "guide_indicator_orange.png",
+    "size": [
+      15,
+      6
+    ]
+  },
+  {
+    "name": "guide_indicator_red.png",
+    "size": [
+      15,
+      6
+    ]
+  },
+  {
+    "name": "guide_logo.png",
+    "size": [
+      195,
+      80
+    ]
+  },
+  {
+    "name": "guide_reworked.png",
+    "size": [
+      57,
+      80
+    ]
+  },
+  {
+    "name": "guide_ribwich_logo.png",
+    "size": [
+      38,
+      19
+    ]
+  },
+  {
+    "name": "guide_ribwich_logo_incorrect.png",
+    "size": [
+      38,
+      19
+    ]
+  },
+  {
+    "name": "guide_section.png",
+    "size": [
+      54,
+      37
+    ]
+  },
+  {
+    "name": "halo_glow.png",
+    "size": [
+      80,
+      80
+    ]
+  },
+  {
+    "name": "handle__shared0_80.png",
+    "size": [
+      5,
+      80
+    ]
+  },
+  {
+    "name": "handle__shared1_570.png",
+    "size": [
+      7,
+      13
+    ]
+  },
+  {
+    "name": "handnote.png",
+    "size": [
+      59,
+      80
+    ]
+  },
+  {
+    "name": "header2.png",
+    "size": [
+      64,
+      15
+    ]
+  },
+  {
+    "name": "header_bar__shared0_236.png",
+    "size": [
+      64,
+      42
+    ]
+  },
+  {
+    "name": "header_bar__shared1_594.png",
+    "size": [
+      24,
+      42
+    ]
+  },
+  {
+    "name": "hidden_space.png",
+    "size": [
+      142,
+      80
+    ]
+  },
+  {
+    "name": "icon_contraceptive.png",
+    "size": [
+      15,
+      16
+    ]
+  },
+  {
+    "name": "icon_euphoria.png",
+    "size": [
+      14,
+      14
+    ]
+  },
+  {
+    "name": "icon_note.png",
+    "size": [
+      8,
+      8
+    ]
+  },
+  {
+    "name": "icon_power.png",
+    "size": [
+      15,
+      7
+    ]
+  },
+  {
+    "name": "icon_synaprest.png",
+    "size": [
+      15,
+      15
+    ]
+  },
+  {
+    "name": "icon_toxicity.png",
+    "size": [
+      13,
+      14
+    ]
+  },
+  {
+    "name": "iconGrowth.png",
+    "size": [
+      78,
+      14
+    ]
+  },
+  {
+    "name": "iconGrowth_lit.png",
+    "size": [
+      78,
+      14
+    ]
+  },
+  {
+    "name": "iconMineral.png",
+    "size": [
+      17,
+      14
+    ]
+  },
+  {
+    "name": "icons.png",
+    "size": [
+      190,
+      38
+    ]
+  },
+  {
+    "name": "iconTrash.png",
+    "size": [
+      13,
+      14
+    ]
+  },
+  {
+    "name": "iconWater.png",
+    "size": [
+      9,
+      14
+    ]
+  },
+  {
+    "name": "illiterate.png",
+    "size": [
+      32,
+      32
+    ]
+  },
+  {
+    "name": "incident_slip_2x.png",
+    "size": [
+      182,
+      80
+    ]
+  },
+  {
+    "name": "indicator_green.png",
+    "size": [
+      215,
+      36
+    ]
+  },
+  {
+    "name": "indicator_missing.png",
+    "size": [
+      215,
+      36
+    ]
+  },
+  {
+    "name": "indicator_orange.png",
+    "size": [
+      215,
+      36
+    ]
+  },
+  {
+    "name": "indicator_red.png",
+    "size": [
+      215,
+      36
+    ]
+  },
+  {
+    "name": "info.png",
+    "size": [
+      80,
+      80
+    ]
+  },
+  {
+    "name": "info_cream.png",
+    "size": [
+      14,
+      14
+    ]
+  },
+  {
+    "name": "info_dark.png",
+    "size": [
+      14,
+      14
+    ]
+  },
+  {
+    "name": "info_light.png",
+    "size": [
+      14,
+      14
+    ]
+  },
+  {
+    "name": "info_red.png",
+    "size": [
+      14,
+      14
+    ]
+  },
+  {
+    "name": "info_tan.png",
+    "size": [
+      14,
+      14
+    ]
+  },
+  {
+    "name": "injector_base.png",
+    "size": [
+      215,
+      36
+    ]
+  },
+  {
+    "name": "injector_color1.png",
+    "size": [
+      215,
+      36
+    ]
+  },
+  {
+    "name": "injector_color2.png",
+    "size": [
+      215,
+      36
+    ]
+  },
+  {
+    "name": "injector_dam1.png",
+    "size": [
+      215,
+      36
+    ]
+  },
+  {
+    "name": "injector_dam2.png",
+    "size": [
+      215,
+      36
+    ]
+  },
+  {
+    "name": "injector_dam3.png",
+    "size": [
+      215,
+      36
+    ]
+  },
+  {
+    "name": "InputFieldBackground.png",
+    "size": [
+      32,
+      32
+    ]
+  },
+  {
+    "name": "inspection_receipt.png",
+    "size": [
+      62,
+      80
+    ]
+  },
+  {
+    "name": "intake.png",
+    "size": [
+      4,
+      4
+    ]
+  },
+  {
+    "name": "intimidating.png",
+    "size": [
+      32,
+      32
+    ]
+  },
+  {
+    "name": "inventor_main.png",
+    "size": [
+      48,
+      32
+    ]
+  },
+  {
+    "name": "itematlas.png",
+    "size": [
+      80,
+      80
+    ]
+  },
+  {
+    "name": "items_amenities.png",
+    "size": [
+      80,
+      80
+    ]
+  },
+  {
+    "name": "items_aquaculture.png",
+    "size": [
+      80,
+      80
+    ]
+  },
+  {
+    "name": "items_armor.png",
+    "size": [
+      80,
+      80
+    ]
+  },
+  {
+    "name": "items_backpack2.png",
+    "size": [
+      80,
+      80
+    ]
+  },
+  {
+    "name": "items_broken_machine.png",
+    "size": [
+      80,
+      80
+    ]
+  },
+  {
+    "name": "items_construction.png",
+    "size": [
+      80,
+      80
+    ]
+  },
+  {
+    "name": "items_container.png",
+    "size": [
+      80,
+      80
+    ]
+  },
+  {
+    "name": "items_food.png",
+    "size": [
+      80,
+      80
+    ]
+  },
+  {
+    "name": "items_furniture.png",
+    "size": [
+      80,
+      80
+    ]
+  },
+  {
+    "name": "items_husbandry.png",
+    "size": [
+      80,
+      80
+    ]
+  },
+  {
+    "name": "items_hydroponic_plant.png",
+    "size": [
+      80,
+      80
+    ]
+  },
+  {
+    "name": "items_inspectable.png",
+    "size": [
+      80,
+      80
+    ]
+  },
+  {
+    "name": "items_material.png",
+    "size": [
+      80,
+      80
+    ]
+  },
+  {
+    "name": "items_medical.png",
+    "size": [
+      80,
+      80
+    ]
+  },
+  {
+    "name": "items_misc.png",
+    "size": [
+      80,
+      80
+    ]
+  },
+  {
+    "name": "items_mod.png",
+    "size": [
+      80,
+      80
+    ]
+  },
+  {
+    "name": "items_module.png",
+    "size": [
+      80,
+      80
+    ]
+  },
+  {
+    "name": "items_organ.png",
+    "size": [
+      80,
+      80
+    ]
+  },
+  {
+    "name": "items_sec.png",
+    "size": [
+      80,
+      80
+    ]
+  },
+  {
+    "name": "items_ship.png",
+    "size": [
+      80,
+      80
+    ]
+  },
+  {
+    "name": "items_sign.png",
+    "size": [
+      80,
+      80
+    ]
+  },
+  {
+    "name": "items_tool.png",
+    "size": [
+      80,
+      80
+    ]
+  },
+  {
+    "name": "items_tool2.png",
+    "size": [
+      80,
+      80
+    ]
+  },
+  {
+    "name": "items_vending.png",
+    "size": [
+      80,
+      80
+    ]
+  },
+  {
+    "name": "items_weapons_melee.png",
+    "size": [
+      80,
+      80
+    ]
+  },
+  {
+    "name": "items_weapons_ranged_antique.png",
+    "size": [
+      80,
+      80
+    ]
+  },
+  {
+    "name": "items_weapons_ranged_energy.png",
+    "size": [
+      80,
+      80
+    ]
+  },
+  {
+    "name": "items_winemaking.png",
+    "size": [
+      80,
+      80
+    ]
+  },
+  {
+    "name": "jackson.png",
+    "size": [
+      109,
+      80
+    ]
+  },
+  {
+    "name": "key_box.png",
+    "size": [
+      32,
+      16
+    ]
+  },
+  {
+    "name": "label.png",
+    "size": [
+      128,
+      32
+    ]
+  },
+  {
+    "name": "labeler.png",
+    "size": [
+      170,
+      80
+    ]
+  },
+  {
+    "name": "landlord.png",
+    "size": [
+      109,
+      80
+    ]
+  },
+  {
+    "name": "layout2.png",
+    "size": [
+      62,
+      80
+    ]
+  },
+  {
+    "name": "layout3.png",
+    "size": [
+      62,
+      80
+    ]
+  },
+  {
+    "name": "layout4.png",
+    "size": [
+      62,
+      80
+    ]
+  },
+  {
+    "name": "LcdPhone-wgZ2 SDF Atlas.png",
+    "size": [
+      80,
+      80
+    ]
+  },
+  {
+    "name": "LcdSolid-VPzB SDF Atlas.png",
+    "size": [
+      80,
+      80
+    ]
+  },
+  {
+    "name": "LDR_LLL1_0__shared1_214.png",
+    "size": [
+      64,
+      64
+    ]
+  },
+  {
+    "name": "LDR_LLL1_0__shared1_255.png",
+    "size": [
+      80,
+      80
+    ]
+  },
+  {
+    "name": "LDR_LLL1_10.png",
+    "size": [
+      64,
+      64
+    ]
+  },
+  {
+    "name": "LDR_LLL1_11.png",
+    "size": [
+      64,
+      64
+    ]
+  },
+  {
+    "name": "LDR_LLL1_12.png",
+    "size": [
+      64,
+      64
+    ]
+  },
+  {
+    "name": "LDR_LLL1_13.png",
+    "size": [
+      64,
+      64
+    ]
+  },
+  {
+    "name": "LDR_LLL1_14.png",
+    "size": [
+      64,
+      64
+    ]
+  },
+  {
+    "name": "LDR_LLL1_15.png",
+    "size": [
+      64,
+      64
+    ]
+  },
+  {
+    "name": "LDR_LLL1_16.png",
+    "size": [
+      64,
+      64
+    ]
+  },
+  {
+    "name": "LDR_LLL1_17.png",
+    "size": [
+      64,
+      64
+    ]
+  },
+  {
+    "name": "LDR_LLL1_18.png",
+    "size": [
+      64,
+      64
+    ]
+  },
+  {
+    "name": "LDR_LLL1_19.png",
+    "size": [
+      64,
+      64
+    ]
+  },
+  {
+    "name": "LDR_LLL1_1__shared1_151.png",
+    "size": [
+      64,
+      64
+    ]
+  },
+  {
+    "name": "LDR_LLL1_1__shared1_49.png",
+    "size": [
+      80,
+      80
+    ]
+  },
+  {
+    "name": "LDR_LLL1_20.png",
+    "size": [
+      64,
+      64
+    ]
+  },
+  {
+    "name": "LDR_LLL1_21.png",
+    "size": [
+      64,
+      64
+    ]
+  },
+  {
+    "name": "LDR_LLL1_22.png",
+    "size": [
+      64,
+      64
+    ]
+  },
+  {
+    "name": "LDR_LLL1_23.png",
+    "size": [
+      64,
+      64
+    ]
+  },
+  {
+    "name": "LDR_LLL1_24.png",
+    "size": [
+      64,
+      64
+    ]
+  },
+  {
+    "name": "LDR_LLL1_25.png",
+    "size": [
+      64,
+      64
+    ]
+  },
+  {
+    "name": "LDR_LLL1_26.png",
+    "size": [
+      64,
+      64
+    ]
+  },
+  {
+    "name": "LDR_LLL1_27.png",
+    "size": [
+      64,
+      64
+    ]
+  },
+  {
+    "name": "LDR_LLL1_28.png",
+    "size": [
+      64,
+      64
+    ]
+  },
+  {
+    "name": "LDR_LLL1_29.png",
+    "size": [
+      64,
+      64
+    ]
+  },
+  {
+    "name": "LDR_LLL1_2__shared1_420.png",
+    "size": [
+      64,
+      64
+    ]
+  },
+  {
+    "name": "LDR_LLL1_2__shared1_79.png",
+    "size": [
+      80,
+      80
+    ]
+  },
+  {
+    "name": "LDR_LLL1_30.png",
+    "size": [
+      64,
+      64
+    ]
+  },
+  {
+    "name": "LDR_LLL1_31.png",
+    "size": [
+      64,
+      64
+    ]
+  },
+  {
+    "name": "LDR_LLL1_32.png",
+    "size": [
+      64,
+      64
+    ]
+  },
+  {
+    "name": "LDR_LLL1_33.png",
+    "size": [
+      64,
+      64
+    ]
+  },
+  {
+    "name": "LDR_LLL1_34.png",
+    "size": [
+      64,
+      64
+    ]
+  },
+  {
+    "name": "LDR_LLL1_35.png",
+    "size": [
+      64,
+      64
+    ]
+  },
+  {
+    "name": "LDR_LLL1_36.png",
+    "size": [
+      64,
+      64
+    ]
+  },
+  {
+    "name": "LDR_LLL1_37.png",
+    "size": [
+      64,
+      64
+    ]
+  },
+  {
+    "name": "LDR_LLL1_38.png",
+    "size": [
+      64,
+      64
+    ]
+  },
+  {
+    "name": "LDR_LLL1_39.png",
+    "size": [
+      64,
+      64
+    ]
+  },
+  {
+    "name": "LDR_LLL1_3__shared1_140.png",
+    "size": [
+      64,
+      64
+    ]
+  },
+  {
+    "name": "LDR_LLL1_3__shared1_497.png",
+    "size": [
+      80,
+      80
+    ]
+  },
+  {
+    "name": "LDR_LLL1_40.png",
+    "size": [
+      64,
+      64
+    ]
+  },
+  {
+    "name": "LDR_LLL1_41.png",
+    "size": [
+      64,
+      64
+    ]
+  },
+  {
+    "name": "LDR_LLL1_42.png",
+    "size": [
+      64,
+      64
+    ]
+  },
+  {
+    "name": "LDR_LLL1_43.png",
+    "size": [
+      64,
+      64
+    ]
+  },
+  {
+    "name": "LDR_LLL1_44.png",
+    "size": [
+      64,
+      64
+    ]
+  },
+  {
+    "name": "LDR_LLL1_45.png",
+    "size": [
+      64,
+      64
+    ]
+  },
+  {
+    "name": "LDR_LLL1_46.png",
+    "size": [
+      64,
+      64
+    ]
+  },
+  {
+    "name": "LDR_LLL1_47.png",
+    "size": [
+      64,
+      64
+    ]
+  },
+  {
+    "name": "LDR_LLL1_48.png",
+    "size": [
+      64,
+      64
+    ]
+  },
+  {
+    "name": "LDR_LLL1_49.png",
+    "size": [
+      64,
+      64
+    ]
+  },
+  {
+    "name": "LDR_LLL1_4__shared1_289.png",
+    "size": [
+      64,
+      64
+    ]
+  },
+  {
+    "name": "LDR_LLL1_4__shared1_472.png",
+    "size": [
+      80,
+      80
+    ]
+  },
+  {
+    "name": "LDR_LLL1_50.png",
+    "size": [
+      64,
+      64
+    ]
+  },
+  {
+    "name": "LDR_LLL1_51.png",
+    "size": [
+      64,
+      64
+    ]
+  },
+  {
+    "name": "LDR_LLL1_52.png",
+    "size": [
+      64,
+      64
+    ]
+  },
+  {
+    "name": "LDR_LLL1_53.png",
+    "size": [
+      64,
+      64
+    ]
+  },
+  {
+    "name": "LDR_LLL1_54.png",
+    "size": [
+      64,
+      64
+    ]
+  },
+  {
+    "name": "LDR_LLL1_55.png",
+    "size": [
+      64,
+      64
+    ]
+  },
+  {
+    "name": "LDR_LLL1_56.png",
+    "size": [
+      64,
+      64
+    ]
+  },
+  {
+    "name": "LDR_LLL1_57.png",
+    "size": [
+      64,
+      64
+    ]
+  },
+  {
+    "name": "LDR_LLL1_58.png",
+    "size": [
+      64,
+      64
+    ]
+  },
+  {
+    "name": "LDR_LLL1_59.png",
+    "size": [
+      64,
+      64
+    ]
+  },
+  {
+    "name": "LDR_LLL1_5__shared1_412.png",
+    "size": [
+      64,
+      64
+    ]
+  },
+  {
+    "name": "LDR_LLL1_5__shared1_445.png",
+    "size": [
+      80,
+      80
+    ]
+  },
+  {
+    "name": "LDR_LLL1_60.png",
+    "size": [
+      64,
+      64
+    ]
+  },
+  {
+    "name": "LDR_LLL1_61.png",
+    "size": [
+      64,
+      64
+    ]
+  },
+  {
+    "name": "LDR_LLL1_62.png",
+    "size": [
+      64,
+      64
+    ]
+  },
+  {
+    "name": "LDR_LLL1_63.png",
+    "size": [
+      64,
+      64
+    ]
+  },
+  {
+    "name": "LDR_LLL1_6__shared1_328.png",
+    "size": [
+      64,
+      64
+    ]
+  },
+  {
+    "name": "LDR_LLL1_6__shared1_396.png",
+    "size": [
+      80,
+      80
+    ]
+  },
+  {
+    "name": "LDR_LLL1_7__shared1_148.png",
+    "size": [
+      64,
+      64
+    ]
+  },
+  {
+    "name": "LDR_LLL1_7__shared1_294.png",
+    "size": [
+      80,
+      80
+    ]
+  },
+  {
+    "name": "LDR_LLL1_8.png",
+    "size": [
+      64,
+      64
+    ]
+  },
+  {
+    "name": "LDR_LLL1_9.png",
+    "size": [
+      64,
+      64
+    ]
+  },
+  {
+    "name": "lease_doc.png",
+    "size": [
+      57,
+      80
+    ]
+  },
+  {
+    "name": "letter correct.png",
+    "size": [
+      114,
+      80
+    ]
+  },
+  {
+    "name": "letter incorrect.png",
+    "size": [
+      114,
+      80
+    ]
+  },
+  {
+    "name": "letter incorrect2.png",
+    "size": [
+      114,
+      80
+    ]
+  },
+  {
+    "name": "letter incorrect3.png",
+    "size": [
+      114,
+      80
+    ]
+  },
+  {
+    "name": "letter incorrect4.png",
+    "size": [
+      114,
+      80
+    ]
+  },
+  {
+    "name": "letter incorrect5.png",
+    "size": [
+      114,
+      80
+    ]
+  },
+  {
+    "name": "letter incorrect6.png",
+    "size": [
+      114,
+      80
+    ]
+  },
+  {
+    "name": "letter incorrect7.png",
+    "size": [
+      114,
+      80
+    ]
+  },
+  {
+    "name": "letter incorrect8.png",
+    "size": [
+      114,
+      80
+    ]
+  },
+  {
+    "name": "letter-chinese.png",
+    "size": [
+      47,
+      80
+    ]
+  },
+  {
+    "name": "letter-correct.png",
+    "size": [
+      47,
+      80
+    ]
+  },
+  {
+    "name": "letter-font.png",
+    "size": [
+      47,
+      80
+    ]
+  },
+  {
+    "name": "letter-incorrect1.png",
+    "size": [
+      47,
+      80
+    ]
+  },
+  {
+    "name": "letter-incorrect2.png",
+    "size": [
+      47,
+      80
+    ]
+  },
+  {
+    "name": "letter-incorrect3.png",
+    "size": [
+      47,
+      80
+    ]
+  },
+  {
+    "name": "letter-incorrect4.png",
+    "size": [
+      47,
+      80
+    ]
+  },
+  {
+    "name": "letter-incorrect5.png",
+    "size": [
+      47,
+      80
+    ]
+  },
+  {
+    "name": "LiberationSans SDF Atlas.png",
+    "size": [
+      80,
+      80
+    ]
+  },
+  {
+    "name": "lighting.png",
+    "size": [
+      142,
+      80
+    ]
+  },
+  {
+    "name": "lines.png",
+    "size": [
+      174,
+      80
+    ]
+  },
+  {
+    "name": "load_delete_hover.png",
+    "size": [
+      32,
+      32
+    ]
+  },
+  {
+    "name": "load_delete_normal.png",
+    "size": [
+      32,
+      32
+    ]
+  },
+  {
+    "name": "load_dialog_cap.png",
+    "size": [
+      12,
+      42
+    ]
+  },
+  {
+    "name": "load_duplicate_hover.png",
+    "size": [
+      32,
+      32
+    ]
+  },
+  {
+    "name": "load_duplicate_normal.png",
+    "size": [
+      32,
+      32
+    ]
+  },
+  {
+    "name": "load_icon_ring.png",
+    "size": [
+      42,
+      42
+    ]
+  },
+  {
+    "name": "load_magnify_hover.png",
+    "size": [
+      32,
+      32
+    ]
+  },
+  {
+    "name": "load_magnify_normal.png",
+    "size": [
+      32,
+      32
+    ]
+  },
+  {
+    "name": "loadgame_base.png",
+    "size": [
+      66,
+      80
+    ]
+  },
+  {
+    "name": "logo correct.png",
+    "size": [
+      114,
+      80
+    ]
+  },
+  {
+    "name": "logo incorrect.png",
+    "size": [
+      114,
+      80
+    ]
+  },
+  {
+    "name": "logo incorrect2.png",
+    "size": [
+      114,
+      80
+    ]
+  },
+  {
+    "name": "logo incorrect3.png",
+    "size": [
+      114,
+      80
+    ]
+  },
+  {
+    "name": "logo incorrect4.png",
+    "size": [
+      114,
+      80
+    ]
+  },
+  {
+    "name": "logo incorrect5.png",
+    "size": [
+      114,
+      80
+    ]
+  },
+  {
+    "name": "logo-complexe1.png",
+    "size": [
+      47,
+      80
+    ]
+  },
+  {
+    "name": "logo-complexe2.png",
+    "size": [
+      47,
+      80
+    ]
+  },
+  {
+    "name": "logo-correct.png",
+    "size": [
+      47,
+      80
+    ]
+  },
+  {
+    "name": "logo-simple.png",
+    "size": [
+      47,
+      80
+    ]
+  },
+  {
+    "name": "Logo.png",
+    "size": [
+      80,
+      80
+    ]
+  },
+  {
+    "name": "logo_checker.png",
+    "size": [
+      55,
+      39
+    ]
+  },
+  {
+    "name": "lou_sec.png",
+    "size": [
+      109,
+      80
+    ]
+  },
+  {
+    "name": "lucky.png",
+    "size": [
+      36,
+      36
+    ]
+  },
+  {
+    "name": "lun.png",
+    "size": [
+      109,
+      80
+    ]
+  },
+  {
+    "name": "magnify.png",
+    "size": [
+      32,
+      32
+    ]
+  },
+  {
+    "name": "magnify_hl.png",
+    "size": [
+      32,
+      32
+    ]
+  },
+  {
+    "name": "magnifying glass.png",
+    "size": [
+      85,
+      80
+    ]
+  },
+  {
+    "name": "magnifying_mask.png",
+    "size": [
+      85,
+      80
+    ]
+  },
+  {
+    "name": "magnifying_screen.png",
+    "size": [
+      142,
+      80
+    ]
+  },
+  {
+    "name": "MagnifyingGlass.png",
+    "size": [
+      80,
+      80
+    ]
+  },
+  {
+    "name": "maleBM__shared1_315.png",
+    "size": [
+      215,
+      53
+    ]
+  },
+  {
+    "name": "maleBM__shared1_434.png",
+    "size": [
+      215,
+      26
+    ]
+  },
+  {
+    "name": "maleChef.png",
+    "size": [
+      215,
+      53
+    ]
+  },
+  {
+    "name": "maleEng.png",
+    "size": [
+      215,
+      26
+    ]
+  },
+  {
+    "name": "maleFarmer.png",
+    "size": [
+      215,
+      39
+    ]
+  },
+  {
+    "name": "maleLower__shared1_124.png",
+    "size": [
+      215,
+      53
+    ]
+  },
+  {
+    "name": "maleLower__shared1_171.png",
+    "size": [
+      215,
+      32
+    ]
+  },
+  {
+    "name": "maleMed.png",
+    "size": [
+      215,
+      79
+    ]
+  },
+  {
+    "name": "maleMerc.png",
+    "size": [
+      215,
+      39
+    ]
+  },
+  {
+    "name": "maleRev.png",
+    "size": [
+      215,
+      39
+    ]
+  },
+  {
+    "name": "maleScav1.png",
+    "size": [
+      109,
+      80
+    ]
+  },
+  {
+    "name": "maleScav10.png",
+    "size": [
+      109,
+      80
+    ]
+  },
+  {
+    "name": "maleScav11.png",
+    "size": [
+      109,
+      80
+    ]
+  },
+  {
+    "name": "maleScav2.png",
+    "size": [
+      109,
+      80
+    ]
+  },
+  {
+    "name": "maleScav3.png",
+    "size": [
+      109,
+      80
+    ]
+  },
+  {
+    "name": "maleScav4.png",
+    "size": [
+      109,
+      80
+    ]
+  },
+  {
+    "name": "maleScav5.png",
+    "size": [
+      109,
+      80
+    ]
+  },
+  {
+    "name": "maleScav6.png",
+    "size": [
+      109,
+      80
+    ]
+  },
+  {
+    "name": "maleScav7.png",
+    "size": [
+      109,
+      80
+    ]
+  },
+  {
+    "name": "maleScav8.png",
+    "size": [
+      109,
+      80
+    ]
+  },
+  {
+    "name": "maleScav9.png",
+    "size": [
+      109,
+      80
+    ]
+  },
+  {
+    "name": "maleSci.png",
+    "size": [
+      215,
+      79
+    ]
+  },
+  {
+    "name": "maleSec.png",
+    "size": [
+      215,
+      26
+    ]
+  },
+  {
+    "name": "maleSecCorpo.png",
+    "size": [
+      215,
+      79
+    ]
+  },
+  {
+    "name": "maleSecOff.png",
+    "size": [
+      215,
+      53
+    ]
+  },
+  {
+    "name": "maleUpper__shared1_345.png",
+    "size": [
+      215,
+      53
+    ]
+  },
+  {
+    "name": "maleUpper__shared1_583.png",
+    "size": [
+      215,
+      53
+    ]
+  },
+  {
+    "name": "marketplace_pc.png",
+    "size": [
+      142,
+      80
+    ]
+  },
+  {
+    "name": "marketplace_pc_notif.png",
+    "size": [
+      142,
+      80
+    ]
+  },
+  {
+    "name": "marketplace_scrollbar_back.png",
+    "size": [
+      2,
+      80
+    ]
+  },
+  {
+    "name": "MaShanZheng-Regular SDF Atlas.png",
+    "size": [
+      80,
+      80
+    ]
+  },
+  {
+    "name": "Mentor.png",
+    "size": [
+      109,
+      80
+    ]
+  },
+  {
+    "name": "mentors_notes.png",
+    "size": [
+      58,
+      80
+    ]
+  },
+  {
+    "name": "MenuMockupExported.png",
+    "size": [
+      160,
+      80
+    ]
+  },
+  {
+    "name": "MenuMockupExportedNoText.png",
+    "size": [
+      160,
+      80
+    ]
+  },
+  {
+    "name": "meta_section_2x.png",
+    "size": [
+      215,
+      30
+    ]
+  },
+  {
+    "name": "midBackpack.png",
+    "size": [
+      215,
+      74
+    ]
+  },
+  {
+    "name": "midBandana.png",
+    "size": [
+      215,
+      74
+    ]
+  },
+  {
+    "name": "middle.png",
+    "size": [
+      82,
+      19
+    ]
+  },
+  {
+    "name": "middle_top.png",
+    "size": [
+      82,
+      19
+    ]
+  },
+  {
+    "name": "midGasmask.png",
+    "size": [
+      215,
+      74
+    ]
+  },
+  {
+    "name": "midPuncho.png",
+    "size": [
+      215,
+      74
+    ]
+  },
+  {
+    "name": "midTrechCoat.png",
+    "size": [
+      215,
+      74
+    ]
+  },
+  {
+    "name": "minimalist.png",
+    "size": [
+      32,
+      32
+    ]
+  },
+  {
+    "name": "modding.png",
+    "size": [
+      133,
+      80
+    ]
+  },
+  {
+    "name": "modding_layout_2x.png",
+    "size": [
+      32,
+      32
+    ]
+  },
+  {
+    "name": "model_citizen.png",
+    "size": [
+      32,
+      32
+    ]
+  },
+  {
+    "name": "mods_warning.png",
+    "size": [
+      20,
+      19
+    ]
+  },
+  {
+    "name": "mouse_icon_left.png",
+    "size": [
+      23,
+      38
+    ]
+  },
+  {
+    "name": "mouse_icon_right.png",
+    "size": [
+      23,
+      38
+    ]
+  },
+  {
+    "name": "muzzleflash2.png",
+    "size": [
+      89,
+      80
+    ]
+  },
+  {
+    "name": "Mx437_Tandy2K_2 SDF Atlas.png",
+    "size": [
+      80,
+      80
+    ]
+  },
+  {
+    "name": "nego_button.png",
+    "size": [
+      85,
+      25
+    ]
+  },
+  {
+    "name": "nego_button_Disabled.png",
+    "size": [
+      85,
+      25
+    ]
+  },
+  {
+    "name": "nego_button_Hover.png",
+    "size": [
+      85,
+      25
+    ]
+  },
+  {
+    "name": "nego_button_Pressed.png",
+    "size": [
+      85,
+      25
+    ]
+  },
+  {
+    "name": "nego_buttonx2-1Normal.png",
+    "size": [
+      170,
+      50
+    ]
+  },
+  {
+    "name": "nego_buttonx2-2Hover.png",
+    "size": [
+      170,
+      50
+    ]
+  },
+  {
+    "name": "nego_buttonx2-3Pressed.png",
+    "size": [
+      170,
+      50
+    ]
+  },
+  {
+    "name": "nego_buttonx2-4Disabled.png",
+    "size": [
+      170,
+      50
+    ]
+  },
+  {
+    "name": "negociation_tablet.png",
+    "size": [
+      142,
+      80
+    ]
+  },
+  {
+    "name": "Nellis.png",
+    "size": [
+      109,
+      80
+    ]
+  },
+  {
+    "name": "network_button_disabled.png",
+    "size": [
+      48,
+      48
+    ]
+  },
+  {
+    "name": "network_button_hover.png",
+    "size": [
+      48,
+      48
+    ]
+  },
+  {
+    "name": "network_button_normal.png",
+    "size": [
+      48,
+      48
+    ]
+  },
+  {
+    "name": "network_button_pressed.png",
+    "size": [
+      48,
+      48
+    ]
+  },
+  {
+    "name": "networkIcons.png",
+    "size": [
+      111,
+      80
+    ]
+  },
+  {
+    "name": "new_game_bg.png",
+    "size": [
+      93,
+      80
+    ]
+  },
+  {
+    "name": "newspaper.png",
+    "size": [
+      62,
+      80
+    ]
+  },
+  {
+    "name": "next_hover.png",
+    "size": [
+      32,
+      32
+    ]
+  },
+  {
+    "name": "next_normal.png",
+    "size": [
+      32,
+      32
+    ]
+  },
+  {
+    "name": "nightly_tab.png",
+    "size": [
+      215,
+      25
+    ]
+  },
+  {
+    "name": "nightly_tab_reversed.png",
+    "size": [
+      215,
+      25
+    ]
+  },
+  {
+    "name": "Note box.png",
+    "size": [
+      215,
+      21
+    ]
+  },
+  {
+    "name": "Notebook Atlas.png",
+    "size": [
+      80,
+      80
+    ]
+  },
+  {
+    "name": "notebook_manual.png",
+    "size": [
+      62,
+      80
+    ]
+  },
+  {
+    "name": "notebook_manual_section.png",
+    "size": [
+      213,
+      14
+    ]
+  },
+  {
+    "name": "notebook_manual_section_2x.png",
+    "size": [
+      215,
+      14
+    ]
+  },
+  {
+    "name": "notebox.png",
+    "size": [
+      215,
+      42
+    ]
+  },
+  {
+    "name": "notice_box.png",
+    "size": [
+      215,
+      25
+    ]
+  },
+  {
+    "name": "NotoSans-Bold SDF Atlas.png",
+    "size": [
+      80,
+      80
+    ]
+  },
+  {
+    "name": "NotoSans-BoldItalic SDF Atlas.png",
+    "size": [
+      80,
+      80
+    ]
+  },
+  {
+    "name": "NotoSans-Medium SDF Atlas.png",
+    "size": [
+      80,
+      80
+    ]
+  },
+  {
+    "name": "NotoSans-MediumItalic SDF Atlas.png",
+    "size": [
+      80,
+      80
+    ]
+  },
+  {
+    "name": "NotoSans-VariableFont_wdth,wght SDF Atlas.png",
+    "size": [
+      80,
+      80
+    ]
+  },
+  {
+    "name": "NotoSansJP-VariableFont_wght Atlas.png",
+    "size": [
+      80,
+      80
+    ]
+  },
+  {
+    "name": "NotoSansKR-VariableFont_wght Atlas.png",
+    "size": [
+      80,
+      80
+    ]
+  },
+  {
+    "name": "NotoSansSC-VariableFont_wght Atlas 1.png",
+    "size": [
+      80,
+      80
+    ]
+  },
+  {
+    "name": "NotoSansSC-VariableFont_wght Atlas.png",
+    "size": [
+      80,
+      80
+    ]
+  },
+  {
+    "name": "NotoSerif-Bold SDF Atlas.png",
+    "size": [
+      80,
+      80
+    ]
+  },
+  {
+    "name": "NotoSerif-Medium SDF Atlas.png",
+    "size": [
+      80,
+      80
+    ]
+  },
+  {
+    "name": "NotoSerif-VariableFont_wdth,wght SDF Atlas.png",
+    "size": [
+      80,
+      80
+    ]
+  },
+  {
+    "name": "noun-beaker-7821176-FFFFFF.png",
+    "size": [
+      80,
+      80
+    ]
+  },
+  {
+    "name": "noun-flag-7646741-FFFFFF.png",
+    "size": [
+      80,
+      80
+    ]
+  },
+  {
+    "name": "noun-flyer-7880108-FFFFFF.png",
+    "size": [
+      80,
+      80
+    ]
+  },
+  {
+    "name": "noun-people-6240743-FFFFFF.png",
+    "size": [
+      80,
+      80
+    ]
+  },
+  {
+    "name": "nutrifruit.png",
+    "size": [
+      32,
+      32
+    ]
+  },
+  {
+    "name": "odin.png",
+    "size": [
+      109,
+      80
+    ]
+  },
+  {
+    "name": "offer window.png",
+    "size": [
+      63,
+      80
+    ]
+  },
+  {
+    "name": "OfficeCodePro-Regular SDF Atlas.png",
+    "size": [
+      80,
+      80
+    ]
+  },
+  {
+    "name": "one_hand.png",
+    "size": [
+      114,
+      80
+    ]
+  },
+  {
+    "name": "option_bg__shared0_241.png",
+    "size": [
+      66,
+      80
+    ]
+  },
+  {
+    "name": "option_bg__shared0_58.png",
+    "size": [
+      82,
+      80
+    ]
+  },
+  {
+    "name": "option_line.png",
+    "size": [
+      66,
+      80
+    ]
+  },
+  {
+    "name": "option_line_single.png",
+    "size": [
+      215,
+      8
+    ]
+  },
+  {
+    "name": "overlay box.png",
+    "size": [
+      109,
+      18
+    ]
+  },
+  {
+    "name": "Oxanium-Regular SDF Atlas.png",
+    "size": [
+      80,
+      80
+    ]
+  },
+  {
+    "name": "padlock.png",
+    "size": [
+      32,
+      32
+    ]
+  },
+  {
+    "name": "panel.png",
+    "size": [
+      133,
+      80
+    ]
+  },
+  {
+    "name": "paper_buttons1.png",
+    "size": [
+      14,
+      15
+    ]
+  },
+  {
+    "name": "paper_buttons2.png",
+    "size": [
+      14,
+      15
+    ]
+  },
+  {
+    "name": "paper_buttons3.png",
+    "size": [
+      14,
+      15
+    ]
+  },
+  {
+    "name": "paper_buttons4.png",
+    "size": [
+      14,
+      15
+    ]
+  },
+  {
+    "name": "paper_buttons_close1.png",
+    "size": [
+      14,
+      15
+    ]
+  },
+  {
+    "name": "paper_buttons_close2.png",
+    "size": [
+      14,
+      15
+    ]
+  },
+  {
+    "name": "paper_buttons_close3.png",
+    "size": [
+      14,
+      15
+    ]
+  },
+  {
+    "name": "paper_buttons_close4.png",
+    "size": [
+      14,
+      15
+    ]
+  },
+  {
+    "name": "paper_buttons_l_1.png",
+    "size": [
+      14,
+      15
+    ]
+  },
+  {
+    "name": "paper_buttons_l_2.png",
+    "size": [
+      14,
+      15
+    ]
+  },
+  {
+    "name": "paper_buttons_l_3.png",
+    "size": [
+      14,
+      15
+    ]
+  },
+  {
+    "name": "paper_buttons_l_4.png",
+    "size": [
+      14,
+      15
+    ]
+  },
+  {
+    "name": "paper_buttons_screen.png",
+    "size": [
+      56,
+      15
+    ]
+  },
+  {
+    "name": "Paskowy Atlas.png",
+    "size": [
+      80,
+      80
+    ]
+  },
+  {
+    "name": "patch.png",
+    "size": [
+      28,
+      28
+    ]
+  },
+  {
+    "name": "pc_count-Sheet.png",
+    "size": [
+      128,
+      32
+    ]
+  },
+  {
+    "name": "peat.png",
+    "size": [
+      32,
+      32
+    ]
+  },
+  {
+    "name": "perk_h.png",
+    "size": [
+      32,
+      32
+    ]
+  },
+  {
+    "name": "perk_n.png",
+    "size": [
+      32,
+      32
+    ]
+  },
+  {
+    "name": "perk_p.png",
+    "size": [
+      32,
+      32
+    ]
+  },
+  {
+    "name": "perk_slot_hover.png",
+    "size": [
+      64,
+      72
+    ]
+  },
+  {
+    "name": "perk_slot_lock.png",
+    "size": [
+      16,
+      18
+    ]
+  },
+  {
+    "name": "perk_slot_normal.png",
+    "size": [
+      64,
+      72
+    ]
+  },
+  {
+    "name": "perk_tooltip_lock.png",
+    "size": [
+      16,
+      18
+    ]
+  },
+  {
+    "name": "perks_tooltip.png",
+    "size": [
+      199,
+      80
+    ]
+  },
+  {
+    "name": "perks_tooltip_calendar.png",
+    "size": [
+      199,
+      80
+    ]
+  },
+  {
+    "name": "phone__shared1_130.png",
+    "size": [
+      142,
+      80
+    ]
+  },
+  {
+    "name": "phone__shared1_363.png",
+    "size": [
+      71,
+      80
+    ]
+  },
+  {
+    "name": "phone_button1h.png",
+    "size": [
+      11,
+      10
+    ]
+  },
+  {
+    "name": "phone_button1p.png",
+    "size": [
+      11,
+      10
+    ]
+  },
+  {
+    "name": "phone_button_hover.png",
+    "size": [
+      10,
+      9
+    ]
+  },
+  {
+    "name": "phone_button_large.png",
+    "size": [
+      31,
+      24
+    ]
+  },
+  {
+    "name": "phone_button_normal.png",
+    "size": [
+      22,
+      24
+    ]
+  },
+  {
+    "name": "phone_button_press.png",
+    "size": [
+      10,
+      9
+    ]
+  },
+  {
+    "name": "phone_red_button_p.png",
+    "size": [
+      22,
+      20
+    ]
+  },
+  {
+    "name": "pickles.png",
+    "size": [
+      204,
+      80
+    ]
+  },
+  {
+    "name": "pickles_extra.png",
+    "size": [
+      204,
+      80
+    ]
+  },
+  {
+    "name": "Pixelary SDF Atlas.png",
+    "size": [
+      80,
+      80
+    ]
+  },
+  {
+    "name": "plant_scanner.png",
+    "size": [
+      56,
+      80
+    ]
+  },
+  {
+    "name": "plate_notched.png",
+    "size": [
+      4,
+      4
+    ]
+  },
+  {
+    "name": "playtest_button.png",
+    "size": [
+      75,
+      30
+    ]
+  },
+  {
+    "name": "playtest_button_discord.png",
+    "size": [
+      75,
+      30
+    ]
+  },
+  {
+    "name": "playtest_button_feedback.png",
+    "size": [
+      75,
+      30
+    ]
+  },
+  {
+    "name": "playtest_button_steam.png",
+    "size": [
+      75,
+      30
+    ]
+  },
+  {
+    "name": "poster.png",
+    "size": [
+      142,
+      80
+    ]
+  },
+  {
+    "name": "poster_down.png",
+    "size": [
+      142,
+      80
+    ]
+  },
+  {
+    "name": "poster_no_shadow.png",
+    "size": [
+      142,
+      80
+    ]
+  },
+  {
+    "name": "postit_blue.png",
+    "size": [
+      17,
+      13
+    ]
+  },
+  {
+    "name": "postit_pink.png",
+    "size": [
+      16,
+      13
+    ]
+  },
+  {
+    "name": "prev_hover.png",
+    "size": [
+      32,
+      32
+    ]
+  },
+  {
+    "name": "prev_normal.png",
+    "size": [
+      32,
+      32
+    ]
+  },
+  {
+    "name": "price_tag_normal.png",
+    "size": [
+      56,
+      22
+    ]
+  },
+  {
+    "name": "price_tag_unavailable.png",
+    "size": [
+      56,
+      22
+    ]
+  },
+  {
+    "name": "pricebox.png",
+    "size": [
+      215,
+      30
+    ]
+  },
+  {
+    "name": "prime_real_estate.png",
+    "size": [
+      32,
+      32
+    ]
+  },
+  {
+    "name": "progress_frame.png",
+    "size": [
+      6,
+      6
+    ]
+  },
+  {
+    "name": "radio.png",
+    "size": [
+      142,
+      80
+    ]
+  },
+  {
+    "name": "radio_off.png",
+    "size": [
+      16,
+      16
+    ]
+  },
+  {
+    "name": "radio_off_hover.png",
+    "size": [
+      16,
+      16
+    ]
+  },
+  {
+    "name": "radio_on.png",
+    "size": [
+      16,
+      16
+    ]
+  },
+  {
+    "name": "radio_on_hover.png",
+    "size": [
+      16,
+      16
+    ]
+  },
+  {
+    "name": "radio_pressed.png",
+    "size": [
+      16,
+      16
+    ]
+  },
+  {
+    "name": "recorder-Sheet.png",
+    "size": [
+      144,
+      32
+    ]
+  },
+  {
+    "name": "recorder_text separators.png",
+    "size": [
+      31,
+      2
+    ]
+  },
+  {
+    "name": "recorder_x2.png",
+    "size": [
+      54,
+      80
+    ]
+  },
+  {
+    "name": "red_bar.png",
+    "size": [
+      24,
+      1
+    ]
+  },
+  {
+    "name": "Red_Imp_2x.png",
+    "size": [
+      126,
+      80
+    ]
+  },
+  {
+    "name": "red_square.png",
+    "size": [
+      48,
+      48
+    ]
+  },
+  {
+    "name": "refresh__shared1_105.png",
+    "size": [
+      16,
+      16
+    ]
+  },
+  {
+    "name": "refresh__shared1_566.png",
+    "size": [
+      18,
+      13
+    ]
+  },
+  {
+    "name": "rep_indicator.png",
+    "size": [
+      32,
+      32
+    ]
+  },
+  {
+    "name": "reputation_background.png",
+    "size": [
+      136,
+      80
+    ]
+  },
+  {
+    "name": "reputation_box__shared1_166.png",
+    "size": [
+      27,
+      80
+    ]
+  },
+  {
+    "name": "reputation_box__shared1_66.png",
+    "size": [
+      142,
+      80
+    ]
+  },
+  {
+    "name": "reputation_grid.png",
+    "size": [
+      15,
+      80
+    ]
+  },
+  {
+    "name": "requirement.png",
+    "size": [
+      184,
+      17
+    ]
+  },
+  {
+    "name": "rev.png",
+    "size": [
+      32,
+      32
+    ]
+  },
+  {
+    "name": "ribs.png",
+    "size": [
+      204,
+      80
+    ]
+  },
+  {
+    "name": "ribwich_logo.png",
+    "size": [
+      204,
+      80
+    ]
+  },
+  {
+    "name": "ribwich_logo_incorrect1.png",
+    "size": [
+      204,
+      80
+    ]
+  },
+  {
+    "name": "ribwich_logo_incorrect2.png",
+    "size": [
+      204,
+      80
+    ]
+  },
+  {
+    "name": "ribwich_logo_incorrect3.png",
+    "size": [
+      204,
+      80
+    ]
+  },
+  {
+    "name": "RubikMonoOne-Regular SDF Atlas.png",
+    "size": [
+      80,
+      80
+    ]
+  },
+  {
+    "name": "sactx-0-256x128-Uncompressed-WindowUIAtlas-41fdf8c5.png",
+    "size": [
+      160,
+      80
+    ]
+  },
+  {
+    "name": "sample.png",
+    "size": [
+      80,
+      80
+    ]
+  },
+  {
+    "name": "save_element.png",
+    "size": [
+      215,
+      26
+    ]
+  },
+  {
+    "name": "saving.png",
+    "size": [
+      32,
+      32
+    ]
+  },
+  {
+    "name": "sawyer.png",
+    "size": [
+      109,
+      80
+    ]
+  },
+  {
+    "name": "sawyer_crew.png",
+    "size": [
+      32,
+      32
+    ]
+  },
+  {
+    "name": "scanlines.png",
+    "size": [
+      1,
+      4
+    ]
+  },
+  {
+    "name": "scav.png",
+    "size": [
+      32,
+      32
+    ]
+  },
+  {
+    "name": "scavFemale.png",
+    "size": [
+      215,
+      32
+    ]
+  },
+  {
+    "name": "scavMale.png",
+    "size": [
+      215,
+      79
+    ]
+  },
+  {
+    "name": "scratch.png",
+    "size": [
+      101,
+      80
+    ]
+  },
+  {
+    "name": "scratch_back.png",
+    "size": [
+      101,
+      80
+    ]
+  },
+  {
+    "name": "screen shadow.png",
+    "size": [
+      142,
+      80
+    ]
+  },
+  {
+    "name": "scroll.png",
+    "size": [
+      2,
+      80
+    ]
+  },
+  {
+    "name": "scroll_bar_bot_x2.png",
+    "size": [
+      2,
+      80
+    ]
+  },
+  {
+    "name": "scroll_bar_top_x2.png",
+    "size": [
+      15,
+      80
+    ]
+  },
+  {
+    "name": "scroll_thumb.png",
+    "size": [
+      6,
+      32
+    ]
+  },
+  {
+    "name": "scroll_track.png",
+    "size": [
+      2,
+      64
+    ]
+  },
+  {
+    "name": "scrollbar_handle.png",
+    "size": [
+      11,
+      80
+    ]
+  },
+  {
+    "name": "seal golden.png",
+    "size": [
+      114,
+      80
+    ]
+  },
+  {
+    "name": "seal holo.png",
+    "size": [
+      114,
+      80
+    ]
+  },
+  {
+    "name": "seal-correct.png",
+    "size": [
+      47,
+      80
+    ]
+  },
+  {
+    "name": "seal-open.png",
+    "size": [
+      47,
+      80
+    ]
+  },
+  {
+    "name": "seal_ignition.png",
+    "size": [
+      206,
+      80
+    ]
+  },
+  {
+    "name": "seal_ll.png",
+    "size": [
+      206,
+      80
+    ]
+  },
+  {
+    "name": "seal_republic.png",
+    "size": [
+      206,
+      80
+    ]
+  },
+  {
+    "name": "seal_zhong.png",
+    "size": [
+      206,
+      80
+    ]
+  },
+  {
+    "name": "SearchTex.png",
+    "size": [
+      64,
+      16
+    ]
+  },
+  {
+    "name": "sec lamps green.png",
+    "size": [
+      7,
+      16
+    ]
+  },
+  {
+    "name": "sec lamps red.png",
+    "size": [
+      7,
+      16
+    ]
+  },
+  {
+    "name": "sec_card.png",
+    "size": [
+      58,
+      40
+    ]
+  },
+  {
+    "name": "sec_seal_2x.png",
+    "size": [
+      78,
+      80
+    ]
+  },
+  {
+    "name": "secret_admirer.png",
+    "size": [
+      32,
+      32
+    ]
+  },
+  {
+    "name": "selected_perk.png",
+    "size": [
+      215,
+      38
+    ]
+  },
+  {
+    "name": "sentinel.png",
+    "size": [
+      32,
+      32
+    ]
+  },
+  {
+    "name": "seperator.png",
+    "size": [
+      215,
+      1
+    ]
+  },
+  {
+    "name": "Serial.png",
+    "size": [
+      28,
+      18
+    ]
+  },
+  {
+    "name": "Serpico.png",
+    "size": [
+      109,
+      80
+    ]
+  },
+  {
+    "name": "serpico_rev.png",
+    "size": [
+      109,
+      80
+    ]
+  },
+  {
+    "name": "serpico_scav.png",
+    "size": [
+      109,
+      80
+    ]
+  },
+  {
+    "name": "settings.png",
+    "size": [
+      42,
+      42
+    ]
+  },
+  {
+    "name": "settings_hl.png",
+    "size": [
+      42,
+      42
+    ]
+  },
+  {
+    "name": "short_sleeper.png",
+    "size": [
+      32,
+      32
+    ]
+  },
+  {
+    "name": "shortcut_x2.png",
+    "size": [
+      146,
+      80
+    ]
+  },
+  {
+    "name": "shot_animation_body.png",
+    "size": [
+      215,
+      27
+    ]
+  },
+  {
+    "name": "shot_animation_wound.png",
+    "size": [
+      215,
+      27
+    ]
+  },
+  {
+    "name": "shotgun_shadow.png",
+    "size": [
+      25,
+      80
+    ]
+  },
+  {
+    "name": "shotgun_shadow_only.png",
+    "size": [
+      25,
+      80
+    ]
+  },
+  {
+    "name": "shutter_button_sheet.png",
+    "size": [
+      101,
+      34
+    ]
+  },
+  {
+    "name": "shutter_door.png",
+    "size": [
+      142,
+      80
+    ]
+  },
+  {
+    "name": "shutter_door_cropped_2x.png",
+    "size": [
+      100,
+      80
+    ]
+  },
+  {
+    "name": "side_street.png",
+    "size": [
+      32,
+      32
+    ]
+  },
+  {
+    "name": "sleeping_bag.png",
+    "size": [
+      142,
+      80
+    ]
+  },
+  {
+    "name": "slider_bar_2x.png",
+    "size": [
+      215,
+      14
+    ]
+  },
+  {
+    "name": "slider_bar_filled_2x.png",
+    "size": [
+      215,
+      14
+    ]
+  },
+  {
+    "name": "slider_gauge.png",
+    "size": [
+      215,
+      5
+    ]
+  },
+  {
+    "name": "slider_handle_h.png",
+    "size": [
+      18,
+      12
+    ]
+  },
+  {
+    "name": "slider_handle_n.png",
+    "size": [
+      18,
+      12
+    ]
+  },
+  {
+    "name": "slider_thumb.png",
+    "size": [
+      32,
+      22
+    ]
+  },
+  {
+    "name": "slider_thumb_hl.png",
+    "size": [
+      32,
+      22
+    ]
+  },
+  {
+    "name": "slider_thumb_hover.png",
+    "size": [
+      16,
+      8
+    ]
+  },
+  {
+    "name": "slider_thumb_normal.png",
+    "size": [
+      16,
+      8
+    ]
+  },
+  {
+    "name": "slider_track.png",
+    "size": [
+      215,
+      5
+    ]
+  },
+  {
+    "name": "sliding_area.png",
+    "size": [
+      7,
+      39
+    ]
+  },
+  {
+    "name": "slip.png",
+    "size": [
+      59,
+      80
+    ]
+  },
+  {
+    "name": "slot.png",
+    "size": [
+      215,
+      36
+    ]
+  },
+  {
+    "name": "slot_border_hover.png",
+    "size": [
+      80,
+      80
+    ]
+  },
+  {
+    "name": "slot_border_normal.png",
+    "size": [
+      80,
+      80
+    ]
+  },
+  {
+    "name": "slot_border_purchased.png",
+    "size": [
+      80,
+      80
+    ]
+  },
+  {
+    "name": "slot_frame.png",
+    "size": [
+      80,
+      80
+    ]
+  },
+  {
+    "name": "slot_inset.png",
+    "size": [
+      76,
+      76
+    ]
+  },
+  {
+    "name": "slot_normal.png",
+    "size": [
+      64,
+      64
+    ]
+  },
+  {
+    "name": "slot_selected.png",
+    "size": [
+      64,
+      64
+    ]
+  },
+  {
+    "name": "snitch.png",
+    "size": [
+      36,
+      36
+    ]
+  },
+  {
+    "name": "soda.png",
+    "size": [
+      32,
+      32
+    ]
+  },
+  {
+    "name": "source_icon_local.png",
+    "size": [
+      20,
+      20
+    ]
+  },
+  {
+    "name": "source_icon_steam.png",
+    "size": [
+      20,
+      20
+    ]
+  },
+  {
+    "name": "special.png",
+    "size": [
+      215,
+      20
+    ]
+  },
+  {
+    "name": "spy.png",
+    "size": [
+      109,
+      80
+    ]
+  },
+  {
+    "name": "start.png",
+    "size": [
+      82,
+      19
+    ]
+  },
+  {
+    "name": "start_top.png",
+    "size": [
+      82,
+      19
+    ]
+  },
+  {
+    "name": "station.png",
+    "size": [
+      42,
+      42
+    ]
+  },
+  {
+    "name": "steam_icon.png",
+    "size": [
+      80,
+      80
+    ]
+  },
+  {
+    "name": "stopwatch.png",
+    "size": [
+      80,
+      80
+    ]
+  },
+  {
+    "name": "store_background.png",
+    "size": [
+      142,
+      80
+    ]
+  },
+  {
+    "name": "store_background_rail.png",
+    "size": [
+      142,
+      80
+    ]
+  },
+  {
+    "name": "store_front_floor.png",
+    "size": [
+      142,
+      80
+    ]
+  },
+  {
+    "name": "store_front_lamp.png",
+    "size": [
+      142,
+      80
+    ]
+  },
+  {
+    "name": "store_front_wall_lit.png",
+    "size": [
+      142,
+      80
+    ]
+  },
+  {
+    "name": "store_mid.png",
+    "size": [
+      142,
+      80
+    ]
+  },
+  {
+    "name": "store_mid_rail.png",
+    "size": [
+      142,
+      80
+    ]
+  },
+  {
+    "name": "store_mid_stairs.png",
+    "size": [
+      142,
+      80
+    ]
+  },
+  {
+    "name": "subpanel_x2.png",
+    "size": [
+      42,
+      80
+    ]
+  },
+  {
+    "name": "Sunset-Friday Atlas.png",
+    "size": [
+      80,
+      80
+    ]
+  },
+  {
+    "name": "tab.png",
+    "size": [
+      129,
+      31
+    ]
+  },
+  {
+    "name": "tab_active__shared0_120.png",
+    "size": [
+      215,
+      35
+    ]
+  },
+  {
+    "name": "tab_active__shared0_174.png",
+    "size": [
+      129,
+      31
+    ]
+  },
+  {
+    "name": "tab_hover.png",
+    "size": [
+      215,
+      35
+    ]
+  },
+  {
+    "name": "tab_normal.png",
+    "size": [
+      215,
+      35
+    ]
+  },
+  {
+    "name": "tab_plate.png",
+    "size": [
+      4,
+      4
+    ]
+  },
+  {
+    "name": "tablet.png",
+    "size": [
+      63,
+      80
+    ]
+  },
+  {
+    "name": "tablet_bargain_open.png",
+    "size": [
+      63,
+      80
+    ]
+  },
+  {
+    "name": "tag_rounded.png",
+    "size": [
+      8,
+      8
+    ]
+  },
+  {
+    "name": "tape anim-Sheet.png",
+    "size": [
+      215,
+      26
+    ]
+  },
+  {
+    "name": "Tektur-Bold SDF Atlas.png",
+    "size": [
+      80,
+      80
+    ]
+  },
+  {
+    "name": "Tektur-SemiBold SDF Atlas.png",
+    "size": [
+      80,
+      80
+    ]
+  },
+  {
+    "name": "test_strips.png",
+    "size": [
+      215,
+      33
+    ]
+  },
+  {
+    "name": "text box.png",
+    "size": [
+      114,
+      80
+    ]
+  },
+  {
+    "name": "textbox.png",
+    "size": [
+      80,
+      25
+    ]
+  },
+  {
+    "name": "Tmp_Icon.png",
+    "size": [
+      80,
+      80
+    ]
+  },
+  {
+    "name": "today.png",
+    "size": [
+      52,
+      80
+    ]
+  },
+  {
+    "name": "tooltip_2x.png",
+    "size": [
+      54,
+      80
+    ]
+  },
+  {
+    "name": "top_bun_deluxe.png",
+    "size": [
+      204,
+      80
+    ]
+  },
+  {
+    "name": "top_bun_normal.png",
+    "size": [
+      204,
+      80
+    ]
+  },
+  {
+    "name": "top_button.png",
+    "size": [
+      108,
+      24
+    ]
+  },
+  {
+    "name": "trailer_rev1.png",
+    "size": [
+      109,
+      80
+    ]
+  },
+  {
+    "name": "trailer_rev2.png",
+    "size": [
+      109,
+      80
+    ]
+  },
+  {
+    "name": "trailer_scav1.png",
+    "size": [
+      109,
+      80
+    ]
+  },
+  {
+    "name": "tray.png",
+    "size": [
+      91,
+      80
+    ]
+  },
+  {
+    "name": "tutorial_bubble_unpointed_x2.png",
+    "size": [
+      96,
+      68
+    ]
+  },
+  {
+    "name": "tutorial_bubble_x2.png",
+    "size": [
+      96,
+      80
+    ]
+  },
+  {
+    "name": "tutorial_sheet.png",
+    "size": [
+      55,
+      80
+    ]
+  },
+  {
+    "name": "uiback1.png",
+    "size": [
+      16,
+      16
+    ]
+  },
+  {
+    "name": "uiback1L.png",
+    "size": [
+      64,
+      64
+    ]
+  },
+  {
+    "name": "uiback1LDarkTan.png",
+    "size": [
+      64,
+      64
+    ]
+  },
+  {
+    "name": "uiback1LGreen.png",
+    "size": [
+      64,
+      64
+    ]
+  },
+  {
+    "name": "uiback1LTan.png",
+    "size": [
+      64,
+      64
+    ]
+  },
+  {
+    "name": "uiback1LTan_embossed.png",
+    "size": [
+      64,
+      64
+    ]
+  },
+  {
+    "name": "uiback2L.png",
+    "size": [
+      64,
+      64
+    ]
+  },
+  {
+    "name": "uibackOrange1L.png",
+    "size": [
+      48,
+      64
+    ]
+  },
+  {
+    "name": "uibacktop1.png",
+    "size": [
+      16,
+      16
+    ]
+  },
+  {
+    "name": "UIBevel.png",
+    "size": [
+      80,
+      80
+    ]
+  },
+  {
+    "name": "UIMask.png",
+    "size": [
+      32,
+      32
+    ]
+  },
+  {
+    "name": "UISprite.png",
+    "size": [
+      32,
+      32
+    ]
+  },
+  {
+    "name": "vending.png",
+    "size": [
+      32,
+      32
+    ]
+  },
+  {
+    "name": "vent.png",
+    "size": [
+      2,
+      3
+    ]
+  },
+  {
+    "name": "vertical_scroll_bar.png",
+    "size": [
+      8,
+      32
+    ]
+  },
+  {
+    "name": "vertical_scroll_bar_handle_2x.png",
+    "size": [
+      16,
+      64
+    ]
+  },
+  {
+    "name": "waffle_enjoyer.png",
+    "size": [
+      109,
+      80
+    ]
+  },
+  {
+    "name": "walker1.png",
+    "size": [
+      215,
+      51
+    ]
+  },
+  {
+    "name": "wall2.png",
+    "size": [
+      142,
+      80
+    ]
+  },
+  {
+    "name": "wall__shared1_36.png",
+    "size": [
+      142,
+      80
+    ]
+  },
+  {
+    "name": "wall__shared1_602.png",
+    "size": [
+      142,
+      80
+    ]
+  },
+  {
+    "name": "wanted.png",
+    "size": [
+      57,
+      80
+    ]
+  },
+  {
+    "name": "wanted1.png",
+    "size": [
+      109,
+      80
+    ]
+  },
+  {
+    "name": "wanted2.png",
+    "size": [
+      109,
+      80
+    ]
+  },
+  {
+    "name": "wanted3.png",
+    "size": [
+      109,
+      80
+    ]
+  },
+  {
+    "name": "wanted5.png",
+    "size": [
+      109,
+      80
+    ]
+  },
+  {
+    "name": "wanted6.png",
+    "size": [
+      109,
+      80
+    ]
+  },
+  {
+    "name": "wanted7.png",
+    "size": [
+      109,
+      80
+    ]
+  },
+  {
+    "name": "wanted8.png",
+    "size": [
+      109,
+      80
+    ]
+  },
+  {
+    "name": "wanted9.png",
+    "size": [
+      109,
+      80
+    ]
+  },
+  {
+    "name": "wanted_portait1.png",
+    "size": [
+      34,
+      32
+    ]
+  },
+  {
+    "name": "wanted_portait2.png",
+    "size": [
+      34,
+      32
+    ]
+  },
+  {
+    "name": "wanted_portait3.png",
+    "size": [
+      34,
+      32
+    ]
+  },
+  {
+    "name": "wanted_portait4.png",
+    "size": [
+      34,
+      32
+    ]
+  },
+  {
+    "name": "wanted_portait5.png",
+    "size": [
+      34,
+      32
+    ]
+  },
+  {
+    "name": "wanted_portait6.png",
+    "size": [
+      34,
+      32
+    ]
+  },
+  {
+    "name": "wanted_portait7.png",
+    "size": [
+      34,
+      32
+    ]
+  },
+  {
+    "name": "wanted_portait8.png",
+    "size": [
+      34,
+      32
+    ]
+  },
+  {
+    "name": "wanted_portait9.png",
+    "size": [
+      34,
+      32
+    ]
+  },
+  {
+    "name": "warp_normal.png",
+    "size": [
+      204,
+      80
+    ]
+  },
+  {
+    "name": "water_container.png",
+    "size": [
+      80,
+      80
+    ]
+  },
+  {
+    "name": "water_container2.png",
+    "size": [
+      80,
+      80
+    ]
+  },
+  {
+    "name": "water_container3.png",
+    "size": [
+      40,
+      80
+    ]
+  },
+  {
+    "name": "water_container4.png",
+    "size": [
+      40,
+      80
+    ]
+  },
+  {
+    "name": "water_purity_2x.png",
+    "size": [
+      62,
+      80
+    ]
+  },
+  {
+    "name": "WDXLLubrifontJPN-Regular Atlas.png",
+    "size": [
+      80,
+      80
+    ]
+  },
+  {
+    "name": "WDXLLubrifontSC-Regular SDF Atlas.png",
+    "size": [
+      80,
+      80
+    ]
+  },
+  {
+    "name": "welfare_program.png",
+    "size": [
+      32,
+      32
+    ]
+  },
+  {
+    "name": "white_rounded.png",
+    "size": [
+      32,
+      32
+    ]
+  },
+  {
+    "name": "wild.png",
+    "size": [
+      109,
+      80
+    ]
+  },
+  {
+    "name": "wild_pat.png",
+    "size": [
+      74,
+      80
+    ]
+  },
+  {
+    "name": "window.png",
+    "size": [
+      142,
+      80
+    ]
+  },
+  {
+    "name": "window_frame.png",
+    "size": [
+      64,
+      64
+    ]
+  },
+  {
+    "name": "window_top.png",
+    "size": [
+      142,
+      80
+    ]
+  },
+  {
+    "name": "wine_tutorial.png",
+    "size": [
+      62,
+      80
+    ]
+  },
+  {
+    "name": "wires.png",
+    "size": [
+      142,
+      80
+    ]
+  },
+  {
+    "name": "wires2.png",
+    "size": [
+      142,
+      80
+    ]
+  },
+  {
+    "name": "wires_table.png",
+    "size": [
+      142,
+      80
+    ]
+  },
+  {
+    "name": "working_pipes.png",
+    "size": [
+      32,
+      32
+    ]
+  },
+  {
+    "name": "wrap_open_flipped.png",
+    "size": [
+      204,
+      80
+    ]
+  },
+  {
+    "name": "YeonSung-Regular SDF Atlas.png",
+    "size": [
+      80,
+      80
+    ]
+  }
+]

@@ -41,6 +41,10 @@
       <HintPath>$(GameManagedDir)\UnityEngine.ImageConversionModule.dll</HintPath>
       <Private>false</Private>
     </Reference>
+    <Reference Include="UnityEngine.AssetBundleModule">
+      <HintPath>$(GameManagedDir)\UnityEngine.AssetBundleModule.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
     <Reference Include="UnityEngine.AudioModule">
       <HintPath>$(GameManagedDir)\UnityEngine.AudioModule.dll</HintPath>
       <Private>false</Private>
@@ -79,7 +83,9 @@
     <EmbeddedResource Include="assets\sfx_speed_up.wav" />
     <EmbeddedResource Include="assets\sfx_speed_down.wav" />
     <EmbeddedResource Include="assets\sfx_emitter_fire.wav" />
+    <EmbeddedResource Include="assets\sfx_receiver_receive.wav" />
     <EmbeddedResource Include="assets\sfx_centrifuge_spin.wav" />
+    <EmbeddedResource Include="assets\sfx_item_placement.wav" />
   </ItemGroup>
 
   <ItemGroup>
@@ -93,6 +99,14 @@
     <!-- 人物立绘使用官方 Textures 根目录；Items 目录由物品贴图加载器读取。 -->
     <None Update="mod\Textures\*.png">
       <Link>Textures\%(Filename)%(Extension)</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="mod\AssetBundles\fluxforge_device_manual">
+      <Link>AssetBundles\fluxforge_device_manual</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="mod\Localization\*.csv">
+      <Link>Localization\%(Filename)%(Extension)</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>

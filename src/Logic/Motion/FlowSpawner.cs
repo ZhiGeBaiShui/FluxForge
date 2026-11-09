@@ -39,14 +39,28 @@ namespace FluxForge
             get { return _active; }
         }
 
+        /// <summary>
+        /// 在逻辑网格中发射一份液体数据副本。只负责检查出口范围、创建流源和登记生命周期；
+        /// 不读取物品，不处理资源或库存。返回成功后，调用方再清空自己的暂存数据。
+        /// 调用方保证参数有效；这里只处理空液体和出口不在网格内的正常失败。
+        /// </summary>
+        public bool TryEmit(FlowProperties payload, FlowPos origin, int direction,
+            double speed, IFlowGrid grid)
+        {
+            if (payload.SubstanceTotal <= 0
+                || !grid.Contains((int)Math.Floor(origin.X), (int)Math.Floor(origin.Y)))
+            {
+                return false;
+            }
+
+            Accept(new FlowEntity(new FlowPos(origin.X, origin.Y),
+                new FlowMotionData(direction, speed), payload.Clone()));
+            return true;
+        }
+
         /// <summary>纳入一个新的流源并广播出生。</summary>
         public void Accept(FlowEntity entity)
         {
-            if (entity == null)
-            {
-                return;
-            }
-
             _reactionPhase += GoldenRatio;
             if (_reactionPhase >= 1d)
             {
@@ -54,6 +68,7 @@ namespace FluxForge
             }
 
             entity.NextReactionTime = _reactionPhase;
+            entity.HoldSeconds = 0d;
 
             _active.Add(entity);
             OnEntityAdded?.Invoke(entity);
@@ -70,7 +85,7 @@ namespace FluxForge
         /// </summary>
         public void Kill(FlowEntity entity)
         {
-            if (entity == null || !_active.Remove(entity))
+            if (!_active.Remove(entity))
             {
                 return;
             }

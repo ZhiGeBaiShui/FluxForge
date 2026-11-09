@@ -32,7 +32,7 @@ namespace FluxForge.Tests
             int dx = FlowMotionData.StepX(direction);
             int dy = FlowMotionData.StepY(direction);
             FlowEntity entity = new FlowEntity(
-                new FlowPos(3.5d - dx * 0.51d, 3.5d - dy * 0.51d),
+                new FlowPos(3d - dx * 0.51d, 3d - dy * 0.51d),
                 new FlowMotionData(direction, 1d), TestFlow.Make(10d, 20d));
             flows.Accept(entity);
 
@@ -62,6 +62,7 @@ namespace FluxForge.Tests
 
         private sealed class ProbeGrid : IFlowGrid
         {
+            public FlowCellKind GetCellKind(int x, int y) => FlowCellKind.Empty;
             public readonly ProbeReactor Reactor = new ProbeReactor();
 
             public bool Contains(int cellX, int cellY) => true;

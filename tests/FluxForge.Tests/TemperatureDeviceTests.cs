@@ -29,6 +29,7 @@ namespace FluxForge.Tests
 
             Assert.False(blocked);
             Assert.Equal(30d, entity.Properties.Get(FlowProps.Temperature));
+            Assert.InRange(entity.HoldSeconds, 0.05d, 0.3000001d);
         }
 
         [Fact]

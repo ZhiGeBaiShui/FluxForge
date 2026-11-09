@@ -28,6 +28,7 @@ namespace FluxForge
             double removed = chemicalRemoved + heavyMetalRemoved;
             if (removed > 0d)
             {
+                entity.HoldSeconds = FlowReactionDelay.NextSeconds();
                 FlowAudio.Play(FlowSoundIds.FilterCleaned, this, removed);
                 FlowAnimation.Play(FlowAnimationIds.FilterPulse, this, removed);
             }

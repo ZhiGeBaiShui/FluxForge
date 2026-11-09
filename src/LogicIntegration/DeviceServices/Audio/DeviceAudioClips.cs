@@ -36,11 +36,17 @@ namespace FluxForge.Mod
         /// <summary>变速装置：降调、低通的涡轮减速音。</summary>
         public const string SpeedDown = "fluxforge.speed.down";
 
-        /// <summary>发射器激活时的一次性电流点击。</summary>
+        /// <summary>发射器激活时的一次性发射音。</summary>
         public const string EmitterFire = "fluxforge.emitter.fire";
+
+        /// <summary>接收装置吸收流源时的水滴音。</summary>
+        public const string ReceiverReceive = "fluxforge.receiver.receive";
 
         /// <summary>离心机分离时的旋转音。</summary>
         public const string CentrifugeSpin = "fluxforge.centrifuge.spin";
+
+        /// <summary>事件演示物品放置到网格时的瞬发音效。</summary>
+        public const string ItemPlacement = "fluxforge.item.placement";
 
         /// <summary>加载并登记全部自定义音效；每次 OnEnable 调用一次。</summary>
         public static void Initialize()
@@ -57,7 +63,9 @@ namespace FluxForge.Mod
             Register(prefix, "sfx_speed_up.wav", SpeedUp);
             Register(prefix, "sfx_speed_down.wav", SpeedDown);
             Register(prefix, "sfx_emitter_fire.wav", EmitterFire);
+            Register(prefix, "sfx_receiver_receive.wav", ReceiverReceive);
             Register(prefix, "sfx_centrifuge_spin.wav", CentrifugeSpin);
+            Register(prefix, "sfx_item_placement.wav", ItemPlacement);
         }
 
         private static void Register(string prefix, string fileName, string identifier)

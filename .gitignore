@@ -26,6 +26,8 @@ __pycache__/
 artifacts/
 .tmp-zh-strings.json
 debug.log
+output/manual-readability-build/
+output/manual-*.log
 
 # === 系统文件 ===
 Thumbs.db

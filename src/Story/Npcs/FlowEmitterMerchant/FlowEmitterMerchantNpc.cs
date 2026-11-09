@@ -1,12 +1,12 @@
 using System.Collections;
-using FluxForge.Mod;
+using FluxForge.Story.Portraits;
 using UnityEngine;
 
 namespace FluxForge.Story.FlowEmitterMerchant
 {
     /// <summary>
     /// 装置推销员的统筹层：负责注册、到店、首次剧情和首次库存。
-    /// 两个剧情本身分别在 FlowEmitterDemo 与 FlowEmitterFarewell。
+    /// 两个剧情本身分别在 FlowEmitterArrival 与 FlowEmitterFarewell。
     /// </summary>
     internal static class FlowEmitterMerchantNpc
     {
@@ -29,6 +29,7 @@ namespace FluxForge.Story.FlowEmitterMerchant
         {
             ModHook.OnGameLoadedLate -= OnGameLoaded;
             ModHook.OnShutterOpenedLate -= Queue;
+            NpcPortraitRegistry.Shutdown();
         }
 
         private static void OnGameLoaded()
@@ -140,7 +141,6 @@ namespace FluxForge.Story.FlowEmitterMerchant
                 string npcName = GetCurrentClientName();
 
                 StoryPlayer player = new StoryPlayer(
-                    EmporiumEntry.Instance.frontInvinvElement,
                     delegate { return npcName; },
                     delegate { OnStoryFinished(phase); });
 
@@ -256,3 +256,5 @@ namespace FluxForge.Story.FlowEmitterMerchant
         }
     }
 }
+
+

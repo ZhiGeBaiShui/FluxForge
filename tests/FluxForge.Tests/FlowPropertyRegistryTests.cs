@@ -12,22 +12,27 @@ namespace FluxForge.Tests
     public class FlowPropertyRegistryTests
     {
         [Fact]
-        public void Count_IsThirtySeven()
+        public void Count_IsThirtyEight()
         {
-            Assert.Equal(37, FlowPropertyRegistry.Count);
-            Assert.Equal(37, FlowPropertyRegistry.All.Count);
+            Assert.Equal(38, FlowPropertyRegistry.Count);
+            Assert.Equal(38, FlowPropertyRegistry.All.Count);
         }
 
         [Fact]
-        public void All_HasThirtySixLiquidsAndOneScalar()
+        public void All_HasThirtySixLiquidsAndOneForeignAndOneScalar()
         {
             int liquids = 0;
+            int foreign = 0;
             int scalars = 0;
             foreach (FlowPropertyDef def in FlowPropertyRegistry.All)
             {
                 if (def.Kind == FlowPropertyKind.Liquid)
                 {
                     liquids++;
+                }
+                else if (def.Kind == FlowPropertyKind.Foreign)
+                {
+                    foreign++;
                 }
                 else if (def.Kind == FlowPropertyKind.Scalar)
                 {
@@ -36,6 +41,7 @@ namespace FluxForge.Tests
             }
 
             Assert.Equal(36, liquids);
+            Assert.Equal(1, foreign);
             Assert.Equal(1, scalars);
         }
 
@@ -44,7 +50,8 @@ namespace FluxForge.Tests
         {
             foreach (FlowPropertyDef def in FlowPropertyRegistry.All)
             {
-                if (def.Kind == FlowPropertyKind.Liquid)
+                if (def.Kind == FlowPropertyKind.Liquid
+                    || def.Kind == FlowPropertyKind.Foreign)
                 {
                     Assert.Equal(SplitRule.Divide, def.Split);
                     Assert.Equal(MergeRule.Add, def.Merge);
@@ -68,12 +75,14 @@ namespace FluxForge.Tests
         }
 
         [Fact]
-        public void Order_MatchesGameLiquidInit_AndEndsWithTemperature()
+        public void Order_MatchesGameLiquidInit_AndEndsWithForeignThenTemperature()
         {
             Assert.Equal("water", FlowPropertyRegistry.All[0].Id);
             Assert.Equal("nomore", FlowPropertyRegistry.All[35].Id);
-            Assert.Equal("container_temp", FlowPropertyRegistry.All[36].Id);
-            Assert.Equal(FlowPropertyKind.Scalar, FlowPropertyRegistry.All[36].Kind);
+            Assert.Equal("foreign", FlowPropertyRegistry.All[36].Id);
+            Assert.Equal(FlowPropertyKind.Foreign, FlowPropertyRegistry.All[36].Kind);
+            Assert.Equal("container_temp", FlowPropertyRegistry.All[37].Id);
+            Assert.Equal(FlowPropertyKind.Scalar, FlowPropertyRegistry.All[37].Kind);
         }
 
         [Fact]
@@ -115,7 +124,7 @@ namespace FluxForge.Tests
             FieldInfo[] fields = typeof(FlowProps).GetFields(
                 BindingFlags.Public | BindingFlags.Static);
 
-            Assert.Equal(37, fields.Length);
+            Assert.Equal(38, fields.Length);
 
             HashSet<string> ids = new HashSet<string>();
             foreach (FieldInfo field in fields)
@@ -132,7 +141,7 @@ namespace FluxForge.Tests
                 Assert.True(ids.Add(id), "字段名映射到重复的属性 Id：" + id);
             }
 
-            Assert.Equal(37, ids.Count);
+            Assert.Equal(38, ids.Count);
         }
 
         [Fact]

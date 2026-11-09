@@ -54,6 +54,9 @@
 4. 需要显示时再改 assets/items.json 的 statusLines
 ```
 
+未注册的 `CURRENT_PART_*` 液体由 `foreign` 桶静默携带，
+保留原始 tag，不计入装置可处理液体；发射时只清零、不删除 tag。
+
 完整步骤见 [`src/Logic/README.md`](src/Logic/README.md)。
 
 ### 想新增普通物品或视觉

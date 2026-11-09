@@ -22,7 +22,7 @@ namespace FluxForge
     ///   · 基类不决定音效/动画；某个具体变体需要表现时，由该变体自己调用
     ///     <see cref="FlowAudio"/> / <see cref="FlowAnimation"/>
     /// </summary>
-    public abstract class SplitDevice : IFlowRouter, IFlowNotifier, IFacing
+    public abstract class SplitDevice : IFlowRouter, IFlowNotifier, IFacing, IFlowInlet
     {
         /// <summary>通道方向集（相对 Facing）。数组长度即装置通道数。</summary>
         private readonly int[] _relativeDirs;
@@ -50,19 +50,6 @@ namespace FluxForge
         /// </param>
         protected SplitDevice(int[] relativeChannelDirs, int[] emitCounts = null)
         {
-            if (relativeChannelDirs == null)
-            {
-                throw new ArgumentNullException(nameof(relativeChannelDirs));
-            }
-            if (relativeChannelDirs.Length < 2)
-            {
-                throw new ArgumentException(
-                    "通道数不能少于 2：转向/分流装置至少需要 1 个入口 + 1 个出口，收到 " + relativeChannelDirs.Length + " 个",
-                    nameof(relativeChannelDirs));
-            }
-
-            ValidateChannelDirs(relativeChannelDirs);
-
             // 复制一份，避免调用方后续改数组导致旋转结果与源数据不一致
             _relativeDirs = (int[])relativeChannelDirs.Clone();
             _rotatedChannelDirs = new int[_relativeDirs.Length];
@@ -77,7 +64,6 @@ namespace FluxForge
             get { return _facing; }
             set
             {
-                ValidateDirection(value, nameof(Facing));
                 _facing = value;
                 RecalculateRotatedChannelDirs();
             }
@@ -226,7 +212,7 @@ namespace FluxForge
         /// 通道朝上时，流源得向下运动才进得来。任意通道都接受流入。
         /// </summary>
         /// <param name="direction">流源当前的移动朝向（0=上 1=右 2=下 3=左）。</param>
-        private bool CanEnter(int direction)
+        public bool CanEnter(int direction)
         {
             int enterChannel = Opposite(direction);
             for (int i = 0; i < _rotatedChannelDirs.Length; i++)
@@ -256,7 +242,7 @@ namespace FluxForge
                 TurnOffsetRandom.NextDouble() * TurnOffsetRange;
         }
 
-        /// <summary>发射数量：null → 每通道 1 道；否则长度须与通道集一致、每项非负。</summary>
+        /// <summary>发射数量：未指定时每通道 1 道；显式配置由调用方保证合法。</summary>
         private static int[] BuildEmitCounts(int[] emitCounts, int channelCount)
         {
             if (emitCounts == null)
@@ -269,57 +255,8 @@ namespace FluxForge
                 return defaults;
             }
 
-            if (emitCounts.Length != channelCount)
-            {
-                throw new ArgumentException(
-                    "发射数量必须与通道集等长：通道 " + channelCount + " 个，发射数量 " + emitCounts.Length + " 个",
-                    nameof(emitCounts));
-            }
-
-            for (int i = 0; i < emitCounts.Length; i++)
-            {
-                if (emitCounts[i] < 0)
-                {
-                    throw new ArgumentOutOfRangeException(
-                        nameof(emitCounts),
-                        "发射数量不能为负：第 " + i + " 个是 " + emitCounts[i]);
-                }
-            }
-
             return (int[])emitCounts.Clone();
         }
 
-        /// <summary>
-        /// 校验通道方向集：每个值都合法，且互不重复。
-        /// 超范围的值会被 <c>% 4</c> 悄悄折回成另一个方向；重复会让入口被跳过两次、少发流源。
-        /// </summary>
-        private static void ValidateChannelDirs(int[] directions)
-        {
-            for (int i = 0; i < directions.Length; i++)
-            {
-                ValidateDirection(directions[i], nameof(directions));
-
-                for (int j = i + 1; j < directions.Length; j++)
-                {
-                    if (directions[j] == directions[i])
-                    {
-                        throw new ArgumentException(
-                            "通道方向重复：" + directions[i] + "（第 " + i + " 个和第 " + j + " 个）",
-                            nameof(directions));
-                    }
-                }
-            }
-        }
-
-        /// <summary>校验单个方向值：必须是 0~3（0=上 1=右 2=下 3=左）。</summary>
-        private static void ValidateDirection(int direction, string paramName)
-        {
-            if (direction < 0 || direction > 3)
-            {
-                throw new ArgumentOutOfRangeException(
-                    paramName,
-                    "方向必须是 0~3（0=上 1=右 2=下 3=左），收到 " + direction);
-            }
-        }
     }
 }

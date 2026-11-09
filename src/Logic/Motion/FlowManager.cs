@@ -30,6 +30,7 @@ namespace FluxForge
             public double LastY;
             public int StillFrames;
             public bool IsBlocked;
+            public (int X, int Y)? DepartureCell;
         }
 
         private readonly IFlowGrid _grid;
@@ -39,7 +40,7 @@ namespace FluxForge
 
         public FlowManager(IFlowGrid grid, FlowSpawner flows = null)
         {
-            _grid = grid ?? throw new ArgumentNullException(nameof(grid));
+            _grid = grid;
             if (flows != null)
             {
                 BindFlows(flows);
@@ -101,14 +102,33 @@ namespace FluxForge
                 FlowEntity entity = active[i];
 
                 // 走出网格的流源直接回收：否则它会一路飘向无穷远，名单只增不减
-                if (!_grid.Contains((int)Math.Floor(entity.Position.X), (int)Math.Floor(entity.Position.Y)))
+                int currentX = CellAt(entity.Position.X, FlowMotionData.StepX(entity.Motion.Direction));
+                int currentY = CellAt(entity.Position.Y, FlowMotionData.StepY(entity.Motion.Direction));
+                if (!_grid.Contains(currentX, currentY)
+                    || _grid.GetCellKind(currentX, currentY) == FlowCellKind.Occupied)
                 {
                     flows.Kill(entity);
                     continue;
                 }
 
+                // 装置主动设置的停顿：到时间前完全不移动，也不推进反应计时。
+                if (entity.HoldSeconds > 0d)
+                {
+                    entity.HoldSeconds = Math.Max(0d, entity.HoldSeconds - deltaTime);
+                    if (entity.HoldSeconds > 1e-9d)
+                    {
+                        continue;
+                    }
+
+                    entity.HoldSeconds = 0d;
+                }
+
                 // 位置直接写进 entity.Position，视觉层在 LateUpdate 里自己读
                 MoveFlowEntity(entity, deltaTime, flows);
+
+                // 碰撞或路由已销毁的流源，不再执行本帧化学反应。
+                if (!_blockedStates.ContainsKey(entity))
+                    continue;
 
                 // 反应等待时间按现实帧扣减；到期后执行一次，并保留越过 0 的小数残差。
                 entity.NextReactionTime -= deltaTime;
@@ -134,7 +154,7 @@ namespace FluxForge
 
         private void UpdateBlockedStates(double deltaTime, FlowSpawner flows)
         {
-            if (!(deltaTime > 0d))
+            if (deltaTime == 0d)
             {
                 return;
             }
@@ -146,7 +166,23 @@ namespace FluxForge
                 BlockedState state = _blockedStates[entity];
                 double positionX = entity.Position.X;
                 double positionY = entity.Position.Y;
-                double speed = entity.Motion == null ? 0d : entity.Motion.Speed;
+                double speed = entity.Motion.Speed;
+
+                // 主动停顿不是“异常受阻”：期间不采样，也不产生 Blocked 事件。
+                if (entity.HoldSeconds > 0d)
+                {
+                    state.StillFrames = 0;
+                    state.LastX = positionX;
+                    state.LastY = positionY;
+
+                    if (state.IsBlocked)
+                    {
+                        state.IsBlocked = false;
+                        flows.ReportBlockedState(entity, false);
+                    }
+
+                    continue;
+                }
 
                 // 比较原始 double 坐标，不按格号或容差判断。
                 if (positionX == state.LastX && positionY == state.LastY
@@ -173,7 +209,7 @@ namespace FluxForge
         }
 
         /// <summary>
-        /// 一帧推进单个流源：算候选终点 → 逐格探测装置 → 撞上则截停并触发装置，无阻则直达。
+        /// 一帧推进：按路径顺序检查格边界入口与格内三分之一处交互，无截停则直达终点。
         /// </summary>
         private void MoveFlowEntity(FlowEntity entity, double deltaTime, FlowSpawner flows)
         {
@@ -186,63 +222,81 @@ namespace FluxForge
             }
         }
 
-        /// <summary>
-        /// 逐格碰撞探测：从起点格沿方向走到终点格（含终点格，不查起点格），
-        /// 返回是否撞上了「路由或反应装置」。
-        ///
-        /// 装置需要造新流源或终结旧流源时，用的是传进来的 <paramref name="flows"/>——
-        /// 运动层不持有它，只是这一步借用一下。
+        /// <summary>整数是装置中心，半整数是格边界。按移动顺序检查入口与格内交互点，
+        /// 即使一帧跨越多格，也不会跳过碰撞或提前触发后方装置。
         /// </summary>
         private bool TryFindBlocker(
             FlowPos startPos, FlowPos endPos, int direction, FlowEntity entity, FlowSpawner flows)
         {
             int stepX = FlowMotionData.StepX(direction);
             int stepY = FlowMotionData.StepY(direction);
-
-            // 只遍历本帧真正经过的整数坐标，包含“起点所在格但还没经过的坐标”。
-            // 向左/向上时起点格可能正是装置格：Floor(start) 会把该格排除掉，
-            // 必须从 Ceiling(start)-1 开始，才能看到起点与终点之间的装置坐标。
-            if (stepX != 0)
+            bool horizontal = stepX != 0;
+            int step = horizontal ? stepX : stepY;
+            double start = horizontal ? startPos.X : startPos.Y;
+            double end = horizontal ? endPos.X : endPos.Y;
+            int lane = CellAt(horizontal ? startPos.Y : startPos.X, 0);
+            // 入口位于中心前半格，交互点位于入口后 1/3 格（即中心前 1/6 格）。
+            // 分别遍历边界与交互点，再按运动方向合并，起点事件不重放。
+            double boundary = step > 0 ? Math.Floor(start + .5) + .5
+                : Math.Ceiling(start - .5) - .5;
+            int interactionCell = step > 0 ? (int)Math.Floor(start + step / 6d) + 1
+                : (int)Math.Ceiling(start + step / 6d) - 1;
+            while (true)
             {
-                int baseY = (int)Math.Floor(startPos.Y);
-                int cellX = stepX > 0
-                    ? (int)Math.Floor(startPos.X) + 1
-                    : (int)Math.Ceiling(startPos.X) - 1;
-
-                while (stepX > 0 ? cellX <= endPos.X : cellX >= endPos.X)
-                {
-                    if (TryProbeCell(entity, flows, cellX, baseY))
-                    {
-                        return true;
-                    }
-
-                    cellX += stepX;
-                }
-
-                return false;
-            }
-
-            int baseX = (int)Math.Floor(startPos.X);
-            int cellY = stepY > 0
-                ? (int)Math.Floor(startPos.Y) + 1
-                : (int)Math.Ceiling(startPos.Y) - 1;
-
-            while (stepY > 0 ? cellY <= endPos.Y : cellY >= endPos.Y)
-            {
-                if (TryProbeCell(entity, flows, baseX, cellY))
-                {
+                double interaction = interactionCell - step / 6d;
+                bool isBoundary = step > 0 ? boundary < interaction : boundary > interaction;
+                double point = isBoundary ? boundary : interaction;
+                if (step > 0 ? point > end : point < end) break;
+                int cell = isBoundary ? (int)(boundary + step * .5) : interactionCell;
+                int x = horizontal ? cell : lane;
+                int y = horizontal ? lane : cell;
+                if (isBoundary ? TryEnterCell(entity, flows, x, y)
+                    : TryProbeCell(entity, flows, x, y))
                     return true;
-                }
-
-                cellY += stepY;
+                if (isBoundary) boundary += step;
+                else interactionCell += step;
             }
+            return false;
+        }
 
+        // 正好落在边界时，沿运动方向归入新格；横向车道边界归入较小格号。
+        private static int CellAt(double position, int step)
+        {
+            return step <= 0 ? (int)Math.Ceiling(position - .5)
+                : (int)Math.Floor(position + .5);
+        }
+
+        /// <summary>入口只检查占位和方向，不执行化学反应或转向。</summary>
+        private bool TryEnterCell(FlowEntity entity, FlowSpawner flows, int x, int y)
+        {
+            if (!_grid.Contains(x, y) || _grid.GetCellKind(x, y) == FlowCellKind.Occupied)
+            {
+                flows.Kill(entity);
+                return true;
+            }
+            var router = _grid.GetRouterAt(x, y);
+            var reactor = _grid.GetReactorAt(x, y);
+            int direction = entity.Motion.Direction;
+            if ((router is IFlowInlet routerInlet && !routerInlet.CanEnter(direction))
+                || (reactor is IFlowInlet reactorInlet && !reactorInlet.CanEnter(direction)))
+            {
+                flows.Kill(entity);
+                return true;
+            }
             return false;
         }
 
         private bool TryProbeCell(
             FlowEntity entity, FlowSpawner flows, int cellX, int cellY)
         {
+            BlockedState state = _blockedStates[entity];
+            var departure = state.DepartureCell;
+            state.DepartureCell = null;
+            // 转向后的微小偏移可能让下一帧再次探测当前装置格。
+            // 这是沿出口离开，不能重复执行该装置的反应/路由。
+            if (departure.HasValue && departure.Value.X == cellX && departure.Value.Y == cellY)
+                return false;
+
             IFlowRouter router = _grid.GetRouterAt(cellX, cellY);
             IFlowDevice reactor = _grid.GetReactorAt(cellX, cellY);
 
@@ -257,6 +311,12 @@ namespace FluxForge
                 blocked = true;
             }
 
+            // 装置可以请求主动停顿；它和截停一样必须停到装置格中心。
+            if (entity.HoldSeconds > 0d)
+            {
+                blocked = true;
+            }
+
             if (!blocked)
             {
                 return false;
@@ -264,6 +324,8 @@ namespace FluxForge
 
             // 反应发生后，流源截停到装置所在的整数格。
             StopAt(entity, cellX, cellY);
+            if (_blockedStates.TryGetValue(entity, out state))
+                state.DepartureCell = (cellX, cellY);
             return true;
         }
 

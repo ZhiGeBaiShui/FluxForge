@@ -68,6 +68,7 @@ namespace FluxForge
             double applied = next - current;
             if (applied != 0d)
             {
+                entity.HoldSeconds = FlowReactionDelay.NextSeconds();
                 FlowAudio.Play(
                     applied > 0d ? FlowSoundIds.Heated : FlowSoundIds.Cooled,
                     this,

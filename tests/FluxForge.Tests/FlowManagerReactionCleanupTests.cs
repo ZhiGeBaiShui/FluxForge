@@ -33,6 +33,7 @@ namespace FluxForge.Tests
 
         private sealed class EmptyGrid : IFlowGrid
         {
+            public FlowCellKind GetCellKind(int x, int y) => FlowCellKind.Empty;
             public bool Contains(int cellX, int cellY)
             {
                 return true;

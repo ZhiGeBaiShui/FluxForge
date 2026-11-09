@@ -1,5 +1,8 @@
 namespace FluxForge
 {
+    /// <summary>普通物品占位会销毁流源；装置格交给路由和反应处理。</summary>
+    public enum FlowCellKind { Empty, Occupied, Device }
+
     /// <summary>
     /// 网格查询：运动层知道「某格上有什么」的唯一通道。由外部（适配层）实现，框架不认识游戏网格。
     ///
@@ -11,6 +14,8 @@ namespace FluxForge
     {
         /// <summary>格子是否在网格范围内。流源走出去就该消失，靠这个判断。</summary>
         bool Contains(int cellX, int cellY);
+
+        FlowCellKind GetCellKind(int cellX, int cellY);
 
         /// <summary>查询格子上的路由装置（分流 / 转向）。没有返回 null。</summary>
         IFlowRouter GetRouterAt(int cellX, int cellY);

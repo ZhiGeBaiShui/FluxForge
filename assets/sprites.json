@@ -4,8 +4,8 @@
       "key": "fluxforge_device_manual",
       "atlas": "fluxforge_device_manual_atlas",
       "file": "fluxforge_device_manual.png",
-      "shape": "11",
-      "shapeWidth": 1
+      "shape": "111111",
+      "shapeWidth": 2
     },
     {
       "key": "ice_block",

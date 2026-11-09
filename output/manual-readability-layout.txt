@@ -1,0 +1,30 @@
+PageNumber font 26.55 -> 26.55 rect=(65.73, 50.00) position=(-2.40, -354.70) preferredHeight=50
+manual.overview.title font 25.12 -> 30 rect=(527.52, 66.73) position=(0.00, 0.00) preferredHeight=66.73199
+manual.overview.intro font 14.444 -> 18 rect=(527.52, 153.75) position=(0.00, 39.22) preferredHeight=153.75
+manual.overview.body font 13.816 -> 18 rect=(527.52, 27.76) position=(0.00, 186.96) preferredHeight=27.76
+manual.overview.body (1) font 13.816 -> 18 rect=(527.52, 78.16) position=(0.00, -58.26) preferredHeight=78.16
+account font 13.816 -> 18 rect=(196.98, 153.75) position=(83.93, 114.72) preferredHeight=153.75
+manual.overview.body (2) font 13.816 -> 18 rect=(527.52, 78.16) position=(0.00, 116.10) preferredHeight=78.16
+account (1) font 13.816 -> 18 rect=(196.98, 103.35) position=(83.93, -479.22) preferredHeight=103.35
+manual.emitter.title font 25.12 -> 30 rect=(527.52, 66.73) position=(0.00, 0.00) preferredHeight=66.73199
+manual.emitter.subtitle font 12.56 -> 18 rect=(527.52, 46.71) position=(0.00, 0.00) preferredHeight=46.7124
+manual.emitter.intro font 14.444 -> 18 rect=(527.52, 100.10) position=(0.00, 0.00) preferredHeight=100.0981
+manual.emitter.body font 13.816 -> 18 rect=(527.52, 153.48) position=(0.00, 0.00) preferredHeight=153.4836
+manual.demo.placeholder font 11.304 -> 14 rect=(360.82, 180.78) position=(0.00, 0.00) preferredHeight=180.777
+manual.demo.play font 15.7 -> 20 rect=(110.78, 86.42) position=(0.00, 0.00) preferredHeight=86.41795
+manual.demo.play font 15.7 -> 20 rect=(110.78, 86.42) position=(0.00, 0.00) preferredHeight=86.41795
+manual.emitter.body (1) font 13.816 -> 18 rect=(75.78, 52.96) position=(216.60, -16.76) preferredHeight=52.96
+manual.filter.title font 25.12 -> 30 rect=(527.52, 66.73) position=(0.00, 0.00) preferredHeight=66.73199
+manual.filter.subtitle font 12.56 -> 18 rect=(527.52, 46.71) position=(0.00, 0.00) preferredHeight=46.7124
+manual.filter.intro font 14.444 -> 18 rect=(527.52, 100.10) position=(0.00, 0.00) preferredHeight=100.0981
+manual.filter.body font 13.816 -> 18 rect=(527.52, 153.48) position=(0.00, 0.00) preferredHeight=153.4836
+manual.demo.placeholder font 11.304 -> 14 rect=(360.82, 180.78) position=(0.00, 0.00) preferredHeight=180.777
+manual.demo.play font 15.7 -> 20 rect=(110.78, 86.42) position=(0.00, 0.00) preferredHeight=86.41795
+manual.filter.device_name font 13.816 -> 18 rect=(58.69, 52.96) position=(214.00, -43.72) preferredHeight=52.96
+manual.coldtrap.title font 25.12 -> 30 rect=(527.52, 66.73) position=(0.00, 0.00) preferredHeight=66.73199
+manual.coldtrap.subtitle font 12.56 -> 18 rect=(527.52, 46.71) position=(0.00, 0.00) preferredHeight=46.7124
+manual.coldtrap.intro font 14.444 -> 18 rect=(527.52, 100.10) position=(0.00, 0.00) preferredHeight=100.0981
+manual.coldtrap.body font 13.816 -> 18 rect=(527.52, 153.48) position=(0.00, 0.00) preferredHeight=153.4836
+manual.demo.placeholder font 11.304 -> 14 rect=(360.82, 180.78) position=(0.00, 0.00) preferredHeight=180.777
+manual.demo.play font 15.7 -> 20 rect=(110.78, 86.42) position=(0.00, 0.00) preferredHeight=86.41795
+manual.coldtrap.device_name font 13.816 -> 18 rect=(57.42, 52.96) position=(207.40, -58.56) preferredHeight=52.96

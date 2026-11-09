@@ -11,6 +11,8 @@ using System.Collections.Generic;
 /// </summary>
 public sealed class GameItem
 {
+    public GameSlotInventory BatterySlot;
+    public GridShape modifiedShape;
     public TagSystem state = new TagSystem();
 
     public TagSystem modifiedState = new TagSystem();
@@ -144,5 +146,64 @@ namespace FluxForge.Mod
             item.SyncModifiedState();
             CommitCount++;
         }
+    }
+}
+
+
+// 电池映射测试边界：只模拟原版槽位访问、可用电量和原子扣费。
+public sealed class GameSlotInventory
+{
+    public GameItem childItem;
+}
+public static class MachineHelper
+{
+    public static GameSlotInventory GetBatterySlot(GameItem item) => item.BatterySlot;
+}
+public static class PowerHelper
+{
+    public static void UpdateEnergyCreditSprite(GameItem battery) { }
+    public const string POWER_SOURCE_ITEM_ENERGY = "power_source_item_energy";
+    public static bool CanDrawPowerSource(GameItem battery, int amount) =>
+        battery != null && battery.modifiedState.GetTag(POWER_SOURCE_ITEM_ENERGY).GetInt() >= amount;
+    public static bool DrawPowerSource(GameItem battery, int amount)
+    {
+        if (!CanDrawPowerSource(battery, amount)) return false;
+        int energy = battery.modifiedState.GetTag(POWER_SOURCE_ITEM_ENERGY).GetInt();
+        battery.state.GetTag(POWER_SOURCE_ITEM_ENERGY).SetInt(energy - amount);
+        battery.SyncModifiedState();
+        return true;
+    }
+}
+
+
+public sealed class GameGridInventory
+{
+    public object rectTransform = new object();
+    public GridShape inventoryShape = new GridShape(20, 20);
+    public List<GameItem> childItems = new List<GameItem>();
+}
+
+// 网格适配测试只模拟已知的原版形状查询和变换接口。
+public sealed class GridShape
+{
+    public int width, height, minX, minY, orientation;
+    public bool flipped;
+    public byte[] cells;
+    public GridShape(int w, int h)
+    {
+        width = w; height = h; cells = new byte[w*h];
+        System.Array.Fill(cells, (byte)1);
+    }
+    public byte GetLocal(int x, int y) => cells[y*width+x];
+    public (int,int) ForwardTransform(int x, int y)
+    {
+        if (flipped) x = width-1-x;
+        (x,y) = orientation switch {
+            1 => (y, width-1-x),
+            2 => (width-1-x, height-1-y),
+            3 => (height-1-y, x),
+            _ => (x,y)
+        };
+        return (x+minX,y+minY);
     }
 }

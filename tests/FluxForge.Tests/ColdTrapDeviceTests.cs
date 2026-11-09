@@ -44,6 +44,7 @@ namespace FluxForge.Tests
             Assert.Equal(1000d, entity.Properties.Get(FlowProps.Water));
             Assert.Equal(4d, device.Extracted.Get(FlowProps.Sugar));
             Assert.Equal(20d, entity.Properties.Get(FlowProps.Temperature));
+            Assert.InRange(entity.HoldSeconds, 0.05d, 0.3000001d);
         }
 
         [Fact]
