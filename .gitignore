@@ -16,6 +16,7 @@ obj/
 .superpowers/
 
 # === 工具产物 / 调试中间文件 ===
+output/
 *.genie
 review_results.json
 assets/raw/
