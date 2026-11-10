@@ -13,7 +13,7 @@ manual.emitter.body,"路线与回收\nL型转向装置可以改变流向；发�
 manual.emitter.body (1),"流源发射器"
 manual.emitter.subtitle,"让液体沿着你设计的路线运行"
 manual.emitter.title,"发射与回收"
-manual.filter.body,"效率与取舍\n流速越慢、温度越高，过滤效率越高。配合变速与温控装置，可以调整处理条件。\n\n过滤存在浓度下限；高温也可能带来蒸发损失。"
+manual.filter.body,"效率与取舍\n温度越高，过滤效率越高。使用温控装置可以调整处理条件。\n\n注意：高温可能带来蒸发损失。"
 manual.filter.intro,"过滤装置可以降低液体中的化学污染与重金属污染，将酸、碱升到极高温度来使用它去除杂质是常见的设计手段。"
 manual.filter.subtitle,"为原版化学准备更干净的原料"
 manual.filter.title,"过滤装置"

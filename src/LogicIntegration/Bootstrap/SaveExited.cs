@@ -1,3 +1,4 @@
+using FluxForge.Manual;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
@@ -53,6 +54,7 @@ namespace FluxForge.Mod
         private static void Postfix()
         {
             DeviceManual.CloseCurrent();
+            PaperNoteContent.Clear();
             FlowDriver.Shutdown();
         }
     }

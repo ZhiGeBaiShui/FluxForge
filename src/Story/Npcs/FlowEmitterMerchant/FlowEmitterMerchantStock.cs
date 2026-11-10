@@ -32,15 +32,31 @@ namespace FluxForge.Story.FlowEmitterMerchant
 
         private const string ManualItemKey = "fluxforge_device_manual";
 
+        private static readonly StoryStockRule[] SecondVisitRules =
+        {
+            new StoryStockRule(null, "flow_cold_trap", 1, false),
+            new StoryStockRule(null, "flow_filter", 1, false),
+            new StoryStockRule(null, "flow_emitter", 2, false),
+            new StoryStockRule(null, "l_turn_device", 4, false),
+            new StoryStockRule(null, "flow_heater", 1, false),
+            new StoryStockRule(null, "flow_cooler", 1, false),
+            new StoryStockRule(null, "flow_straight_speed", 2, false),
+        };
+
+        internal static void PlaceSecondVisit()
+        {
+            PlaceRules(SecondVisitRules);
+        }
+
         private static readonly StoryStockRule[] RepeatRules =
         {
             new StoryStockRule(
-                FlowEmitterMerchantProgress.FirstStoryKey,
+                FlowEmitterMerchantProgress.ArrivalSeenKey,
                 "flow_emitter",
                 2,
                 false),
             new StoryStockRule(
-                FlowEmitterMerchantProgress.FirstStoryKey,
+                FlowEmitterMerchantProgress.ArrivalSeenKey,
                 "flow_filter",
                 1,
                 false),
@@ -71,36 +87,26 @@ namespace FluxForge.Story.FlowEmitterMerchant
                 false),
         };
 
-        internal static void Place()
+        internal static void PlaceInitial()
         {
-            StoryStockRule[] rules
-                = FlowEmitterMerchantProgress.HasFirstStock
-                    ? RepeatRules
-                    : FirstVisitRules;
-
-            PlaceRules(rules);
-
-            if (!FlowEmitterMerchantProgress.HasFirstStock)
-            {
-                FlowEmitterMerchantProgress.MarkFirstStock();
-            }
+            PlaceRules(FirstVisitRules);
         }
 
-        /// <summary>首次到访赠礼：流源手册直接放到前台，不计入售卖库存。</summary>
+        /// <summary>后续到访：旧库存由原版在客户离店时清理，这里只重新上货。</summary>
+        internal static void Refresh()
+        {
+            PlaceRules(RepeatRules);
+        }
+
+        /// <summary>第二次到访赠礼：流源手册直接放到前台，不计入售卖库存。</summary>
         internal static void GiveManual()
         {
-            if (FlowEmitterMerchantProgress.HasManualGift)
-            {
-                return;
-            }
-
             GameItem manual = DirectoryMaster.Item(ManualItemKey);
             GeneralHelper.SetItemOwned(manual, true);
             GraphUtils.EmporiumTryAdd(
                 EmporiumEntry.Instance.frontInvinvElement,
                 manual);
 
-            FlowEmitterMerchantProgress.MarkManualGift();
         }
 
         private static void PlaceRules(StoryStockRule[] rules)
@@ -130,10 +136,7 @@ namespace FluxForge.Story.FlowEmitterMerchant
                 MarkShabby(item);
             }
 
-            if (!PlayerStore.Instance.TryAddDirectSellingItemToTable(item))
-            {
-                item.Destroy();
-            }
+            PlayerStore.Instance.AddDirectSellingItemToTable(item);
         }
 
         internal static void MarkShabby(GameItem item)

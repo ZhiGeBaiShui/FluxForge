@@ -39,19 +39,20 @@ namespace FluxForge.Story
 
             await edge.Execute(sequence);
 
-            if (edge.To == null)
+            StoryNode next = edge.ResolveNext();
+            if (next == null)
             {
                 await sequence.Run(null, null);
                 ExitStory();
                 return;
             }
 
-            bool attached = await sequence.Run(edge.To, RunOption);
+            bool attached = await sequence.Run(next, RunOption);
 
             if (!attached)
             {
                 StoryNodeDialogue.Play(
-                    StoryNodeDialogue.Build(edge.To, RunOption));
+                    StoryNodeDialogue.Build(next, RunOption));
             }
         }
 

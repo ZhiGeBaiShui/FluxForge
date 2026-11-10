@@ -118,6 +118,7 @@ src/
 │  ├─ GridBuilding/   网格、生命周期、FlowRuntime
 │  ├─ TagMapping/     tag 常量、库存读写
 │  └─ Visual/         流源视觉层
+├─ Manual/           手册层：阅读入口、页面编排、本地化、演示区域
 ├─ Events/           事件层
 │  ├─ Public/        公共事件 API
 │  ├─ Runtime/       事件会话、协程宿主

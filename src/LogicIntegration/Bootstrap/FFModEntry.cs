@@ -1,5 +1,7 @@
+using FluxForge.Manual;
 using System;
 using FluxForge.Mod.Visual;
+using FluxForge.Story.AcidBuyer;
 using FluxForge.Story.FlowEmitterMerchant;
 using FluxForge.Traits;
 using UnityEngine;
@@ -56,6 +58,7 @@ namespace FluxForge.Mod
             ModHook.OnModItemDirectoryInit += OnModItemDirectoryInit;
             SaveLoaded.Subscribe();
             FlowEmitterMerchantNpc.Subscribe();
+            AcidBuyerNpc.Subscribe();
             TraitLayer.Initialize();
 
             // 先把自定义 WAV 登记进 AudioDirectory，再启动音效服务。
@@ -71,9 +74,11 @@ namespace FluxForge.Mod
         public void OnDisable()
         {
             DeviceManual.Shutdown();
+            PaperNoteContent.Clear();
             ModHook.OnModItemDirectoryInit -= OnModItemDirectoryInit;
             SaveLoaded.Unsubscribe();
             FlowEmitterMerchantNpc.Unsubscribe();
+            AcidBuyerNpc.Unsubscribe();
             TraitLayer.Shutdown();
 
             DeviceAudioService.Shutdown();

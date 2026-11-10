@@ -1,7 +1,8 @@
+using FluxForge.Mod;
 using System;
 using System.Collections.Generic;
 
-namespace FluxForge.Mod
+namespace FluxForge.Manual
 {
     internal static class ManualCatalog
     {

@@ -22,14 +22,14 @@ namespace FluxForge.Story
             _hasPrefix = prefix != null;
         }
 
-        internal void SayNpc(string content)
+        internal void SayNpc(string content, float pause = 1f)
         {
-            AddLine(_npcName(), content);
+            AddLine(_npcName(), content, pause);
         }
 
         internal void SayPlayer(string content)
         {
-            AddLine(PlayerStore.Instance.playerName, content);
+            AddLine(PlayerStore.Instance.playerName, content, 1f);
         }
 
         internal void Do(Action action)
@@ -81,10 +81,15 @@ namespace FluxForge.Story
             return attached;
         }
 
-        private void AddLine(string speaker, string content)
+        private void AddLine(
+            string speaker,
+            string content,
+            float pause)
         {
             Dialogue line = new Dialogue();
             line.SetText(speaker, content);
+            line.endActionDelay = pause;
+            DialoguePacing.Set(line, pause);
 
             if (_first == null)
             {

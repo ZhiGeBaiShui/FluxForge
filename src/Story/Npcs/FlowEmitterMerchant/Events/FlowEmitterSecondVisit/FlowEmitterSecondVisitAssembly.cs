@@ -14,7 +14,7 @@ namespace FluxForge.Story.FlowEmitterSecondVisit
 
         internal override bool CanPlay()
         {
-            return FlowEmitterMerchantProgress.HasFirstStory
+            return FlowEmitterMerchantProgress.HasArrivalSeen
                 && !FlowEmitterMerchantProgress.HasSecondVisit;
         }
 

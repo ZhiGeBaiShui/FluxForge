@@ -221,7 +221,7 @@
       "tags": [
         {
           "valueName": "FLUXFORGE_TEMPERATURE_DELTA",
-          "valueDouble": 10.0
+          "valueDouble": 100.0
         },
         {
           "valueName": "FLUXFORGE_TEMPERATURE_MAX",
@@ -262,7 +262,7 @@
       "tags": [
         {
           "valueName": "FLUXFORGE_TEMPERATURE_DELTA",
-          "valueDouble": -10.0
+          "valueDouble": -100.0
         },
         {
           "valueName": "FLUXFORGE_TEMPERATURE_MAX",
@@ -270,7 +270,7 @@
         },
         {
           "valueName": "FLUXFORGE_TEMPERATURE_MIN",
-          "valueDouble": -20.0
+          "valueDouble": -100.0
         }
       ],
       "statusLines": [
@@ -935,6 +935,16 @@
       "attachments": [
         "manual"
       ]
+    },
+    {
+      "key": "fluxforge_starter_note",
+      "sprite": "fluxforge_starter_note",
+      "paperImage": "starter_note",
+      "name": "奥雅的装置摆放便条",
+      "desc": "用图示说明液体灌装、装置摆放与激活方法。",
+      "value": 1,
+      "itemTypes": ["DOCUMENT"],
+      "attachments": ["paper_note"]
     }
   ]
 }

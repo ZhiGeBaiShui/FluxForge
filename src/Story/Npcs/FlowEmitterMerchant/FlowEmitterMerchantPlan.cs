@@ -1,5 +1,4 @@
 using FluxForge.Story.FlowEmitterArrival;
-using FluxForge.Story.FlowEmitterFarewell;
 using FluxForge.Story.FlowEmitterGenericVisit;
 using FluxForge.Story.FlowEmitterSecondVisit;
 
@@ -13,7 +12,6 @@ namespace FluxForge.Story.FlowEmitterMerchant
             new FlowEmitterArrivalAssembly(),
             new FlowEmitterSecondVisitAssembly(),
             new FlowEmitterGenericVisitAssembly(),
-            new FlowEmitterFarewellAssembly(),
         };
 
         internal static NpcStoryAssembly[] CreateStories()

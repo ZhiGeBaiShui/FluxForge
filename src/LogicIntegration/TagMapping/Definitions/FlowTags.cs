@@ -32,6 +32,9 @@ namespace FluxForge.Mod
         /// <summary>Mod 装置容器身份；不启用原版 LIQUID_CONTAINER_TAG。</summary>
         public const string DeviceContainerTag = "FLUXFORGE_DEVICE_CONTAINER_TAG";
 
+        /// <summary>流量装置物品类型；收货时不能把装置当普通试剂容器收走。</summary>
+        public const string FlowDevice = "FLOW_DEVICE";
+
         /// <summary>
         /// 装置配置：每次经过时对流源施加的温度变化（°C）。
         /// 正值 = 升温，负值 = 降温；冷阱与温度装置共用。

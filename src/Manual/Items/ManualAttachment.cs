@@ -1,4 +1,5 @@
-namespace FluxForge.Mod
+using FluxForge.Mod;
+namespace FluxForge.Manual
 {
     public sealed class ManualAttachment : ItemAttachment
     {

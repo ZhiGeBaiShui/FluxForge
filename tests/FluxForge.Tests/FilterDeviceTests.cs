@@ -60,7 +60,7 @@ namespace FluxForge.Tests
         }
 
         [Fact]
-        public void HigherSpeedRemovesLess()
+        public void SpeedDoesNotChangeOnePassPurification()
         {
             FlowEntity slow = MakeEntity(120d, 1500d, 500d, 1.5d);
             FlowEntity fast = MakeEntity(120d, 1500d, 500d, 20d);
@@ -69,18 +69,18 @@ namespace FluxForge.Tests
             device.TryReact(slow);
             device.TryReact(fast);
 
-            double slowRemoved = 2000d - ContaminantTotal(slow);
-            double fastRemoved = 2000d - ContaminantTotal(fast);
-
-            Assert.True(slowRemoved > fastRemoved);
+            Assert.Equal(
+                ContaminantTotal(slow),
+                ContaminantTotal(fast),
+                6);
         }
 
         [Fact]
         public void ColdWaterCannotReachQualityThreshold()
         {
-            // 101 度时 floor 是 1.00%，正好压在优质水线上，
-            // 单次穿过远达不到，所以污染占比仍在 1% 以上。
-            FlowEntity entity = MakeEntity(101d, 1500d, 500d, 2.5d);
+            // 100 度时 floor 是 1.01%，单次穿过会停在该下限，
+            // 所以污染占比仍在 1% 以上。
+            FlowEntity entity = MakeEntity(100d, 1500d, 500d, 2.5d);
 
             new FilterDevice().TryReact(entity);
 

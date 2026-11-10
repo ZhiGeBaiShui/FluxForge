@@ -1,4 +1,5 @@
 using System.Threading.Tasks;
+using FluxForge.Story.FlowEmitterMerchant;
 
 namespace FluxForge.Story.FlowEmitterSecondVisit
 {
@@ -14,6 +15,8 @@ namespace FluxForge.Story.FlowEmitterSecondVisit
         {
             player.SayNpc(FlowEmitterSecondVisitTexts.Greeting);
             player.SayNpc(FlowEmitterSecondVisitTexts.NewDevice);
+            player.SayNpc(FlowEmitterSecondVisitTexts.ColdTrap);
+            player.Do(FlowEmitterMerchantStock.GiveManual);
             player.SayNpc(FlowEmitterSecondVisitTexts.ExitLine);
             return Task.CompletedTask;
         }

@@ -174,6 +174,9 @@ namespace FluxForge.Mod
 
         public string manualTag { get; set; }
 
+        /// <summary>便条正文图片在 Textures/Paper 中的名称。</summary>
+        public string paperImage { get; set; }
+
         /// <summary>物品类型（MODULE / STORAGE / TOOL / MACHINE / FOOD / WEAPON / MEDICAL / ARMOR …）。</summary>
         public string type { get; set; }
 

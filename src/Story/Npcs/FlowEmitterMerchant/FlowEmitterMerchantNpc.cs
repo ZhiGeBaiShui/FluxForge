@@ -4,8 +4,7 @@ using UnityEngine;
 namespace FluxForge.Story.FlowEmitterMerchant
 {
     /// <summary>
-    /// 装置推销员的统筹层：负责注册、到店、首次剧情和首次库存。
-    /// 两个剧情本身分别在 FlowEmitterArrival 与 FlowEmitterFarewell。
+    /// 奥雅的统筹层：负责注册、到店、剧情和后续库存。
     /// </summary>
     internal static class FlowEmitterMerchantNpc
     {
@@ -90,7 +89,6 @@ namespace FluxForge.Story.FlowEmitterMerchant
                 arrestable = false,
                 mainDialogue = null,
                 OnArrival = StartStory,
-                tryInterceptDismiss = TryInterceptFirstDeparture,
             };
 
             client.CompleteClientCreation();
@@ -156,12 +154,15 @@ namespace FluxForge.Story.FlowEmitterMerchant
             if (phase == StoryPhase.Arrival)
             {
                 FinishStory();
+                PlayerStore.Instance.modData[NextVisitDayKey]
+                    = (StoreStation.GetDayCounter() + VisitIntervalDays).ToString();
+                DialogUIManager.Instance.CurrentClientLeave();
                 return;
             }
 
             if (phase == StoryPhase.SecondVisit)
             {
-                OpenShop();
+                OpenShop(true);
                 return;
             }
 
@@ -177,13 +178,16 @@ namespace FluxForge.Story.FlowEmitterMerchant
             }
         }
 
-        private static void OpenShop()
+        private static void OpenShop(bool secondVisit = false)
         {
             StoreClient client = PlayerStore.Instance.currentClientInstance
                 .GetClientBlueprint();
 
             client.dismissable = true;
-            FlowEmitterMerchantStock.Place();
+            if (secondVisit)
+                FlowEmitterMerchantStock.PlaceSecondVisit();
+            else
+                FlowEmitterMerchantStock.Refresh();
         }
 
         private static string GetCurrentClientName()
@@ -202,15 +206,6 @@ namespace FluxForge.Story.FlowEmitterMerchant
             client.dismissable = true;
         }
 
-        private static bool TryInterceptFirstDeparture()
-        {
-            if (FlowEmitterMerchantProgress.HasSecondVisit)
-            {
-                return false;
-            }
-
-            return TryPlay(StoryPhase.SoldOut);
-        }
     }
 }
 

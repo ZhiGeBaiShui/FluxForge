@@ -1,6 +1,13 @@
 {
   "sprites": [
     {
+      "key": "fluxforge_starter_note",
+      "atlas": "fluxforge_starter_note_atlas",
+      "file": "fluxforge_starter_note.png",
+      "shape": "1111",
+      "shapeWidth": 2
+    },
+    {
       "key": "fluxforge_device_manual",
       "atlas": "fluxforge_device_manual_atlas",
       "file": "fluxforge_device_manual.png",

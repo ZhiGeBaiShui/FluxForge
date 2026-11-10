@@ -8,15 +8,6 @@ namespace FluxForge.Story.FlowEmitterMerchant
         internal const string ArrivalSeenKey
             = "fluxforge.flowEmitterDemo.arrivalSeen";
 
-        internal const string FirstStockKey
-            = "fluxforge.flowEmitterDemo.firstStockPlaced";
-
-        internal const string FirstStoryKey
-            = "fluxforge.flowEmitterDemo.firstStoryDone";
-
-        internal const string FarewellKey
-            = "fluxforge.flowEmitterDemo.farewellDone";
-
         internal const string SecondVisitKey
             = "fluxforge.flowEmitterDemo.secondVisitDone";
 
@@ -31,17 +22,7 @@ namespace FluxForge.Story.FlowEmitterMerchant
 
         internal static void MarkArrivalSeen()
         {
-            PlayerStore.Instance.modData[ArrivalSeenKey] = "1";
-        }
-
-        internal static void MarkFirstStory()
-        {
-            PlayerStore.Instance.modData[FirstStoryKey] = "1";
-        }
-
-        internal static void MarkFarewell()
-        {
-            PlayerStore.Instance.modData[FarewellKey] = "1";
+            PlayerStore.Instance.modData[ArrivalSeenKey] = "true";
         }
 
         internal static void MarkManualGift()
@@ -55,29 +36,6 @@ namespace FluxForge.Story.FlowEmitterMerchant
             {
                 return PlayerStore.Instance.modData.ContainsKey(
                     ManualGiftKey);
-            }
-        }
-
-        internal static bool HasFarewell
-        {
-            get
-            {
-                return PlayerStore.Instance.modData.ContainsKey(
-                    FarewellKey);
-            }
-        }
-
-        internal static void MarkFirstStock()
-        {
-            PlayerStore.Instance.modData[FirstStockKey] = "1";
-        }
-
-        internal static bool HasFirstStock
-        {
-            get
-            {
-                return PlayerStore.Instance.modData.ContainsKey(
-                    FirstStockKey);
             }
         }
 
@@ -129,15 +87,6 @@ namespace FluxForge.Story.FlowEmitterMerchant
             {
                 return PlayerStore.Instance.modData.ContainsKey(
                     SecondVisitKey);
-            }
-        }
-
-        internal static bool HasFirstStory
-        {
-            get
-            {
-                return PlayerStore.Instance.modData.ContainsKey(
-                    FirstStoryKey);
             }
         }
 

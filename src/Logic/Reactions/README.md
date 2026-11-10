@@ -54,9 +54,8 @@
 | `FlowReactionSolver.React(FlowProperties)` | 按 Order 执行全部自动发现的规则 |
 | `FlowBoilingTable.Entries` | 液体 → 沸点的稀疏表；不在表里 = 不蒸发 |
 | `FlowReactionMath.GetInt` / `TotalInt` / `SetInt` / `Round` / `Ceiling` / `Min` / `Max` | 移植原版 int µL 语义 |
-| `FilterReaction.React(FlowProperties, double speed)` | 按温度和速度去除化学污染与重金属 |
+| `FilterReaction.React(FlowProperties)` | 单次穿过直接降到温度对应的污染下限 |
 | `FilterReaction.ContaminantFloorAt(double temperature)` | 当前温度下的污染占比下限 |
-| `FilterReaction.RemovalFractionAt(double speed)` | 单次过滤比例 |
 | `TemperatureChangeReaction.React(FlowProperties, double delta)` | 施加一次温度增减 |
 | `BoilingRule.EvaporationRateAt(double temperature, double boilingPoint)` | 过热度对应的每轮蒸发比例 |
 

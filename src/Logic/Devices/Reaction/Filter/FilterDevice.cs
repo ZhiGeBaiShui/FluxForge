@@ -11,14 +11,14 @@ namespace FluxForge
     public sealed class FilterDevice : IFlowDevice
     {
         /// <summary>反应入口：流源撞上过滤装置时由运动层调用。</summary>
-        /// <param name="entity">完整流源；过滤只读取速度、原地修改属性。</param>
+        /// <param name="entity">完整流源；过滤原地修改属性。</param>
         /// <returns>恒为 false——过滤不截停流源。</returns>
         public bool TryReact(FlowEntity entity)
         {
             double chemicalBefore = entity.Properties.Get(FlowProps.ChemicalContaminant);
             double heavyMetalBefore = entity.Properties.Get(FlowProps.HeavyMetal);
 
-            FilterReaction.React(entity.Properties, entity.Motion.Speed);
+            FilterReaction.React(entity.Properties);
 
             double chemicalRemoved =
                 chemicalBefore - entity.Properties.Get(FlowProps.ChemicalContaminant);

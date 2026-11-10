@@ -3,7 +3,7 @@ using FluxForge.Story.FlowEmitterMerchant;
 
 namespace FluxForge.Story.FlowEmitterArrival
 {
-    /// <summary>首次到访：开场、介绍货品、上架首批库存，然后结束剧情。</summary>
+    /// <summary>首次到访：介绍用途并邀请玩家尝试。</summary>
     internal sealed class FlowEmitterGreetingEdge : StoryEdge
     {
         internal FlowEmitterGreetingEdge()
@@ -13,19 +13,18 @@ namespace FluxForge.Story.FlowEmitterArrival
 
         internal override Task Execute(StorySequence player)
         {
-            player.SayNpc(FlowEmitterArrivalTexts.Greeting);
-            player.SayNpc(FlowEmitterArrivalTexts.GreetingAsk);
-            player.SayNpc(FlowEmitterArrivalTexts.DevicePrompt);
-
-            player.Do(delegate
+            if (FlowEmitterMerchantProgress.VisitCount > 1)
             {
-                FlowEmitterMerchantStock.Place();
-                FlowEmitterMerchantStock.GiveManual();
-            });
+                player.SayNpc(FlowEmitterArrivalTexts.RetryInvitation);
+                return Task.CompletedTask;
+            }
 
-            player.SayNpc(FlowEmitterArrivalTexts.FirstVisitDiscount);
-            player.SayNpc(FlowEmitterArrivalTexts.DiscountSameFunction);
-            player.SayNpc(FlowEmitterArrivalTexts.DiscountOldLook);
+            player.SayNpc(FlowEmitterArrivalTexts.Greeting1);
+            player.SayNpc(FlowEmitterArrivalTexts.Greeting2);
+            player.SayNpc(FlowEmitterArrivalTexts.Purpose1);
+            player.SayNpc(FlowEmitterArrivalTexts.Purpose2);
+            player.SayNpc(FlowEmitterArrivalTexts.Invitation1);
+            player.SayNpc(FlowEmitterArrivalTexts.Invitation2);
 
             return Task.CompletedTask;
         }

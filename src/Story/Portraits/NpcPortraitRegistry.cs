@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using HarmonyLib;
 using UnityEngine;
 
@@ -13,19 +14,38 @@ namespace FluxForge.Story.Portraits
     public static class NpcPortraitRegistry
     {
         public const string SpriteKey = "fluxforge_saleswoman";
-
-        private const string TextureName = "npc_saleswoman";
+        public const string AcidBuyerSpriteKey = "fluxforge_acid_buyer";
 
         /// <summary>人物在画布中的占比；0.76 = 整体缩小 24%。</summary>
         private const float PortraitScale = 0.76f;
 
         // 原版人物 Sprite：288 × 211，PPU 100。
         private const float ReferenceWidth = 2.88f;
-        private const float ReferenceHeight = 2.11f;
         private const int ReferencePixelWidth = 288;
         private const int ReferencePixelHeight = 211;
 
-        private static Sprite _sprite;
+        private sealed class PortraitDefinition
+        {
+            internal string SpriteKey;
+            internal string TextureName;
+        }
+
+        private static readonly PortraitDefinition[] Definitions =
+        {
+            new PortraitDefinition
+            {
+                SpriteKey = NpcPortraitRegistry.SpriteKey,
+                TextureName = "npc_saleswoman",
+            },
+            new PortraitDefinition
+            {
+                SpriteKey = NpcPortraitRegistry.AcidBuyerSpriteKey,
+                TextureName = "npc_acid_buyer",
+            },
+        };
+
+        private static readonly Dictionary<string, Sprite> Sprites =
+            new Dictionary<string, Sprite>();
 
         /// <summary>在 SpriteDict.Awake 之后调用；重复调用安全。</summary>
         public static void Apply()
@@ -36,37 +56,47 @@ namespace FluxForge.Story.Portraits
                 return;
             }
 
-            if (_sprite == null)
+            for (int i = 0; i < Definitions.Length; i++)
             {
-                _sprite = Load();
-            }
+                PortraitDefinition definition = Definitions[i];
+                Sprite sprite;
+                if (!Sprites.TryGetValue(definition.SpriteKey, out sprite)
+                    || sprite == null)
+                {
+                    sprite = Load(definition);
+                    if (sprite == null)
+                    {
+                        continue;
+                    }
 
-            if (_sprite == null)
-            {
-                return;
-            }
+                    Sprites[definition.SpriteKey] = sprite;
+                }
 
-            SpriteDict.Instance.spriteDictionary[SpriteKey] = _sprite;
+                SpriteDict.Instance.spriteDictionary[definition.SpriteKey] = sprite;
+            }
         }
 
         public static void Shutdown()
         {
-            if (_sprite == null)
+            foreach (Sprite sprite in Sprites.Values)
             {
-                return;
+                if (sprite == null)
+                {
+                    continue;
+                }
+
+                Texture2D texture = sprite.texture;
+                UnityEngine.Object.Destroy(sprite);
+                if (texture != null)
+                {
+                    UnityEngine.Object.Destroy(texture);
+                }
             }
 
-            Texture2D texture = _sprite.texture;
-            UnityEngine.Object.Destroy(_sprite);
-            if (texture != null)
-            {
-                UnityEngine.Object.Destroy(texture);
-            }
-
-            _sprite = null;
+            Sprites.Clear();
         }
 
-        private static Sprite Load()
+        private static Sprite Load(PortraitDefinition definition)
         {
             LoadedMod mod = ModLoader.Mods.Find(
                 delegate(LoadedMod candidate)
@@ -81,11 +111,11 @@ namespace FluxForge.Story.Portraits
             }
 
             Texture2D source;
-            if (!mod.Textures.TryGetValue(TextureName, out source)
+            if (!mod.Textures.TryGetValue(definition.TextureName, out source)
                 || source == null)
             {
                 Debug.LogWarning(
-                    "[立绘] Textures/" + TextureName + ".png 未加载");
+                    "[立绘] Textures/" + definition.TextureName + ".png 未加载");
                 return null;
             }
 
@@ -128,11 +158,11 @@ namespace FluxForge.Story.Portraits
                     ppu,
                     0,
                     SpriteMeshType.FullRect);
-                sprite.name = SpriteKey;
+                sprite.name = definition.SpriteKey;
                 sprite.hideFlags = HideFlags.DontSave;
 
                 Debug.Log(
-                    "[立绘] 已注册 " + SpriteKey
+                    "[立绘] 已注册 " + definition.SpriteKey
                     + " → " + canvasWidth + "×" + canvasHeight
                     + " ppu=" + ppu.ToString("0.##"));
                 return sprite;
@@ -160,4 +190,3 @@ namespace FluxForge.Story.Portraits
         }
     }
 }
-

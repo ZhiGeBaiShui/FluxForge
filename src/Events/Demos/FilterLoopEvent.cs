@@ -5,7 +5,7 @@ using UnityEngine;
 namespace FluxForge.Events
 {
     /// <summary>
-    /// 演示三：左右发射器相对，中间放过滤装置；流源往返 3 个来回。
+    /// 演示三：左右发射器相对，中间放过滤装置；左侧发射一次，右侧接收后结束。
     /// </summary>
     internal static class FilterLoopEvent
     {
@@ -14,9 +14,7 @@ namespace FluxForge.Events
         private const int WaterMicrolitres = 1000000;
         private const int ChemicalMicrolitres = 20000;
         private const int HeavyMetalMicrolitres = 20000;
-        private const int RoundTrips = 3;
         private const float FirstEmitDelaySeconds = 2f;
-        private const float RelayDelaySeconds = 2f;
 
         internal static bool Start(GameGridInventory grid)
         {
@@ -95,32 +93,20 @@ namespace FluxForge.Events
                 yield break;
             }
 
-            session.RunRoutine(Run(session, left, right));
+            session.RunRoutine(Run(session, left));
         }
 
         private static IEnumerator Run(
             EventSession session,
-            GameItem left,
-            GameItem right)
+            GameItem left)
         {
             yield return new WaitForSeconds(FirstEmitDelaySeconds);
 
-            GameItem emitter = left;
+            left.ActivateSlotItem();
 
-            for (int trip = 0; trip < RoundTrips; trip++)
+            while (session.Runtime.Flows.Active.Count > 0)
             {
-                for (int pass = 0; pass < 2; pass++)
-                {
-                    emitter.ActivateSlotItem();
-
-                    while (session.Runtime.Flows.Active.Count > 0)
-                    {
-                        yield return null;
-                    }
-
-                    yield return new WaitForSeconds(RelayDelaySeconds);
-                    emitter = emitter == left ? right : left;
-                }
+                yield return null;
             }
 
             session.Complete();
