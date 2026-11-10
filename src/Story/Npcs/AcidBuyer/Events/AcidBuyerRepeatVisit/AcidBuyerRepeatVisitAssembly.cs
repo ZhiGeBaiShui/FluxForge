@@ -2,20 +2,10 @@ using FluxForge.Story.AcidBuyer;
 
 namespace FluxForge.Story.AcidBuyerRepeatVisit
 {
-    /// <summary>再次到访：两句开场、赠送原料，然后进入交易选项。</summary>
-    internal sealed class AcidBuyerRepeatVisitAssembly : NpcStoryAssembly
+    /// <summary>再次到访：两句开场，然后进入交易选项。</summary>
+    internal sealed class AcidBuyerRepeatVisitAssembly : StoryAssembly
     {
         internal override StoryEdge Entry { get; }
-
-        internal override StoryPhase Phase
-        {
-            get { return StoryPhase.GenericVisit; }
-        }
-
-        internal override bool CanPlay()
-        {
-            return AcidBuyerProgress.HasMet;
-        }
 
         internal AcidBuyerRepeatVisitAssembly()
         {

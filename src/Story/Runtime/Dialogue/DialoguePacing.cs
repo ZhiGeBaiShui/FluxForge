@@ -43,7 +43,7 @@ namespace FluxForge.Story
         private static void Prefix(ref float delay)
         {
             DialogUIManager manager = DialogUIManager.Instance;
-            if (manager == null || manager.isSkipCurrentDialog)
+            if (manager.isSkipCurrentDialog)
             {
                 return;
             }

@@ -24,12 +24,6 @@ namespace FluxForge.Story.FlowEmitterMerchant
     /// <summary>根据剧情进度计算本次上架的货物。</summary>
     internal static class FlowEmitterMerchantStock
     {
-        private static readonly StoryStockRule[] FirstVisitRules =
-        {
-            new StoryStockRule(null, "flow_emitter", 2, true),
-            new StoryStockRule(null, "flow_filter", 1, true),
-        };
-
         private const string ManualItemKey = "fluxforge_device_manual";
 
         private static readonly StoryStockRule[] SecondVisitRules =
@@ -86,11 +80,6 @@ namespace FluxForge.Story.FlowEmitterMerchant
                 4,
                 false),
         };
-
-        internal static void PlaceInitial()
-        {
-            PlaceRules(FirstVisitRules);
-        }
 
         /// <summary>后续到访：旧库存由原版在客户离店时清理，这里只重新上货。</summary>
         internal static void Refresh()

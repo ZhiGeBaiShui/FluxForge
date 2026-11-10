@@ -1,11 +1,10 @@
 # Contracts
 
-剧情框架的静态契约。
-
 ```text
-StoryAssembly       剧情装载类基类：Entry + Complete
-NpcStoryAssembly    NPC 剧情装载类：额外声明 Phase + CanPlay
-StoryPhase          Arrival / SecondVisit / GenericVisit / SoldOut
+StoryAssembly
+  Entry       剧情入口边
+  Complete()  内容完成动作
 ```
 
-这些类不执行剧情，也不依赖具体 NPC。
+剧情是否可播放、何时播放、播哪段，全部由 `StoryEvent` 和选择器决定。
+这里不再有 NPC 阶段或 `CanPlay()`。

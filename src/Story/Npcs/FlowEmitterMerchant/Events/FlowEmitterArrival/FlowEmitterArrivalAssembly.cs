@@ -5,19 +5,9 @@ namespace FluxForge.Story.FlowEmitterArrival
     /// <summary>
     /// 首次到访：邀请体验、赠送材料、等待验收并告别。
     /// </summary>
-    internal sealed class FlowEmitterArrivalAssembly : NpcStoryAssembly
+    internal sealed class FlowEmitterArrivalAssembly : StoryAssembly
     {
         internal override StoryEdge Entry { get; }
-
-        internal override StoryPhase Phase
-        {
-            get { return StoryPhase.Arrival; }
-        }
-
-        internal override bool CanPlay()
-        {
-            return !FlowEmitterMerchantProgress.HasArrivalSeen;
-        }
 
         internal FlowEmitterArrivalAssembly()
         {
@@ -35,4 +25,3 @@ namespace FluxForge.Story.FlowEmitterArrival
         }
     }
 }
-

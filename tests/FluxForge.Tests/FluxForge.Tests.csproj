@@ -60,6 +60,20 @@
     <Compile Include="..\..\src\Events\Placement\PlacementMath.cs" />
     <Compile Include="..\..\src\LogicIntegration\GridBuilding\Services\FlowGridAdapter.cs" />
     <Compile Include="..\..\src\LogicIntegration\Common\Game\FlowFacingAdapter.cs" />
+    <!-- 纯剧情选择规则：不引用 StoryAssembly/StoryEdge/Dialogue，可在测试环境直接编译。 -->
+    <Compile Include="..\..\src\Story\Runtime\Model\VisitKind.cs" />
+    <Compile Include="..\..\src\Story\Runtime\Model\NpcDefinition.cs" />
+    <Compile Include="..\..\src\Story\Runtime\Model\IStoryState.cs" />
+    <Compile Include="..\..\src\Story\Runtime\Model\VisitContext.cs" />
+    <Compile Include="..\..\src\Story\Runtime\Model\VisitRule.cs" />
+    <Compile Include="..\..\src\Story\Runtime\Model\VisitDecision.cs" />
+    <Compile Include="..\..\src\Story\Runtime\Model\StoryTrigger.cs" />
+    <Compile Include="..\..\src\Story\Runtime\Model\StoryOutcome.cs" />
+    <Compile Include="..\..\src\Story\Runtime\Model\StoryTradeResult.cs" />
+    <Compile Include="..\..\src\Story\Runtime\Model\StoryContext.cs" />
+    <Compile Include="..\..\src\Story\Runtime\Model\StoryEvent.cs" />
+    <Compile Include="..\..\src\Story\Runtime\Selection\VisitRuleSelector.cs" />
+    <Compile Include="..\..\src\Story\Runtime\Selection\StoryEventSelector.cs" />
   </ItemGroup>
 
 </Project>

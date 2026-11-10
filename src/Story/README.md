@@ -1,200 +1,187 @@
 # Story Framework
 
-`src/Story` 是纯对话剧情框架，不再负责装置演示，也不依赖 `src/Events`。
-
-## 1. 核心模型
+`src/Story` 分为三层：
 
 ```text
-节点 = 暂停状态，只提供玩家选项
-边   = 一轮剧情注册，注册完由 StoryPlayer 执行
-对话 = 由原版 Dialogue 链推进
+VisitRule      决定 NPC 今天来不来、以什么身份来
+StoryEvent     决定这次触发哪段剧情
+StoryContent   只负责对白、选项和同步动作
 ```
 
-核心原则：
+新增剧情只需要新增 `StoryEvent` 注册和内容，不修改 NPC 控制器。
 
-```text
-1. 不使用反射自动发现剧情，剧情在 Plan 中显式登记
-2. 边只注册台词和同步动作，不等待外部系统
-3. 节点不持有 NPC 台词，NPC 台词属于边
-4. 原版 Dialogue.nextDialogue 负责逐句推进
-5. StoryPlayer 只负责监控本轮结束、推进节点或退出
-```
-
-剧情不再调用 `FlowEventApi`，也不锁网格或等待装置演示。
-
-## 2. 目录
+## 1. 目录
 
 ```text
 src/Story/
 ├─ Runtime/
-│  ├─ StoryPlayer.cs
-│  ├─ Contracts/
-│  │  ├─ StoryAssembly.cs
-│  │  ├─ NpcStoryAssembly.cs
-│  │  └─ StoryPhase.cs
-│  ├─ Graph/
-│  │  ├─ StoryNode.cs
-│  │  └─ StoryEdge.cs
-│  ├─ Execution/
-│  │  └─ StorySequence.cs
-│  ├─ Dialogue/
-│  │  └─ StoryNodeDialogue.cs
-│  └─ Portraits/
-│     └─ NpcPortraitRegistry.cs
+│  ├─ Model/          选择与执行共用的数据模型
+│  ├─ Selection/      到访规则 / 剧情事件选择器（纯逻辑）
+│  ├─ State/          modData 状态适配
+│  ├─ Direction/      通用 NPC 控制器、访客会话
+│  ├─ Bootstrap/      剧情框架组合根
+│  ├─ Graph/          StoryNode / StoryEdge
+│  ├─ Execution/      StorySequence
+│  ├─ Dialogue/       原版 Dialogue 装配与逐行停顿
+│  ├─ Contracts/      StoryAssembly
+│  └─ StoryPlayer.cs  单段剧情执行器
 └─ Npcs/
-   └─ FlowEmitterMerchant/
-      ├─ FlowEmitterMerchantNpc.cs
-      ├─ FlowEmitterMerchantPlan.cs
-      ├─ FlowEmitterMerchantProgress.cs
-      ├─ FlowEmitterMerchantStock.cs
-      └─ Events/
-         ├─ FlowEmitterArrival/      首次到访（纯对话）
-         ├─ FlowEmitterSecondVisit/  第二次到访（纯对话）
-         ├─ FlowEmitterGenericVisit/ 通用到访
-         └─ FlowEmitterFarewell/     第一次离开时的赠礼
+   ├─ FlowEmitterMerchant/
+   │  ├─ FlowEmitterMerchantStory.cs   身份 + 到访规则 + 剧情事件
+   │  ├─ FlowEmitterMerchantStock.cs   奥雅专属库存
+   │  ├─ FlowEmitterMerchantProgress.cs
+   │  └─ Events/                       纯剧情内容
+   └─ AcidBuyer/
+      ├─ AcidBuyerStory.cs             身份 + 到访规则 + 剧情事件
+      ├─ AcidBuyerStock.cs
+      ├─ AcidBuyerTrade.cs
+      ├─ AcidBuyerProgress.cs
+      └─ Events/                       纯剧情内容
 ```
 
-## 3. 核心类型
-
-### StoryAssembly
+## 2. 到访规则
 
 ```csharp
-internal abstract class StoryAssembly
+VisitRule
 {
-    internal abstract StoryEdge Entry { get; }
-    internal virtual void Complete() { }
+    Id
+    NpcId
+    Priority
+    Chance       // 0..1
+    CooldownDays
+    Kind         // Dialogue / Sell / Buy / SellBuy
+    Condition
+    OnVisitStarted
 }
 ```
 
-### NpcStoryAssembly
+选择语义：
+
+```text
+条件成立 + 冷却结束
+→ Priority 最高
+→ 只判定一次 Chance
+→ 没抽中当天不来，不回退低优先级规则
+```
+
+`OnVisitStarted` 用于兼容旧进度计数；新 NPC 不需要设置，框架会自动增加通用访问次数。
+
+## 3. 剧情事件
 
 ```csharp
-internal abstract class NpcStoryAssembly : StoryAssembly
+StoryEvent
 {
-    internal abstract StoryPhase Phase { get; }
-    internal abstract bool CanPlay();
+    Id
+    NpcId
+    Trigger      // VisitStarted / TradeCompleted / VisitEnding
+    Priority
+    MaxTimes     // 0 = 无限
+    ExclusionGroup
+    Condition
 }
 ```
 
-### StoryNode
+同一 NPC、同一 Trigger：
+
+```text
+条件成立
+→ 未超过 MaxTimes
+→ ExclusionGroup 未被消费
+→ Priority 最高
+→ 只执行一个
+```
+
+`VisitStarted`、`TradeCompleted`、`VisitEnding` 都由通用运行器处理。
+
+交易内容完成时调用：
 
 ```csharp
-internal sealed class StoryNode
-{
-    internal IReadOnlyList<StoryEdge> Outgoing { get; }
-}
+StoryNpcRuntime.QueueTradeCompleted(
+    new StoryTradeResult(success, amount, itemKey));
 ```
 
-节点只保存选项，不保存 NPC 提示。
+运行器会在当前剧情结束后选择 `TradeCompleted` 事件，再进入 `VisitEnding`。
 
-### StoryEdge
+## 强制离场
+
+每个访客都设置：
 
 ```csharp
-internal abstract class StoryEdge
-{
-    internal string Label { get; }
-    internal string IconItemKey { get; }
-    internal StoryNode From { get; }
-    internal StoryNode To { get; }
-
-    internal abstract Task Execute(StorySequence sequence);
-    internal void Connect(StoryNode from, StoryNode to);
-}
+OnDismiss = () => StoryNpcRuntime.CancelForClient(identifier)
 ```
 
-边只注册：
+客户被强制遣散/离场时：
 
 ```text
-SayNpc / SayPlayer  台词
-Do                 同步动作
+OnDismiss
+→ StoryNpcRuntime.CancelForClient
+→ StoryPlayer.Cancel
+→ 中断原版对话
+→ 停止等待中的 StorySequence
+→ 不再执行 Complete / Stock / Outcome
 ```
 
-## 4. 执行流程
+这样 NPC 已经离场时，不会继续留下对白、选项或上货逻辑。
 
-```text
-NPC OnArrival
-→ FlowEmitterMerchantNpc.StartStory
-→ TryPlay(Phase)
-→ new StoryPlayer(npcName, onExit).Start(assembly)
-→ StoryPlayer.RunEdge(assembly.Entry, null)
-→ edge.Execute(sequence) 注册台词和动作
-→ sequence.Run(node, RunOption)
-→ 等待最后一句台词
-→ To == null ? ExitStory : 显示节点选项
-```
+## 4. StoryContext
 
-选项被选中后：
-
-```text
-selected.startAction
-→ StoryPlayer.RunOption
-→ RunEdge(option, selected)
-```
-
-没有网格锁、空桌检查或事件等待。
-
-## 5. 对话链
-
-`StorySequence.SayNpc` / `SayPlayer` 直接串：
+剧情条件只能读稳定上下文：
 
 ```csharp
-if (_first == null)
-{
-    _first = line;
-}
-else
-{
-    _tail.SetNextDialogue(line);
-}
-
-_tail = line;
+ctx.VisitCount
+ctx.VisitKind
+ctx.Trigger
+ctx.TradeResult
+ctx.HasFlag(key)
+ctx.HasTag(tag)
 ```
 
-最后一句的 `endAction` 触发本轮完成。`Do` 把同步动作挂到当前最后一句。
+不允许条件直接引用某个 NPC 类的字段。
 
-## 6. NPC 剧情
+## 5. 内容
 
-`FlowEmitterMerchantPlan` 显式登记：
+`StoryAssembly` 只保留：
 
 ```text
-FlowEmitterArrivalAssembly         首次到访
-FlowEmitterSecondVisitAssembly  第二次到访
-FlowEmitterGenericVisitAssembly 通用到访
-FlowEmitterFarewellAssembly     第一次离开时的赠礼
+Entry
+Complete()
 ```
 
-每个装载类自己声明：
+不再有 `Phase` / `CanPlay()`。是否该播放由 `StoryEvent` 决定。
+
+`StoryPlayer` 继续负责：
 
 ```text
-Phase      阶段
-CanPlay()  前置条件
-Complete() 完成标识
+边执行 → 节点选项 → 边执行 → 退出
 ```
 
-新增剧情：
+`StoryEdge.Branch` 只用于单段剧情内部的分支，不用于选择剧情事件。
+
+## 6. 新增剧情
 
 ```text
-1. 写 StoryAssembly
-2. 在 FlowEmitterMerchantPlan 的 Stories 列表加一行
+1. 写 StoryAssembly 内容
+2. 在对应 NPC 的 Story 文件中注册 StoryEvent
 ```
+
+不需要修改：
+
+```text
+NpcStoryHost
+StoryPlayer
+StoryEdge
+NPC 到访控制器
+```
+
+新增到访规则同理，只改对应 NPC 的 Story 文件。
 
 ## 7. 边界
 
 ```text
-Story 只负责对话、选项、节点推进
-不负责装置演示、事件会话、网格锁
-装置演示和事件编排属于 src/Events，由其他系统调用
+剧情不引用 src/Events
+不锁网格
+不接管原版 Dialogue UI
+不实现 Yarn/Ink 解释器
 ```
 
-剧情不引用：
-
-```text
-src/Events
-FlowEventApi
-EventSession
-GridLock
-```
-
-新增 NPC 时在 `src/Story/Npcs/<NpcName>/` 下建立自己的剧情目录。
-
-
+原版 `Dialogue`、`DialogUIManager`、`StoreClient` 继续负责表现和交易。

@@ -1,13 +1,24 @@
 # Story Runtime
 
-剧情框架的通用运行时。
+通用剧情运行时。
 
 ```text
-StoryPlayer.cs    统筹入口：启动剧情、执行边、推进节点、退出
-Contracts/        剧情装载契约
-Graph/            节点与边
-Execution/        单轮边执行器
-Dialogue/         节点到原版 Dialogue 的装配
+Model/        选择与执行共用的纯数据
+Selection/    到访规则 / 剧情事件选择（纯逻辑，可单测）
+State/        modData NPC 状态适配
+Direction/    通用 NPC 控制器、访客会话、交易完成入口
+Bootstrap/    组合根
+Graph/        节点与边
+Execution/    单轮边执行
+Dialogue/     原版 Dialogue 装配、逐行停顿
+Contracts/    StoryAssembly
+StoryPlayer   单段剧情执行
 ```
 
-`StoryPlayer` 不逐句播放对话；它只统筹一轮又一轮的边执行。
+调用方只接触：
+
+```text
+StoryBootstrap   启动/关闭
+NpcStoryContent  身份 + 规则 + 事件
+StoryAssembly    剧情内容
+```

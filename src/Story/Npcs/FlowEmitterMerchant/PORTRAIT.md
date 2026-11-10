@@ -142,16 +142,13 @@ FFModEntry.Init
 
 ### NPC 绑定
 
-`FlowEmitterMerchantNpc.Create()`：
+`FlowEmitterMerchantStory.Create()` 创建的 `NpcDefinition` 使用：
 
 ```csharp
-StoreClient client = new StoreClient
-{
-    ...
-    spriteName = "fluxforge_saleswoman",
-    ...
-};
+NpcPortraitRegistry.SpriteKey
 ```
+
+通用 `NpcStoryHost` 创建 `StoreClient` 时把它写入 `spriteName`。
 
 不要再用：
 

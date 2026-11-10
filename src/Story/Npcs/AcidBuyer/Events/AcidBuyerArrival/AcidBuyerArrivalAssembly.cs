@@ -2,20 +2,10 @@ using FluxForge.Story.AcidBuyer;
 
 namespace FluxForge.Story.AcidBuyerArrival
 {
-    /// <summary>首次到访：三句开场、赠送原料，然后进入交易选项。</summary>
-    internal sealed class AcidBuyerArrivalAssembly : NpcStoryAssembly
+    /// <summary>首次到访：开场、赠送原料，然后进入交易选项。</summary>
+    internal sealed class AcidBuyerArrivalAssembly : StoryAssembly
     {
         internal override StoryEdge Entry { get; }
-
-        internal override StoryPhase Phase
-        {
-            get { return StoryPhase.Arrival; }
-        }
-
-        internal override bool CanPlay()
-        {
-            return !AcidBuyerProgress.HasMet;
-        }
 
         internal override void Complete()
         {

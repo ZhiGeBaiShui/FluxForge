@@ -1,20 +1,15 @@
-using System.Threading.Tasks;
+using FluxForge.Story.FlowEmitterMerchant;
 
 namespace FluxForge.Story.FlowEmitterGenericVisit
 {
     /// <summary>没有专用剧情时的通用到访开场。</summary>
-    internal sealed class FlowEmitterGenericVisitAssembly : NpcStoryAssembly
+    internal sealed class FlowEmitterGenericVisitAssembly : StoryAssembly
     {
         internal override StoryEdge Entry { get; }
 
-        internal override StoryPhase Phase
+        internal override void Complete()
         {
-            get { return StoryPhase.GenericVisit; }
-        }
-
-        internal override bool CanPlay()
-        {
-            return true;
+            FlowEmitterMerchantStock.Refresh();
         }
 
         internal FlowEmitterGenericVisitAssembly()

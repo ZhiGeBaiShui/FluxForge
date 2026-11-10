@@ -11,6 +11,8 @@ namespace FluxForge.Story
 
         private Dialogue _first;
         private Dialogue _tail;
+        private TaskCompletionSource<bool> _speech;
+        private bool _cancelled;
 
         internal StorySequence(
             Func<string> npcName,
@@ -45,6 +47,15 @@ namespace FluxForge.Story
                 _tail.endAction);
         }
 
+        internal void Cancel()
+        {
+            _cancelled = true;
+            if (_speech != null)
+            {
+                _speech.TrySetResult(true);
+            }
+        }
+
         internal async Task<bool> Run(
             StoryNode node,
             Action<StoryEdge, Dialogue> runOption)
@@ -60,6 +71,7 @@ namespace FluxForge.Story
             {
                 TaskCompletionSource<bool> speech
                     = new TaskCompletionSource<bool>();
+                _speech = speech;
 
                 _tail.endAction = (Action)Delegate.Combine(
                     _tail.endAction,
@@ -75,10 +87,11 @@ namespace FluxForge.Story
                         forcedStart: true);
                 }
 
-                await speech.Task;
+                await _speech.Task;
+                _speech = null;
             }
 
-            return attached;
+            return attached && !_cancelled;
         }
 
         private void AddLine(

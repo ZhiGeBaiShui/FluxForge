@@ -72,15 +72,6 @@ namespace FluxForge.Story.FlowEmitterMerchant
             }
         }
 
-        internal static bool HasThirdVisit
-        {
-            get
-            {
-                return PlayerStore.Instance.modData.ContainsKey(
-                    ThirdVisitKey);
-            }
-        }
-
         internal static bool HasSecondVisit
         {
             get

@@ -3,24 +3,14 @@ using FluxForge.Story.FlowEmitterMerchant;
 namespace FluxForge.Story.FlowEmitterSecondVisit
 {
     /// <summary>第二次到访：介绍新货，不再演示冷萃装置。</summary>
-    internal sealed class FlowEmitterSecondVisitAssembly : NpcStoryAssembly
+    internal sealed class FlowEmitterSecondVisitAssembly : StoryAssembly
     {
         internal override StoryEdge Entry { get; }
-
-        internal override StoryPhase Phase
-        {
-            get { return StoryPhase.SecondVisit; }
-        }
-
-        internal override bool CanPlay()
-        {
-            return FlowEmitterMerchantProgress.HasArrivalSeen
-                && !FlowEmitterMerchantProgress.HasSecondVisit;
-        }
 
         internal override void Complete()
         {
             FlowEmitterMerchantProgress.MarkSecondVisit();
+            FlowEmitterMerchantStock.PlaceSecondVisit();
         }
 
         internal FlowEmitterSecondVisitAssembly()

@@ -1,4 +1,5 @@
 using System.Threading.Tasks;
+using FluxForge.Story;
 using FluxForge.Story.AcidBuyer;
 
 namespace FluxForge.Story.AcidBuyerArrival
@@ -37,6 +38,11 @@ namespace FluxForge.Story.AcidBuyerArrival
         {
             AcidBuyerTradeResult result = AcidBuyerTrade.TrySellAll(out int reward);
             Succeeded = result == AcidBuyerTradeResult.Success;
+            if (Succeeded)
+            {
+                StoryNpcRuntime.QueueTradeCompleted(
+                    new StoryTradeResult(true, reward, null));
+            }
 
             if (result == AcidBuyerTradeResult.NoAcidOrBase)
             {
