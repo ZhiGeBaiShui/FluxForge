@@ -12,10 +12,7 @@ namespace FluxForge.Story.Hospital
 
         internal override Task Execute(StorySequence player)
         {
-            player.SayNpc(HospitalContractMaterialTexts.Greeting1);
-            player.SayNpc(HospitalContractMaterialTexts.Greeting2);
-            player.SayNpc(HospitalContractMaterialTexts.Greeting3);
-            player.SayNpc(HospitalContractMaterialTexts.Greeting4);
+            player.SayNpc(HospitalContractMaterialTexts.Greeting);
             return Task.CompletedTask;
         }
     }

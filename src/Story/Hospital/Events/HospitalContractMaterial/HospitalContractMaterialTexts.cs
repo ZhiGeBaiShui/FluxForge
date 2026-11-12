@@ -2,23 +2,14 @@ namespace FluxForge.Story.Hospital
 {
     internal static class HospitalContractMaterialTexts
     {
-        internal const string Greeting1
-            = "这周的原料。";
-
-        internal const string Greeting2
-            = "医院用剩的。浓度不够，杂质不少。";
-
-        internal const string Greeting3
-            = "原料不要钱。";
-
-        internal const string Greeting4
-            = "用不上就直说，我拉回去。";
+        internal const string Greeting
+            = "这周的原料到了。你清点一下。";
 
         internal const string AllOption
-            = "都留下。";
+            = "全收。";
 
         internal const string PartOption
-            = "我挑几瓶。";
+            = "部分收。";
 
         internal const string DeclineOption
             = "这周不接。";

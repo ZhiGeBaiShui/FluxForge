@@ -15,11 +15,14 @@ namespace FluxForge.Story.Hospital
                 = new HospitalContractOfferAcceptEdge();
             HospitalContractOfferDeclineEdge decline
                 = new HospitalContractOfferDeclineEdge();
+            HospitalContractOfferNoInterestEdge noInterest
+                = new HospitalContractOfferNoInterestEdge();
 
             greeting.Connect(null, root);
             accept.Connect(root, null);
             ask.Connect(root, root);
             decline.Connect(root, null);
+            noInterest.Connect(root, null);
 
             _entry = greeting;
         }

@@ -16,8 +16,6 @@ namespace FluxForge.Story.Hospital
             player.SayNpc(HospitalContractOfferTexts.Greeting2);
             player.SayNpc(HospitalContractOfferTexts.Greeting3);
             player.SayNpc(HospitalContractOfferTexts.Greeting4);
-            player.SayNpc(HospitalContractOfferTexts.Greeting5);
-            player.SayNpc(HospitalContractOfferTexts.Greeting6);
             return Task.CompletedTask;
         }
     }
@@ -34,9 +32,6 @@ namespace FluxForge.Story.Hospital
             player.SayNpc(HospitalContractOfferTexts.AskLine1);
             player.SayNpc(HospitalContractOfferTexts.AskLine2);
             player.SayNpc(HospitalContractOfferTexts.AskLine3);
-            player.SayNpc(HospitalContractOfferTexts.AskLine4);
-            player.SayNpc(HospitalContractOfferTexts.AskLine5);
-            player.SayNpc(HospitalContractOfferTexts.AskLine6);
             return Task.CompletedTask;
         }
     }
@@ -70,6 +65,22 @@ namespace FluxForge.Story.Hospital
         {
             HospitalContractState.DeclineOffer();
             player.SayNpc(HospitalContractOfferTexts.DeclineLine);
+            return Task.CompletedTask;
+        }
+    }
+
+    internal sealed class HospitalContractOfferNoInterestEdge : StoryEdge
+    {
+        internal HospitalContractOfferNoInterestEdge()
+            : base(HospitalContractOfferTexts.NoInterestOption, "question")
+        {
+        }
+
+        internal override Task Execute(StorySequence player)
+        {
+            HospitalContractState.DeclineOffer();
+            player.SayNpc(HospitalContractOfferTexts.NoInterestLine1);
+            player.SayNpc(HospitalContractOfferTexts.NoInterestLine2);
             return Task.CompletedTask;
         }
     }

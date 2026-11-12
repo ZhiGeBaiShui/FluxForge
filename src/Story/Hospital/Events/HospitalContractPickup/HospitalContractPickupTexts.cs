@@ -3,16 +3,13 @@ namespace FluxForge.Story.Hospital
     internal static class HospitalContractPickupTexts
     {
         internal const string Short1
-            = "来取货。";
+            = "这批不行。";
 
         internal const string Short2
-            = "这周不够。";
+            = "底上有沉淀，用不了。";
 
         internal const string Short3
-            = "钱按你交的算。";
-
-        internal const string Short4
-            = "差的部分我先记下。";
+            = "换一批吧。";
 
         internal const string Zero1
             = "这周没有？";
@@ -24,24 +21,18 @@ namespace FluxForge.Story.Hospital
             = "下周我来看看。";
 
         internal const string Met1
-            = "够了。";
+            = "这批不错，达标了。";
 
         internal const string Met2
-            = "这批我带走。";
-
-        internal const string Met3
-            = "下周照这样。";
+            = "下周见。";
 
         internal const string Over1
-            = "比我单子上要的多。";
+            = "纯度比预想的还要高。";
 
         internal const string Over2
-            = "纯度也高。";
+            = "这是给你的额外报酬。";
 
         internal const string Over3
-            = "多的部分我按一样的价收。";
-
-        internal const string Over4
-            = "医院那边好交代。";
+            = "货我先带走，下次见。";
     }
 }

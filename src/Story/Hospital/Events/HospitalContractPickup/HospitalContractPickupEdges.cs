@@ -40,7 +40,6 @@ namespace FluxForge.Story.Hospital
                 player.SayNpc(HospitalContractPickupTexts.Short1);
                 player.SayNpc(HospitalContractPickupTexts.Short2);
                 player.SayNpc(HospitalContractPickupTexts.Short3);
-                player.SayNpc(HospitalContractPickupTexts.Short4);
             }
             else if (result.HasHighPurity
                 || result.Score >= HospitalContractScore.Target * 2d)
@@ -48,13 +47,11 @@ namespace FluxForge.Story.Hospital
                 player.SayNpc(HospitalContractPickupTexts.Over1);
                 player.SayNpc(HospitalContractPickupTexts.Over2);
                 player.SayNpc(HospitalContractPickupTexts.Over3);
-                player.SayNpc(HospitalContractPickupTexts.Over4);
             }
             else
             {
                 player.SayNpc(HospitalContractPickupTexts.Met1);
                 player.SayNpc(HospitalContractPickupTexts.Met2);
-                player.SayNpc(HospitalContractPickupTexts.Met3);
             }
 
             return Task.CompletedTask;
