@@ -74,6 +74,8 @@
     <Compile Include="..\..\src\Story\Runtime\Model\StoryEvent.cs" />
     <Compile Include="..\..\src\Story\Runtime\Selection\VisitRuleSelector.cs" />
     <Compile Include="..\..\src\Story\Runtime\Selection\StoryEventSelector.cs" />
+    <Compile Include="..\..\src\Story\Hospital\HospitalContractScore.cs" />
+    <Compile Include="..\..\src\Story\Hospital\HospitalContractSchedule.cs" />
   </ItemGroup>
 
 </Project>

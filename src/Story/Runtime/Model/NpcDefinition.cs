@@ -8,19 +8,22 @@ namespace FluxForge.Story
         internal string SpriteKey { get; }
         internal string VisitCountKey { get; }
         internal bool QueueOnGameLoad { get; }
+        internal string FactionId { get; }
 
         internal NpcDefinition(
             string identifier,
             string displayName,
             string spriteKey,
             string visitCountKey,
-            bool queueOnGameLoad)
+            bool queueOnGameLoad,
+            string factionId = null)
         {
             Identifier = identifier;
             DisplayName = displayName;
             SpriteKey = spriteKey;
             VisitCountKey = visitCountKey;
             QueueOnGameLoad = queueOnGameLoad;
+            FactionId = factionId;
         }
     }
 }

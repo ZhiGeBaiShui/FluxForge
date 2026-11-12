@@ -1,6 +1,7 @@
 using FluxForge.Story.AcidBuyerArrival;
 using FluxForge.Story.AcidBuyerRepeatVisit;
 using FluxForge.Story.FlowEmitterMerchant;
+using FluxForge.Story.Hospital;
 using FluxForge.Story.Portraits;
 
 namespace FluxForge.Story.AcidBuyer
@@ -15,7 +16,8 @@ namespace FluxForge.Story.AcidBuyer
                 "薇拉",
                 NpcPortraitRegistry.AcidBuyerSpriteKey,
                 null,
-                false);
+                false,
+                HospitalReputation.FactionId);
 
             VisitRule visit = new VisitRule(
                 "acid_buyer.seven_days",
@@ -25,6 +27,36 @@ namespace FluxForge.Story.AcidBuyer
                 7,
                 VisitKind.Dialogue,
                 delegate { return FlowEmitterMerchantProgress.HasArrivalSeen; },
+                null);
+
+            VisitRule contractPickup = new VisitRule(
+                "acid_buyer.contract_pickup",
+                definition.Identifier,
+                110,
+                1d,
+                0,
+                VisitKind.Dialogue,
+                delegate(VisitContext context)
+                {
+                    return HospitalContractState.Started
+                        && HospitalContractState.IsPickupDue(
+                            context.Day);
+                },
+                null);
+
+            VisitRule contractMaterial = new VisitRule(
+                "acid_buyer.contract_material",
+                definition.Identifier,
+                105,
+                1d,
+                0,
+                VisitKind.Dialogue,
+                delegate(VisitContext context)
+                {
+                    return HospitalContractState.Started
+                        && HospitalContractState.IsMaterialDue(
+                            context.Day);
+                },
                 null);
 
             StoryEvent arrival = new StoryEvent(
@@ -45,9 +77,49 @@ namespace FluxForge.Story.AcidBuyer
                 null,
                 delegate { return true; });
 
+            StoryEvent contractOffer = new StoryEvent(
+                "acid_buyer.contract_offer",
+                definition.Identifier,
+                StoryTrigger.VisitStarted,
+                150,
+                1,
+                null,
+                delegate
+                {
+                    return HospitalContractState.OfferReady
+                        && !HospitalContractState.Started
+                        && !HospitalContractState.OfferDeclined;
+                });
+
+            StoryEvent contractPickupEvent = new StoryEvent(
+                "acid_buyer.contract_pickup",
+                definition.Identifier,
+                StoryTrigger.VisitStarted,
+                200,
+                0,
+                null,
+                delegate(StoryContext context)
+                {
+                    return HospitalContractState.Started
+                        && HospitalContractState.IsPickupDue(context.Day);
+                });
+
+            StoryEvent contractMaterialEvent = new StoryEvent(
+                "acid_buyer.contract_material",
+                definition.Identifier,
+                StoryTrigger.VisitStarted,
+                190,
+                0,
+                null,
+                delegate(StoryContext context)
+                {
+                    return HospitalContractState.Started
+                        && HospitalContractState.IsMaterialDue(context.Day);
+                });
+
             return new NpcStoryContent(
                 definition,
-                new[] { visit },
+                new[] { visit, contractPickup, contractMaterial },
                 new[]
                 {
                     new StoryEventDefinition(
@@ -57,6 +129,18 @@ namespace FluxForge.Story.AcidBuyer
                     new StoryEventDefinition(
                         repeatVisit,
                         new AcidBuyerRepeatVisitAssembly(),
+                        StoryOutcome.Leave),
+                    new StoryEventDefinition(
+                        contractOffer,
+                        new HospitalContractOfferAssembly(),
+                        StoryOutcome.Leave),
+                    new StoryEventDefinition(
+                        contractPickupEvent,
+                        new HospitalContractPickupAssembly(),
+                        StoryOutcome.Leave),
+                    new StoryEventDefinition(
+                        contractMaterialEvent,
+                        new HospitalContractMaterialAssembly(),
                         StoryOutcome.Leave),
                 });
         }

@@ -1,5 +1,6 @@
 using System.Threading.Tasks;
 using FluxForge.Story.AcidBuyer;
+using FluxForge.Story.Hospital;
 
 namespace FluxForge.Story.AcidBuyerFirstHighPurity
 {
@@ -18,6 +19,7 @@ namespace FluxForge.Story.AcidBuyerFirstHighPurity
         internal override Task Execute(StorySequence player)
         {
             AcidBuyerProgress.MarkHighPurityDialogueDone();
+            HospitalContractState.QueueOffer();
             player.SayNpc(_response);
             return Task.CompletedTask;
         }

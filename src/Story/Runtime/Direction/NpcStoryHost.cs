@@ -126,6 +126,11 @@ namespace FluxForge.Story
                 },
             };
 
+            if (!string.IsNullOrEmpty(content.Definition.FactionId))
+            {
+                client.clientFaction = content.Definition.FactionId;
+            }
+
             client.CompleteClientCreation();
             ModHelper.SetClientSource(client, "fluxforge");
             return client;

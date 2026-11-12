@@ -42,6 +42,15 @@ namespace FluxForge.Story.AcidBuyer
             }
         }
 
+        internal static bool HasHighPurityDialogueDone
+        {
+            get
+            {
+                return PlayerStore.Instance.modData.ContainsKey(
+                    HighPurityDialogueDoneKey);
+            }
+        }
+
         internal static bool ShouldShowHighPurityDialogue
         {
             get

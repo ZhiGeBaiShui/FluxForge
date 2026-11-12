@@ -1,5 +1,6 @@
 using FluxForge.Story.AcidBuyer;
 using FluxForge.Story.FlowEmitterMerchant;
+using FluxForge.Story.Hospital;
 
 namespace FluxForge.Story
 {
@@ -14,10 +15,13 @@ namespace FluxForge.Story
             _host.Add(FlowEmitterMerchantStory.Create());
             _host.Add(AcidBuyerStory.Create());
             _host.Subscribe();
+            ModHook.OnGameLoadedLate += EnsureHospitalFaction;
         }
 
         internal static void Shutdown()
         {
+            ModHook.OnGameLoadedLate -= EnsureHospitalFaction;
+
             if (_host == null)
             {
                 return;
@@ -26,6 +30,21 @@ namespace FluxForge.Story
             StoryNpcRuntime.ClearTradeCompleted();
             _host.Dispose();
             _host = null;
+        }
+
+        private static void EnsureHospitalFaction()
+        {
+            if (HospitalContractState.Started)
+            {
+                HospitalReputation.EnsureFaction();
+                return;
+            }
+
+            if (AcidBuyerProgress.HasHighPurityDialogueDone
+                && !HospitalContractState.OfferDeclined)
+            {
+                HospitalContractState.QueueOffer();
+            }
         }
     }
 }
