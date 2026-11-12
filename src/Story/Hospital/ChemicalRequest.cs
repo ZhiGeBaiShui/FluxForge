@@ -5,13 +5,16 @@ namespace FluxForge.Story.Hospital
     {
         internal FlowPropertyKey Key { get; }
         internal double MinimumConcentration { get; }
+        internal double BaseScore { get; }
 
         internal ChemicalRequest(
             FlowPropertyKey key,
-            double minimumConcentration = 0.90d)
+            double minimumConcentration = 0.90d,
+            double baseScore = 1d)
         {
             Key = key;
             MinimumConcentration = minimumConcentration;
+            BaseScore = baseScore;
         }
     }
 }

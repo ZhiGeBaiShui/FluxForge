@@ -41,6 +41,14 @@ namespace FluxForge.Story.Hospital
             return -(int)Math.Ceiling((Target - score) / 100d);
         }
 
+        internal static double Score(
+            double millilitres,
+            double baseScore,
+            double concentration)
+        {
+            return millilitres * baseScore * Weight(concentration);
+        }
+
         internal static int Payment(double score)
         {
             return (int)Math.Floor(score * PaymentRate);

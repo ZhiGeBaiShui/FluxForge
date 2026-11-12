@@ -1,3 +1,5 @@
+using System.Threading.Tasks;
+
 namespace FluxForge.Story.Hospital
 {
     internal static class HospitalContractOfferTexts

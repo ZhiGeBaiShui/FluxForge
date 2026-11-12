@@ -44,6 +44,19 @@ namespace FluxForge.Tests
         }
 
         [Fact]
+        public void BaseScoreMultipliesPerMillilitre()
+        {
+            Assert.Equal(
+                150d,
+                HospitalContractScore.Score(100d, 1d, 0.995d),
+                6);
+            Assert.Equal(
+                240d,
+                HospitalContractScore.Score(100d, 0.8d, 1d),
+                6);
+        }
+
+        [Fact]
         public void PaymentUsesHalfCreditPerPoint()
         {
             Assert.Equal(150, HospitalContractScore.Payment(300d));

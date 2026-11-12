@@ -22,6 +22,22 @@ namespace FluxForge.Story.Hospital
 
     internal sealed class HospitalContractOfferAskEdge : StoryEdge
     {
+        private const string PriceBody =
+            "每周目标：300 分\n"
+            + "小于90%：不接收\n"
+            + "90–98.9%：权值 1.0\n"
+            + "99%：权值 1.0\n"
+            + "99% 以上：每 0.1 个百分点 +0.1\n"
+            + "100%：权值 3.0\n"
+            + "\n"
+            + "酸：基础值1分\n"
+            + "碱：基础值1分\n"
+            + "酒精：基础值0.8分\n"
+            + "\n"
+            + "得分规则：每 mL 化学品基础分 × 浓度权值\n"
+            + "\n"
+            + "结算：0.5 信用点 / 分";
+
         internal HospitalContractOfferAskEdge()
             : base(HospitalContractOfferTexts.AskOption, "question")
         {
@@ -29,10 +45,26 @@ namespace FluxForge.Story.Hospital
 
         internal override Task Execute(StorySequence player)
         {
+            PlayerStore.Instance.AddDirectSellingItemToTable(
+                CreatePriceNote(),
+                true);
             player.SayNpc(HospitalContractOfferTexts.AskLine1);
             player.SayNpc(HospitalContractOfferTexts.AskLine2);
             player.SayNpc(HospitalContractOfferTexts.AskLine3);
             return Task.CompletedTask;
+        }
+
+        private static GameItem CreatePriceNote()
+        {
+            GameItem note = PreBuiltItemHelper.CreateHandnote(
+                PriceBody,
+                "上层区中心医院采购价目",
+                "薇拉",
+                2);
+            note.name = "上层区中心医院采购价目";
+            note.shortDescription = "医院合同的结算方式。";
+            note.unitValue = 0L;
+            return note;
         }
     }
 

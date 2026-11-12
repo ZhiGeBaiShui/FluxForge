@@ -9,7 +9,7 @@ namespace FluxForge.Story.Hospital
         {
             new ChemicalRequest(FlowProps.Acid),
             new ChemicalRequest(FlowProps.Base),
-            new ChemicalRequest(FlowProps.Alcohol),
+            new ChemicalRequest(FlowProps.Alcohol, 0.90d, 0.8d),
         };
 
         internal static IReadOnlyList<ChemicalRequest> Chemicals

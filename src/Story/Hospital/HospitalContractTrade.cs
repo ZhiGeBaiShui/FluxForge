@@ -36,7 +36,7 @@ namespace FluxForge.Story.Hospital
                     continue;
                 }
 
-                double bestWeight = 0d;
+                double bestScorePerMillilitre = 0d;
                 bool accepted = false;
                 for (int j = 0; j < requests.Count; j++)
                 {
@@ -54,11 +54,14 @@ namespace FluxForge.Story.Hospital
                         continue;
                     }
 
-                    double weight = HospitalContractScore.Weight(
-                        concentration);
-                    if (weight > bestWeight)
+                    double scorePerMillilitre
+                        = HospitalContractScore.Score(
+                            1d,
+                            request.BaseScore,
+                            concentration);
+                    if (scorePerMillilitre > bestScorePerMillilitre)
                     {
-                        bestWeight = weight;
+                        bestScorePerMillilitre = scorePerMillilitre;
                     }
 
                     accepted = true;
@@ -75,7 +78,7 @@ namespace FluxForge.Story.Hospital
                 }
 
                 qualified.Add(item);
-                score += total / 1000d * bestWeight;
+                score += total / 1000d * bestScorePerMillilitre;
             }
 
             int payment = HospitalContractScore.Payment(score);
