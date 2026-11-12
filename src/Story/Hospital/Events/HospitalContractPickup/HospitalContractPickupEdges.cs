@@ -4,10 +4,25 @@ using FluxForge.Mod;
 
 namespace FluxForge.Story.Hospital
 {
-    internal sealed class HospitalContractPickupEdge : StoryEdge
+    internal sealed class HospitalContractPickupGreetingEdge : StoryEdge
     {
-        internal HospitalContractPickupEdge()
+        internal HospitalContractPickupGreetingEdge()
             : base(null, null)
+        {
+        }
+
+        internal override Task Execute(StorySequence player)
+        {
+            player.SayNpc(HospitalContractPickupTexts.Greeting);
+            return Task.CompletedTask;
+        }
+    }
+
+    /// <summary>玩家确认放货后才扫描后柜台并结算。</summary>
+    internal sealed class HospitalContractPickupConfirmEdge : StoryEdge
+    {
+        internal HospitalContractPickupConfirmEdge()
+            : base(HospitalContractPickupTexts.ConfirmOption, "question")
         {
         }
 

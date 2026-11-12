@@ -6,10 +6,16 @@ namespace FluxForge.Story.Hospital
 
         internal HospitalContractPickupAssembly()
         {
-            HospitalContractPickupEdge pickup
-                = new HospitalContractPickupEdge();
-            pickup.Connect(null, null);
-            _entry = pickup;
+            StoryNode confirm = new StoryNode();
+            HospitalContractPickupGreetingEdge greeting
+                = new HospitalContractPickupGreetingEdge();
+            HospitalContractPickupConfirmEdge pickup
+                = new HospitalContractPickupConfirmEdge();
+
+            greeting.Connect(null, confirm);
+            pickup.Connect(confirm, null);
+
+            _entry = greeting;
         }
 
         internal override StoryEdge Entry

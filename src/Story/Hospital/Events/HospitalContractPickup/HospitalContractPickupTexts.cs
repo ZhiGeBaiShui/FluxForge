@@ -2,6 +2,12 @@ namespace FluxForge.Story.Hospital
 {
     internal static class HospitalContractPickupTexts
     {
+        internal const string Greeting
+            = "我来取这周的货。";
+
+        internal const string ConfirmOption
+            = "放在桌上了。";
+
         internal const string Short1
             = "这批不行。";
 
