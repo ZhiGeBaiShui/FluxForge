@@ -21,7 +21,7 @@ build/test：通过
 按 FlowPropertyKey 配置化学物
 mL × 浓度权值计分
 目标 300 分
-0.5 信用点/分
+0.1 信用点/分
 单次正声望 +20 上限
 原版 StoreReputation/UI/存档
 ```

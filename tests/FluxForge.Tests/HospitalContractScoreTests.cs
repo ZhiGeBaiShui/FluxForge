@@ -59,7 +59,7 @@ namespace FluxForge.Tests
         [Fact]
         public void PaymentUsesHalfCreditPerPoint()
         {
-            Assert.Equal(150, HospitalContractScore.Payment(300d));
+            Assert.Equal(30, HospitalContractScore.Payment(300d));
         }
     }
 }

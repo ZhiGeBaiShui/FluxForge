@@ -36,7 +36,7 @@ namespace FluxForge.Story.Hospital
             + "\n"
             + "得分规则：每 mL 化学品基础分 × 浓度权值\n"
             + "\n"
-            + "结算：0.5 信用点 / 分";
+            + "结算：0.1 信用点 / 分";
 
         internal HospitalContractOfferAskEdge()
             : base(HospitalContractOfferTexts.AskOption, "question")

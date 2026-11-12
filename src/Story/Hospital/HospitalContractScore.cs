@@ -10,7 +10,7 @@ namespace FluxForge.Story.Hospital
         internal const double HighPurityThreshold = 0.995d;
         internal const int Target = 300;
         internal const int MaxPositivePerContract = 20;
-        internal const double PaymentRate = 0.5d;
+        internal const double PaymentRate = 0.1d;
 
         private const double Epsilon = 1e-9d;
 
