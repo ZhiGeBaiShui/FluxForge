@@ -18,14 +18,12 @@ namespace FluxForge.Story.Hospital
             {
                 player.SayNpc(HospitalContractMilestoneTexts.At50_1);
                 player.SayNpc(HospitalContractMilestoneTexts.At50_2);
-                player.SayNpc(HospitalContractMilestoneTexts.At50_3);
             }
             else
             {
                 player.SayNpc(HospitalContractMilestoneTexts.At25_1);
                 player.SayNpc(HospitalContractMilestoneTexts.At25_2);
                 player.SayNpc(HospitalContractMilestoneTexts.At25_3);
-                player.SayNpc(HospitalContractMilestoneTexts.At25_4);
             }
 
             return Task.CompletedTask;
