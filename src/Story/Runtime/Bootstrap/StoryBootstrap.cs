@@ -34,6 +34,8 @@ namespace FluxForge.Story
 
         private static void EnsureHospitalFaction()
         {
+            HospitalContractState.MigrateSchedule();
+
             if (HospitalContractState.Started)
             {
                 HospitalReputation.EnsureFaction();
