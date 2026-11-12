@@ -18,7 +18,7 @@ namespace FluxForge.Story.Hospital
         {
             if (concentration + Epsilon < PurityThreshold)
             {
-                return 0.9d;
+                return 1d;
             }
 
             if (concentration + Epsilon >= 1d)

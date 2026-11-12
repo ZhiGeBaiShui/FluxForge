@@ -295,7 +295,7 @@ StoryEvent.Condition 读合同状态
 合同按液体 mL × 浓度权值计分
 目标：每周独立 300 分
 90% 以上可计入
-90–98.9%：0.9 权值
+90–98.9%：1.0 权值
 99%：1.0 权值
 99% 以上每 0.1 个百分点 +0.1 权值
 100%：3.0 权值
@@ -368,7 +368,7 @@ StoryContext.HospitalReputation
   mL = SubstanceTotal / 1000
 
   weight(concentration):
-    90–98.9%      0.9
+    90–98.9%      1.0
     99%           1.0
     99% + Δ      1.0 + Δ×100
     100%          3.0

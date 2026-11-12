@@ -115,8 +115,8 @@ Events                  只做对话和调用状态/交易服务
 断言：
 
 ```text
-Weight(0.90)  == 0.9
-Weight(0.989) == 0.9
+Weight(0.90)  == 1.0
+Weight(0.989) == 1.0
 Weight(0.99)  == 1.0
 Weight(0.995) == 1.5
 Weight(1.0)   == 3.0
@@ -141,7 +141,7 @@ dotnet test tests\FluxForge.Tests\FluxForge.Tests.csproj -c Release --filter Hos
 `Weight`：
 
 ```text
-concentration < 99%      -> 0.9
+concentration < 99%      -> 1.0
 99% <= concentration < 100% -> 1 + (concentration - 0.99) * 100
 concentration >= 100%    -> 3.0
 ```
@@ -418,7 +418,7 @@ player.SayNpc(_response);
 构造 `ChemicalRequest(FlowProps.Acid, 0.90)`，验证：
 
 ```text
-90% 酸 -> 可收，权重 0.9
+90% 酸 -> 可收，权重 1.0
 99% 酸 -> 可收，权重 1.0
 99.5% 酸 -> 可收，权重 1.5
 100% 酸 -> 可收，权重 3.0

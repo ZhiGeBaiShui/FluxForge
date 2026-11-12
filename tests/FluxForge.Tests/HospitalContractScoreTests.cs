@@ -6,8 +6,8 @@ namespace FluxForge.Tests
     public class HospitalContractScoreTests
     {
         [Theory]
-        [InlineData(0.90d, 0.9d)]
-        [InlineData(0.989d, 0.9d)]
+        [InlineData(0.90d, 1.0d)]
+        [InlineData(0.989d, 1.0d)]
         [InlineData(0.99d, 1.0d)]
         [InlineData(0.995d, 1.5d)]
         [InlineData(1.0d, 3.0d)]
