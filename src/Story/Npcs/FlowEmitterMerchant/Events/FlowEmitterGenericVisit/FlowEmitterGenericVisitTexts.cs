@@ -7,6 +7,6 @@ namespace FluxForge.Story.FlowEmitterGenericVisit
             = "你好，我又来了。";
 
         internal const string MoreItems
-            = "这次多带了些小玩意儿，看看有没有你喜欢的？";
+            = "你还需要买新装置吗？";
     }
 }

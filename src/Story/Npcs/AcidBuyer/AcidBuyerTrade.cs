@@ -12,11 +12,13 @@ namespace FluxForge.Story.AcidBuyer
     }
 
     /// <summary>
-    /// 酸/碱收货：只扫描后柜台（玩家放货的一侧），收走所有浓度 >=99% 的酸/碱。
+    /// 酸/碱收货：只扫描后柜台（玩家放货的一侧），收走所有浓度 >=90% 的酸/碱。
+    /// >=99% 的交易会累加高纯度交付次数。
     /// </summary>
     internal static class AcidBuyerTrade
     {
-        private const double MinimumConcentration = 0.99d;
+        private const double MinimumConcentration = 0.90d;
+        private const double HighConcentration = 0.99d;
         private const double PureConcentration = 1d - 1e-9d;
 
         internal static AcidBuyerTradeResult TrySellAll(out int reward)
@@ -26,6 +28,7 @@ namespace FluxForge.Story.AcidBuyer
             GameInventory counter = EmporiumEntry.Instance.backInvinvElement;
             List<GameItem> qualified = new List<GameItem>();
             bool sawAcidOrBase = false;
+            int highPurityVolume = 0;
 
             for (int i = 0; i < counter.childItems.Count; i++)
             {
@@ -57,6 +60,10 @@ namespace FluxForge.Story.AcidBuyer
 
                 qualified.Add(item);
                 reward += Price(properties, concentration);
+                if (concentration + 1e-9d >= HighConcentration)
+                {
+                    highPurityVolume += (int)Math.Round(total);
+                }
             }
 
             if (!sawAcidOrBase)
@@ -75,14 +82,22 @@ namespace FluxForge.Story.AcidBuyer
             }
 
             PlayerStore.Instance.ModCash(reward);
+            AcidBuyerProgress.SetLastHighPurityDeliveryVolume(
+                highPurityVolume);
+
             return AcidBuyerTradeResult.Success;
         }
 
         private static int Price(FlowProperties properties, double concentration)
         {
             double volumeMillilitres = properties.SubstanceTotal / 1000d;
-            double basePrice = volumeMillilitres / 10d;
 
+            if (concentration + 1e-9d < HighConcentration)
+            {
+                return (int)Math.Floor(volumeMillilitres / 20d);
+            }
+
+            double basePrice = volumeMillilitres / 10d;
             double multiplier;
             if (concentration >= PureConcentration)
             {
@@ -90,7 +105,7 @@ namespace FluxForge.Story.AcidBuyer
             }
             else
             {
-                double steps = (concentration - MinimumConcentration) / 0.001d;
+                double steps = (concentration - HighConcentration) / 0.001d;
                 multiplier = 1d + steps * 0.1d;
             }
 

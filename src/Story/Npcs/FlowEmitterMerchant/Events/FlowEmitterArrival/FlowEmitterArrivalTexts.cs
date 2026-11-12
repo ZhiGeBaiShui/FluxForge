@@ -9,31 +9,31 @@ namespace FluxForge.Story.FlowEmitterArrival
             = "你好，我叫奥雅。";
 
         internal const string Greeting2
-            = "我带来了一套处理液体的新机器。";
+            = "有兴趣了解一下流源工艺吗？这是一种处理液体的新奇技艺。";
 
         internal const string Purpose1
-            = "它们能清理酸、碱里的化学污染和重金属。";
+            = "最基础的用法是——把液体发射出去，在运动时清理里面的化学污染和重金属。";
 
         internal const string Purpose2
-            = "浓度差一点的化学产物，也有机会再修整一下。";
+            = "医学家们常用这套入门技术来提高酸、碱的浓度，减少制药时的污染。";
 
         internal const string Invitation1
-            = "你有没有兴趣亲手试试？";
+            = "我这里有一套卖不出去的旧装置，可以送给你用。";
 
         internal const string Invitation2
-            = "我可以送你一套入门装置。";
+            = "你有没有兴趣亲手试试一下这个技术？";
 
         internal const string Gift1
-            = "这瓶酸试剂的浓度是90%。";
+            = "这瓶酸试剂的浓度是90%，有10%的化学污染。";
 
         internal const string Gift2
-            = "还有两个发射器、一个升温装置和一个净化装置。";
+            = "两个发射器、一个升温装置和一个净化装置。";
 
         internal const string Gift3
-            = "装置虽然破旧，功能还是正常的，都送给你。";
+            = "这些就是净化化学污染要用到的装置了。";
 
         internal const string Instructions1
-            = "这张便条画了摆放方法。";
+            = "具体怎么用这些装置，看这张便条上的图。";
 
         internal const string Instructions2
             = "先把液体倒入发射器，再照图摆好装置。";
@@ -45,7 +45,7 @@ namespace FluxForge.Story.FlowEmitterArrival
             = "另一台发射器可以接收处理后的液体。";
 
         internal const string Goal1
-            = "试着把酸的浓度提升到95%。";
+            = "试着把酸的浓度提升到95%以上。";
 
         internal const string Goal2
             = "再装回试剂瓶，放到桌上给我看看。";
@@ -66,22 +66,22 @@ namespace FluxForge.Story.FlowEmitterArrival
             = "你可以再处理一下，看看污染有没有减少。";
 
         internal const string Success1
-            = "做得很好！第一次就把酸的浓度提升到了95%。";
+            = "做的不错，这就是最基础的用法。";
 
         internal const string Success2
-            = "看来你已经摸到这些装置的门道了。";
+            = "如果你感兴趣，我以后会带更多装置来的。";
 
         internal const string Success3
-            = "处理好的试剂你留着，以后再试试自己的原料。";
+            = "这个试剂，你可以自己留着，以后再试试自己的原料。";
 
         internal const string DepartureGift1
-            = "再送你四个转向装置。";
+            = "我这还有一些东西，都送给你了。";
 
         internal const string DepartureGift2
-            = "还有一个加速装置和一个降温装置，都是破旧的。";
+            = "四个转向装置，一个加速装置和一个降温装置，都太破了，已经卖不出去了。";
 
         internal const string DepartureGift3
-            = "你可以用它们搭出不同的路线。";
+            = "都送给你了，教给你自己研究。";
 
         internal const string Encourage1
             = "没关系，第一次没做出来也很正常。";
@@ -102,10 +102,10 @@ namespace FluxForge.Story.FlowEmitterArrival
             = "七天后我再来，到时候再问问你。";
 
         internal const string Farewell1
-            = "那我先走了，七天后再来。";
+            = "我先走了，每七天我都会再来的。";
 
         internal const string Farewell2
-            = "到时候跟我说说，这些机器用起来怎么样。";
+            = "到时候记得跟我说说，这些机器用起来怎么样。";
 
     }
 }

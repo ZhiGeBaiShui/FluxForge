@@ -1,5 +1,6 @@
 using FluxForge.Story.AcidBuyerArrival;
 using FluxForge.Story.AcidBuyerRepeatVisit;
+using FluxForge.Story.FlowEmitterMerchant;
 using FluxForge.Story.Portraits;
 
 namespace FluxForge.Story.AcidBuyer
@@ -17,13 +18,13 @@ namespace FluxForge.Story.AcidBuyer
                 false);
 
             VisitRule visit = new VisitRule(
-                "acid_buyer.daily",
+                "acid_buyer.seven_days",
                 definition.Identifier,
                 10,
                 1d,
-                1,
+                7,
                 VisitKind.Dialogue,
-                delegate { return true; },
+                delegate { return FlowEmitterMerchantProgress.HasArrivalSeen; },
                 null);
 
             StoryEvent arrival = new StoryEvent(

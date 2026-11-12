@@ -10,19 +10,19 @@ namespace FluxForge.Story.AcidBuyerArrival
             = "我想要高浓度的酸或碱，浓度越高越好。";
 
         internal const string Line3
-            = "有99%浓度的酸或碱可以卖给我吗？";
+            = "有九十以上浓度的酸或碱可以卖给我吗？";
 
         internal const string Line4
             = "或者你拿我这批试剂处理也可以，我不想把它们带回去。";
 
         internal const string PriceIntro
-            = "每100ml液体，我愿意支付10元的基础价格。";
+            = "你放在桌上就行。";
 
         internal const string PriceStep
-            = "浓度越高越好，会给你额外报酬的。";
+            = "浓度越高越好，我会按品质给报酬。";
 
         internal const string PricePure
-            = "如果是100%浓度，我会支付3倍基础价格。";
+            = "你这有吗？";
 
         internal const string TradeOption
             = "放在桌上了。";
@@ -31,7 +31,16 @@ namespace FluxForge.Story.AcidBuyerArrival
             = "我这没有";
 
         internal const string ExitLine
-            = "那我改天再来。";
+            = "真是遗憾，我得去其他地方再找找了。";
+
+        internal const string SoldOutOption
+            = "没有库存了";
+
+        internal const string SoldOutHigh
+            = "多谢，这批品质的试剂足够我用了。";
+
+        internal const string SoldOutLow
+            = "还缺一些更高浓度的试剂，我再去其他地方找找。";
 
         internal const string NoAcidOrBase
             = "没看到我想要的酸和碱。";
@@ -40,12 +49,6 @@ namespace FluxForge.Story.AcidBuyerArrival
             = "浓度看起来不够高。";
 
         internal const string Success
-            = "这些我收下了，给你 {0} 块。";
-
-        internal const string SuccessLeave
-            = "非常感谢，我下次还会来的。";
-
-        internal const string SuccessExitOption
-            = "没有库存了";
+            = "这些我收下了。";
     }
 }

@@ -209,6 +209,9 @@ namespace FluxForge.Mod
         /// </summary>
         public int capacityMicrolitres { get; set; }
 
+        /// <summary>成型机每次成功产出消耗的电量单位。</summary>
+        public int chemFormerEnergyCost { get; set; }
+
         /// <summary>
         /// 行为装配件名列表（对应 <see cref="ItemAttachment.Name"/>），按声明顺序执行。
         /// 必须是数组；缺失或空数组 = 纯数据物品（合法，且不输出任何日志）。

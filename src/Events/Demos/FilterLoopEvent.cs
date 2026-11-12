@@ -15,6 +15,7 @@ namespace FluxForge.Events
         private const int ChemicalMicrolitres = 20000;
         private const int HeavyMetalMicrolitres = 20000;
         private const float FirstEmitDelaySeconds = 2f;
+        private const float CompletionHoldSeconds = 2f;
 
         internal static bool Start(GameGridInventory grid)
         {
@@ -109,6 +110,7 @@ namespace FluxForge.Events
                 yield return null;
             }
 
+            yield return new WaitForSeconds(CompletionHoldSeconds);
             session.Complete();
         }
     }

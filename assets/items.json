@@ -945,6 +945,16 @@
       "value": 1,
       "itemTypes": ["DOCUMENT"],
       "attachments": ["paper_note"]
+    },
+    {
+      "key": "fluxforge_chemical_former",
+      "sprite": "fluxforge_chemical_former",
+      "name": "成分成型机",
+      "desc": "根据容器中的液体配方制作化学产物，需要消耗电量。",
+      "value": 300,
+      "itemTypes": ["MACHINE"],
+      "chemFormerEnergyCost": 1,
+      "attachments": ["chemical_former"]
     }
   ]
 }

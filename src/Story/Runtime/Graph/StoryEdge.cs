@@ -26,7 +26,7 @@ namespace FluxForge.Story
 
         internal abstract Task Execute(StorySequence sequence);
 
-        internal StoryNode ResolveNext()
+        internal virtual StoryNode ResolveNext()
         {
             if (_branchCondition == null)
             {
