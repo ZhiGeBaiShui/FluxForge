@@ -14,7 +14,7 @@ namespace FluxForge.Story.Hospital
 
         internal override Task Execute(StorySequence player)
         {
-            if (_tier >= 50)
+            if (_tier >= 40)
             {
                 player.SayNpc(HospitalContractMilestoneTexts.At50_1);
                 player.SayNpc(HospitalContractMilestoneTexts.At50_2);

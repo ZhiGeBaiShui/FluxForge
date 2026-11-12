@@ -16,12 +16,12 @@ namespace FluxForge.Story.Hospital
         {
             int count = 2;
             int reputation = HospitalReputation.Get();
-            if (reputation >= 25)
+            if (reputation >= 20)
             {
                 count++;
             }
 
-            if (reputation >= 50)
+            if (reputation >= 40)
             {
                 count++;
             }

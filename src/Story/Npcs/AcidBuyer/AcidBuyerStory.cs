@@ -129,8 +129,8 @@ namespace FluxForge.Story.AcidBuyer
                         && HospitalReputation.Get() <= -20;
                 });
 
-            StoryEvent reputation25 = new StoryEvent(
-                "acid_buyer.hospital_rep25",
+            StoryEvent reputation20 = new StoryEvent(
+                "acid_buyer.hospital_rep20",
                 definition.Identifier,
                 StoryTrigger.VisitStarted,
                 250,
@@ -140,15 +140,15 @@ namespace FluxForge.Story.AcidBuyer
                 {
                     return HospitalContractState.Started
                         && !HospitalContractState.Terminated
-                        && HospitalReputation.Get() >= 25
+                        && HospitalReputation.Get() >= 20
                         && context.State.SeenCount(
-                            "acid_buyer.hospital_rep50") == 0
+                            "acid_buyer.hospital_rep40") == 0
                         && context.State.SeenCount(
-                            "acid_buyer.hospital_rep25") == 0;
+                            "acid_buyer.hospital_rep20") == 0;
                 });
 
-            StoryEvent reputation50 = new StoryEvent(
-                "acid_buyer.hospital_rep50",
+            StoryEvent reputation40 = new StoryEvent(
+                "acid_buyer.hospital_rep40",
                 definition.Identifier,
                 StoryTrigger.VisitStarted,
                 260,
@@ -158,9 +158,9 @@ namespace FluxForge.Story.AcidBuyer
                 {
                     return HospitalContractState.Started
                         && !HospitalContractState.Terminated
-                        && HospitalReputation.Get() >= 50
+                        && HospitalReputation.Get() >= 40
                         && context.State.SeenCount(
-                            "acid_buyer.hospital_rep50") == 0;
+                            "acid_buyer.hospital_rep40") == 0;
                 });
 
             return new NpcStoryContent(
@@ -193,12 +193,12 @@ namespace FluxForge.Story.AcidBuyer
                         new HospitalContractTerminationAssembly(),
                         StoryOutcome.Leave),
                     new StoryEventDefinition(
-                        reputation25,
-                        new HospitalContractMilestoneAssembly(25),
+                        reputation20,
+                        new HospitalContractMilestoneAssembly(20),
                         StoryOutcome.Leave),
                     new StoryEventDefinition(
-                        reputation50,
-                        new HospitalContractMilestoneAssembly(50),
+                        reputation40,
+                        new HospitalContractMilestoneAssembly(40),
                         StoryOutcome.Leave),
                 });
         }

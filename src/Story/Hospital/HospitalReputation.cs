@@ -36,33 +36,46 @@ namespace FluxForge.Story.Hospital
 
             HospitalReputationTexts.Register();
 
-            if (!HasTerminationPerk(reputation))
-            {
-                reputation.perks.Add(new StoreReputationPerk
-                {
-                    perkId = HospitalReputationTexts.PerkId,
-                    perkThreshold = -20,
-                    perkType = -1,
-                    iconName = "Referal",
-                });
-            }
+            EnsurePerk(
+                reputation,
+                HospitalReputationTexts.TrustedPerkId,
+                20,
+                1);
+            EnsurePerk(
+                reputation,
+                HospitalReputationTexts.AcePerkId,
+                40,
+                1);
+            EnsurePerk(
+                reputation,
+                HospitalReputationTexts.TerminationPerkId,
+                -20,
+                -1);
 
             StoreReputation.UpdateReputation();
         }
 
-        private static bool HasTerminationPerk(
-            StoreReputation reputation)
+        private static void EnsurePerk(
+            StoreReputation reputation,
+            string perkId,
+            int threshold,
+            int perkType)
         {
             for (int i = 0; i < reputation.perks.Count; i++)
             {
-                if (reputation.perks[i].perkId
-                    == HospitalReputationTexts.PerkId)
+                if (reputation.perks[i].perkId == perkId)
                 {
-                    return true;
+                    return;
                 }
             }
 
-            return false;
+            reputation.perks.Add(new StoreReputationPerk
+            {
+                perkId = perkId,
+                perkThreshold = threshold,
+                perkType = perkType,
+                iconName = "Referal",
+            });
         }
 
         internal static int Get()
