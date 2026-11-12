@@ -6,22 +6,10 @@ namespace FluxForge.Story.Hospital
 
         internal HospitalContractMaterialAssembly()
         {
-            StoryNode root = new StoryNode();
-            HospitalContractMaterialGreetingEdge greeting
-                = new HospitalContractMaterialGreetingEdge();
-            HospitalContractMaterialAllEdge all
-                = new HospitalContractMaterialAllEdge();
-            HospitalContractMaterialPartEdge part
-                = new HospitalContractMaterialPartEdge();
-            HospitalContractMaterialDeclineEdge decline
-                = new HospitalContractMaterialDeclineEdge();
-
-            greeting.Connect(null, root);
-            all.Connect(root, null);
-            part.Connect(root, null);
-            decline.Connect(root, null);
-
-            _entry = greeting;
+            HospitalContractMaterialEdge material
+                = new HospitalContractMaterialEdge();
+            material.Connect(null, null);
+            _entry = material;
         }
 
         internal override StoryEdge Entry
