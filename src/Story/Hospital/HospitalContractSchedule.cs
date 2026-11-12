@@ -18,5 +18,25 @@ namespace FluxForge.Story.Hospital
             int periods = (today - nextDay) / 7 + 1;
             return nextDay + periods * 7;
         }
+
+        internal static bool ShouldRunPickup(
+            bool pickupDue,
+            bool materialDue,
+            int lastPickupDay,
+            int lastMaterialDay)
+        {
+            return pickupDue
+                && (!materialDue || lastPickupDay <= lastMaterialDay);
+        }
+
+        internal static bool ShouldRunMaterial(
+            bool pickupDue,
+            bool materialDue,
+            int lastPickupDay,
+            int lastMaterialDay)
+        {
+            return materialDue
+                && (!pickupDue || lastMaterialDay < lastPickupDay);
+        }
     }
 }

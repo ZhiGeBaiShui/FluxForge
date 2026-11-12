@@ -14,8 +14,8 @@ namespace FluxForge.Story
             _host = new NpcStoryHost();
             _host.Add(FlowEmitterMerchantStory.Create());
             _host.Add(AcidBuyerStory.Create());
-            _host.Subscribe();
             ModHook.OnGameLoadedLate += EnsureHospitalFaction;
+            _host.Subscribe();
         }
 
         internal static void Shutdown()

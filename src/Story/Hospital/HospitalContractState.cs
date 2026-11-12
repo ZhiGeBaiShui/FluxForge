@@ -45,6 +45,16 @@ namespace FluxForge.Story.Hospital
             get { return ReadInt(NextMaterialDayKey); }
         }
 
+        internal static int LastPickupDay
+        {
+            get { return ReadInt(LastPickupDayKey); }
+        }
+
+        internal static int LastMaterialDay
+        {
+            get { return ReadInt(LastMaterialDayKey); }
+        }
+
         internal static bool OfferReady
         {
             get
@@ -76,6 +86,10 @@ namespace FluxForge.Story.Hospital
                 = (day + 3).ToString();
             PlayerStore.Instance.modData[NextMaterialDayKey]
                 = (day + 7).ToString();
+            PlayerStore.Instance.modData[LastPickupDayKey]
+                = day.ToString();
+            PlayerStore.Instance.modData[LastMaterialDayKey]
+                = day.ToString();
             PlayerStore.Instance.modData.Remove(OfferReadyKey);
         }
 
@@ -93,6 +107,24 @@ namespace FluxForge.Story.Hospital
                 && HospitalContractSchedule.IsDue(
                     NextMaterialDay,
                     day);
+        }
+
+        internal static bool ShouldRunPickup(int day)
+        {
+            return HospitalContractSchedule.ShouldRunPickup(
+                IsPickupDue(day),
+                IsMaterialDue(day),
+                LastPickupDay,
+                LastMaterialDay);
+        }
+
+        internal static bool ShouldRunMaterial(int day)
+        {
+            return HospitalContractSchedule.ShouldRunMaterial(
+                IsPickupDue(day),
+                IsMaterialDue(day),
+                LastPickupDay,
+                LastMaterialDay);
         }
 
         internal static void MarkPickup(int day)

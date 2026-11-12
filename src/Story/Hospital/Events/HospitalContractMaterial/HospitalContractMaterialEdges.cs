@@ -1,4 +1,3 @@
-using System;
 using System.Threading.Tasks;
 using FluxForge.Mod;
 
@@ -49,9 +48,7 @@ namespace FluxForge.Story.Hospital
 
         internal override Task Execute(StorySequence player)
         {
-            int count = Math.Max(
-                1,
-                HospitalContractStock.WeeklyCount() / 2);
+            int count = HospitalContractStock.WeeklyCount() / 2;
             HospitalContractStock.GiveWeekly(count);
             HospitalContractState.MarkMaterial(
                 StoreStation.GetDayCounter());

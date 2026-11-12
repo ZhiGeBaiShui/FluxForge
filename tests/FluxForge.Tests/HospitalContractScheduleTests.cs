@@ -33,5 +33,47 @@ namespace FluxForge.Tests
                 expected,
                 HospitalContractSchedule.Advance(nextDay, today));
         }
+
+        [Theory]
+        [InlineData(true, false, 3, 7, true)]
+        [InlineData(true, true, 3, 7, true)]
+        [InlineData(true, true, 10, 7, false)]
+        [InlineData(false, true, 3, 7, false)]
+        public void PickupRunsWhenItIsOlderOrMaterialIsNotDue(
+            bool pickupDue,
+            bool materialDue,
+            int lastPickup,
+            int lastMaterial,
+            bool expected)
+        {
+            Assert.Equal(
+                expected,
+                HospitalContractSchedule.ShouldRunPickup(
+                    pickupDue,
+                    materialDue,
+                    lastPickup,
+                    lastMaterial));
+        }
+
+        [Theory]
+        [InlineData(true, true, 10, 7, true)]
+        [InlineData(true, true, 3, 7, false)]
+        [InlineData(true, false, 10, 7, false)]
+        [InlineData(false, true, 10, 7, true)]
+        public void MaterialRunsWhenItIsOlderOrPickupIsNotDue(
+            bool pickupDue,
+            bool materialDue,
+            int lastPickup,
+            int lastMaterial,
+            bool expected)
+        {
+            Assert.Equal(
+                expected,
+                HospitalContractSchedule.ShouldRunMaterial(
+                    pickupDue,
+                    materialDue,
+                    lastPickup,
+                    lastMaterial));
+        }
     }
 }

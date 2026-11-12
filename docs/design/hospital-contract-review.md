@@ -3,13 +3,12 @@
 ## 状态
 
 ```text
-实现：已完成并通过 build/test
-独立双程序员 review：未完成
-原因：两个实现子代理与两个短 review 子代理均未在时限内返回，已停止
-替代：父会话完成 correctness/integration 两轮静态审查
+实现：已完成
+build/test：通过
+独立双程序员 review：已完成（两个独立 review lane）
+防御性代码证据审查：已完成
+游戏内 smoke：尚未执行
 ```
-
-这份记录不把父会话审查冒充成两名程序员的独立互审。
 
 ## 已实现
 
@@ -27,82 +26,75 @@ mL × 浓度权值计分
 原版 StoreReputation/UI/存档
 ```
 
-## 父会话 correctness 审查
+## 程序员 review 发现与处理
 
-### S1：运行时新增 faction 后 UI 未必自动刷新
+### 已修复
 
-`HospitalReputation.EnsureFaction` 在签约对话中把 faction 加入
-`PlayerStore.storeReputations`。原版 `ReputationUIManager.OpenUI` 只在打开时
-遍历列表创建元素。
+| 发现 | 处理 |
+|---|---|
+| 错过日期时 pickup 长期压住 material | `ShouldRunPickup/ShouldRunMaterial` 改为先处理更久未处理的一边；新增纯测试 |
+| 高分显示四舍五入后与判定不一致 | 通知改用 `Math.Floor(score)` |
+| 材料部分收取的 `Math.Max(1, n/2)` 是死检查 | 删除；`WeeklyCount` 最小为 2 |
+| 读档钩子顺序可能让 offer 错过本次 QueueAll | 先订阅 `EnsureHospitalFaction`，再 `_host.Subscribe()` |
 
-影响：如果声望面板此刻已经打开，新 faction 可能不出现，下一次打开才出现。
+### 保留为设计选择
 
-状态：未做防御性刷新；需要游戏 smoke 验证。没有证据表明玩家会在签约对话中同时打开声望面板，因此没有为它写关闭/重开逻辑。
+| 发现 | 保留理由 |
+|---|---|
+| 零交付扣 3 声望并消耗本周取货 | 用户明确选择“零交付算未达标，按缺口扣声望” |
+| 合同拒绝后不自动重提 | 设计师稿明确“拒绝后不自动再提”；v1 不写重开入口 |
+| 结算先付款/加声望，后 MarkPickup | 用户明确不考虑中途退出/路径异常；不写事务回滚 |
+| `AddTrade` 无调用方 | 用户要求给后续医院 NPC 预留接口 |
 
-### S1：错过日期时 pickup 可能压住 material
-
-取货在 +3，送料在 +7。若玩家错过 +7，只在 +10 到访，两段都 due；
-`pickup` 优先级更高，会先结算 pickup，material 留在 due 状态等下一次到访。
-
-影响：正常按周到访不会发生；连续错过时可能延后送料。
-
-状态：未改。需要确认是否接受“一次到访只处理一段，下一次再处理另一段”。
-
-### S2：结算与存档之间的中断
-
-`HospitalContractTrade.TrySettle` 先销毁物品、付款、加声望，然后由
-`HospitalContractPickupEdge` 调用 `MarkPickup`。如果中途被异常打断，可能重复结算。
-
-状态：按用户要求不处理入侵/异常退出，没有 try/catch 或事务回滚。
-
-### S2：未做游戏内 smoke
-
-验证只覆盖：
+### 未解决/需实测
 
 ```text
-build 0 warning / 0 error
-test 509/509
+1. 运行时新增 faction 后，已打开的声望面板是否立即出现
+2. 游戏内 smoke：
+   - 首次高浓度后的合同提议
+   - +3 取货
+   - +7 送料
+   - 声望 UI 出现/重载不重复
+3. 跨午夜时 StoreStation.GetDayCounter 与事件选择日的偏差
 ```
 
-没有实际进入游戏验证：
+## 防御性代码审查
 
-```text
-签约对话
-+3 取货
-+7 送料
-声望 UI 出现
-重载后 faction 不重复
-```
-
-## 防御性代码删减记录
-
-### 保留
+### 保留（有证据）
 
 | 代码 | 证据 |
 |---|---|
-| `EnsureFaction` 查重 | 签约动作与读档钩子都可能调用 |
-| `Start` 已开始直接返回 | 合同锚点不能被重复签约重置 |
-| `NpcStoryHost` 空 FactionId 检查 | 奥雅等 NPC 明确不归属 faction |
-| `total <= 0` 跳过 | 空容器是正常游戏状态 |
+| `EnsureFaction` 查重 | 签约和读档两个调用方；重复会生成重复 UI 行 |
+| `Start` 幂等 | 合同锚点不能被重复签约重置 |
+| `NpcStoryHost` 空 FactionId 检查 | 奥雅等 NPC 明确不归属 faction；`clientFaction` 默认 `NONE` |
+| `total <= 0` 跳过 | 空容器正常，且避免除零 |
 | `active <= 0` 跳过 | 该化学物不存在于当前液体 |
 | `concentration + epsilon` | 99%/100% 浮点边界 |
-| `ReadInt` 缺 key 返回 0 | 签约前 key 本来不存在 |
+| `ReadInt` 缺 key 返回 0 | 签约前 key 本来不存在；`Started &&` 防止未签约误判 due |
 
-### 删除
+### 删除（无证据/冗余）
 
 | 代码 | 删除理由 |
 |---|---|
-| `Add` 内再次 `EnsureFaction` | 签约/读档已保证；无证据需要 |
-| `payment > 0` 才 ModCash | 原版 AcidBuyerTrade 直接 ModCash，0 是合法值 |
-| `try/catch` | 无证据 |
+| `Add` 内再次 `EnsureFaction` | 签约/读档已保证；无证据 |
+| `payment > 0` 才 ModCash | 原版 AcidBuyer 直接 ModCash，0 合法 |
+| `Math.Max(1, WeeklyCount()/2)` | `WeeklyCount` 最小 2，永不触发 |
+| `try/catch` | 范围内为 0 |
 | 全局单例 null 检查 | 无证据 |
 | 存档损坏修复 | 用户明确不考虑入侵/异常存档 |
 
-## 未完成项
+### 明确不删除
 
 ```text
-1. 两名程序员的独立互审
-2. 游戏内 smoke
-3. 声望 UI 运行时刷新验证
-4. 错过日期时 pickup/material 的优先级策略确认
+AddTrade：用户要求保留的后续接口，不是当前死代码清理对象
+ExclusionGroup 检查：现有框架代码，不在本次医院功能范围
+```
+
+## 结论
+
+```text
+实现通过构建/测试；
+两个独立 review 已完成并修正真实问题；
+防御审查结论为 KEEP/DELETE 均带证据；
+剩余风险是游戏内 smoke 与 UI 刷新，不是编译/逻辑测试。
 ```

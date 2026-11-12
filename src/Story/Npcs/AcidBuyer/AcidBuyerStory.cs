@@ -38,9 +38,8 @@ namespace FluxForge.Story.AcidBuyer
                 VisitKind.Dialogue,
                 delegate(VisitContext context)
                 {
-                    return HospitalContractState.Started
-                        && HospitalContractState.IsPickupDue(
-                            context.Day);
+                    return HospitalContractState.ShouldRunPickup(
+                        context.Day);
                 },
                 null);
 
@@ -53,9 +52,8 @@ namespace FluxForge.Story.AcidBuyer
                 VisitKind.Dialogue,
                 delegate(VisitContext context)
                 {
-                    return HospitalContractState.Started
-                        && HospitalContractState.IsMaterialDue(
-                            context.Day);
+                    return HospitalContractState.ShouldRunMaterial(
+                        context.Day);
                 },
                 null);
 
@@ -100,8 +98,8 @@ namespace FluxForge.Story.AcidBuyer
                 null,
                 delegate(StoryContext context)
                 {
-                    return HospitalContractState.Started
-                        && HospitalContractState.IsPickupDue(context.Day);
+                    return HospitalContractState.ShouldRunPickup(
+                        context.Day);
                 });
 
             StoryEvent contractMaterialEvent = new StoryEvent(
@@ -113,8 +111,8 @@ namespace FluxForge.Story.AcidBuyer
                 null,
                 delegate(StoryContext context)
                 {
-                    return HospitalContractState.Started
-                        && HospitalContractState.IsMaterialDue(context.Day);
+                    return HospitalContractState.ShouldRunMaterial(
+                        context.Day);
                 });
 
             return new NpcStoryContent(

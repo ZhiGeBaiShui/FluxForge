@@ -22,7 +22,7 @@ namespace FluxForge.Story.Hospital
 
             ReputationUIManager.Instance.Notify(
                 "医院合同 "
-                + (int)Math.Round(result.Score)
+                + (int)Math.Floor(result.Score)
                 + " / "
                 + HospitalContractScore.Target
                 + " · 声望 "
