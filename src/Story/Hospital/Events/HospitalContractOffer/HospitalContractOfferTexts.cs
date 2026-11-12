@@ -32,9 +32,12 @@ namespace FluxForge.Story.Hospital
             = "给，这是需求清单。";
 
         internal const string AskLine2
-            = "每周供够基础量就行，只要是医疗能用的高纯度试剂，医院都收。";
+            = "每周一次，需要供够基础量，多余的会提供额外报酬，具体看合同。";
 
         internal const string AskLine3
+            = "同时，医院每周会为你提供低浓度试剂作为提纯原料。";
+
+        internal const string AskLine4
             = "你考虑一下，医院缺口不小。";
 
         internal const string AcceptLine1

@@ -45,12 +45,16 @@ namespace FluxForge.Story.Hospital
 
         internal override Task Execute(StorySequence player)
         {
-            PlayerStore.Instance.AddDirectSellingItemToTable(
-                CreatePriceNote(),
-                true);
             player.SayNpc(HospitalContractOfferTexts.AskLine1);
+            player.Do(delegate
+            {
+                PlayerStore.Instance.AddDirectSellingItemToTable(
+                    CreatePriceNote(),
+                    true);
+            });
             player.SayNpc(HospitalContractOfferTexts.AskLine2);
             player.SayNpc(HospitalContractOfferTexts.AskLine3);
+            player.SayNpc(HospitalContractOfferTexts.AskLine4);
             return Task.CompletedTask;
         }
 
