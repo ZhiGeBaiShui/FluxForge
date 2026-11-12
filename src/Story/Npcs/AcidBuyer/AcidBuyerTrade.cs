@@ -92,12 +92,13 @@ namespace FluxForge.Story.AcidBuyer
         {
             double volumeMillilitres = properties.SubstanceTotal / 1000d;
 
+            double basePrice = volumeMillilitres / 10d;
+
             if (concentration + 1e-9d < HighConcentration)
             {
-                return (int)Math.Floor(volumeMillilitres / 20d);
+                return (int)Math.Floor(basePrice);
             }
 
-            double basePrice = volumeMillilitres / 10d;
             double multiplier;
             if (concentration >= PureConcentration)
             {

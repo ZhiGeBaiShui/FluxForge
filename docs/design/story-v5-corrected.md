@@ -113,7 +113,7 @@ chain.upper_contract    上层合同/独家配额
 flux_agent         unitValue = 4
 advanced_flux_agent unitValue = 300
 薇拉收购酸/碱     约 10 信用点 / 100 mL（99%）
-薇拉收购 90–98.9% 约 5 信用点 / 100 mL
+薇拉收购 90–98.9% 为 10 信用点 / 100 mL
 高纯度交易          单次交货中 >=99% 液体总计 >=100000 单位（100 mL）触发高浓度对话
 化学试剂瓶         250 mL
 成型机             300 信用点
