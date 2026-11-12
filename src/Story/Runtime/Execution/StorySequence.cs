@@ -34,6 +34,11 @@ namespace FluxForge.Story
             AddLine(PlayerStore.Instance.playerName, content, 1f);
         }
 
+        internal void SaySystem(string content)
+        {
+            AddLine(string.Empty, content, 1f);
+        }
+
         internal void Do(Action action)
         {
             if (_tail == null)

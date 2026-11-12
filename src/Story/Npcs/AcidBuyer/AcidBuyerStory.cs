@@ -115,6 +115,20 @@ namespace FluxForge.Story.AcidBuyer
                         context.Day);
                 });
 
+            StoryEvent contractTermination = new StoryEvent(
+                "acid_buyer.contract_termination",
+                definition.Identifier,
+                StoryTrigger.VisitStarted,
+                300,
+                1,
+                null,
+                delegate
+                {
+                    return HospitalContractState.Started
+                        && !HospitalContractState.Terminated
+                        && HospitalReputation.Get() <= -20;
+                });
+
             return new NpcStoryContent(
                 definition,
                 new[] { visit, contractPickup, contractMaterial },
@@ -139,6 +153,10 @@ namespace FluxForge.Story.AcidBuyer
                     new StoryEventDefinition(
                         contractMaterialEvent,
                         new HospitalContractMaterialAssembly(),
+                        StoryOutcome.Leave),
+                    new StoryEventDefinition(
+                        contractTermination,
+                        new HospitalContractTerminationAssembly(),
                         StoryOutcome.Leave),
                 });
         }

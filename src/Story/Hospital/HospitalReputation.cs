@@ -18,22 +18,51 @@ namespace FluxForge.Story.Hospital
 
         internal static void EnsureFaction()
         {
-            if (IsRegistered)
+            StoreReputation reputation
+                = StoreReputation.GetStoreReputation(FactionId);
+
+            if (reputation == null)
             {
-                return;
+                reputation = new StoreReputation
+                {
+                    factionId = FactionId,
+                    factionDisplay = DisplayName,
+                    factionColor1 = "42a2aa",
+                    factionColor2 = "743d70",
+                    factionColor3 = "ac7b9a",
+                };
+                PlayerStore.Instance.storeReputations.Add(reputation);
             }
 
-            StoreReputation reputation = new StoreReputation
-            {
-                factionId = FactionId,
-                factionDisplay = DisplayName,
-                factionColor1 = "42a2aa",
-                factionColor2 = "743d70",
-                factionColor3 = "ac7b9a",
-            };
+            HospitalReputationTexts.Register();
 
-            PlayerStore.Instance.storeReputations.Add(reputation);
+            if (!HasTerminationPerk(reputation))
+            {
+                reputation.perks.Add(new StoreReputationPerk
+                {
+                    perkId = HospitalReputationTexts.PerkId,
+                    perkThreshold = -20,
+                    perkType = -1,
+                    iconName = "Referal",
+                });
+            }
+
             StoreReputation.UpdateReputation();
+        }
+
+        private static bool HasTerminationPerk(
+            StoreReputation reputation)
+        {
+            for (int i = 0; i < reputation.perks.Count; i++)
+            {
+                if (reputation.perks[i].perkId
+                    == HospitalReputationTexts.PerkId)
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         internal static int Get()

@@ -21,6 +21,8 @@ namespace FluxForge.Story.Hospital
             = "hospital.contract.offer_ready";
         private const string OfferDeclinedKey
             = "hospital.contract.offer_declined";
+        private const string TerminatedKey
+            = "hospital.contract.terminated";
 
         internal static bool Started
         {
@@ -73,6 +75,15 @@ namespace FluxForge.Story.Hospital
             }
         }
 
+        internal static bool Terminated
+        {
+            get
+            {
+                return PlayerStore.Instance.modData.ContainsKey(
+                    TerminatedKey);
+            }
+        }
+
         internal static void Start(int day)
         {
             if (Started)
@@ -111,6 +122,11 @@ namespace FluxForge.Story.Hospital
 
         internal static bool ShouldRunPickup(int day)
         {
+            if (Terminated)
+            {
+                return false;
+            }
+
             return HospitalContractSchedule.ShouldRunPickup(
                 IsPickupDue(day),
                 IsMaterialDue(day),
@@ -120,6 +136,11 @@ namespace FluxForge.Story.Hospital
 
         internal static bool ShouldRunMaterial(int day)
         {
+            if (Terminated)
+            {
+                return false;
+            }
+
             return HospitalContractSchedule.ShouldRunMaterial(
                 IsPickupDue(day),
                 IsMaterialDue(day),
@@ -156,6 +177,11 @@ namespace FluxForge.Story.Hospital
         {
             PlayerStore.Instance.modData.Remove(OfferReadyKey);
             PlayerStore.Instance.modData[OfferDeclinedKey] = "1";
+        }
+
+        internal static void Terminate()
+        {
+            PlayerStore.Instance.modData[TerminatedKey] = "1";
         }
 
         private static int ReadInt(string key)
