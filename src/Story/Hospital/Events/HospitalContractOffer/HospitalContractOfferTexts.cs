@@ -39,10 +39,10 @@ namespace FluxForge.Story.Hospital
             = "那从今天算。";
 
         internal const string AcceptLine2
-            = "三天后我来取第一批，用你自己的料。";
+            = "三天后我把原料送来。";
 
         internal const string AcceptLine3
-            = "下周我把原料带过来。";
+            = "七天后我来取第一批。";
 
         internal const string DeclineLine
             = "行，散货我也拿。";

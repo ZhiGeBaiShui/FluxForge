@@ -83,9 +83,9 @@ namespace FluxForge.Story.Hospital
             PlayerStore.Instance.modData[StartedKey] = "1";
             PlayerStore.Instance.modData[StartDayKey] = day.ToString();
             PlayerStore.Instance.modData[NextPickupDayKey]
-                = (day + 3).ToString();
-            PlayerStore.Instance.modData[NextMaterialDayKey]
                 = (day + 7).ToString();
+            PlayerStore.Instance.modData[NextMaterialDayKey]
+                = (day + 3).ToString();
             PlayerStore.Instance.modData[LastPickupDayKey]
                 = day.ToString();
             PlayerStore.Instance.modData[LastMaterialDayKey]
