@@ -34,8 +34,10 @@ namespace FluxForge.Story.AcidBuyerArrival
 
         internal bool Succeeded { get; private set; }
 
-        internal AcidBuyerTradeEdge()
-            : base(AcidBuyerArrivalTexts.TradeOption, "fluxforge_test_acid")
+        internal AcidBuyerTradeEdge(string label = null)
+            : base(
+                label ?? AcidBuyerArrivalTexts.TradeOption,
+                "fluxforge_test_acid")
         {
         }
 

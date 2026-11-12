@@ -18,11 +18,16 @@ namespace FluxForge.Story.AcidBuyerArrival
             StoryNode root = new StoryNode();
             StoryNode success = new StoryNode();
             StoryNode highPurity = new StoryNode();
+            StoryNode highPuritySuccess = new StoryNode();
             AcidBuyerGreetingEdge greeting = new AcidBuyerGreetingEdge();
             AcidBuyerTradeEdge trade = new AcidBuyerTradeEdge();
             AcidBuyerTradeEdge tradeAgain = new AcidBuyerTradeEdge();
+            AcidBuyerTradeEdge tradeAfterHigh
+                = new AcidBuyerTradeEdge(
+                    AcidBuyerArrivalTexts.TradeAfterHighOption);
             AcidBuyerExitEdge exit = new AcidBuyerExitEdge();
             AcidBuyerSoldOutEdge soldOut = new AcidBuyerSoldOutEdge();
+            AcidBuyerSoldOutEdge soldOutHigh = new AcidBuyerSoldOutEdge();
             AcidBuyerHighPurityAnswerEdge selfMade
                 = new AcidBuyerHighPurityAnswerEdge(
                     AcidBuyerFirstHighPurityTexts.SelfMadeOption,
@@ -41,8 +46,17 @@ namespace FluxForge.Story.AcidBuyerArrival
             tradeAgain.SetTargets(success, highPurity, success);
             soldOut.Connect(success, null);
 
-            selfMade.Connect(highPurity, success);
-            luck.Connect(highPurity, success);
+            tradeAfterHigh.Connect(
+                highPuritySuccess,
+                highPuritySuccess);
+            tradeAfterHigh.SetTargets(
+                highPuritySuccess,
+                highPurity,
+                highPuritySuccess);
+            soldOutHigh.Connect(highPuritySuccess, null);
+
+            selfMade.Connect(highPurity, highPuritySuccess);
+            luck.Connect(highPurity, highPuritySuccess);
 
             Entry = greeting;
         }

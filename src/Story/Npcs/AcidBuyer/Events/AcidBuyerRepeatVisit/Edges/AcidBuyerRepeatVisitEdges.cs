@@ -28,8 +28,10 @@ namespace FluxForge.Story.AcidBuyerRepeatVisit
 
         internal bool Succeeded { get; private set; }
 
-        internal AcidBuyerTradeEdge()
-            : base(AcidBuyerRepeatVisitTexts.TradeOption, "fluxforge_test_acid")
+        internal AcidBuyerTradeEdge(string label = null)
+            : base(
+                label ?? AcidBuyerRepeatVisitTexts.TradeOption,
+                "fluxforge_test_acid")
         {
         }
 

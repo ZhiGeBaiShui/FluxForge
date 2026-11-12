@@ -27,6 +27,9 @@ namespace FluxForge.Story.AcidBuyerArrival
         internal const string TradeOption
             = "放在桌上了。";
 
+        internal const string TradeAfterHighOption
+            = "还有高浓度试剂吗？";
+
         internal const string ExitOption
             = "我这没有";
 
