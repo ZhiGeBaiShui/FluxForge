@@ -5,16 +5,16 @@ namespace FluxForge.Story.Hospital
     internal static class HospitalContractOfferTexts
     {
         internal const string Greeting1
-            = "你好，老板。";
+            = "你好，老板，这次我是来和你谈固定合作的。";
 
         internal const string Greeting2
-            = "我在上层区的中心医院做采购，这次代表医院过来。";
+            = "我在上层区医院就职，每周都负责采购化学试剂。";
 
         internal const string Greeting3
-            = "之前从你这拿的酸和碱，药剂师试过了，纯度很好。";
+            = "上次从你这拿的酸和碱，药剂师说纯度比其他地方的都好。";
 
         internal const string Greeting4
-            = "医院想长期要这种货，不知你有没有兴趣做固定供货商？";
+            = "医院想长期要这种货，不知你有没有兴趣做供货商？";
 
         internal const string AskOption
             = "怎么供？";
@@ -35,7 +35,7 @@ namespace FluxForge.Story.Hospital
             = "每周供够基础量就行，只要是医疗能用的高纯度试剂，医院都收。";
 
         internal const string AskLine3
-            = "你考虑一下，我们那边缺口不小。";
+            = "你考虑一下，医院缺口不小。";
 
         internal const string AcceptLine1
             = "那从今天算。";

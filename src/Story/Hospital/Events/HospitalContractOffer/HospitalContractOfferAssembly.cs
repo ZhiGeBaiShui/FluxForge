@@ -12,8 +12,6 @@ namespace FluxForge.Story.Hospital
                 = new HospitalContractOfferGreetingEdge();
             HospitalContractOfferAskEdge ask
                 = new HospitalContractOfferAskEdge();
-            HospitalContractOfferAcceptEdge accept
-                = new HospitalContractOfferAcceptEdge();
             HospitalContractOfferDeclineEdge decline
                 = new HospitalContractOfferDeclineEdge();
             HospitalContractOfferNoInterestEdge noInterest
@@ -26,7 +24,6 @@ namespace FluxForge.Story.Hospital
                 = new HospitalContractOfferNoInterestEdge();
 
             greeting.Connect(null, root);
-            accept.Connect(root, null);
             ask.Connect(root, afterAsk);
             decline.Connect(root, null);
             noInterest.Connect(root, null);
