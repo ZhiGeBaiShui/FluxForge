@@ -7,6 +7,7 @@ namespace FluxForge.Story.Hospital
         internal HospitalContractOfferAssembly()
         {
             StoryNode root = new StoryNode();
+            StoryNode afterAsk = new StoryNode();
             HospitalContractOfferGreetingEdge greeting
                 = new HospitalContractOfferGreetingEdge();
             HospitalContractOfferAskEdge ask
@@ -17,12 +18,22 @@ namespace FluxForge.Story.Hospital
                 = new HospitalContractOfferDeclineEdge();
             HospitalContractOfferNoInterestEdge noInterest
                 = new HospitalContractOfferNoInterestEdge();
+            HospitalContractOfferAcceptEdge acceptAfterAsk
+                = new HospitalContractOfferAcceptEdge();
+            HospitalContractOfferDeclineEdge declineAfterAsk
+                = new HospitalContractOfferDeclineEdge();
+            HospitalContractOfferNoInterestEdge noInterestAfterAsk
+                = new HospitalContractOfferNoInterestEdge();
 
             greeting.Connect(null, root);
             accept.Connect(root, null);
-            ask.Connect(root, root);
+            ask.Connect(root, afterAsk);
             decline.Connect(root, null);
             noInterest.Connect(root, null);
+
+            acceptAfterAsk.Connect(afterAsk, null);
+            declineAfterAsk.Connect(afterAsk, null);
+            noInterestAfterAsk.Connect(afterAsk, null);
 
             _entry = greeting;
         }
