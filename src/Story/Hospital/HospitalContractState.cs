@@ -21,9 +21,6 @@ namespace FluxForge.Story.Hospital
             = "hospital.contract.offer_ready";
         private const string OfferDeclinedKey
             = "hospital.contract.offer_declined";
-        private const string ScheduleVersionKey
-            = "hospital.contract.schedule_version";
-        private const string CurrentScheduleVersion = "2";
 
         internal static bool Started
         {
@@ -93,41 +90,7 @@ namespace FluxForge.Story.Hospital
                 = day.ToString();
             PlayerStore.Instance.modData[LastMaterialDayKey]
                 = day.ToString();
-            PlayerStore.Instance.modData[ScheduleVersionKey]
-                = CurrentScheduleVersion;
             PlayerStore.Instance.modData.Remove(OfferReadyKey);
-        }
-
-        /// <summary>
-        /// 旧版合同把取货放在 +3、送料放在 +7；读档时只迁移一次。
-        /// </summary>
-        internal static void MigrateSchedule()
-        {
-            if (!Started
-                || PlayerStore.Instance.modData.ContainsKey(
-                    ScheduleVersionKey))
-            {
-                return;
-            }
-
-            int start = StartDay;
-            int pickup = NextPickupDay;
-            int material = NextMaterialDay;
-            if (start > 0 && pickup > 0 && material > 0)
-            {
-                int pickupOffset = Mod(pickup - start, 7);
-                int materialOffset = Mod(material - start, 7);
-                if (pickupOffset == 3 && materialOffset == 0)
-                {
-                    PlayerStore.Instance.modData[NextPickupDayKey]
-                        = material.ToString();
-                    PlayerStore.Instance.modData[NextMaterialDayKey]
-                        = pickup.ToString();
-                }
-            }
-
-            PlayerStore.Instance.modData[ScheduleVersionKey]
-                = CurrentScheduleVersion;
         }
 
         internal static bool IsPickupDue(int day)
@@ -204,12 +167,6 @@ namespace FluxForge.Story.Hospital
             }
 
             return int.Parse(raw);
-        }
-
-        private static int Mod(int value, int divisor)
-        {
-            int result = value % divisor;
-            return result < 0 ? result + divisor : result;
         }
     }
 }
