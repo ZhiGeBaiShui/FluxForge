@@ -45,6 +45,7 @@ namespace FluxForge.Mod
 
             _initialized = true;
             Register(new StatusLineTooltipHelper());
+            Register(new ColdTrapTooltipHelper());
             Register(new DeviceContainerTooltipHelper());
         }
 
