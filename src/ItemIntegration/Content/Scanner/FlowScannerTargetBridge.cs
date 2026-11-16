@@ -21,13 +21,28 @@ namespace FluxForge.Mod
     /// </summary>
     internal static class FlowScannerTargetBridge
     {
+        private static readonly Action<GameItem, GameItem> OpenWaterScanner =
+            (source, target) =>
+            {
+                WaterScannerUIManager.Instance.Open(source, target);
+                AudioManager.Instance.Play3("scanner_activate");
+            };
+
+        private static readonly Action<GameItem, GameItem> OpenChemScanner =
+            (source, target) =>
+            {
+                ChemScannerUIManager.Instance.Open(source, target);
+                AudioManager.Instance.Play3("scanner_activate");
+            };
+
         /// <summary>AquaScan 只缺 mayItem；canItem 原版为 true，保持不动。</summary>
         internal static void AttachAquaScan(GameItem scanner)
         {
             scanner.mayItemTargetItemFunc = AddDeviceTarget(
                 scanner.mayItemTargetItemFunc);
             scanner.onItemTargetItemFunc = AddDeviceOpen(
-                scanner.onItemTargetItemFunc);
+                scanner.onItemTargetItemFunc,
+                OpenWaterScanner);
         }
 
         /// <summary>ChemScanner 的 mayThis 和 canThis 都只认原版 tag。</summary>
@@ -38,7 +53,8 @@ namespace FluxForge.Mod
             scanner.canThisTargetItemFunc = AddDeviceTarget(
                 scanner.canThisTargetItemFunc);
             scanner.onItemTargetItemFunc = AddDeviceOpen(
-                scanner.onItemTargetItemFunc);
+                scanner.onItemTargetItemFunc,
+                OpenChemScanner);
         }
 
         /// <summary>
@@ -56,11 +72,13 @@ namespace FluxForge.Mod
 
         /// <summary>
         /// 追加装置面板分支；原回调仍在多播链里，只对原版目标生效。
+        /// 每个扫描仪使用自己的面板，不能把 AquaScan 送进化学校验面板。
         /// 原版 Aqua/Chem 的 onItem 只识别 LIQUID_CONTAINER / CHEM tag，
         /// 装置容器不带这些 tag，因此不会重复打开原版面板。
         /// </summary>
         private static Action<GameItem, GameItem> AddDeviceOpen(
-            Action<GameItem, GameItem> original)
+            Action<GameItem, GameItem> original,
+            Action<GameItem, GameItem> openDevice)
         {
             return (Action<GameItem, GameItem>)Delegate.Combine(
                 original,
@@ -71,8 +89,7 @@ namespace FluxForge.Mod
                         return;
                     }
 
-                    ChemScannerUIManager.Instance.Open(source, target);
-                    AudioManager.Instance.Play3("scanner_activate");
+                    openDevice(source, target);
                 }));
         }
     }

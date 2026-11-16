@@ -1,5 +1,3 @@
-using System.Globalization;
-using System.Text;
 using HarmonyLib;
 
 namespace FluxForge.Mod
@@ -28,10 +26,9 @@ namespace FluxForge.Mod
 
             __instance.productNameTMP.text = item.name;
             __instance.testedTMP.text = "流源装置";
-            __instance.labelTMP.text = "温度："
-                + properties.Get(FlowProps.Temperature).ToString("0.#", CultureInfo.InvariantCulture)
-                + "℃";
-            __instance.contaminantTMP.text = BuildComposition(properties, total);
+            __instance.labelTMP.text = FlowScannerText.Temperature(properties);
+            __instance.contaminantTMP.text =
+                FlowScannerText.BuildComposition(properties, total);
             __instance.totalVolumeTMP.text = total > 0d
                 ? "总存量：" + WaterScannerUIManager.FormatAmount((int)total)
                 : "";
@@ -43,50 +40,6 @@ namespace FluxForge.Mod
             __instance.synaprestEffect.gameObject.SetActive(false);
             __instance.birthControlEffect.gameObject.SetActive(false);
             return false;
-        }
-
-        /// <summary>
-        /// 固定遍历注册表（38 项），不是库存遍历；只写非零液体。
-        /// LiquidDict 里没有 foreign，因此外来液体单独命名。
-        /// </summary>
-        private static string BuildComposition(FlowProperties properties, double total)
-        {
-            StringBuilder builder = new StringBuilder(256);
-
-            for (int i = 0; i < FlowPropertyRegistry.All.Count; i++)
-            {
-                FlowPropertyDef def = FlowPropertyRegistry.All[i];
-                if (def.Kind != FlowPropertyKind.Liquid
-                    && def.Kind != FlowPropertyKind.Foreign)
-                {
-                    continue;
-                }
-
-                double amount = properties.Get(def.Key);
-                if (amount <= 0d)
-                {
-                    continue;
-                }
-
-                string name = def.Kind == FlowPropertyKind.Foreign
-                    ? "外来液体"
-                    : Liquid.LiquidDict[def.Id].displayName;
-
-                builder.Append(name)
-                    .Append("：")
-                    .Append(WaterScannerUIManager.FormatAmount((int)amount));
-
-                if (total > 0d)
-                {
-                    builder.Append(" (")
-                        .Append((amount / total * 100d).ToString("0.#", CultureInfo.InvariantCulture))
-                        .Append("%)");
-                }
-
-                builder.Append('\n');
-            }
-
-            return builder.ToString();
         }
     }
 }
