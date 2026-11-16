@@ -138,7 +138,7 @@
       "device": "collector",
       "anchorX": 0,
       "anchorY": 0,
-      "capacityMicrolitres": 5000000,
+      "capacityMicrolitres": 500000,
       "activateSound": "fluxforge.emitter.fire",
       "sprite": "flow_emitter_1x2",
       "name": "流源发射器",
