@@ -12,6 +12,12 @@ namespace FluxForge.Mod
     /// </summary>
     public sealed class FlowRuntime
     {
+        /// <summary>
+        /// 原版环境温度。发射时把流源统一到这里，避免容器 24°C 的库存
+        /// 在运动中回温到 26°C，导致过滤下限缓慢变化、反复触发净化。
+        /// </summary>
+        private const double RoomTemperature = 26d;
+
         public FlowRuntime(GameGridInventory inventory)
         {
             Inventory = inventory ?? throw new ArgumentNullException(nameof(inventory));
@@ -80,6 +86,7 @@ namespace FluxForge.Mod
             // 发射前重读一次：游戏会直接改液体 tag（WaterHelper.Add / Remove、倒水等），
             // 不经过任何装置事件，缓存的存量会过期。
             FlowProperties payload = FlowStock.Read(item);
+            payload.Set(FlowProps.Temperature, RoomTemperature);
 
             CollectorDevice collector =
                 (CollectorDevice)DeviceRegistry.GetRouter(item);
