@@ -4,21 +4,25 @@ using FluxForge.Mod;
 namespace FluxForge.Story.Hospital
 {
     /// <summary>
-    /// 医院取货：扫描后柜台，按配置的 FlowPropertyKey 和浓度计分，
-    /// 收走所有合格液体，按分数付款并结算医院声望。
+    /// 医院取货：分别执行后柜台检查与已确认货物结算，按配置品类和浓度计分。
+    /// 提交时收走合格容器并累计纯试剂任务进度；结束来访时统一付款、调整声望。
     /// </summary>
     internal static class HospitalContractTrade
     {
         private const double Epsilon = 1e-9d;
 
-        internal static HospitalContractSettlement TrySettle(
+        /// <summary>只读取桌面，供当前选项判断；不产生交易副作用。</summary>
+        internal static HospitalContractInspection Inspect(
             IReadOnlyList<ChemicalRequest> requests)
         {
+            bool hasUnderConcentration = false;
             GameInventory counter
                 = EmporiumEntry.Instance.backInvinvElement;
             List<GameItem> qualified = new List<GameItem>();
             double score = 0d;
-            bool hasHighPurity = false;
+            double pureAcid = 0d;
+            double pureBase = 0d;
+            double pureAlcohol = 0d;
 
             for (int i = 0; i < counter.childItems.Count; i++)
             {
@@ -30,6 +34,11 @@ namespace FluxForge.Story.Hospital
                 }
 
                 FlowProperties properties = FlowStock.Read(item);
+                if (!HospitalSynaprestState.Completed
+                    && properties.Get(FlowProps.Synaprest) > 0d)
+                {
+                    continue;
+                }
                 double total = properties.SubstanceTotal;
                 if (total <= 0d)
                 {
@@ -38,6 +47,7 @@ namespace FluxForge.Story.Hospital
 
                 double bestScorePerMillilitre = 0d;
                 bool accepted = false;
+                bool sawRequestedChemical = false;
                 for (int j = 0; j < requests.Count; j++)
                 {
                     ChemicalRequest request = requests[j];
@@ -47,6 +57,7 @@ namespace FluxForge.Story.Hospital
                         continue;
                     }
 
+                    sawRequestedChemical = true;
                     double concentration = active / total;
                     if (concentration + Epsilon
                         < request.MinimumConcentration)
@@ -65,15 +76,26 @@ namespace FluxForge.Story.Hospital
                     }
 
                     accepted = true;
-                    if (concentration + Epsilon
-                        >= HospitalContractScore.HighPurityThreshold)
+                    if (active == total)
                     {
-                        hasHighPurity = true;
+                        if (request.Key.Equals(FlowProps.Acid))
+                        {
+                            pureAcid += total;
+                        }
+                        else if (request.Key.Equals(FlowProps.Base))
+                        {
+                            pureBase += total;
+                        }
+                        else if (request.Key.Equals(FlowProps.Alcohol))
+                        {
+                            pureAlcohol += total;
+                        }
                     }
                 }
 
                 if (!accepted)
                 {
+                    hasUnderConcentration |= sawRequestedChemical;
                     continue;
                 }
 
@@ -81,23 +103,35 @@ namespace FluxForge.Story.Hospital
                 score += total / 1000d * bestScorePerMillilitre;
             }
 
-            int payment = HospitalContractScore.Payment(score);
-            for (int i = 0; i < qualified.Count; i++)
+            return new HospitalContractInspection(
+                qualified, score, hasUnderConcentration,
+                pureAcid, pureBase, pureAlcohol);
+        }
+
+        /// <summary>收走本次提交刚检查过的货物；此处不支付货款、不推进周日期。</summary>
+        internal static void Take(
+            HospitalContractInspection inspection)
+        {
+            for (int i = 0; i < inspection.Qualified.Count; i++)
             {
-                qualified[i].Destroy();
+                inspection.Qualified[i].Destroy();
             }
 
-            PlayerStore.Instance.ModCash(payment);
+            if (HospitalHighestDemandState.Active)
+            {
+                HospitalHighestDemandState.Record(inspection);
+            }
 
-            int delta = HospitalContractScore.ReputationDelta(score);
+        }
+
+        internal static int Settle(double score)
+        {
+            int payment = HospitalContractScore.Payment(score, HospitalReputation.Get());
+            PlayerStore.Instance.ModCash(payment);
+            int delta = HospitalContractScore.ReputationDelta(score, HospitalReputation.Get());
             HospitalReputation.Add(delta);
 
-            return new HospitalContractSettlement(
-                score,
-                delta,
-                payment,
-                qualified.Count,
-                hasHighPurity);
+            return payment;
         }
     }
 }

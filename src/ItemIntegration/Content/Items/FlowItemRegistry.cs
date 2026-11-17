@@ -155,16 +155,14 @@ namespace FluxForge.Mod
         /// <summary>模组物品贴图 key（查 sprites.json 的 key；空则回退用物品 key 本身）。</summary>
         public string sprite { get; set; }
 
-        /// <summary>显示名（空则留空）。</summary>
-        // TODO(l10n): name / desc / flavor / statusLines.label 目前直接存中文；
-        // 支持多语言前应改为 key + 分语言资源，不要把这些显示文本当技术 tag。
-        public string name { get; set; }
+        /// <summary>外置CSV中的名称键，按原版ModHelper在创建物品时解析。</summary>
+        public string nameLoc { get; set; }
 
-        /// <summary>正文说明（写入 shortDescription；空则留空）。支持 \n 换行与富文本标签。</summary>
-        public string desc { get; set; }
+        /// <summary>外置CSV中的说明键，对应原版shortDescription。</summary>
+        public string descriptionLoc { get; set; }
 
-        /// <summary>风味文本（写入 flavorText，灰绿斜体；空则留空）。</summary>
-        public string flavor { get; set; }
+        /// <summary>外置CSV中的风味文本键；没有风味文本的物品不配置。</summary>
+        public string flavorLoc { get; set; }
 
         /// <summary>
         /// 激活音效标识；由负责激活的 attachment 绑定到 GameItem.soundActivate。
@@ -173,9 +171,6 @@ namespace FluxForge.Mod
         public string activateSound { get; set; }
 
         public string manualTag { get; set; }
-
-        /// <summary>便条正文图片在 Textures/Paper 中的名称。</summary>
-        public string paperImage { get; set; }
 
         /// <summary>物品类型（MODULE / STORAGE / TOOL / MACHINE / FOOD / WEAPON / MEDICAL / ARMOR …）。</summary>
         public string type { get; set; }

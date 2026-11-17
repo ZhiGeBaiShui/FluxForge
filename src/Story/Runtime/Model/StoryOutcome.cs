@@ -1,6 +1,6 @@
 namespace FluxForge.Story
 {
-    /// <summary>剧情结束后由通用控制器执行的访客结果。</summary>
+    /// <summary>整次来访正常结束后，由通用控制器应用的访客结果。</summary>
     internal enum StoryOutcome
     {
         Default,

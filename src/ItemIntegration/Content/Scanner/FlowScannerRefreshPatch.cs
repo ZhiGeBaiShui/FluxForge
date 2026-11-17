@@ -25,12 +25,12 @@ namespace FluxForge.Mod
             double total = properties.SubstanceTotal;
 
             __instance.productNameTMP.text = item.name;
-            __instance.testedTMP.text = "流源装置";
+            __instance.testedTMP.text = ModHelper.GetLocalized(ItemFactory.ModId, "scanner.flow_device");
             __instance.labelTMP.text = FlowScannerText.Temperature(properties);
             __instance.contaminantTMP.text =
                 FlowScannerText.BuildComposition(properties, total);
             __instance.totalVolumeTMP.text = total > 0d
-                ? "总存量：" + WaterScannerUIManager.FormatAmount((int)total)
+                ? ModHelper.GetLocalized(ItemFactory.ModId, "scanner.total", WaterScannerUIManager.FormatAmount((int)total))
                 : "";
 
             __instance.confrontButton.gameObject.SetActive(false);

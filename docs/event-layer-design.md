@@ -1,122 +1,35 @@
-# Event Layer Design (`src/Events`)
+> 维护校对：2026-11-16。当前实现以[项目状态](current-project-state.md)及源码为准；历史方案和审查结论保留其当时上下文。未被工程使用的设计图片、试听文件和审查中间产物已列入清理清单；批量删除被工具策略拒绝，尚未删除。
 
-Status: implementation target. Unity 2021.3.45f2 / Mono / Probably Stolen 0.46.
+# 装置事件层
 
-## 1. Boundary
+`src/Events` 为手册和独立装置演示服务，剧情层不调用它。公共入口为 `FlowEventApi`；返回true表示启动，`EventCompleted`按网格通知结束。
 
-```text
-Story (future) -> Events -> Logic / Mod / Presentation
-```
+## 编写新演示
 
-- Events may call Logic, Mod and Presentation.
-- Logic / Mod / Presentation / Traits must not reference `FluxForge.Events`.
-- Public surface is intentionally small:
-  - `FlowEventApi.LockGrid(GameGridInventory)`
-  - `FlowEventApi.UnlockGrid(GameGridInventory)`
-  - `FlowEventApi.RunBoundaryEmitter(GameGridInventory)`
-  - `FlowEventApi.RunTwoEmitterRelay(GameGridInventory)`
-- Event methods return `bool`: `true` means successfully started, not completed.
-- Completion is published through:
-  - `public static event Action<GameGridInventory> FlowEventApi.EventCompleted`
-  - fired once after cleanup, for both normal completion and failure cleanup.
-- The story layer locks/unlocks manually. The event layer does not unlock a grid it did not lock.
-- No `Update` / per-frame scan in this layer. Coroutine waits are time-based, not polling.
+1. 在 `Demos/` 编写静态事件类，创建 `EventSession`。
+2. 使用 `DemoPlacement.Spawn` 按锚点格放置，成功物品由session持有；Spawn实际返回null表示放置失败，调用Fail结束。
+3. 使用session协程等待物品生成、流源接收或实际位置，不以固定延时猜测进入装置。
+4. 明确调用Complete或CompleteAfter；持续回路也必须设定结束时间。
+5. 在FlowEventApi增加入口，再由对应手册页绑定事件和网格尺寸。
 
-## 2. Directory
+## 当前事件
 
-```text
-src/Events/
-├─ Public/
-│  ├─ FlowEventApi.cs          lock/unlock + boundary event
-│  └─ FlowEventApi.Relay.cs    relay event (partial facade)
-├─ Runtime/
-│  ├─ EventCoroutineHost.cs    hidden DontDestroyOnLoad MonoBehaviour, no Update
-│  └─ EventSession.cs          item cleanup, subscriptions, completion guard
-├─ Locks/
-│  └─ GridLock.cs              ref-counted grid/item lock + restore
-├─ Placement/
-│  ├─ PlacementMath.cs         pure anchor/orientation math
-│  └─ DemoPlacement.cs         DirectoryMaster item, tags, fit check, accept, re-register
-└─ Demos/
-   ├─ BoundaryEmitterEvent.cs  demo 1
-   └─ TwoEmitterRelayEvent.cs  demo 2
-```
+| 入口 | 行为 |
+|---|---|
+| RunBoundaryEmitter | 发射后流源离开边界 |
+| RunTwoEmitterRelay | 两侧发射器接力 |
+| RunFilterLoop | 左侧发射一次、右侧接收 |
+| RunColdTrapLoop | 基础冷萃，往返3轮 |
+| RunColdTrapAdvancedLoop | 进阶，右侧一次发射、左侧接收后2秒清理 |
+| RunColdTrapAutomation | 按图闭环，进入冷萃后补左下转角，闭环后10秒清理 |
+| RunCentrifuge | 单次离心演示 |
 
-No bootstrap/reflection: a future Story layer references this assembly directly. Root SDK csproj auto-includes `src/**`.
+## 生命周期和几何
 
-## 3. Locking
+EventSession拥有物品、协程和取消清理；手册关闭时ManualDemoPage停止事件、退役对应流源并销毁网格。GridLock单独提供可释放的交互锁，演示网格通过CanvasGroup禁止操作。
 
-`GridLock.Lock(grid)`:
+游戏orientation与逻辑Facing相反，统一经 `FlowFacingAdapter.FromOrientation` 转换。不要把逻辑顺时针方向直接填入Spawn的orientation。
 
-- ref-count by grid; first lock saves `overrideLockInsert` / `overrideLockRemove`, then `grid.LockInv()`.
-- for each `grid.childItems`: save `forceDisableUse` / `forceDisableActivate`, set both `true`.
-- new demo item: `GridLock.Track(item)` applies the same item flags while the grid lock is active.
+自动化的转角在(3,2)、(5,4)、(5,0)、(7,0)、(7,2)、延迟放置(3,4)，orientation分别0、2、0、3、2、1。升温位于(3,3)/(6,0)，降温位于(4,4)/(7,1)，冷萃中心(5,2)，发射器锚点(1,4)。这些坐标相对于9×5布局左上角。
 
-Do **not** use `GeneralHelper.LockItem`: it overwrites `mayInventoryRemoveItemFunc` and is not reversible without clobbering other mods.
-
-`Unlock` restores saved flags only on the final release. Grid lock blocks `MayRemove`; item flags block selection/activation. The event layer does not create a UI overlay, so story dialogue can still render above the grid.
-
-## 4. Placement
-
-`DemoPlacement.Spawn` takes:
-
-```csharp
-Spawn(
-    GameGridInventory grid,
-    string itemKey,
-    int anchorCellX,
-    int anchorCellY,
-    int orientation,
-    bool flipped,
-    int waterMicrolitres,
-    out string error)
-```
-
-Steps:
-
-1. `DirectoryMaster.Item(itemKey)`.
-2. If water > 0: `FlowStock.Write(item, props.Set(FlowProps.Water, water))`.
-3. Read anchor local tags (default `0,0`) and compute the transformed anchor offset with a zero-origin probe.
-4. Set `item.modifiedShape` so `ForwardTransform(anchorLocal)` lands on the requested cell.
-5. `grid.CheckShapePlacement(item, item.modifiedShape, new List<GameItem>())`; fail cleanly if false (covers other mods changing grid size).
-6. `grid.UncheckedAccept(item)`.
-7. Because `ValidateShapeState` recomputes the shape, restore the desired `modifiedShape` afterwards, call `item.Validate()`, re-register with `runtime.Grid.Register(item)`, and `DeviceRegistry.SetFacing(...)`.
-8. `GridLock.Track(item)`.
-
-Any failure destroys the item and returns `null`; no partial item remains.
-
-## 5. Events
-
-### Boundary emitter
-
-- Spawn `flow_emitter` at the left edge, orientation `3` (right), water 1,000,000 µL.
-- Subscribe `FlowSpawner.OnEntityAdded` / `OnEntityRemoved` **before** `runtime.Emit(item)`.
-- Capture the emitted entity; when that entity is removed, `session.Complete()`.
-- If `Emit` returns false, fail and clean up.
-- Completion is event-driven; no Update.
-
-### Two-emitter relay
-
-- Spawn left emitter orientation `3` (right) at left edge, water filled.
-- Spawn right emitter orientation `1` (left) at right edge, empty.
-- Subscribe left `OnEntityRemoved` before left emit.
-- When left entity is removed:
-  - if `FlowStock.Total(rightItem) <= 0`, the flow missed the receiver: fail.
-  - otherwise start a 2-second coroutine, then subscribe right `OnEntityRemoved`, call `runtime.Emit(rightItem)`, capture the right entity, and complete when it is removed.
-- Two seconds is `WaitForSeconds`, not a per-frame scan.
-
-## 6. Cleanup / failure
-
-`EventSession`:
-
-- exactly one active session per grid.
-- tracks demo items, event subscriptions, and an optional coroutine.
-- `Complete` / `Fail` clean up once: unsubscribe, stop coroutine, destroy items.
-- `Fail` logs one warning; never throws into the story layer.
-- placement failure is a boundary condition; missing `FlowRuntime` and invalid item definitions are developer invariants.
-
-## 7. Tests
-
-- `PlacementMath` is pure; test anchor/orientation/flip/min calculation in `tests/FluxForge.Tests/Events/PlacementMathTests.cs`.
-- Test csproj can include `src/Events/Placement/PlacementMath.cs` without game/Unity dependencies.
-- Locking/placement/event runtime need real-game smoke tests: place on a normal grid, grid resized by another mod, and a locked grid while clicking/dragging.
+演示物品图片设Simple：原版RenderNodePrefab的Image是Tiled，Unity Image.GenerateTiledSprite用像素对齐后的区域向上取整计算平铺数；缩放时会出现多绘窄边的路径。它是显示配置修复，不修改PNG，不添加异常兜底；尚待游戏内视觉验证。

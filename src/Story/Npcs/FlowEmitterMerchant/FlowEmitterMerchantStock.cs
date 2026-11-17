@@ -1,6 +1,6 @@
 namespace FluxForge.Story.FlowEmitterMerchant
 {
-    /// <summary>一条库存规则：看过某段剧情后，上架哪种货物。</summary>
+    /// <summary>一条上货规则：可要求指定剧情标志，无标志要求时直接上货。</summary>
     internal sealed class StoryStockRule
     {
         internal string StoryKey;
@@ -21,7 +21,7 @@ namespace FluxForge.Story.FlowEmitterMerchant
         }
     }
 
-    /// <summary>根据剧情进度计算本次上架的货物。</summary>
+    /// <summary>按第二访清单或剧情标志上货，并提供赠礼和破旧状态适配。</summary>
     internal static class FlowEmitterMerchantStock
     {
         private const string ManualItemKey = "fluxforge_device_manual";
@@ -81,7 +81,7 @@ namespace FluxForge.Story.FlowEmitterMerchant
                 false),
         };
 
-        /// <summary>后续到访：旧库存由原版在客户离店时清理，这里只重新上货。</summary>
+        /// <summary>后续到访按进度上货；原版客户离店时清理桌上未归玩家所有的物品。</summary>
         internal static void Refresh()
         {
             PlaceRules(RepeatRules);

@@ -18,10 +18,13 @@ namespace FluxForge.Story
         {
             get
             {
-                return PlayerStore.Instance.modData.ContainsKey(
-                    VisitCountKey)
-                    ? int.Parse(PlayerStore.Instance.modData[VisitCountKey])
-                    : 0;
+                string raw;
+                if (!PlayerStore.Instance.modData.TryGetValue(VisitCountKey, out raw))
+                {
+                    return 0;
+                }
+
+                return int.Parse(raw);
             }
         }
 

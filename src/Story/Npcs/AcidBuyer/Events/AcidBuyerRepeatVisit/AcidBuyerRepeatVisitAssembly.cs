@@ -7,22 +7,23 @@ namespace FluxForge.Story.AcidBuyerRepeatVisit
     internal sealed class AcidBuyerRepeatVisitAssembly : StoryAssembly
     {
         internal override StoryEdge Entry { get; }
-
         internal AcidBuyerRepeatVisitAssembly()
+        {
+            AcidBuyerTradeSession session = new AcidBuyerTradeSession();
+            AcidBuyerGreetingEdge greeting = new AcidBuyerGreetingEdge(session);
+            greeting.Connect(null, CreateTradeOptions(session));
+            Entry = greeting;
+        }
+
+        internal static StoryNode CreateTradeOptions(AcidBuyerTradeSession session)
         {
             StoryNode root = new StoryNode();
             StoryNode success = new StoryNode();
             StoryNode highPurity = new StoryNode();
-            StoryNode highPuritySuccess = new StoryNode();
-            AcidBuyerGreetingEdge greeting = new AcidBuyerGreetingEdge();
-            AcidBuyerTradeEdge trade = new AcidBuyerTradeEdge();
-            AcidBuyerTradeEdge tradeAgain = new AcidBuyerTradeEdge();
-            AcidBuyerTradeEdge tradeAfterHigh
-                = new AcidBuyerTradeEdge(
-                    AcidBuyerRepeatVisitTexts.TradeAfterHighOption);
+            AcidBuyerTradeEdge trade = new AcidBuyerTradeEdge(session);
+            AcidBuyerTradeEdge tradeAgain = new AcidBuyerTradeEdge(session);
             AcidBuyerExitEdge exit = new AcidBuyerExitEdge();
-            AcidBuyerSoldOutEdge soldOut = new AcidBuyerSoldOutEdge();
-            AcidBuyerSoldOutEdge soldOutHigh = new AcidBuyerSoldOutEdge();
+            AcidBuyerSoldOutEdge soldOut = new AcidBuyerSoldOutEdge(session);
             AcidBuyerHighPurityAnswerEdge selfMade
                 = new AcidBuyerHighPurityAnswerEdge(
                     AcidBuyerFirstHighPurityTexts.SelfMadeOption,
@@ -32,7 +33,6 @@ namespace FluxForge.Story.AcidBuyerRepeatVisit
                     AcidBuyerFirstHighPurityTexts.LuckOption,
                     AcidBuyerFirstHighPurityTexts.LuckResponse);
 
-            greeting.Connect(null, root);
             trade.Connect(root, success);
             trade.SetTargets(success, highPurity, root);
             exit.Connect(root, null);
@@ -41,19 +41,10 @@ namespace FluxForge.Story.AcidBuyerRepeatVisit
             tradeAgain.SetTargets(success, highPurity, success);
             soldOut.Connect(success, null);
 
-            tradeAfterHigh.Connect(
-                highPuritySuccess,
-                highPuritySuccess);
-            tradeAfterHigh.SetTargets(
-                highPuritySuccess,
-                highPurity,
-                highPuritySuccess);
-            soldOutHigh.Connect(highPuritySuccess, null);
+            selfMade.Connect(highPurity, success);
+            luck.Connect(highPurity, success);
 
-            selfMade.Connect(highPurity, highPuritySuccess);
-            luck.Connect(highPurity, highPuritySuccess);
-
-            Entry = greeting;
+            return root;
         }
     }
 }

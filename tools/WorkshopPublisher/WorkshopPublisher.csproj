@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <AssemblyName>FluxForge.WorkshopPublisher</AssemblyName>
+    <PlatformTarget>x64</PlatformTarget>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <GameDirectory>E:\SteamLibrary\steamapps\common\Probably Stolen</GameDirectory>
+  </PropertyGroup>
+  <ItemGroup>
+    <!-- .csx avoids the root SDK project's default **/*.cs compilation. -->
+    <Compile Include="Program.csx" />
+    <Reference Include="com.rlabrecque.steamworks.net">
+      <HintPath>$(GameDirectory)\Probably Stolen_Data\Managed\com.rlabrecque.steamworks.net.dll</HintPath>
+    </Reference>
+    <None Include="$(GameDirectory)\Probably Stolen_Data\Plugins\x86_64\steam_api64.dll"
+          Link="steam_api64.dll" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+</Project>

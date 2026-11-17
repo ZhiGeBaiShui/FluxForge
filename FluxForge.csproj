@@ -17,7 +17,7 @@
     <GameManagedDir>E:\SteamLibrary\steamapps\common\Probably Stolen\Probably Stolen_Data\Managed</GameManagedDir>
     <!-- 开发参考资料/ 里有同名的 Assembly-CSharp.dll；SDK 会把项目内 None/Content 里的
          DLL 当作候选引用并优先于 HintPath，必须把这套本地资料排除出默认项。 -->
-    <DefaultItemExcludes>$(DefaultItemExcludes);开发参考资料/**;output/**;dist/**</DefaultItemExcludes>
+    <DefaultItemExcludes>$(DefaultItemExcludes);开发参考资料/**;output/**;dist/**;artifacts/**</DefaultItemExcludes>
   </PropertyGroup>
 
   <ItemGroup>
@@ -27,6 +27,10 @@
     </Reference>
     <Reference Include="UnityEngine.CoreModule">
       <HintPath>$(GameManagedDir)\UnityEngine.CoreModule.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityEngine.InputLegacyModule">
+      <HintPath>$(GameManagedDir)\UnityEngine.InputLegacyModule.dll</HintPath>
       <Private>false</Private>
     </Reference>
     <Reference Include="UnityEngine.UI">
@@ -90,6 +94,11 @@
 
   <ItemGroup>
     <None Update="manifest.xml" CopyToOutputDirectory="PreserveNewest" />
+    <!-- 原版 ModUIManager.GetLocalPreview 从模组根目录读取 preview.png。 -->
+    <None Update="mod\preview.png">
+      <Link>preview.png</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <!-- 官方模组资源约定：Textures/Items/<key>.png 必须与 DLL / manifest 同级。
          源文件放在 mod/ 下，构建时用 Link 去掉 mod\ 前缀。 -->
     <None Update="mod\Textures\Items\*.png">
@@ -113,14 +122,12 @@
       <Link>Books\%(Filename)%(Extension)</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="mod\Textures\Paper\*.png">
-      <Link>Textures\Paper\%(Filename)%(Extension)</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
   </ItemGroup>
 
   <ItemGroup>
     <Compile Remove="tests/**/*.cs" />
+    <!-- 独立发布工具的 obj 也会生成 .cs，不能被 Mod 的默认源码扫描编入。 -->
+    <Compile Remove="tools/WorkshopPublisher/**/*.cs" />
     <None Remove="tests/**/*.cs" />
   </ItemGroup>
 

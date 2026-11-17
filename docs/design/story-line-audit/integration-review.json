@@ -1,0 +1,795 @@
+{
+  "reviewer": "游戏适配、目录规范、维护性逐行审查员",
+  "files": [
+    {
+      "path": "src/Story/Runtime/Bootstrap/StoryBootstrap.cs",
+      "lineCount": 41,
+      "sha256": "77ede0e26bdcaebcd594d2852d55efb2eb40998f453de77876612a8434746e61",
+      "blocks": [
+        {
+          "start": 1,
+          "end": 13,
+          "verdict": "保留",
+          "reason": "组合根导入两位NPC和表现适配；持有单一Host，未把业务状态放入入口。 Hospital procurement follow-up: one lifecycle-owned hook manager; no duplicate-start guards.",
+          "evidence": [
+            "src/LogicIntegration/Bootstrap/FFModEntry.cs:59",
+            "src/Story/Hospital/Procurement/README.md",
+            "src/Story/Hospital/Procurement/README.md"
+          ]
+        },
+        {
+          "start": 14,
+          "end": 25,
+          "verdict": "保留",
+          "reason": "Register the two story NPCs, four hospital buyer factories, restoration and portrait hooks; subscribe natural visits and procurement generation. Factories are registered before procurement subscription.",
+          "evidence": [
+            "src/Story/Npcs/AcidBuyer/AcidBuyerStory.cs:13",
+            "src/Story/Runtime/Direction/NpcStoryHost.cs:26",
+            "src/Story/Hospital/Procurement/README.md",
+            "src/Story/Hospital/Procurement/README.md"
+          ]
+        },
+        {
+          "start": 26,
+          "end": 41,
+          "verdict": "保留",
+          "reason": "Unsubscribe procurement, remove queued/current hospital buyers and unregister their factories before disposing story host and portraits; no duplicate-start compatibility guards.",
+          "evidence": [
+            "src/LogicIntegration/Bootstrap/FFModEntry.cs:72",
+            ".tmp-decomp/ModLoader.cs:699",
+            ".tmp-decomp/ModLoader.cs:1460",
+            "src/Story/Hospital/Procurement/README.md",
+            "src/Story/Hospital/Procurement/README.md"
+          ]
+        }
+      ]
+    },
+    {
+      "path": "src/Story/Runtime/Direction/NpcStoryHost.cs",
+      "lineCount": 288,
+      "sha256": "0df6887c208e751f4c41b909beb114207d9d50faa1a522741cf8f4d95cde35c1",
+      "blocks": [
+        {
+          "start": 1,
+          "end": 19,
+          "verdict": "保留",
+          "reason": "Host只持有注册内容与可退订委托；委托保存是事件退订所需。",
+          "evidence": [
+            "src/Story/Runtime/Direction/NpcStoryHost.cs:29",
+            "src/Story/Runtime/Direction/NpcStoryHost.cs:35"
+          ]
+        },
+        {
+          "start": 20,
+          "end": 46,
+          "verdict": "保留",
+          "reason": "Add由组合根调用；Subscribe/Dispose成对，释放自己创建的客户。 Native registration follow-up: explicitly configured direct factory, no state access during creation; unregister and clear native name cache on disposal. See docs/design/npc-native-registration.md.",
+          "evidence": [
+            "src/Story/Runtime/Bootstrap/StoryBootstrap.cs:15",
+            "src/Story/Runtime/Bootstrap/StoryBootstrap.cs:28",
+            "docs/design/npc-native-registration.md"
+          ]
+        },
+        {
+          "start": 47,
+          "end": 63,
+          "verdict": "保留",
+          "reason": "菜单停用无存档正常存在；HasInstance避免Instance懒创建。只移除注册客户，匹配当前客户走原版Dismiss。",
+          "evidence": [
+            ".tmp-decomp/PlayerStore.cs:671",
+            ".tmp-decomp/PlayerStore.cs:682",
+            ".tmp-decomp/PlayerStore.cs:1600",
+            ".tmp-decomp/PlayerStore.cs:1788"
+          ]
+        },
+        {
+          "start": 64,
+          "end": 76,
+          "verdict": "保留",
+          "reason": "注册身份遍历仅本Host内容，不清其他Mod客户，无额外身份缓存。",
+          "evidence": [
+            "src/Story/Runtime/Bootstrap/StoryBootstrap.cs:15",
+            "src/Story/Runtime/Direction/NpcStoryHost.cs:142"
+          ]
+        },
+        {
+          "start": 77,
+          "end": 95,
+          "verdict": "保留",
+          "reason": "读档与开门分别提供gameLoad值；QueueOnGameLoad是明确的NPC配置差异。",
+          "evidence": [
+            "src/Story/Npcs/AcidBuyer/AcidBuyerStory.cs:35",
+            "src/Story/Npcs/FlowEmitterMerchant/FlowEmitterMerchantStory.cs:18"
+          ]
+        },
+        {
+          "start": 96,
+          "end": 125,
+          "verdict": "保留",
+          "reason": "先判重再纯选择，到访未命中不排队；随机函数仅供选择器一次概率判定。",
+          "evidence": [
+            "src/Story/Runtime/Selection/VisitRuleSelector.cs:46",
+            ".tmp-decomp/StoreClientManager.cs:483"
+          ]
+        },
+        {
+          "start": 126,
+          "end": 143,
+          "verdict": "保留",
+          "reason": "两类事件可能重复排队；队列与当前客户均检查，当前客户为空为正常店面状态。",
+          "evidence": [
+            "src/Story/Runtime/Direction/NpcStoryHost.cs:28",
+            "src/Story/Runtime/Direction/NpcStoryHost.cs:29",
+            ".tmp-decomp/PlayerStore.cs:1613"
+          ]
+        },
+        {
+          "start": 144,
+          "end": 174,
+          "verdict": "保留",
+          "reason": "原版客户适配写身份、立绘、意图与回调；不可解散确保剧情期间不被玩家跳过。FactionId为空来自奥雅配置；Complete和来源标记走原版入口。",
+          "evidence": [
+            ".tmp-decomp/StoreClient.cs:76",
+            ".tmp-decomp/StoreClient.cs:504",
+            ".tmp-decomp/PlayerStore.cs:1577",
+            "src/Story/Npcs/FlowEmitterMerchant/FlowEmitterMerchantStory.cs:13"
+          ]
+        },
+        {
+          "start": 175,
+          "end": 194,
+          "verdict": "保留",
+          "reason": "四种VisitKind显式映射原版意图，默认Dialogue对应最后枚举值，无新增兜底。",
+          "evidence": [
+            "src/Story/Runtime/Model/VisitKind.cs:3"
+          ]
+        },
+        {
+          "start": 195,
+          "end": 217,
+          "verdict": "保留",
+          "reason": "到场回调才读取当前客户，清除前次交易结果。奥雅用旧计数回调，薇拉用默认计数；保存实际到场日期。",
+          "evidence": [
+            "src/Story/Runtime/Direction/NpcStoryHost.cs:149",
+            "src/Story/Npcs/FlowEmitterMerchant/FlowEmitterMerchantStory.cs:28",
+            "src/Story/Npcs/AcidBuyer/AcidBuyerStory.cs:46"
+          ]
+        },
+        {
+          "start": 218,
+          "end": 246,
+          "verdict": "保留",
+          "reason": "构造本次上下文并选主事件；无命中按访问类型结算；互斥组消费是业务规则非错误防御。",
+          "evidence": [
+            "src/Story/Runtime/Selection/StoryEventSelector.cs:15",
+            "src/Story/Runtime/Selection/StoryEventSelector.cs:49"
+          ]
+        },
+        {
+          "start": 247,
+          "end": 262,
+          "verdict": "保留",
+          "reason": "定义来自同内容事件表。单次来访只有一个播放器，根退出清活动身份再应用结果。dismissable二次赋false重复但与原版客户生命周期接线相邻，本轮不以推测删除。",
+          "evidence": [
+            "src/Story/Runtime/Model/NpcStoryContent.cs:22",
+            "src/Story/Runtime/Direction/Services/NpcVisitAssembly.cs:18"
+          ]
+        },
+        {
+          "start": 263,
+          "end": 288,
+          "verdict": "保留",
+          "reason": "完成才解除不可解散，Leave走原版离场；Default按访问意图解析，OpenShop只解锁由原版继续。",
+          "evidence": [
+            "src/Story/Runtime/Model/StoryOutcome.cs:3",
+            ".tmp-decomp/PlayerStore.cs:1577"
+          ]
+        }
+      ],
+      "commentReview": "Comment wording reviewed against implementation; executable tokens and line positions unchanged. See ../story-comment-audit.json.",
+      "registrationReview": "root: native dictionary, factory, lifecycle and affected constructor callers reviewed; see ../npc-native-registration.md"
+    },
+    {
+      "path": "src/Story/Runtime/Direction/Services/NpcVisitAssembly.cs",
+      "lineCount": 103,
+      "sha256": "9146fa8c3947766703ca32d0953b66ecf4ddebb4fa22960ea84085c287ffc217",
+      "blocks": [
+        {
+          "start": 1,
+          "end": 22,
+          "verdict": "保留",
+          "reason": "整次来访编排主、交易、离场三个子调用；延后阶段使用StageAssembly保证主剧情状态先完成。",
+          "evidence": [
+            "src/Story/Runtime/Playback/StoryPlayer.cs:113",
+            "tests/FluxForge.Story.Tests/StoryPlaybackTests.cs:239"
+          ]
+        },
+        {
+          "start": 23,
+          "end": 40,
+          "verdict": "保留",
+          "reason": "交易为空是未交货正常状态；构造含真实交易结果上下文，未命中不追加内容。",
+          "evidence": [
+            "src/Story/Runtime/Direction/Services/StoryNpcRuntime.cs:53",
+            "src/Story/Runtime/Selection/StoryEventSelector.cs:15"
+          ]
+        },
+        {
+          "start": 41,
+          "end": 60,
+          "verdict": "保留",
+          "reason": "离场阶段按最新状态选事件，只有明确Outcome覆盖主结果；Do在子调用后执行。",
+          "evidence": [
+            "src/Story/Runtime/Model/StoryOutcome.cs:3",
+            "src/Story/Runtime/Playback/Execution/StorySequence.cs:28"
+          ]
+        },
+        {
+          "start": 61,
+          "end": 77,
+          "verdict": "保留",
+          "reason": "共用纯选择器并消费互斥组；FindEvent对应来自同内容的事件。",
+          "evidence": [
+            "src/Story/Runtime/Model/NpcStoryContent.cs:22",
+            "src/Story/Runtime/Selection/StoryEventSelector.cs:49"
+          ]
+        },
+        {
+          "start": 78,
+          "end": 86,
+          "verdict": "保留",
+          "reason": "私有阶段装配只包本类两处延后注册逻辑，无需引入跨目录通用抽象。",
+          "evidence": [
+            "src/Story/Runtime/Direction/Services/NpcVisitAssembly.cs:19"
+          ]
+        },
+        {
+          "start": 87,
+          "end": 103,
+          "verdict": "保留",
+          "reason": "私有StageEdge适配Action到既有StoryEdge契约，用于根编排与阶段注册；无多余防御。",
+          "evidence": [
+            "src/Story/Runtime/Direction/Services/NpcVisitAssembly.cs:16",
+            "src/LogicIntegration/DeviceServices/Core/DeviceHost.cs:6"
+          ]
+        }
+      ]
+    },
+    {
+      "path": "src/Story/Runtime/Direction/Services/StoryNpcRuntime.cs",
+      "lineCount": 65,
+      "sha256": "59bf79d43f9822a6579788e01ec5c6d10d592166261e8a1fd2f4fbf12041b169",
+      "blocks": [
+        {
+          "start": 1,
+          "end": 22,
+          "verdict": "保留",
+          "reason": "单活动客户由原版单currentClientInstance模型支撑；Begin/End成对登记清空，不加锁。",
+          "evidence": [
+            "src/Story/Runtime/Direction/NpcStoryHost.cs:248",
+            ".tmp-decomp/PlayerStore.cs:1600"
+          ]
+        },
+        {
+          "start": 23,
+          "end": 35,
+          "verdict": "保留",
+          "reason": "所有自定义客户有OnDismiss但并非都有活动剧情，编号比较避免取消无活动/其他客户；先清身份再Cancel避免重入误识别。",
+          "evidence": [
+            "src/Story/Runtime/Direction/NpcStoryHost.cs:150",
+            "src/Story/Runtime/Direction/NpcStoryHost.cs:224",
+            ".tmp-decomp/DialogUIManager.cs:723"
+          ]
+        },
+        {
+          "start": 36,
+          "end": 46,
+          "verdict": "保留",
+          "reason": "活跃播放可能为空：正常完成/主菜单。Shutdown只在持有播放器时Cancel，防止打断原版对话；同时清交易状态。",
+          "evidence": [
+            "src/Story/Runtime/Bootstrap/StoryBootstrap.cs:27",
+            ".tmp-decomp/ModLoader.cs:682"
+          ]
+        },
+        {
+          "start": 47,
+          "end": 65,
+          "verdict": "保留",
+          "reason": "Pending trade is a consume-once author extension channel, cleared on arrival and shutdown. Current production story content does not invoke QueueTradeCompleted; lifecycle tests exercise the designed capability.",
+          "evidence": [
+            "src/Story/Runtime/Direction/NpcStoryHost.cs:196",
+            "src/Story/Runtime/Direction/Services/NpcVisitAssembly.cs:26"
+          ]
+        }
+      ],
+      "commentReview": "Comment wording reviewed against implementation; executable tokens and line positions unchanged. See ../story-comment-audit.json."
+    },
+    {
+      "path": "src/Story/Runtime/State/NpcState.cs",
+      "lineCount": 132,
+      "sha256": "ff4ea481dcb854a527cc267affd33f85d135d5163e505f27046f8079811bd2cb",
+      "blocks": [
+        {
+          "start": 1,
+          "end": 15,
+          "verdict": "保留",
+          "reason": "状态适配持有NPC定义并以稳定前缀写modData，不依赖具体NPC业务类。",
+          "evidence": [
+            "src/Story/Runtime/Model/IStoryState.cs:3"
+          ]
+        },
+        {
+          "start": 16,
+          "end": 29,
+          "verdict": "fixed-and-retained",
+          "reason": "VisitCount now uses a single TryGetValue lookup, consistent with LastVisitDay and SeenCount. Missing key is the normal initial zero state.",
+          "evidence": [
+            "src/Story/Runtime/State/NpcState.cs:36",
+            "src/Story/Runtime/State/NpcState.cs:106"
+          ]
+        },
+        {
+          "start": 30,
+          "end": 45,
+          "verdict": "保留",
+          "reason": "初次无来访日期返回-1，选择器据此不应用冷却；已有值Parse直接暴露非法状态，不吞错。",
+          "evidence": [
+            "src/Story/Runtime/Selection/VisitRuleSelector.cs:32",
+            "src/Story/Runtime/State/NpcState.cs:63"
+          ]
+        },
+        {
+          "start": 46,
+          "end": 62,
+          "verdict": "保留",
+          "reason": "VisitCountKey支持奥雅旧键和薇拉默认键；LastVisitDay固定本NPC前缀，非猜测兼容。",
+          "evidence": [
+            "src/Story/Npcs/FlowEmitterMerchant/FlowEmitterMerchantStory.cs:17",
+            "src/Story/Npcs/AcidBuyer/AcidBuyerStory.cs:34"
+          ]
+        },
+        {
+          "start": 63,
+          "end": 73,
+          "verdict": "保留",
+          "reason": "实际来访写日期并递增计数，未添加截断、TryParse或重复状态。",
+          "evidence": [
+            "src/Story/Runtime/Direction/NpcStoryHost.cs:204",
+            "src/Story/Runtime/Direction/NpcStoryHost.cs:207"
+          ]
+        },
+        {
+          "start": 74,
+          "end": 83,
+          "verdict": "保留",
+          "reason": "Flag existence/read/write implement the author-facing state interface. Current story content does not call MarkFlag; retained as previously designed framework capability, not asserted as a present production dependency.",
+          "evidence": [
+            "src/Story/Runtime/Model/IStoryState.cs:8"
+          ]
+        },
+        {
+          "start": 84,
+          "end": 101,
+          "verdict": "保留",
+          "reason": "Namespaced tag set/remove implements author-facing state capability. Current story content does not call tag APIs; enabled selects explicit set/remove behavior rather than exception recovery.",
+          "evidence": [
+            "src/Story/Runtime/Model/IStoryState.cs:11",
+            "src/Story/Runtime/State/NpcState.cs:119"
+          ]
+        },
+        {
+          "start": 102,
+          "end": 120,
+          "verdict": "保留",
+          "reason": "事件首次无次数键返回0，播放正常完成写次数；取消不记完成。",
+          "evidence": [
+            "src/Story/Runtime/Playback/StoryPlayer.cs:142",
+            "src/Story/Runtime/Selection/StoryEventSelector.cs:48"
+          ]
+        },
+        {
+          "start": 121,
+          "end": 132,
+          "verdict": "保留",
+          "reason": "标签与Seen独立稳定命名，不改变已有存档结构。",
+          "evidence": [
+            "src/Story/Runtime/State/NpcState.cs:84",
+            "src/Story/Runtime/State/NpcState.cs:103"
+          ]
+        }
+      ]
+    },
+    {
+      "path": "src/Story/Portraits/NpcPortraitRegistry.cs",
+      "lineCount": 188,
+      "sha256": "aca58b96e215ca0f3f6ac5bfadcb4a5299d1c6edf4a2e52bf5ea2104215825eb",
+      "blocks": [
+        {
+          "start": 1,
+          "end": 24,
+          "verdict": "retain",
+          "reason": "Unity/Harmony presentation adapter with existing image scale/reference dimensions; no narrative policy.",
+          "evidence": [
+            "src/Story/Portraits/NpcPortraitRegistry.cs:114",
+            "src/Story/Portraits/NpcPortraitRegistry.cs:140"
+          ]
+        },
+        {
+          "start": 25,
+          "end": 67,
+          "verdict": "retain",
+          "reason": "Portrait definitions include original story NPCs and four hospital visitors. Each new entry maps its unique sprite key to matching exported texture filename; original sprite conversion remains unchanged.",
+          "evidence": [
+            "src/Story/Npcs/AcidBuyer/AcidBuyerStory.cs:33",
+            "src/Story/Npcs/FlowEmitterMerchant/FlowEmitterMerchantStory.cs:16",
+            "src/Story/Runtime/Bootstrap/StoryBootstrap.cs:18",
+            "src/Story/Hospital/Procurement/README.md"
+          ]
+        },
+        {
+          "start": 68,
+          "end": 78,
+          "verdict": "corrected-and-retained",
+          "reason": "Withdraw prior claim that dictionary availability checks are unnecessary. Native GetPool explicitly permits absent Instance/dictionary and warns before initialization. Apply observes the same allowed boundary state via one local dictionary reference. This is native code evidence, not proof that this Mod guard was triggered in a real game run.",
+          "evidence": [
+            ".tmp-decomp/SpriteDict.cs:219",
+            ".tmp-decomp/SpriteDict.cs:221"
+          ]
+        },
+        {
+          "start": 79,
+          "end": 96,
+          "verdict": "fixed-and-retained",
+          "reason": "Cache miss loads; Load null specifically means a missing external asset key. Removed destroyed-cache recovery: cached successful Sprite values have no independent destruction path before Shutdown clears the cache.",
+          "evidence": [
+            "src/Story/Portraits/NpcPortraitRegistry.cs:105",
+            "src/Story/Portraits/NpcPortraitRegistry.cs:71",
+            "src/Story/Portraits/NpcPortraitRegistry.cs:89",
+            "src/Story/Portraits/NpcPortraitRegistry.cs:93"
+          ]
+        },
+        {
+          "start": 97,
+          "end": 114,
+          "verdict": "corrected-and-retained",
+          "reason": "Unregisters cached keys only while native dictionary is available, honoring GetPool allowed unavailable state. Always destroys self-owned sprite/canvas and clears cache. GetSprite returns matching values directly, supporting removal of registered destroyed values. No unsupported cached-sprite/texture-null recovery is added.",
+          "evidence": [
+            ".tmp-decomp/SpriteDict.cs:219",
+            ".tmp-decomp/SpriteDict.cs:250",
+            "src/Story/Portraits/NpcPortraitRegistry.cs:74",
+            "src/Story/Portraits/NpcPortraitRegistry.cs:141"
+          ]
+        },
+        {
+          "start": 115,
+          "end": 130,
+          "verdict": "fixed-and-retained",
+          "reason": "Missing external-file key warning retained because native loader enumerates files without requiring these two images. Removed missing-mod and null-source recovery for which no direct project write/call path was found. Startup ordering has not been independently tested in Unity.",
+          "evidence": [
+            ".tmp-decomp/ModLoader.cs:203",
+            ".tmp-decomp/ModLoader.cs:207",
+            ".tmp-decomp/ModLoader.cs:1315",
+            ".tmp-decomp/ModLoader.cs:1330"
+          ]
+        },
+        {
+          "start": 131,
+          "end": 138,
+          "verdict": "retain",
+          "reason": "Canvas dimensions preserve existing image aspect and scale without arbitrary minimums or clamping.",
+          "evidence": [
+            "src/Story/Portraits/NpcPortraitRegistry.cs:19",
+            "src/Story/Portraits/NpcPortraitRegistry.cs:22"
+          ]
+        },
+        {
+          "start": 139,
+          "end": 158,
+          "verdict": "fixed-and-retained",
+          "reason": "Creates owned transparent canvas, point filtering and bottom-centered source copy. Blanket catch(Exception)-to-null removed; no demonstrated recoverable construction exception justified swallowing every error.",
+          "evidence": [
+            "src/Story/Portraits/NpcPortraitRegistry.cs:85",
+            "src/Story/Portraits/NpcPortraitRegistry.cs:119"
+          ]
+        },
+        {
+          "start": 159,
+          "end": 176,
+          "verdict": "retain",
+          "reason": "Creates sprite with established PPU/full-rect geometry, assigns metadata, logs and returns resource for caching.",
+          "evidence": [
+            "src/Story/Portraits/NpcPortraitRegistry.cs:71",
+            "src/Story/Portraits/NpcPortraitRegistry.cs:88"
+          ]
+        },
+        {
+          "start": 177,
+          "end": 188,
+          "verdict": "retain",
+          "reason": "Awake postfix re-registers custom portraits after native dictionary initialization. Small definition and patch stay inside their presentation module; no directory-only abstraction.",
+          "evidence": [
+            ".tmp-decomp/SpriteDict.cs:144",
+            "src/LogicIntegration/DeviceServices/Core/DeviceHost.cs:6"
+          ]
+        }
+      ],
+      "commentReview": "Comment wording reviewed against implementation; executable tokens and line positions unchanged. See ../story-comment-audit.json."
+    },
+    {
+      "path": "src/Story/Npcs/AcidBuyer/AcidBuyerStory.cs",
+      "lineCount": 219,
+      "sha256": "66b9f5784832efc90f5a9f14b9307e66ffc66f7195ac7e526382724b6b6d2af9",
+      "blocks": [
+        {
+          "start": 1,
+          "end": 26,
+          "verdict": "保留",
+          "reason": "NPC组合恢复医院身份或排队合同提议；判断是已签合同/首次问答/拒绝状态，不是通用框架防御。",
+          "evidence": [
+            "src/Story/Hospital/HospitalContractState.cs:186",
+            "src/Story/Runtime/Bootstrap/StoryBootstrap.cs:17"
+          ]
+        },
+        {
+          "start": 27,
+          "end": 37,
+          "verdict": "保留",
+          "reason": "薇拉身份定义绑定立绘和医院派系，默认计数键，读档不自动排队是现有注册行为。",
+          "evidence": [
+            "src/Story/Runtime/Direction/NpcStoryHost.cs:79",
+            "src/Story/Runtime/State/NpcState.cs:48"
+          ]
+        },
+        {
+          "start": 38,
+          "end": 74,
+          "verdict": "保留",
+          "reason": "日常七天与合同精确日期分别注册；合同到访优先于日常，委托复用Schedule状态判断而非复制算法。",
+          "evidence": [
+            "src/Story/Hospital/HospitalContractState.cs:138",
+            "src/Story/Hospital/HospitalContractState.cs:152"
+          ]
+        },
+        {
+          "start": 75,
+          "end": 92,
+          "verdict": "保留",
+          "reason": "首次见面和兜底重复访问互斥由优先级与HasMet决定；次数0表无限次不是异常参数。",
+          "evidence": [
+            "src/Story/Runtime/Selection/StoryEventSelector.cs:26"
+          ]
+        },
+        {
+          "start": 93,
+          "end": 132,
+          "verdict": "保留",
+          "reason": "提议/收货/原料事件绑定已存在业务谓词；入队规则决定谁来，事件规则决定到场播放，职责不同不可当重复删掉。",
+          "evidence": [
+            "src/Story/Runtime/Direction/NpcStoryHost.cs:104",
+            "src/Story/Runtime/Direction/NpcStoryHost.cs:219"
+          ]
+        },
+        {
+          "start": 133,
+          "end": 147,
+          "verdict": "保留",
+          "reason": "负声望解约优先最高，只在合同进行且未终止时触发一次，属于剧情条件。",
+          "evidence": [
+            "src/Story/Hospital/HospitalContractState.cs:199"
+          ]
+        },
+        {
+          "start": 148,
+          "end": 163,
+          "verdict": "fixed-and-retained",
+          "reason": "Removed self SeenCount check duplicated by MaxTimes=1; kept cross-event rep40 suppression to avoid replaying lower-tier dialogue.",
+          "evidence": [
+            "src/Story/Runtime/Selection/StoryEventSelector.cs:48",
+            "src/Story/Npcs/AcidBuyer/AcidBuyerStory.cs:153"
+          ]
+        },
+        {
+          "start": 164,
+          "end": 177,
+          "verdict": "fixed-and-retained",
+          "reason": "Removed self SeenCount check duplicated by MaxTimes=1; condition now contains only active-contract and reputation requirements.",
+          "evidence": [
+            "src/Story/Runtime/Selection/StoryEventSelector.cs:48",
+            "src/Story/Npcs/AcidBuyer/AcidBuyerStory.cs:169"
+          ]
+        },
+        {
+          "start": 178,
+          "end": 219,
+          "verdict": "保留",
+          "reason": "具体Assembly注册与Outcome放NPC内容组合，最高需求通过独立事件拼接；没有把具体任务移入Runtime。 Native registration follow-up: explicitly configured direct factory, no state access during creation; unregister and clear native name cache on disposal. See docs/design/npc-native-registration.md.",
+          "evidence": [
+            "src/Story/Hospital/Events/HospitalHighestDemand/HospitalHighestDemand.cs:6",
+            "src/Story/Runtime/Model/NpcStoryContent.cs:14",
+            "docs/design/npc-native-registration.md"
+          ]
+        }
+      ],
+      "registrationReview": "root: native dictionary, factory, lifecycle and affected constructor callers reviewed; see ../npc-native-registration.md"
+    },
+    {
+      "path": "src/Story/Npcs/FlowEmitterMerchant/FlowEmitterMerchantStory.cs",
+      "lineCount": 85,
+      "sha256": "e96773c2c7a9f43aba70639cfeeeefd75591c2de57311885624f26af239396c7",
+      "blocks": [
+        {
+          "start": 1,
+          "end": 19,
+          "verdict": "保留",
+          "reason": "奥雅身份与旧计数键显式登记，读档允许入队；立绘由公共表现适配提供。",
+          "evidence": [
+            "src/Story/Npcs/FlowEmitterMerchant/FlowEmitterMerchantProgress.cs:14",
+            "src/Story/Runtime/State/NpcState.cs:48"
+          ]
+        },
+        {
+          "start": 20,
+          "end": 29,
+          "verdict": "保留",
+          "reason": "七天出售到访用实际旧计数方法，避免另建同一事实的新状态。",
+          "evidence": [
+            "src/Story/Npcs/FlowEmitterMerchant/FlowEmitterMerchantProgress.cs:64",
+            "src/Story/Runtime/Direction/NpcStoryHost.cs:198"
+          ]
+        },
+        {
+          "start": 30,
+          "end": 41,
+          "verdict": "保留",
+          "reason": "首次赠礼依据剧情完成标志而非单纯次数，取消中断后仍有机会播放；因此次数0与条件搭配不是不必要防御。",
+          "evidence": [
+            "src/Story/Npcs/FlowEmitterMerchant/Events/FlowEmitterArrival/FlowEmitterArrivalAssembly.cs:11"
+          ]
+        },
+        {
+          "start": 42,
+          "end": 54,
+          "verdict": "保留",
+          "reason": "第二访受独立旧进度标志约束，MaxTimes沿用框架事件次数；两种状态并非必然同时设置，不擅删旧标志条件。",
+          "evidence": [
+            "src/Story/Npcs/FlowEmitterMerchant/FlowEmitterMerchantProgress.cs:25",
+            "src/Story/Runtime/Selection/StoryEventSelector.cs:48"
+          ]
+        },
+        {
+          "start": 55,
+          "end": 63,
+          "verdict": "保留",
+          "reason": "普通访问作为最低优先事件，原版开店结局由注册明确设置。",
+          "evidence": [
+            "src/Story/Runtime/Selection/StoryEventSelector.cs:26"
+          ]
+        },
+        {
+          "start": 64,
+          "end": 85,
+          "verdict": "保留",
+          "reason": "三剧情绑定具体装配与离场/开店结果；框架仅消费定义，不依赖奥雅类。 Native registration follow-up: explicitly configured direct factory, no state access during creation; unregister and clear native name cache on disposal. See docs/design/npc-native-registration.md.",
+          "evidence": [
+            "src/Story/Runtime/Direction/NpcStoryHost.cs:238",
+            "src/Story/Runtime/Direction/NpcStoryHost.cs:262",
+            "docs/design/npc-native-registration.md"
+          ]
+        }
+      ],
+      "registrationReview": "root: native dictionary, factory, lifecycle and affected constructor callers reviewed; see ../npc-native-registration.md"
+    },
+    {
+      "path": "src/Story/Hospital/HospitalStoryPoints.cs",
+      "lineCount": 9,
+      "sha256": "34ae5bdc2a1b8901da742d76cf839702c0b119bfaf84be60ca6e37bf0e06de80",
+      "blocks": [
+        {
+          "start": 1,
+          "end": 9,
+          "verdict": "保留",
+          "reason": "两个业务语义插入点由医院域持有，原料与交货主流程引用，独立任务注册匹配，不需要泛化注册服务。",
+          "evidence": [
+            "src/Story/Hospital/Events/HospitalContractMaterial/HospitalContractMaterialEdges.cs:28",
+            "src/Story/Hospital/Events/HospitalContractPickup/HospitalContractPickupEdges.cs:127",
+            "src/Story/Hospital/Events/HospitalHighestDemand/HospitalHighestDemand.cs:14"
+          ]
+        }
+      ]
+    }
+  ],
+  "findings": [
+    {
+      "id": "integration-portrait-defense",
+      "severity": "P3",
+      "path": "src/Story/Portraits/NpcPortraitRegistry.cs",
+      "reason": "Withdraw the earlier conclusion that Instance/dictionary availability guards lack code basis: native SpriteDict.GetPool:219 explicitly supports the unavailable state. Apply and Shutdown retain that boundary check. Cache Sprite-null, texture-null and missing-mod/source-null recovery still lack project write/destruction/call evidence and remain removed. This does not claim an observed real-game trigger.",
+      "suggestion": "Resolved with native boundary evidence.",
+      "status": "corrected-and-reread",
+      "originalLines": [
+        53,
+        54,
+        64,
+        83,
+        90,
+        107,
+        114,
+        115
+      ],
+      "evidence": [
+        ".tmp-decomp/SpriteDict.cs:219",
+        "src/Story/Portraits/NpcPortraitRegistry.cs:54",
+        "src/Story/Portraits/NpcPortraitRegistry.cs:83"
+      ]
+    },
+    {
+      "id": "integration-portrait-catch",
+      "severity": "P3",
+      "path": "src/Story/Portraits/NpcPortraitRegistry.cs",
+      "reason": "Blanket catch-to-null removed; errors no longer silently hidden.",
+      "suggestion": "Resolved.",
+      "status": "fixed-and-reread",
+      "originalLines": [
+        170,
+        178
+      ]
+    },
+    {
+      "id": "integration-portrait-unregister",
+      "severity": "P3",
+      "path": "src/Story/Portraits/NpcPortraitRegistry.cs",
+      "reason": "Shutdown now removes owned keys before destruction. Ownership cleanup confirmed; no player-visible failure was demonstrated.",
+      "suggestion": "Resolved.",
+      "status": "fixed-and-reread",
+      "originalLines": [
+        75,
+        79,
+        96
+      ],
+      "evidence": [
+        "src/Story/Portraits/NpcPortraitRegistry.cs:85",
+        ".tmp-decomp/SpriteDict.cs:250"
+      ]
+    },
+    {
+      "id": "integration-repeated-seen",
+      "severity": "P3",
+      "path": "src/Story/Npcs/AcidBuyer/AcidBuyerStory.cs",
+      "reason": "自身SeenCount限制与MaxTimes=1重复，跨事件rep40检查仍有独立业务含义。",
+      "suggestion": "只删两个事件自己的SeenCount条件。",
+      "status": "fixed-and-reread",
+      "originalLines": [
+        162,
+        163,
+        178,
+        179
+      ]
+    },
+    {
+      "id": "integration-state-read",
+      "severity": "P3",
+      "path": "src/Story/Runtime/State/NpcState.cs",
+      "reason": "ContainsKey加索引重复读，同文件另外两处读整数均TryGetValue。",
+      "suggestion": "统一TryGetValue，不引入通用存档包装层。",
+      "status": "fixed-and-reread",
+      "originalLines": [
+        21,
+        24
+      ]
+    }
+  ],
+  "crossReview": [
+    {
+      "reviewer": "architecture_review",
+      "conclusion": "Agreed: retain external-file missing-key handling and two-call-site cache; remove unproven native-object null guards and broad catch. Symmetric key removal is ownership cleanup, not claimed as a demonstrated player bug."
+    },
+    {
+      "reviewer": "defensive_review",
+      "conclusion": "Verified HasInstance production source and paired ModLoader disable lifecycle; no direct repeat-Shutdown path found. Author-facing state and trade interfaces can remain without invented production callers."
+    },
+    {
+      "reviewer": "root native-boundary recheck",
+      "conclusion": "Native SpriteDict.GetPool:219 explicitly permits absent dictionary; prior objection to dictionary state guards is withdrawn. Native GetSprite:250 returns matched value directly, supporting symmetric owned-key removal. No claim of real Unity trigger testing."
+    }
+  ]
+}

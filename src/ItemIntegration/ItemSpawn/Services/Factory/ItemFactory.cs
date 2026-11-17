@@ -71,19 +71,19 @@ namespace FluxForge.Mod
         /// <summary>名称 + 正文说明 + 风味文本（空值跳过）。</summary>
         private static void ApplyText(GameItem item, FlowItemDefinition def)
         {
-            if (!string.IsNullOrEmpty(def.name))
+            if (!string.IsNullOrEmpty(def.nameLoc))
             {
-                item.SetName(def.name);
+                item.SetName(ModHelper.GetLocalized(ModId, def.nameLoc));
             }
 
-            if (!string.IsNullOrEmpty(def.desc))
+            if (!string.IsNullOrEmpty(def.descriptionLoc))
             {
-                item.shortDescription = def.desc;
+                item.shortDescription = ModHelper.GetLocalized(ModId, def.descriptionLoc);
             }
 
-            if (!string.IsNullOrEmpty(def.flavor))
+            if (!string.IsNullOrEmpty(def.flavorLoc))
             {
-                item.flavorText = def.flavor;
+                item.flavorText = ModHelper.GetLocalized(ModId, def.flavorLoc);
             }
         }
 

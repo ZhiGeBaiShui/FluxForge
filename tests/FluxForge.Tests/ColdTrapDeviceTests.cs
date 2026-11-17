@@ -79,6 +79,24 @@ namespace FluxForge.Tests
             Assert.Equal(inlet, entity.Properties.Get(FlowProps.Temperature));
         }
 
+        [Theory]
+        [InlineData(0d, -5d, 20d)]
+        [InlineData(5d, 0d, 20d)]
+        [InlineData(-0.001d, -0.001d, 1d)]
+        [InlineData(5.001d, 5.001d, 1d)]
+        public void ThresholdIncludesBothEndpoints(double inlet, double expectedTemperature, double expectedAmount)
+        {
+            FlowEntity entity = MakeEntity(inlet);
+            entity.Properties.Set(FlowProps.Water, 1000d);
+            ColdTrapDevice device = new ColdTrapDevice(-5d, 0d, 1, 20d, 1000);
+
+            device.TryReact(entity);
+
+            Assert.Equal(expectedAmount, device.Extracted.Get(FlowProps.Water));
+            Assert.Equal(1000d - expectedAmount, entity.Properties.Get(FlowProps.Water));
+            Assert.Equal(expectedTemperature, entity.Properties.Get(FlowProps.Temperature));
+        }
+
         [Fact]
         public void NoLiquidExtractsNothingAndDoesNotCool()
         {

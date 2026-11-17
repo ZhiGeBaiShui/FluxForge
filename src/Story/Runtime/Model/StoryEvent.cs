@@ -10,6 +10,7 @@ namespace FluxForge.Story
         internal string Id { get; }
         internal string NpcId { get; }
         internal StoryTrigger Trigger { get; }
+        internal string Point { get; }
         internal int Priority { get; }
         internal int MaxTimes { get; }
         internal string ExclusionGroup { get; }
@@ -31,6 +32,20 @@ namespace FluxForge.Story
             MaxTimes = maxTimes;
             ExclusionGroup = exclusionGroup;
             Condition = condition;
+        }
+
+        internal StoryEvent(
+            string id,
+            string npcId,
+            string point,
+            int priority,
+            int maxTimes,
+            string exclusionGroup,
+            Func<StoryContext, bool> condition)
+            : this(id, npcId, StoryTrigger.InsertionPoint,
+                priority, maxTimes, exclusionGroup, condition)
+        {
+            Point = point;
         }
     }
 }

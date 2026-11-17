@@ -7,10 +7,12 @@ namespace FluxForge.Story.Hospital
     {
         internal const double MinimumConcentration = 0.90d;
         internal const double PurityThreshold = 0.99d;
-        internal const double HighPurityThreshold = 0.995d;
         internal const int Target = 300;
         internal const int MaxPositivePerContract = 20;
         internal const double PaymentRate = 0.1d;
+        internal const int TrustReputationThreshold = 60;
+        internal const int ExternalExpertReputationThreshold = 100;
+        private const double TrustPaymentMultiplier = 1.2d;
 
         private const double Epsilon = 1e-9d;
 
@@ -41,6 +43,12 @@ namespace FluxForge.Story.Hospital
             return -(int)Math.Ceiling((Target - score) / 100d);
         }
 
+        internal static int ReputationDelta(double score, int reputation)
+        {
+            return reputation >= ExternalExpertReputationThreshold && score < Target
+                ? 0 : ReputationDelta(score);
+        }
+
         internal static double Score(
             double millilitres,
             double baseScore,
@@ -52,6 +60,14 @@ namespace FluxForge.Story.Hospital
         internal static int Payment(double score)
         {
             return (int)Math.Floor(score * PaymentRate);
+        }
+
+        internal static int Payment(double score, int reputation)
+        {
+            int payment = Payment(score);
+            return reputation >= TrustReputationThreshold
+                ? (int)Math.Floor(payment * TrustPaymentMultiplier)
+                : payment;
         }
     }
 }

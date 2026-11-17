@@ -4,7 +4,11 @@ namespace FluxForge.Story
     internal sealed class NpcDefinition
     {
         internal string Identifier { get; }
-        internal string DisplayName { get; }
+        private readonly string _displayNameKey;
+        internal string DisplayName
+        {
+            get { return ModHelper.GetLocalized("fluxforge", _displayNameKey); }
+        }
         internal string SpriteKey { get; }
         internal string VisitCountKey { get; }
         internal bool QueueOnGameLoad { get; }
@@ -19,7 +23,7 @@ namespace FluxForge.Story
             string factionId = null)
         {
             Identifier = identifier;
-            DisplayName = displayName;
+            _displayNameKey = displayName;
             SpriteKey = spriteKey;
             VisitCountKey = visitCountKey;
             QueueOnGameLoad = queueOnGameLoad;

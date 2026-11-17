@@ -1,21 +1,27 @@
 namespace FluxForge.Story.AcidBuyerFirstHighPurity
 {
-    /// <summary>第一次收到高浓度酸/碱时的问话。</summary>
+    /// <summary>首次高浓度问答的检查、提问、回答及继续收购台词。</summary>
     internal static class AcidBuyerFirstHighPurityTexts
     {
+        internal const string Inspection
+            = "story.AcidBuyerFirstHighPurityTexts.Inspection";
+
+        internal const string ContinueQuestion
+            = "story.AcidBuyerFirstHighPurityTexts.ContinueQuestion";
+
         internal const string Question
-            = "这么高的浓度，你怎么做到的？";
+            = "story.AcidBuyerFirstHighPurityTexts.Question";
 
         internal const string SelfMadeOption
-            = "自己做的。";
+            = "story.AcidBuyerFirstHighPurityTexts.SelfMadeOption";
 
         internal const string LuckOption
-            = "运气好。";
+            = "story.AcidBuyerFirstHighPurityTexts.LuckOption";
 
         internal const string SelfMadeResponse
-            = "手艺不错呀。";
+            = "story.AcidBuyerFirstHighPurityTexts.SelfMadeResponse";
 
         internal const string LuckResponse
-            = "那希望你每次都能有这样的好运气。";
+            = "story.AcidBuyerFirstHighPurityTexts.LuckResponse";
     }
 }

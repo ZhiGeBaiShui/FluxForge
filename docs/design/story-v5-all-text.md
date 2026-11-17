@@ -1,326 +1,240 @@
-> 医院合同对白以 [hospital-contract-dialogue.md](hospital-contract-dialogue.md) 为准。
-> 本文 2 / 3 / 4 节仍保留旧稿（固定周三/周六、旧换货/求情分支、旧价格），不要再按旧稿实现。
-> 当前实现：签约日 +3 首次送原料、+7 首次取货，之后各自每 7 天；合同按 mL × 浓度权值计分。
-
-1. 第一次交付
-【设计注】
-NPC：薇拉
-触发：玩家第一次成功向薇拉出售浓度 >=90% 的酸/碱
-只执行一次：vera.first_delivery_done
-高浓度计数：vera.last_high_purity_delivery，int，记录单次交货中的 >=99% 液体单位（1000 = 1 mL）
-高浓度问话：单次交货中 >=99% 液体总计 >=100000（100 mL）时，在该次交易结束时触发一次
-合同：触发条件待定；100000 只触发高浓度问话，不触发合同
-价格：90–98.9% 为 10 信用点/100 mL；99% 以上为 10 信用点/100 mL；100% 为 3 倍
-保留：污染试剂抱怨、原料处理、按浓度付酬、成功/离开台词
-薇拉不知道流源工艺，只问结果
-
-薇拉：你好，我来收些化学试剂。
-
-薇拉：（叹气）我收购的化学试剂总是带着较高的污染。
-
-薇拉：我想要高浓度的酸或碱。
-
-薇拉：九十以上就行。
-
-薇拉：浓度越高越好，我会提供报酬。
-
-薇拉：或者你拿我这批试剂处理也可以，我不想把它们带回去。
-
-【设计注】
-高浓度计数：vera.last_high_purity_delivery，int，存在 modData。
-每次交货只统计本次交易中所有 >=99% 液体的单位总和（1000 = 1 mL）。
-本次 <99%：记录 0。
-本次 >=99%：记录本次交货的高纯度单位总和；单次 >=100000 时，交易结束后进入 1.1。
-
-交易结束：
-
-未成交时选“我这没有”：
-薇拉：真是遗憾，我得去其他地方再找找了。
-
-成功交易后选项变成：
-放在桌上了。
-没有库存了。
-
-选“没有库存了”：
-本次单次交货 >=100000：薇拉：多谢，这批品质的试剂足够我用了。
-本次单次交货 <100000：薇拉：还缺一些更高浓度的试剂，我再去其他地方找找。
-
-【设计注】
-首次交易后仍保留现有机制：薇拉留下两瓶受污染酸、两瓶受污染碱。
-
----
-
-## 1.1 单次高浓度交货
-
-【设计注】
-触发：单次交货中 >=99% 液体总计 >=100000（100 mL）
-在该次交易结束后触发
-1 mL 一次的交货不会触发；多次小额交易也不会累计
-这个对话只执行一次
-执行后写 vera.high_purity_dialogue_done = true
-
-薇拉：这么高的浓度，你怎么做到的？
-
-玩家选项：
-
-1. 自己做的。
-2. 运气好。
-
-选 1：
-
-薇拉：手艺不错呀。
-
-选 2：
-
-薇拉：那希望你每次都能有这样的好运气。
-
-【设计注】
-回答完只回到交易选项，不插“这些我收下了/多谢/我下次还会来”。
-玩家可以继续交易，也可以选择离开。
-
----
-
-## 1.2 后续收货
-
-【设计注】
-触发：薇拉日常到访，首次交付已完成
-
-薇拉：你好，老样子。
-
-薇拉：有高浓度的酸或碱吗？
-
-玩家选项：
-
-放在桌上了。
-
-我这没有。
-
-薇拉：真是遗憾，我得去其他地方再找找了。
-
-【设计注】
-成功交易后，选项改为“放在桌上了 / 没有库存了”。
-“没有库存了”按本次单次交货高浓度量选择成功/缺失台词。
-
-【设计注】
-没有酸/碱：
-薇拉：没看到我想要的酸和碱。
-
-浓度低于 90%：
-薇拉：浓度看起来不够高。
-
----
-
-2. 医院周合同：提议
-【设计注】
-NPC：薇拉
-触发：合同触发条件待定（100000 只触发 1.1 高浓度对话）
-提议：下一次薇拉到访时提出
-合同：每周最少 300 mL，99% 以上，酸/碱/酒精均可
-周三送原料，周六取货；原料免费，成品按品质结算
-医院声望 0–100；声望高时原料更多、污染更轻
-
-薇拉：你好，老板，这次我是来和你谈固定合作的。
-
-薇拉：我在上层区医院就职，每周都负责采购化学试剂。
-
-薇拉：上次从你这拿的酸和碱，药剂师说纯度比其他地方的都好。
-
-薇拉：医院想长期要这种货，不知你有没有兴趣做供货商？
-
-玩家选项：
-
-怎么供？
-
-暂时只散卖。
-
-没有意愿。
-
-选 1：怎么供？
-薇拉：给，这是需求清单。
-
-薇拉：每周一次，需要供够基础量，多余的会提供额外报酬，具体看合同。
-
-薇拉：同时，每一周医院也会为你提供低浓度试剂作为提纯原料。
-
-薇拉：你考虑一下，医院缺口不小。
-
-选 2：暂时只散卖
-薇拉：行，散货我也拿。
-
-薇拉：下次我来再问你。
-
-【设计注】合同不启动，不扣声望，日常收购照常。
-【设计注】明确拒绝后不自动重复提议；玩家之后主动问，才可重开。
-
-选 3：没有意愿
-薇拉：那可惜了。
-
-薇拉：往后我还是只收你的散货吧。
-
-（继续日常收货，不再触发合同事件）
-
-3. 周三：送原料
-【设计注】
-触发：医院合同已接受，且到达固定送料日
-固定周事件；原料数量随医院声望变化
-声望越高，液体越多，都是重污染（80%浓度以下）的——轻污染的医院自己会用，给玩家就不太合理。
-玩家可全收、部分收、这周不接
-
-薇拉：这周的原料到了。你清点一下。
-
-4. 周六：取货
-【设计注】
-触发：医院合同已接受，且到达固定取货日
-检查后柜台：分基础达标，和超额达标对话
-未达标：不付款，医院声望 -8
-达标：声望 +4（基础值）
-连续 2 周失败：暂停合同
-
-达标
-薇拉：这批不错，达标了。
-
-薇拉：下周见。
-
-超额达标
-薇拉：纯度比预想的还要高。
-
-薇拉：这是给你的额外报酬。
-
-薇拉：货我先带走，下次见。
-
-未达标
-薇拉：这批不行。
-
-薇拉：底上有沉淀，用不了。
-
-薇拉：换一批吧。
-
-玩家选项：
-
-我换。
-
-这周先欠着。
-
-合同里没写不能有沉淀。
-
-我换
-（重新放货上来即可，再根据计算结算）
-
-这周先欠着（首次求情）
-【设计注】第一次不扣声望，不计未达标，且第一次才触发求情剧情。
-
-薇拉：（沉默片刻）行吧，我回去帮你押一周。
-
-薇拉：就这一次。医院里等着药用，拖久了谁都不好交代。
-
-薇拉：下周我再过来。
-
-这周先欠着（非首次求情）
-薇拉：手头不顺？
-
-薇拉：交不上就算了，不用勉强。
-
-薇拉：我先回去了。
-
-合同里没写不能有沉淀
-薇拉：......
-
-薇拉：行。那这次只能按残次品结算，报酬会扣掉不少。
-
-声望较低后
-薇拉：连续好几批质量都不过关，上面压下来了。
-
-薇拉：合同只能先暂停。
-
-【设计注】暂停合同。
-
-5. 奥雅成型机上架
-【设计注】
-NPC：奥雅
-触发：奥雅下一次到访，玩家查看货架
-前置：玩家已完成奥雅第一次教程
-价格：300 信用点
-买下后开启助熔剂订单与原型测试
-
-奥雅：老板！看我带什么来了。新搞出来的废料成型机！
-
-奥雅：能把二次处理过的料重新压成新东西。
-
-玩家选项：
-
-能做什么？
-
-奥雅：现在能把纯度 100% 的重金属直接转成助熔剂。
-
-奥雅：后续的加工配方我还在调，出来了再通知你。
-
-6. 奥雅助熔剂订单
-【设计注】
-只由奥雅发出；薇拉不买助熔剂
-触发：玩家已购买成型机，奥雅下一次到访
-配方：100% 重金属 4 mL → 1 个 flux_agent
-价格：6 信用点/个；20 个 = 120
-20 个需要 80 mL 100% 重金属，消耗 20 电
-
-奥雅：机器用着顺手吗？
-
-奥雅：做出助熔剂没有？我手头正好缺一批现货和加工料。
-
-（直接调用交易面板，收购材料）
-
-7. 医院质量复核
-【设计注】
-医院内部复核，不是站务/政府检查
-触发：医院声望达到 25，且合同进行中
-给记录：声望 +4
-只给部分：声望 0
-拒绝：声望 -4，合同继续
-
-薇拉：例行抽查。医院内部的规定，和站务那边没关系。
-
-薇拉：近三期的台账和进出记录，给我看一下。
-
-玩家选项：
-
-有，拿去吧。
-
-只有一部分。
-
-没有。
-
-薇拉：行，我按看到的填。
-
-薇拉：你继续忙。
-
-8. 合同续签
-【设计注】
-触发：医院声望达到 50，且合同进行中
-提升基础要求，价格 +10%
-达标声望 +6，失败 -10
-连续 2 周失败暂停合同
-
-薇拉：医院最近病患多，采购量要翻倍。
-
-薇拉：不过价格我也帮你争取了，整体多给一成。
-
-薇拉：原料我多拉了一批给你......私下用就行，别和别的人提。
-
-9. 日常对白
-薇拉例行收购（签订合同后不进行）
-【触发】薇拉日常到访，且没有更高优先级剧情
-
-薇拉：按老规矩拿货。
-
-薇拉闲逛（两周最多发生一次）
-【触发】医院合同接受后，随机日常
-
-薇拉：今天医院不忙，顺路过来坐坐。
-
-薇拉：你这有能垫肚子的零食吗？
-
-（收购食物）
-
-奥雅卖货
-奥雅：我又来补货了！
-
-奥雅：今天想挑点什么？
+# Current story dialogue / CSV source
+
+Generated from mod/Localization/zh.csv; graph and implementation references remain in the story review HTML.
+
+## HospitalContractMaterialTexts
+
+Source: `src/Story/Hospital/Events/HospitalContractMaterial/HospitalContractMaterialTexts.cs`
+
+- `Greeting` (`story.HospitalContractMaterialTexts.Greeting`): 这周的原料到了。你清点一下。
+
+## HospitalContractMilestoneTexts
+
+Source: `src/Story/Hospital/Events/HospitalContractMilestone/HospitalContractMilestoneTexts.cs`
+
+- `At20_1` (`story.HospitalContractMilestoneTexts.At20_1`): 制药师们很满意你提供的试剂。
+- `At20_2` (`story.HospitalContractMilestoneTexts.At20_2`): 部分供货商的效率没你这高。
+- `At20_3` (`story.HospitalContractMilestoneTexts.At20_3`): 所以医院决定分给你更多原料额度。
+- `At20_4` (`story.HospitalContractMilestoneTexts.At20_4`): 从这周开始，我可以多带一瓶原料了。
+- `At40_1` (`story.HospitalContractMilestoneTexts.At40_1`): 制药师们对你的评价越来越高了。
+- `At40_2` (`story.HospitalContractMilestoneTexts.At40_2`): 这周开始，每周送来的原料又多了一瓶。
+
+## HospitalContractOfferTexts
+
+Source: `src/Story/Hospital/Events/HospitalContractOffer/HospitalContractOfferTexts.cs`
+
+- `ResumeTrade` (`story.HospitalContractOfferTexts.ResumeTrade`): 你这次还有库存吗？
+- `Greeting1` (`story.HospitalContractOfferTexts.Greeting1`): 你好，老板，这次我是来和你谈固定合作的。
+- `Greeting2` (`story.HospitalContractOfferTexts.Greeting2`): 我在上层区医院就职，每周都负责采购化学试剂。
+- `Greeting3` (`story.HospitalContractOfferTexts.Greeting3`): 上次从你这拿的试剂，制药师说纯度比其他地方的都好。
+- `Greeting4` (`story.HospitalContractOfferTexts.Greeting4`): 医院想长期要这种货，不知你有没有兴趣做供货商？
+- `RepeatGreeting1` (`story.HospitalContractOfferTexts.RepeatGreeting1`): 你好，老板。
+- `RepeatGreeting2` (`story.HospitalContractOfferTexts.RepeatGreeting2`): 关于合同，你改变主意了吗？
+- `AskOption` (`story.HospitalContractOfferTexts.AskOption`): 怎么供。
+- `AcceptOption` (`story.HospitalContractOfferTexts.AcceptOption`): 行，我答应了。
+- `DeclineOption` (`story.HospitalContractOfferTexts.DeclineOption`): 暂时只散卖。
+- `RepeatDeclineOption` (`story.HospitalContractOfferTexts.RepeatDeclineOption`): 还是只散卖。
+- `NoInterestOption` (`story.HospitalContractOfferTexts.NoInterestOption`): 没有意愿。
+- `AskLine1` (`story.HospitalContractOfferTexts.AskLine1`): 给，这是需求清单。
+- `AskLine2` (`story.HospitalContractOfferTexts.AskLine2`): 每周一次，需要供够基础量，多余的会提供额外报酬，具体看合同。
+- `AskLine3` (`story.HospitalContractOfferTexts.AskLine3`): 同时，医院每周会为你提供低浓度试剂作为提纯原料。
+- `AskLine4` (`story.HospitalContractOfferTexts.AskLine4`): 你考虑一下，医院缺口不小。
+- `AcceptLine1` (`story.HospitalContractOfferTexts.AcceptLine1`): 那从今天算。
+- `AcceptLine2` (`story.HospitalContractOfferTexts.AcceptLine2`): 三天后我把原料送来。
+- `AcceptLine3` (`story.HospitalContractOfferTexts.AcceptLine3`): 七天后我来取第一批。
+- `DeclineLine` (`story.HospitalContractOfferTexts.DeclineLine`): 行......那我还是先买你的散货吧。
+- `NoInterestLine1` (`story.HospitalContractOfferTexts.NoInterestLine1`): 好吧......
+- `NoInterestLine2` (`story.HospitalContractOfferTexts.NoInterestLine2`): 看来我以后只能来收购你的散货了。
+
+## HospitalContractPickupTexts
+
+Source: `src/Story/Hospital/Events/HospitalContractPickup/HospitalContractPickupTexts.cs`
+
+- `FinishOption` (`story.HospitalContractPickupTexts.FinishOption`): 没有库存了
+- `Continue` (`story.HospitalContractPickupTexts.Continue`): 还有吗。
+- `Score` (`story.HospitalContractPickupTexts.Score`): 收货分数{0}/300
+- `Total` (`story.HospitalContractPickupTexts.Total`): 本次总收货分数：{0} 总报酬：{1}
+- `Busy1` (`story.HospitalContractPickupTexts.Busy1`): 行，看起来你这周很忙。
+- `Busy2` (`story.HospitalContractPickupTexts.Busy2`): 我下周再来。
+- `Greeting` (`story.HospitalContractPickupTexts.Greeting`): 我来取这周的货。
+- `ConfirmOption` (`story.HospitalContractPickupTexts.ConfirmOption`): 放在桌上了。
+- `UnderConcentration` (`story.HospitalContractPickupTexts.UnderConcentration`): 桌上有浓度不达标的试剂，医院不会收的。
+- `ShortQuestion` (`story.HospitalContractPickupTexts.ShortQuestion`): 看起来不满足医院的每周要求，你确定只有这些吗？
+- `ZeroInspection` (`story.HospitalContractPickupTexts.ZeroInspection`): 桌上没有医院要的试剂......
+- `ZeroQuestion` (`story.HospitalContractPickupTexts.ZeroQuestion`): 你的意思是这周没有试剂提供吗。
+- `ZeroRetryOption` (`story.HospitalContractPickupTexts.ZeroRetryOption`): 搞错了。
+- `ZeroSettled` (`story.HospitalContractPickupTexts.ZeroSettled`): 行，这周就记作未交货。
+- `AcceptShortOption` (`story.HospitalContractPickupTexts.AcceptShortOption`): 是。
+- `RetryOption` (`story.HospitalContractPickupTexts.RetryOption`): 我搞错了。
+- `ShortSettled` (`story.HospitalContractPickupTexts.ShortSettled`): 那就按这些结算。
+- `OverThanks` (`story.HospitalContractPickupTexts.OverThanks`): 非常感谢你提供了超额的试剂，医院会记住的。
+- `Met1` (`story.HospitalContractPickupTexts.Met1`): 这批不错，达标了。
+- `Farewell` (`story.HospitalContractPickupTexts.Farewell`): 下次见。
+- `Over3` (`story.HospitalContractPickupTexts.Over3`): 货我先带走。
+
+## HospitalContractTerminationTexts
+
+Source: `src/Story/Hospital/Events/HospitalContractTermination/HospitalContractTerminationTexts.cs`
+
+- `Black` (`story.HospitalContractTerminationTexts.Black`): <color=#111111>医院不相信你稳定供货的能力，选择终止合同。</color>
+- `Gray` (`story.HospitalContractTerminationTexts.Gray`): <color=#808080>似乎有一位特殊的客人，仍然会来造访。</color>
+
+## HospitalHighestDemandTexts
+
+Source: `src/Story/Hospital/Events/HospitalHighestDemand/HospitalHighestDemandTexts.cs`
+
+- `Greeting` (`story.HospitalHighestDemandTexts.Greeting`): 你好，这次有个额外的请求。
+- `DeclineResponse` (`story.HospitalHighestDemandTexts.DeclineResponse`): 行吧，那还是正常交货。
+- `AcceptResponse1` (`story.HospitalHighestDemandTexts.AcceptResponse1`): 交货的时候把100%浓度试剂放在桌上一起交上来就行。
+- `AcceptResponse2` (`story.HospitalHighestDemandTexts.AcceptResponse2`): 报酬还是正常统计，不用担心。
+- `AcceptOption` (`story.HospitalHighestDemandTexts.AcceptOption`): 可以。
+- `DeclineOption` (`story.HospitalHighestDemandTexts.DeclineOption`): 无法提供。
+- `Offer1` (`story.HospitalHighestDemandTexts.Offer1`): 医院的制药师们一直在抱怨纯净的化学试剂根本弄不到。
+- `Offer2` (`story.HospitalHighestDemandTexts.Offer2`): 需要100%浓度的试剂。
+- `Offer3` (`story.HospitalHighestDemandTexts.Offer3`): 你可以提供吗？
+- `Offer4` (`story.HospitalHighestDemandTexts.Offer4`): 酸、碱、酒精，三种各个都要1000ml。
+- `Progress` (`story.HospitalHighestDemandTexts.Progress`): 已经交了酸 {0} ml，碱 {1} ml，酒精 {2} ml。
+- `Complete` (`story.HospitalHighestDemandTexts.Complete`): 非常感谢你的帮助，试剂已经足够了。
+
+## HospitalSynaprestTexts
+
+Source: `src/Story/Hospital/Events/HospitalSynaprest/HospitalSynaprestTexts.cs`
+
+- `Greeting1` (`story.HospitalSynaprestTexts.Greeting1`): 你好，店主。
+- `Greeting2` (`story.HospitalSynaprestTexts.Greeting2`): 这段时间来，你为医院提供的高质量试剂让制药师们印象深刻。
+- `Greeting3` (`story.HospitalSynaprestTexts.Greeting3`): 制药师们希望你的提纯技术能帮助我们解决目前的一个损耗问题。
+- `Greeting4` (`story.HospitalSynaprestTexts.Greeting4`): 塞纳普斯注射器，这种昂贵的医药品的原料存在极其严重的浪费问题。
+- `Greeting5` (`story.HospitalSynaprestTexts.Greeting5`): 很多时候产出的原料浓度会因为引入了微小的杂质，导致整个原料全部浪费。
+- `Greeting6` (`story.HospitalSynaprestTexts.Greeting6`): 可以帮助我们解决这个问题吗？
+- `AcceptOption` (`story.HospitalSynaprestTexts.AcceptOption`): 可以先试试看。
+- `DeclineOption` (`story.HospitalSynaprestTexts.DeclineOption`): 不太可能。
+- `Decline` (`story.HospitalSynaprestTexts.Decline`): 好吧......你也没有办法吗......
+- `Accept1` (`story.HospitalSynaprestTexts.Accept1`): 太好了，这里是我们医院报废的原料。
+- `Accept2` (`story.HospitalSynaprestTexts.Accept2`): 如果你能帮助我们处理这批原料，医院后续会为你提供塞纳普斯原液。
+- `Accept3` (`story.HospitalSynaprestTexts.Accept3`): 每周收货时，医院也会收取100%浓度的塞纳普斯原液，每1ml等同5点收货分数。
+- `Accept4` (`story.HospitalSynaprestTexts.Accept4`): 如果实在解决不了也没关系，医院会继续收购其他试剂。
+- `Accept5` (`story.HospitalSynaprestTexts.Accept5`): 完成了提纯工作的话，在医院收货日的当天，交上来即可。
+- `Accept6` (`story.HospitalSynaprestTexts.Accept6`): 当然，他们会算入正常的报酬。
+- `Ask1` (`story.HospitalSynaprestTexts.Ask1`): 顺便问一下。
+- `Ask2` (`story.HospitalSynaprestTexts.Ask2`): 塞纳普斯原液的提纯完成了吗。
+- `SubmitOption` (`story.HospitalSynaprestTexts.SubmitOption`): 提交塞纳普斯原液。
+- `Empty` (`story.HospitalSynaprestTexts.Empty`): 桌子上什么都没有，是不是搞错了。
+- `Missing` (`story.HospitalSynaprestTexts.Missing`): 桌子上没有看到原液，是不是搞错了。
+- `Impure` (`story.HospitalSynaprestTexts.Impure`): 看起来这些原液并不是100%浓度。
+- `First1` (`story.HospitalSynaprestTexts.First1`): 100%纯度的塞纳普斯原液！
+- `First2` (`story.HospitalSynaprestTexts.First2`): 制药师们找了好多办法都没办法解决污染问题都被你解决了！
+- `First3` (`story.HospitalSynaprestTexts.First3`): 相信你果然没有错！
+- `AllAtOnce` (`story.HospitalSynaprestTexts.AllAtOnce`): 一次性就全部完成了，太厉害了！
+- `FirstProgress` (`story.HospitalSynaprestTexts.FirstProgress`): 现在已经完成{0}/550了，感谢你的帮助。
+- `Progress` (`story.HospitalSynaprestTexts.Progress`): 原液进度{0}/550，非常感谢你的帮助。
+- `Complete1` (`story.HospitalSynaprestTexts.Complete1`): 所有原料的提纯都已经完成了。
+- `Complete2` (`story.HospitalSynaprestTexts.Complete2`): 制药师们会记住你的帮助。
+- `Complete3` (`story.HospitalSynaprestTexts.Complete3`): 按照约定，以后每周我都会带来报废的塞纳普斯原料。
+- `CompleteContinue` (`story.HospitalSynaprestTexts.CompleteContinue`): 你还有其他想要交的试剂吗？
+
+## AcidBuyerArrivalTexts
+
+Source: `src/Story/Npcs/AcidBuyer/Events/AcidBuyerArrival/AcidBuyerArrivalTexts.cs`
+
+- `Line1` (`story.AcidBuyerArrivalTexts.Line1`): （叹气）我收购的化学试剂总是带着较高的污染。
+- `Line2` (`story.AcidBuyerArrivalTexts.Line2`): 我想要高浓度的酸或碱，浓度越高越好。
+- `Line3` (`story.AcidBuyerArrivalTexts.Line3`): 有九十以上浓度的酸或碱可以卖给我吗？
+- `Line4` (`story.AcidBuyerArrivalTexts.Line4`): 或者你拿我这批试剂处理也可以，我不想把它们带回去。
+- `PriceIntro` (`story.AcidBuyerArrivalTexts.PriceIntro`): 你放在桌上就行。
+- `PriceStep` (`story.AcidBuyerArrivalTexts.PriceStep`): 浓度越高越好，有接近100%浓度的试剂，我会提供额外报酬。
+- `PricePure` (`story.AcidBuyerArrivalTexts.PricePure`): 你这有吗？
+- `TradeOption` (`story.AcidBuyerArrivalTexts.TradeOption`): 放在桌上了。
+- `ExitOption` (`story.AcidBuyerArrivalTexts.ExitOption`): 我这没有
+- `ExitLine` (`story.AcidBuyerArrivalTexts.ExitLine`): 真是遗憾，我得去其他地方再找找了。
+- `SoldOutOption` (`story.AcidBuyerArrivalTexts.SoldOutOption`): 没有库存了
+- `SoldOutHigh` (`story.AcidBuyerArrivalTexts.SoldOutHigh`): 多谢，这批品质的试剂足够我用了。
+- `SoldOutLow` (`story.AcidBuyerArrivalTexts.SoldOutLow`): 还缺一些更高浓度的试剂，我再去其他地方找找。
+- `NoAcidOrBase` (`story.AcidBuyerArrivalTexts.NoAcidOrBase`): 没看到我想要的酸和碱。
+- `ConcentrationTooLow` (`story.AcidBuyerArrivalTexts.ConcentrationTooLow`): 浓度看起来不够高。
+- `Success` (`story.AcidBuyerArrivalTexts.Success`): 这些我收下了。
+- `ContinueQuestion` (`story.AcidBuyerArrivalTexts.ContinueQuestion`): 还有吗？
+
+## AcidBuyerFirstHighPurityTexts
+
+Source: `src/Story/Npcs/AcidBuyer/Events/AcidBuyerFirstHighPurity/AcidBuyerFirstHighPurityTexts.cs`
+
+- `Inspection` (`story.AcidBuyerFirstHighPurityTexts.Inspection`): ......
+- `ContinueQuestion` (`story.AcidBuyerFirstHighPurityTexts.ContinueQuestion`): 还有吗？
+- `Question` (`story.AcidBuyerFirstHighPurityTexts.Question`): 这么高的浓度，你怎么做到的？
+- `SelfMadeOption` (`story.AcidBuyerFirstHighPurityTexts.SelfMadeOption`): 自己做的。
+- `LuckOption` (`story.AcidBuyerFirstHighPurityTexts.LuckOption`): 运气好。
+- `SelfMadeResponse` (`story.AcidBuyerFirstHighPurityTexts.SelfMadeResponse`): 手艺真不错，以后我会常来的。
+- `LuckResponse` (`story.AcidBuyerFirstHighPurityTexts.LuckResponse`): 你真谦虚，这种浓度可不是运气能解释的。
+
+## AcidBuyerRepeatVisitTexts
+
+Source: `src/Story/Npcs/AcidBuyer/Events/AcidBuyerRepeatVisit/AcidBuyerRepeatVisitTexts.cs`
+
+- `Line1` (`story.AcidBuyerRepeatVisitTexts.Line1`): 你好，老样子。
+- `Line2` (`story.AcidBuyerRepeatVisitTexts.Line2`): 有九十以上的酸或碱吗？
+- `TradeOption` (`story.AcidBuyerRepeatVisitTexts.TradeOption`): 放在桌上了
+- `ExitOption` (`story.AcidBuyerRepeatVisitTexts.ExitOption`): 我这没有
+- `ExitLine` (`story.AcidBuyerRepeatVisitTexts.ExitLine`): 真是遗憾，我得去其他地方再找找了。
+- `SoldOutOption` (`story.AcidBuyerRepeatVisitTexts.SoldOutOption`): 没有库存了
+- `SoldOutHigh` (`story.AcidBuyerRepeatVisitTexts.SoldOutHigh`): 多谢，这批品质的试剂足够用了。
+- `SoldOutLow` (`story.AcidBuyerRepeatVisitTexts.SoldOutLow`): 还缺一些更高浓度的试剂，我再去其他地方找找。
+- `NoAcidOrBase` (`story.AcidBuyerRepeatVisitTexts.NoAcidOrBase`): 没看到我想要的酸和碱。
+- `ConcentrationTooLow` (`story.AcidBuyerRepeatVisitTexts.ConcentrationTooLow`): 浓度看起来不够高。
+- `Success` (`story.AcidBuyerRepeatVisitTexts.Success`): 这些我收下了。
+- `ContinueQuestion` (`story.AcidBuyerRepeatVisitTexts.ContinueQuestion`): 还有吗？
+
+## FlowEmitterArrivalTexts
+
+Source: `src/Story/Npcs/FlowEmitterMerchant/Events/FlowEmitterArrival/FlowEmitterArrivalTexts.cs`
+
+- `RetryInvitation` (`story.FlowEmitterArrivalTexts.RetryInvitation`): 你好，这次你有兴趣尝试吗？
+- `Greeting1` (`story.FlowEmitterArrivalTexts.Greeting1`): 你好，我叫奥雅。
+- `Greeting2` (`story.FlowEmitterArrivalTexts.Greeting2`): 有兴趣了解一下流源工艺吗？这是一种处理液体的新奇技艺。
+- `Purpose1` (`story.FlowEmitterArrivalTexts.Purpose1`): 最基础的用法是——把液体发射出去，在运动时清理里面的化学污染和重金属。
+- `Purpose2` (`story.FlowEmitterArrivalTexts.Purpose2`): 医学家们常用这套入门技术来提高酸、碱的浓度，减少制药时的污染。
+- `Invitation1` (`story.FlowEmitterArrivalTexts.Invitation1`): 我这里有一套卖不出去的旧装置，可以送给你用。
+- `Invitation2` (`story.FlowEmitterArrivalTexts.Invitation2`): 你有没有兴趣亲手试试这个技术？
+- `Gift1` (`story.FlowEmitterArrivalTexts.Gift1`): 这瓶酸试剂的浓度是90%，有10%的化学污染。
+- `Gift2` (`story.FlowEmitterArrivalTexts.Gift2`): 两个发射器、一个升温装置和一个净化装置。
+- `Gift3` (`story.FlowEmitterArrivalTexts.Gift3`): 这些就是净化化学污染要用到的装置了。
+- `Instructions1` (`story.FlowEmitterArrivalTexts.Instructions1`): 具体怎么用这些装置，看这张便条上的图。
+- `Instructions2` (`story.FlowEmitterArrivalTexts.Instructions2`): 先把液体倒入发射器，再照图摆好装置。
+- `Instructions3` (`story.FlowEmitterArrivalTexts.Instructions3`): 双击发射器就能激活。
+- `Instructions4` (`story.FlowEmitterArrivalTexts.Instructions4`): 另一台发射器可以接收处理后的液体。
+- `Goal1` (`story.FlowEmitterArrivalTexts.Goal1`): 试着把酸的浓度提升到95%以上。
+- `Goal2` (`story.FlowEmitterArrivalTexts.Goal2`): 再装回试剂瓶，放到桌上给我看看。
+- `Goal3` (`story.FlowEmitterArrivalTexts.Goal3`): 我在这里等你。
+- `Missing1` (`story.FlowEmitterArrivalTexts.Missing1`): 我还没看到桌上的酸试剂。
+- `Missing2` (`story.FlowEmitterArrivalTexts.Missing2`): 把装好液体的酸试剂瓶放到桌面上，我再看看。
+- `TooDilute1` (`story.FlowEmitterArrivalTexts.TooDilute1`): 这瓶酸的浓度还不够，要达到95%。
+- `TooDilute2` (`story.FlowEmitterArrivalTexts.TooDilute2`): 你可以再处理一下，看看污染有没有减少。
+- `Success1` (`story.FlowEmitterArrivalTexts.Success1`): 做得不错，这就是最基础的用法。
+- `Success2` (`story.FlowEmitterArrivalTexts.Success2`): 如果你感兴趣，我以后会带更多装置来的。
+- `Success3` (`story.FlowEmitterArrivalTexts.Success3`): 这个试剂，你可以自己留着，以后再试试自己的原料。
+- `DepartureGift1` (`story.FlowEmitterArrivalTexts.DepartureGift1`): 我这还有一些东西，都送给你了。
+- `DepartureGift2` (`story.FlowEmitterArrivalTexts.DepartureGift2`): 四个转向装置，一个加速装置和一个降温装置，都太破了，已经卖不出去了。
+- `DepartureGift3` (`story.FlowEmitterArrivalTexts.DepartureGift3`): 留给你自己研究。
+- `Encourage1` (`story.FlowEmitterArrivalTexts.Encourage1`): 没关系，第一次没做出来也很正常。
+- `Encourage2` (`story.FlowEmitterArrivalTexts.Encourage2`): 材料和机器都留给你，多试几次。
+- `Encourage3` (`story.FlowEmitterArrivalTexts.Encourage3`): 可以按便条检查一下摆放和发射方向。
+- `Decline` (`story.FlowEmitterArrivalTexts.Decline`): 没关系，等你有兴趣了再说。
+- `DeclineFarewell1` (`story.FlowEmitterArrivalTexts.DeclineFarewell1`): 那我就先不打扰了。
+- `DeclineFarewell2` (`story.FlowEmitterArrivalTexts.DeclineFarewell2`): 七天后我再来，到时候再问问你。
+- `Farewell1` (`story.FlowEmitterArrivalTexts.Farewell1`): 我先走了，每七天我都会再来的。
+- `Farewell2` (`story.FlowEmitterArrivalTexts.Farewell2`): 到时候记得跟我说说，这些机器用起来怎么样。
+
+## FlowEmitterGenericVisitTexts
+
+Source: `src/Story/Npcs/FlowEmitterMerchant/Events/FlowEmitterGenericVisit/FlowEmitterGenericVisitTexts.cs`
+
+- `Greeting` (`story.FlowEmitterGenericVisitTexts.Greeting`): 你好，我又来了。
+- `MoreItems` (`story.FlowEmitterGenericVisitTexts.MoreItems`): 你还需要买新装置吗？
+
+## FlowEmitterSecondVisitTexts
+
+Source: `src/Story/Npcs/FlowEmitterMerchant/Events/FlowEmitterSecondVisit/FlowEmitterSecondVisitTexts.cs`
+
+- `Greeting` (`story.FlowEmitterSecondVisitTexts.Greeting`): 你好，我又来了。上次那些装置用得怎么样？
+- `NewDevice` (`story.FlowEmitterSecondVisitTexts.NewDevice`): 这次开始正式售卖装置，带来的都是全新货。
+- `ColdTrap` (`story.FlowEmitterSecondVisitTexts.ColdTrap`): 这些装置具体有什么用，你可以看看这本手册。
+- `ExitLine` (`story.FlowEmitterSecondVisitTexts.ExitLine`): 货物都放在这里了，看看有没有你需要的。

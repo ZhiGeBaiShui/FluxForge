@@ -4,8 +4,8 @@ namespace FluxForge.Mod
     internal sealed class HeavyMetalFluxRecipe : IChemicalFormerRecipe
     {
         private readonly string _identifier;
-        private readonly string _displayName;
-        private readonly string _materialDescription;
+        private readonly string _displayNameKey;
+        private readonly string _materialDescriptionKey;
         private readonly string _productIdentifier;
         private readonly int _requiredHeavyMetal;
 
@@ -17,17 +17,17 @@ namespace FluxForge.Mod
             int requiredHeavyMetal)
         {
             _identifier = identifier;
-            _displayName = displayName;
-            _materialDescription = materialDescription;
+            _displayNameKey = displayName;
+            _materialDescriptionKey = materialDescription;
             _productIdentifier = productIdentifier;
             _requiredHeavyMetal = requiredHeavyMetal;
         }
 
         public string Identifier => _identifier;
 
-        public string DisplayName => _displayName;
+        public string DisplayName => LocHelper.GetLocalizedItem(_displayNameKey);
 
-        public string MaterialDescription => _materialDescription;
+        public string MaterialDescription => ModHelper.GetLocalized(ItemFactory.ModId, _materialDescriptionKey);
 
         public string ProductIdentifier => _productIdentifier;
 

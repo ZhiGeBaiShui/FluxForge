@@ -1,0 +1,50 @@
+[h1]FluxForge | Liquid Processing[/h1]
+
+[h2]Community & Feedback — QQ Group: 568324459[/h2]
+
+Adds liquid-processing gameplay and a Central Hospital storyline to Probably Stolen.
+
+[h2]More ways to work with the base game's chemistry[/h2]
+
+FluxForge lets you build liquid-processing routes directly on the item grid, adding tools for purification, temperature control, and fine adjustments to chemical composition.
+
+[list]
+[*][b]Purify chemical ingredients[/b]: Reduce chemical and heavy metal contamination in liquids such as acids and bases, preparing cleaner ingredients for later reactions.
+[*][b]Fine-tune chemical products[/b]: If contamination prevents a finished product from meeting its concentration requirement, try using a cold extractor to remove tiny amounts of contaminants and adjust the component ratios.
+[*][b]Combine processing steps[/b]: Use temperature control, filtration, cold extraction, and speed control to design a route that suits your needs.
+[/list]
+
+[h2]What can you do right now?[/h2]
+
+[img]https://i.ibb.co/Kc5mrRDk/liquid-loop-demo-steam.gif[/img]
+
+Pour liquid from a container into an emitter and activate it. The liquid travels across the grid as a moving flow. Use L-shaped junctions to guide it through processing devices, or build a closed loop to process the same batch repeatedly.
+
+Passing through a device does not automatically produce the result you want. Filtration efficiency depends on temperature and flow speed, while the component removed by cold extraction depends on the liquid's actual composition. Experiment with device combinations, processing order, and the number of passes to find a method that works for your ingredients.
+
+[list]
+[*][b]Flow Emitter[/b]: Emits liquid and can also receive and store incoming flows, making it easy to recover and reuse a batch.
+[*][b]Filter[/b]: Reduces chemical and heavy metal contamination. Slower flows and higher temperatures improve filtration, but heat can also cause evaporation losses.
+[*][b]Heater and Cooler[/b]: Adjust the flow's temperature to create suitable conditions for processing and reactions.
+[*][b]Cold Extractor[/b]: Extracts the nonzero liquid component with the lowest volume and stores it in the device. Check the actual component ratios before using it to fine-tune contamination.
+[*][b]Centrifuge[/b]: Separates components with different particle sizes according to the incoming flow's speed and stores the separated material.
+[*][b]Speed Controller[/b]: Speeds up or slows down a flow depending on its entry direction, changing its speed through the devices ahead.
+[*][b]L-shaped Junction and Straight Pipe[/b]: Junctions change the flow's direction. Straight pipes mainly serve a visual purpose, keeping your routes clear and tidy.
+[*][b]Chemical Former[/b]: Consumes electricity to turn liquid ingredients that meet an available recipe's requirements into chemical items.
+[/list]
+
+The merchant [b]Oya[/b] visits with devices, goods, and demonstrations to introduce these mechanics, and returns weekly to sell equipment.
+
+An in-game manual with animated demonstrations helps you move from the basics to repeated processing in a loop.
+
+[h2]The Central Hospital storyline[/h2]
+
+[b]Vera[/b], an NPC from the Central Hospital, is looking to buy high-concentration acid and base reagents.
+
+Supply her with reagents of sufficient purity to receive a cooperation request from the hospital.
+
+Progress from individual sales to a long-term supply contract: the hospital provides raw materials and purchases the reagents you purify.
+
+As your reputation grows, the hospital offers additional support.
+
+Once you have earned enough trust, the hospital will ask for your help purifying a special raw material.

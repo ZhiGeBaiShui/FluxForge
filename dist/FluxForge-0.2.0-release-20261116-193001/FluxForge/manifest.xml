@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Manifest>
+  <ID>fluxforge</ID>
+  <Name>FluxForge</Name>
+  <Author>FluxForge</Author>
+  <ModVersion>0.2.0</ModVersion>
+  <Description>流源工艺：搭建液体加工线路，过滤污染、分离成分，并通过成型机制作化学物品。奥雅提供装置与教学指引；通过薇拉与中心医院建立合作，解锁原料供应、声望奖励与特殊提纯委托。
+
+交流反馈QQ群：568324459</Description>
+  <GameVersions>
+    <Version>0.46</Version>
+  </GameVersions>
+  <Prerequisites />
+  <Assemblies>
+    <Assembly>FluxForge.dll</Assembly>
+  </Assemblies>
+  <Capabilities />
+</Manifest>

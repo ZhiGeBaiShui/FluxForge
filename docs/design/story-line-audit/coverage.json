@@ -1,0 +1,335 @@
+{
+  "files": 41,
+  "lines": 2249,
+  "blocks": 195,
+  "inventory": [
+    {
+      "path": "src/Story/Hospital/HospitalStoryPoints.cs",
+      "lineCount": 9,
+      "blocks": 1,
+      "sha256": "34ae5bdc2a1b8901da742d76cf839702c0b119bfaf84be60ca6e37bf0e06de80",
+      "reviewer": "游戏适配、目录规范、维护性逐行审查员",
+      "report": "integration-review.json"
+    },
+    {
+      "path": "src/Story/Npcs/AcidBuyer/AcidBuyerStory.cs",
+      "lineCount": 219,
+      "blocks": 9,
+      "sha256": "66b9f5784832efc90f5a9f14b9307e66ffc66f7195ac7e526382724b6b6d2af9",
+      "reviewer": "游戏适配、目录规范、维护性逐行审查员",
+      "report": "integration-review.json"
+    },
+    {
+      "path": "src/Story/Npcs/FlowEmitterMerchant/FlowEmitterMerchantStory.cs",
+      "lineCount": 85,
+      "blocks": 6,
+      "sha256": "e96773c2c7a9f43aba70639cfeeeefd75591c2de57311885624f26af239396c7",
+      "reviewer": "游戏适配、目录规范、维护性逐行审查员",
+      "report": "integration-review.json"
+    },
+    {
+      "path": "src/Story/Portraits/NpcPortraitRegistry.cs",
+      "lineCount": 188,
+      "blocks": 10,
+      "sha256": "aca58b96e215ca0f3f6ac5bfadcb4a5299d1c6edf4a2e52bf5ea2104215825eb",
+      "reviewer": "游戏适配、目录规范、维护性逐行审查员",
+      "report": "integration-review.json"
+    },
+    {
+      "path": "src/Story/Runtime/Bootstrap/StoryBootstrap.cs",
+      "lineCount": 41,
+      "blocks": 3,
+      "sha256": "77ede0e26bdcaebcd594d2852d55efb2eb40998f453de77876612a8434746e61",
+      "reviewer": "游戏适配、目录规范、维护性逐行审查员",
+      "report": "integration-review.json"
+    },
+    {
+      "path": "src/Story/Runtime/Contracts/StoryAssembly.cs",
+      "lineCount": 16,
+      "blocks": 3,
+      "sha256": "0d795d3634f5518090b6500b1cb08d1a61c8749d2b502e2c63d17f3d47955d65",
+      "reviewer": "defensive_review / 防御性代码删除员与数据契约审查员",
+      "report": "model-review.json"
+    },
+    {
+      "path": "src/Story/Runtime/Direction/NpcStoryHost.cs",
+      "lineCount": 288,
+      "blocks": 13,
+      "sha256": "0df6887c208e751f4c41b909beb114207d9d50faa1a522741cf8f4d95cde35c1",
+      "reviewer": "游戏适配、目录规范、维护性逐行审查员",
+      "report": "integration-review.json"
+    },
+    {
+      "path": "src/Story/Runtime/Direction/Services/NpcVisitAssembly.cs",
+      "lineCount": 103,
+      "blocks": 6,
+      "sha256": "9146fa8c3947766703ca32d0953b66ecf4ddebb4fa22960ea84085c287ffc217",
+      "reviewer": "游戏适配、目录规范、维护性逐行审查员",
+      "report": "integration-review.json"
+    },
+    {
+      "path": "src/Story/Runtime/Direction/Services/StoryNpcRuntime.cs",
+      "lineCount": 65,
+      "blocks": 4,
+      "sha256": "59bf79d43f9822a6579788e01ec5c6d10d592166261e8a1fd2f4fbf12041b169",
+      "reviewer": "游戏适配、目录规范、维护性逐行审查员",
+      "report": "integration-review.json"
+    },
+    {
+      "path": "src/Story/Runtime/Graph/StoryEdge.cs",
+      "lineCount": 53,
+      "blocks": 6,
+      "sha256": "2572f2a4746c8059f9084bfc9abd301ad993cb0c1e0594ab56f56cf666b77c68",
+      "reviewer": "defensive_review / 防御性代码删除员与数据契约审查员",
+      "report": "model-review.json"
+    },
+    {
+      "path": "src/Story/Runtime/Graph/StoryNode.cs",
+      "lineCount": 25,
+      "blocks": 4,
+      "sha256": "b0f51a81ccf94d7c7b9a05ec65b70a518771390078e0e3bfa10306985d602d5c",
+      "reviewer": "defensive_review / 防御性代码删除员与数据契约审查员",
+      "report": "model-review.json"
+    },
+    {
+      "path": "src/Story/Runtime/Model/IStoryState.cs",
+      "lineCount": 18,
+      "blocks": 4,
+      "sha256": "7036c8e9537ea272b989c5ada6ce22a7daa77ec59ba54f7cd94ded34d8afaf5b",
+      "reviewer": "defensive_review / 防御性代码删除员与数据契约审查员",
+      "report": "model-review.json"
+    },
+    {
+      "path": "src/Story/Runtime/Model/NpcDefinition.cs",
+      "lineCount": 29,
+      "blocks": 4,
+      "sha256": "99966f46056b66659a2e04be92553a866beb35e0a1568a805c0b7af9a94255bc",
+      "reviewer": "defensive_review / 防御性代码删除员与数据契约审查员",
+      "report": "model-review.json"
+    },
+    {
+      "path": "src/Story/Runtime/Model/NpcStoryContent.cs",
+      "lineCount": 48,
+      "blocks": 6,
+      "sha256": "379b2a504c2b4720ef35f11e632e5a16d347c90210185910ea0637f9be599560",
+      "reviewer": "defensive_review / 防御性代码删除员与数据契约审查员",
+      "report": "model-review.json"
+    },
+    {
+      "path": "src/Story/Runtime/Model/StoryContext.cs",
+      "lineCount": 52,
+      "blocks": 6,
+      "sha256": "c6fcbb3f2ed2cbdd43e4812adb76cb6aaa859fb7f61afd44f3a43211df36b830",
+      "reviewer": "defensive_review / 防御性代码删除员与数据契约审查员",
+      "report": "model-review.json"
+    },
+    {
+      "path": "src/Story/Runtime/Model/StoryEvent.cs",
+      "lineCount": 51,
+      "blocks": 4,
+      "sha256": "ea77289ae73739316b4b6c3d9411294f0b01cc92cb5a8fa361b4b38e82306cc8",
+      "reviewer": "defensive_review / 防御性代码删除员与数据契约审查员",
+      "report": "model-review.json"
+    },
+    {
+      "path": "src/Story/Runtime/Model/StoryEventDefinition.cs",
+      "lineCount": 20,
+      "blocks": 3,
+      "sha256": "693ed4c4a57293487c649dfdca20ded41b62b37aa97816fd4cbd07b5778393dc",
+      "reviewer": "defensive_review / 防御性代码删除员与数据契约审查员",
+      "report": "model-review.json"
+    },
+    {
+      "path": "src/Story/Runtime/Model/StoryOutcome.cs",
+      "lineCount": 10,
+      "blocks": 2,
+      "sha256": "a29b7cacb7dbab3bd291bbcd9ea78aa3fb1e819a4f0e4e81d322cf5949da6b78",
+      "reviewer": "defensive_review / 防御性代码删除员与数据契约审查员",
+      "report": "model-review.json"
+    },
+    {
+      "path": "src/Story/Runtime/Model/StoryTradeResult.cs",
+      "lineCount": 17,
+      "blocks": 3,
+      "sha256": "62f696074f72e4b857f1cf83dacc4c38be2016c508693577583b85e88d0397c4",
+      "reviewer": "defensive_review / 防御性代码删除员与数据契约审查员",
+      "report": "model-review.json"
+    },
+    {
+      "path": "src/Story/Runtime/Model/StoryTrigger.cs",
+      "lineCount": 11,
+      "blocks": 2,
+      "sha256": "5286b3343a8f622d6a9537d9c0fd1805823ac8e02966ead8302cbbafbde2d761",
+      "reviewer": "defensive_review / 防御性代码删除员与数据契约审查员",
+      "report": "model-review.json"
+    },
+    {
+      "path": "src/Story/Runtime/Model/VisitContext.cs",
+      "lineCount": 20,
+      "blocks": 3,
+      "sha256": "edda1d746791d172fb144d533de4d3c4a156ff0d14fd6c85a802dbb5b0b23488",
+      "reviewer": "defensive_review / 防御性代码删除员与数据契约审查员",
+      "report": "model-review.json"
+    },
+    {
+      "path": "src/Story/Runtime/Model/VisitDecision.cs",
+      "lineCount": 16,
+      "blocks": 3,
+      "sha256": "2cb231f6e7b324eacfa9486e3f79c806b0a5f101de21c290846cd9fe11d9189e",
+      "reviewer": "defensive_review / 防御性代码删除员与数据契约审查员",
+      "report": "model-review.json"
+    },
+    {
+      "path": "src/Story/Runtime/Model/VisitKind.cs",
+      "lineCount": 11,
+      "blocks": 2,
+      "sha256": "340e83d10dd20689a8488b03b94cfe065225721c1fb5eca0d6d9bcfab5be537b",
+      "reviewer": "defensive_review / 防御性代码删除员与数据契约审查员",
+      "report": "model-review.json"
+    },
+    {
+      "path": "src/Story/Runtime/Model/VisitRule.cs",
+      "lineCount": 40,
+      "blocks": 4,
+      "sha256": "6cda9baf4ea213a2b35e89990564469433a7c5bd14f76b443206644eac8a23ef",
+      "reviewer": "defensive_review / 防御性代码删除员与数据契约审查员",
+      "report": "model-review.json"
+    },
+    {
+      "path": "src/Story/Runtime/Patches/StorySaveExitPatches.cs",
+      "lineCount": 24,
+      "blocks": 3,
+      "sha256": "bcd6bbc6a7df5b7279f94a03316bf80579752ddd3415fb27b927c46eb368f813",
+      "reviewer": "root: story-owned exit patch follow-up review",
+      "report": "exit-patch-review.json"
+    },
+    {
+      "path": "src/Story/Runtime/Playback/Dialogue/DialoguePacing.cs",
+      "lineCount": 60,
+      "blocks": 7,
+      "sha256": "bdb919f856c5cfb664e1319f237c9e867322ea0196e11a5767aef30799a68016",
+      "reviewer": "architecture_review: execution architecture and junior-maintainer review",
+      "report": "playback-review.json"
+    },
+    {
+      "path": "src/Story/Runtime/Playback/Dialogue/StoryDialogueAdapter.cs",
+      "lineCount": 70,
+      "blocks": 6,
+      "sha256": "946fe0094d3410f0534bd7deceffae1066c76e808e16a210d7dc7c19f928e3ea",
+      "reviewer": "architecture_review: execution architecture and junior-maintainer review",
+      "report": "playback-review.json"
+    },
+    {
+      "path": "src/Story/Runtime/Playback/Dialogue/StoryDialogueBridge.cs",
+      "lineCount": 21,
+      "blocks": 3,
+      "sha256": "077a4fe8ae557f575c4d77e02f118ff0a2510aabd1a23a8383ccfc7a240590a5",
+      "reviewer": "architecture_review: execution architecture and junior-maintainer review",
+      "report": "playback-review.json"
+    },
+    {
+      "path": "src/Story/Runtime/Playback/Execution/Steps/StoryActionStep.cs",
+      "lineCount": 13,
+      "blocks": 1,
+      "sha256": "3c7429dcc1903ff28e893c53fbc860e603db0f5731d2016b1a76800ad70d3ccd",
+      "reviewer": "architecture_review: execution architecture and junior-maintainer review",
+      "report": "playback-review.json"
+    },
+    {
+      "path": "src/Story/Runtime/Playback/Execution/Steps/StoryCallStep.cs",
+      "lineCount": 20,
+      "blocks": 3,
+      "sha256": "f91cd694ed270a649dc99617fa58b090f16797b2bfe2ea43a6226a74ea1ec00f",
+      "reviewer": "architecture_review: execution architecture and junior-maintainer review",
+      "report": "playback-review.json"
+    },
+    {
+      "path": "src/Story/Runtime/Playback/Execution/Steps/StoryInsertionStep.cs",
+      "lineCount": 11,
+      "blocks": 1,
+      "sha256": "3a339fc8f22ba2fa6a126523b919a11eb4877228e51c217f91f85addaeee67e4",
+      "reviewer": "architecture_review: execution architecture and junior-maintainer review",
+      "report": "playback-review.json"
+    },
+    {
+      "path": "src/Story/Runtime/Playback/Execution/Steps/StoryLineStep.cs",
+      "lineCount": 23,
+      "blocks": 2,
+      "sha256": "3b81d70132b9be0b9e49cc699e650a0c55c1362c409290c2732530613e98a89a",
+      "reviewer": "architecture_review: execution architecture and junior-maintainer review",
+      "report": "playback-review.json"
+    },
+    {
+      "path": "src/Story/Runtime/Playback/Execution/Steps/StoryStep.cs",
+      "lineCount": 6,
+      "blocks": 1,
+      "sha256": "934fafcb3ff017a0f1320bf6d43bcf973080e9c1f9faf02bad3d79ba35a41a22",
+      "reviewer": "architecture_review: execution architecture and junior-maintainer review",
+      "report": "playback-review.json"
+    },
+    {
+      "path": "src/Story/Runtime/Playback/Execution/StoryCallFrame.cs",
+      "lineCount": 37,
+      "blocks": 4,
+      "sha256": "3c955d974c930e54377482d996a8bc93512e11c7e5afa93a56a952b980c8bdea",
+      "reviewer": "architecture_review: execution architecture and junior-maintainer review",
+      "report": "playback-review.json"
+    },
+    {
+      "path": "src/Story/Runtime/Playback/Execution/StoryInsertionCursor.cs",
+      "lineCount": 58,
+      "blocks": 5,
+      "sha256": "aec4ee244a157796319ff2d344d3de56dda923d06865ac568db599231e7f0bd7",
+      "reviewer": "architecture_review: execution architecture and junior-maintainer review",
+      "report": "playback-review.json"
+    },
+    {
+      "path": "src/Story/Runtime/Playback/Execution/StoryPlaybackContext.cs",
+      "lineCount": 20,
+      "blocks": 2,
+      "sha256": "9bd233148783995ebdc26076c1565408bbf90cdea4344359a438c19d00871494",
+      "reviewer": "architecture_review: execution architecture and junior-maintainer review",
+      "report": "playback-review.json"
+    },
+    {
+      "path": "src/Story/Runtime/Playback/Execution/StorySequence.cs",
+      "lineCount": 47,
+      "blocks": 6,
+      "sha256": "8e9e4fd4ac62e59fa311cef4d58f1c312c955f469d5e2d1e81890ffa08fcf191",
+      "reviewer": "architecture_review: execution architecture and junior-maintainer review",
+      "report": "playback-review.json"
+    },
+    {
+      "path": "src/Story/Runtime/Playback/StoryPlayer.cs",
+      "lineCount": 162,
+      "blocks": 17,
+      "sha256": "fbdcaa43e6281732a3ea13c11d21b06ec5667244bb66256827d9980cf11694a3",
+      "reviewer": "architecture_review: execution architecture and junior-maintainer review",
+      "report": "playback-review.json"
+    },
+    {
+      "path": "src/Story/Runtime/Selection/StoryEventSelector.cs",
+      "lineCount": 51,
+      "blocks": 6,
+      "sha256": "6796a6a88ed14a9a2e90e9e9b93892addbf396b2b02ca8559b9ed503453f7330",
+      "reviewer": "defensive_review / 防御性代码删除员与数据契约审查员",
+      "report": "model-review.json"
+    },
+    {
+      "path": "src/Story/Runtime/Selection/VisitRuleSelector.cs",
+      "lineCount": 59,
+      "blocks": 8,
+      "sha256": "501a6584f552cc73552f17a3cd811f1c73d7c8f808ccc9763606a24854ef277a",
+      "reviewer": "defensive_review / 防御性代码删除员与数据契约审查员",
+      "report": "model-review.json"
+    },
+    {
+      "path": "src/Story/Runtime/State/NpcState.cs",
+      "lineCount": 132,
+      "blocks": 9,
+      "sha256": "ff4ea481dcb854a527cc267affd33f85d135d5163e505f27046f8079811bd2cb",
+      "reviewer": "游戏适配、目录规范、维护性逐行审查员",
+      "report": "integration-review.json"
+    }
+  ]
+}

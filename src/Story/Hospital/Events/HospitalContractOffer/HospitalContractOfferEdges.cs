@@ -1,72 +1,95 @@
-using System.Threading.Tasks;
 using FluxForge.Mod;
+using FluxForge.Story.AcidBuyer;
 
 namespace FluxForge.Story.Hospital
 {
     internal sealed class HospitalContractOfferGreetingEdge : StoryEdge
     {
-        internal HospitalContractOfferGreetingEdge()
+        private readonly AcidBuyerTradeSession _session;
+        private readonly IStoryState _state;
+        private StoryNode _firstRoot;
+        private StoryNode _repeatRoot;
+        private StoryNode _repeatAfterAsk;
+        private StoryNode _next;
+
+        internal HospitalContractOfferGreetingEdge(
+            AcidBuyerTradeSession session, IStoryState state)
             : base(null, null)
         {
+            _session = session;
+            _state = state;
         }
 
-        internal override Task Execute(StorySequence player)
+        internal void SetTargets(
+            StoryNode firstRoot,
+            StoryNode repeatRoot,
+            StoryNode repeatAfterAsk)
         {
-            player.SayNpc(HospitalContractOfferTexts.Greeting1);
-            player.SayNpc(HospitalContractOfferTexts.Greeting2);
-            player.SayNpc(HospitalContractOfferTexts.Greeting3);
-            player.SayNpc(HospitalContractOfferTexts.Greeting4);
-            return Task.CompletedTask;
+            _firstRoot = firstRoot;
+            _repeatRoot = repeatRoot;
+            _repeatAfterAsk = repeatAfterAsk;
+        }
+
+        internal override StoryNode ResolveNext()
+        {
+            return _next;
+        }
+
+        internal override void Execute(StorySequence player)
+        {
+            _session.BeginVisit();
+            if (_state.SeenCount(HospitalContractOfferAssembly.EventId) > 0
+                || HospitalContractState.DetailsExplained)
+            {
+                _next = HospitalContractState.DetailsExplained
+                    ? _repeatAfterAsk : _repeatRoot;
+                player.SayNpc(ModHelper.GetLocalized("fluxforge", HospitalContractOfferTexts.RepeatGreeting1));
+                player.SayNpc(ModHelper.GetLocalized("fluxforge", HospitalContractOfferTexts.RepeatGreeting2));
+            }
+            else
+            {
+                _next = _firstRoot;
+                player.SayNpc(ModHelper.GetLocalized("fluxforge", HospitalContractOfferTexts.Greeting1));
+                player.SayNpc(ModHelper.GetLocalized("fluxforge", HospitalContractOfferTexts.Greeting2));
+                player.SayNpc(ModHelper.GetLocalized("fluxforge", HospitalContractOfferTexts.Greeting3));
+                player.SayNpc(ModHelper.GetLocalized("fluxforge", HospitalContractOfferTexts.Greeting4));
+            }
         }
     }
 
     internal sealed class HospitalContractOfferAskEdge : StoryEdge
     {
-        private const string PriceBody =
-            "每周目标：300 分\n"
-            + "小于90%：不接收\n"
-            + "90–98.9%：权值 1.0\n"
-            + "99%：权值 1.0\n"
-            + "99% 以上：每 0.1 个百分点 +0.1\n"
-            + "100%：权值 3.0\n"
-            + "\n"
-            + "酸：基础值1分\n"
-            + "碱：基础值1分\n"
-            + "酒精：基础值0.8分\n"
-            + "\n"
-            + "得分规则：每 mL 化学品基础分 × 浓度权值\n"
-            + "\n"
-            + "结算：0.1 信用点 / 分";
+        private const string PriceBody = "paper.contract.body";
 
         internal HospitalContractOfferAskEdge()
             : base(HospitalContractOfferTexts.AskOption, "question")
         {
         }
 
-        internal override Task Execute(StorySequence player)
+        internal override void Execute(StorySequence player)
         {
-            player.SayNpc(HospitalContractOfferTexts.AskLine1);
+            player.SayNpc(ModHelper.GetLocalized("fluxforge", HospitalContractOfferTexts.AskLine1));
             player.Do(delegate
             {
                 PlayerStore.Instance.AddDirectSellingItemToTable(
                     CreatePriceNote(),
                     true);
+                HospitalContractState.MarkDetailsExplained();
             });
-            player.SayNpc(HospitalContractOfferTexts.AskLine2);
-            player.SayNpc(HospitalContractOfferTexts.AskLine3);
-            player.SayNpc(HospitalContractOfferTexts.AskLine4);
-            return Task.CompletedTask;
+            player.SayNpc(ModHelper.GetLocalized("fluxforge", HospitalContractOfferTexts.AskLine2));
+            player.SayNpc(ModHelper.GetLocalized("fluxforge", HospitalContractOfferTexts.AskLine3));
+            player.SayNpc(ModHelper.GetLocalized("fluxforge", HospitalContractOfferTexts.AskLine4));
         }
 
         private static GameItem CreatePriceNote()
         {
             GameItem note = PreBuiltItemHelper.CreateHandnote(
-                PriceBody,
-                "上层区中心医院采购价目",
-                "薇拉",
+                ModHelper.GetLocalized("fluxforge", PriceBody),
+                ModHelper.GetLocalized("fluxforge", "paper.contract.title"),
+                ModHelper.GetLocalized("fluxforge", "npc.vera.name"),
                 2);
-            note.name = "上层区中心医院采购价目";
-            note.shortDescription = "医院合同的结算方式。";
+            note.name = ModHelper.GetLocalized("fluxforge", "paper.contract.title");
+            note.shortDescription = ModHelper.GetLocalized("fluxforge", "paper.contract.description");
             note.unitValue = 0L;
             return note;
         }
@@ -79,29 +102,27 @@ namespace FluxForge.Story.Hospital
         {
         }
 
-        internal override Task Execute(StorySequence player)
+        internal override void Execute(StorySequence player)
         {
             HospitalContractState.Start(StoreStation.GetDayCounter());
             HospitalReputation.EnsureFaction();
-            player.SayNpc(HospitalContractOfferTexts.AcceptLine1);
-            player.SayNpc(HospitalContractOfferTexts.AcceptLine2);
-            player.SayNpc(HospitalContractOfferTexts.AcceptLine3);
-            return Task.CompletedTask;
+            player.SayNpc(ModHelper.GetLocalized("fluxforge", HospitalContractOfferTexts.AcceptLine1));
+            player.SayNpc(ModHelper.GetLocalized("fluxforge", HospitalContractOfferTexts.AcceptLine2));
+            player.SayNpc(ModHelper.GetLocalized("fluxforge", HospitalContractOfferTexts.AcceptLine3));
         }
     }
 
     internal sealed class HospitalContractOfferDeclineEdge : StoryEdge
     {
-        internal HospitalContractOfferDeclineEdge()
-            : base(HospitalContractOfferTexts.DeclineOption, "question")
+        internal HospitalContractOfferDeclineEdge(string label)
+            : base(label, "question")
         {
         }
 
-        internal override Task Execute(StorySequence player)
+        internal override void Execute(StorySequence player)
         {
-            HospitalContractState.DeclineOffer();
-            player.SayNpc(HospitalContractOfferTexts.DeclineLine);
-            return Task.CompletedTask;
+            player.SayNpc(ModHelper.GetLocalized("fluxforge", HospitalContractOfferTexts.DeclineLine));
+            player.SayNpc(ModHelper.GetLocalized("fluxforge", HospitalContractOfferTexts.ResumeTrade));
         }
     }
 
@@ -112,12 +133,12 @@ namespace FluxForge.Story.Hospital
         {
         }
 
-        internal override Task Execute(StorySequence player)
+        internal override void Execute(StorySequence player)
         {
             HospitalContractState.DeclineOffer();
-            player.SayNpc(HospitalContractOfferTexts.NoInterestLine1);
-            player.SayNpc(HospitalContractOfferTexts.NoInterestLine2);
-            return Task.CompletedTask;
+            player.SayNpc(ModHelper.GetLocalized("fluxforge", HospitalContractOfferTexts.NoInterestLine1));
+            player.SayNpc(ModHelper.GetLocalized("fluxforge", HospitalContractOfferTexts.NoInterestLine2));
+            player.SayNpc(ModHelper.GetLocalized("fluxforge", HospitalContractOfferTexts.ResumeTrade));
         }
     }
 }

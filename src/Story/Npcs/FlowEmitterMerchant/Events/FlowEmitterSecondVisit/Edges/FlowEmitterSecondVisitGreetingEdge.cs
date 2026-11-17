@@ -1,9 +1,8 @@
-using System.Threading.Tasks;
 using FluxForge.Story.FlowEmitterMerchant;
 
 namespace FluxForge.Story.FlowEmitterSecondVisit
 {
-    /// <summary>第二次到访的纯对话开场。</summary>
+    /// <summary>第二次到访：介绍新货，并在手册说明后赠送手册。</summary>
     internal sealed class FlowEmitterSecondVisitGreetingEdge : StoryEdge
     {
         internal FlowEmitterSecondVisitGreetingEdge()
@@ -11,14 +10,13 @@ namespace FluxForge.Story.FlowEmitterSecondVisit
         {
         }
 
-        internal override Task Execute(StorySequence player)
+        internal override void Execute(StorySequence player)
         {
-            player.SayNpc(FlowEmitterSecondVisitTexts.Greeting);
-            player.SayNpc(FlowEmitterSecondVisitTexts.NewDevice);
-            player.SayNpc(FlowEmitterSecondVisitTexts.ColdTrap);
+            player.SayNpc(ModHelper.GetLocalized("fluxforge", FlowEmitterSecondVisitTexts.Greeting));
+            player.SayNpc(ModHelper.GetLocalized("fluxforge", FlowEmitterSecondVisitTexts.NewDevice));
+            player.SayNpc(ModHelper.GetLocalized("fluxforge", FlowEmitterSecondVisitTexts.ColdTrap));
             player.Do(FlowEmitterMerchantStock.GiveManual);
-            player.SayNpc(FlowEmitterSecondVisitTexts.ExitLine);
-            return Task.CompletedTask;
+            player.SayNpc(ModHelper.GetLocalized("fluxforge", FlowEmitterSecondVisitTexts.ExitLine));
         }
     }
 }

@@ -1,61 +1,71 @@
-using System.Threading.Tasks;
-
 namespace FluxForge.Story.Hospital
 {
     internal static class HospitalContractOfferTexts
     {
+        internal const string ResumeTrade
+            = "story.HospitalContractOfferTexts.ResumeTrade";
+
         internal const string Greeting1
-            = "你好，老板，这次我是来和你谈固定合作的。";
+            = "story.HospitalContractOfferTexts.Greeting1";
 
         internal const string Greeting2
-            = "我在上层区医院就职，每周都负责采购化学试剂。";
+            = "story.HospitalContractOfferTexts.Greeting2";
 
         internal const string Greeting3
-            = "上次从你这拿的酸和碱，药剂师说纯度比其他地方的都好。";
+            = "story.HospitalContractOfferTexts.Greeting3";
 
         internal const string Greeting4
-            = "医院想长期要这种货，不知你有没有兴趣做供货商？";
+            = "story.HospitalContractOfferTexts.Greeting4";
+
+        internal const string RepeatGreeting1
+            = "story.HospitalContractOfferTexts.RepeatGreeting1";
+
+        internal const string RepeatGreeting2
+            = "story.HospitalContractOfferTexts.RepeatGreeting2";
 
         internal const string AskOption
-            = "怎么供？";
+            = "story.HospitalContractOfferTexts.AskOption";
 
         internal const string AcceptOption
-            = "行，我做。";
+            = "story.HospitalContractOfferTexts.AcceptOption";
 
         internal const string DeclineOption
-            = "暂时只散卖。";
+            = "story.HospitalContractOfferTexts.DeclineOption";
+
+        internal const string RepeatDeclineOption
+            = "story.HospitalContractOfferTexts.RepeatDeclineOption";
 
         internal const string NoInterestOption
-            = "没有意愿。";
+            = "story.HospitalContractOfferTexts.NoInterestOption";
 
         internal const string AskLine1
-            = "给，这是需求清单。";
+            = "story.HospitalContractOfferTexts.AskLine1";
 
         internal const string AskLine2
-            = "每周一次，需要供够基础量，多余的会提供额外报酬，具体看合同。";
+            = "story.HospitalContractOfferTexts.AskLine2";
 
         internal const string AskLine3
-            = "同时，医院每周会为你提供低浓度试剂作为提纯原料。";
+            = "story.HospitalContractOfferTexts.AskLine3";
 
         internal const string AskLine4
-            = "你考虑一下，医院缺口不小。";
+            = "story.HospitalContractOfferTexts.AskLine4";
 
         internal const string AcceptLine1
-            = "那从今天算。";
+            = "story.HospitalContractOfferTexts.AcceptLine1";
 
         internal const string AcceptLine2
-            = "三天后我把原料送来。";
+            = "story.HospitalContractOfferTexts.AcceptLine2";
 
         internal const string AcceptLine3
-            = "七天后我来取第一批。";
+            = "story.HospitalContractOfferTexts.AcceptLine3";
 
         internal const string DeclineLine
-            = "行，散货我也拿。";
+            = "story.HospitalContractOfferTexts.DeclineLine";
 
         internal const string NoInterestLine1
-            = "那可惜了。";
+            = "story.HospitalContractOfferTexts.NoInterestLine1";
 
         internal const string NoInterestLine2
-            = "往后我还是只收你的散货吧。";
+            = "story.HospitalContractOfferTexts.NoInterestLine2";
     }
 }

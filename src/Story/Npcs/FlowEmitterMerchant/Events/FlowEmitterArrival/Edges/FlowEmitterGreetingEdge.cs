@@ -1,4 +1,3 @@
-using System.Threading.Tasks;
 using FluxForge.Story.FlowEmitterMerchant;
 
 namespace FluxForge.Story.FlowEmitterArrival
@@ -11,22 +10,21 @@ namespace FluxForge.Story.FlowEmitterArrival
         {
         }
 
-        internal override Task Execute(StorySequence player)
+        internal override void Execute(StorySequence player)
         {
             if (FlowEmitterMerchantProgress.VisitCount > 1)
             {
-                player.SayNpc(FlowEmitterArrivalTexts.RetryInvitation);
-                return Task.CompletedTask;
+                player.SayNpc(ModHelper.GetLocalized("fluxforge", FlowEmitterArrivalTexts.RetryInvitation));
+                return;
             }
 
-            player.SayNpc(FlowEmitterArrivalTexts.Greeting1);
-            player.SayNpc(FlowEmitterArrivalTexts.Greeting2);
-            player.SayNpc(FlowEmitterArrivalTexts.Purpose1);
-            player.SayNpc(FlowEmitterArrivalTexts.Purpose2);
-            player.SayNpc(FlowEmitterArrivalTexts.Invitation1);
-            player.SayNpc(FlowEmitterArrivalTexts.Invitation2);
+            player.SayNpc(ModHelper.GetLocalized("fluxforge", FlowEmitterArrivalTexts.Greeting1));
+            player.SayNpc(ModHelper.GetLocalized("fluxforge", FlowEmitterArrivalTexts.Greeting2));
+            player.SayNpc(ModHelper.GetLocalized("fluxforge", FlowEmitterArrivalTexts.Purpose1));
+            player.SayNpc(ModHelper.GetLocalized("fluxforge", FlowEmitterArrivalTexts.Purpose2));
+            player.SayNpc(ModHelper.GetLocalized("fluxforge", FlowEmitterArrivalTexts.Invitation1));
+            player.SayNpc(ModHelper.GetLocalized("fluxforge", FlowEmitterArrivalTexts.Invitation2));
 
-            return Task.CompletedTask;
         }
     }
 }

@@ -49,6 +49,17 @@ namespace FluxForge.Events
             return ColdTrapLoopEvent.Start(grid);
         }
 
+        public static bool RunColdTrapAutomation(GameGridInventory grid)
+        {
+            return ColdTrapAutomationEvent.Start(grid);
+        }
+
+        /// <summary>冷萃进阶：升温、冷萃、降温组成的双向循环。</summary>
+        public static bool RunColdTrapAdvancedLoop(GameGridInventory grid)
+        {
+            return ColdTrapAdvancedLoopEvent.Start(grid);
+        }
+
         /// <summary>
         /// 演示五：左右发射器相对，中间离心机；左侧只发射一次，右侧接收后结束。
         /// 返回 true 只表示事件已启动。

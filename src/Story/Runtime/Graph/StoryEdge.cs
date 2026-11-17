@@ -1,18 +1,20 @@
 using System;
-using System.Threading.Tasks;
 
 namespace FluxForge.Story
 {
     /// <summary>
     /// 剧情边：选项文字 + 执行逻辑。
-    /// 起点和终点由装配层 Connect 设置；需要条件跳转时用 Branch。
+    /// Connect 设置下一节点并把选项挂到起点；需要条件跳转时用 Branch。
     /// </summary>
     internal abstract class StoryEdge
     {
-        internal string Label { get; }
+        private readonly string _labelKey;
+        internal string Label
+        {
+            get { return _labelKey == null ? null : ModHelper.GetLocalized("fluxforge", _labelKey); }
+        }
         internal string IconItemKey { get; }
-        internal StoryNode From { get; private set; }
-        internal StoryNode To { get; private set; }
+        private StoryNode _to;
 
         private Func<bool> _branchCondition;
         private StoryNode _whenTrue;
@@ -20,17 +22,17 @@ namespace FluxForge.Story
 
         protected StoryEdge(string label, string iconItemKey)
         {
-            Label = label;
+            _labelKey = label;
             IconItemKey = iconItemKey;
         }
 
-        internal abstract Task Execute(StorySequence sequence);
+        internal abstract void Execute(StorySequence sequence);
 
         internal virtual StoryNode ResolveNext()
         {
             if (_branchCondition == null)
             {
-                return To;
+                return _to;
             }
 
             return _branchCondition() ? _whenTrue : _whenFalse;
@@ -48,8 +50,7 @@ namespace FluxForge.Story
 
         internal void Connect(StoryNode from, StoryNode to)
         {
-            From = from;
-            To = to;
+            _to = to;
             from?.AddOutgoing(this);
         }
     }

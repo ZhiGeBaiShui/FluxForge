@@ -1,62 +1,40 @@
-using HarmonyLib;
 using UnityEngine;
-using UnityEngine.UI;
 
 namespace FluxForge.Manual
 {
-    /// <summary>在原版通用便条窗口中显示图片正文，窗口交互全部交给原版。</summary>
+    /// <summary>复用原版图文便条；文字由PaperUI的loc节点解析，图片只负责装置示意。</summary>
     internal static class PaperNoteContent
     {
-        private static GameObject content;
-        private static Image background;
-        private static Sprite savedSprite;
-        private static Color savedColor;
+        private const string BookId = "fluxforge:starter_note";
 
-        internal static void Open(string imageName)
+        static PaperNoteContent()
         {
-            PaperUIManager manager = PaperUIManager.Instance;
-            manager.OpenUI("", "", "");
-            background = manager.panelImage;
-            savedSprite = background.sprite;
-            savedColor = background.color;
-            background.sprite = null;
-            background.color = new Color(0.9f, 0.85f, 0.75f, 1f);
+            // 原版在首次打开及重建后调用OnOpened，缩放重建时也会恢复发射口朝向。
+            PaperBookRegistry.OnOpened(BookId, ConfigureDiagram);
+        }
 
-            content = new GameObject("FluxForgeNoteContent", typeof(RectTransform), typeof(Image));
-            RectTransform rect = (RectTransform)content.transform;
-            rect.SetParent(background.transform, false);
-            rect.anchorMin = Vector2.zero;
-            rect.anchorMax = Vector2.one;
-            rect.offsetMin = new Vector2(16f, 16f);
-            rect.offsetMax = new Vector2(-16f, -40f);
-            Image image = content.GetComponent<Image>();
-            image.sprite = PaperAssets.FromMod("fluxforge", imageName);
-            image.preserveAspect = true;
-            image.raycastTarget = false;
+        internal static void Open()
+        {
+            PaperBookRegistry.Open(BookId);
         }
 
         internal static void Clear()
         {
-            if (content == null) return;
-            content.SetActive(false);
-            UnityEngine.Object.Destroy(content);
-            content = null;
-            background.sprite = savedSprite;
-            background.color = savedColor;
-            background = null;
-            savedSprite = null;
+            PaperBookRegistry.Close(BookId);
         }
-    }
 
-    [HarmonyPatch(typeof(PaperUIManager), nameof(PaperUIManager.OpenUI))]
-    internal static class PaperNoteClearsBeforeOpen
-    {
-        private static void Prefix() => PaperNoteContent.Clear();
-    }
+        private static void ConfigureDiagram(PaperUI page)
+        {
+            OrientEmitter(page, "emitter", 116f, 500f, 270f);
+            OrientEmitter(page, "receiver", 604f, 500f, 90f);
+        }
 
-    [HarmonyPatch(typeof(PaperUIManager), nameof(PaperUIManager.CloseUI))]
-    internal static class PaperNoteClearsBeforeClose
-    {
-        private static void Prefix() => PaperNoteContent.Clear();
+        private static void OrientEmitter(PaperUI page, string id, float x, float y, float angle)
+        {
+            RectTransform rect = page.Get(id).image.rectTransform;
+            rect.pivot = new Vector2(0.5f, 0.5f);
+            rect.anchoredPosition = new Vector2(x, -y);
+            rect.localEulerAngles = new Vector3(0f, 0f, angle);
+        }
     }
 }

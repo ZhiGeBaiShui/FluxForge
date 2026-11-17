@@ -1,9 +1,8 @@
-using System.Threading.Tasks;
 using FluxForge.Mod;
 
 namespace FluxForge.Story.Hospital
 {
-    /// <summary>每周固定送料：没有选项，说完直接把本周原料放下。</summary>
+    /// <summary>到期送料：无玩家选项；问候行结束后发放原料、推进日期，再检查插入剧情。</summary>
     internal sealed class HospitalContractMaterialEdge : StoryEdge
     {
         internal HospitalContractMaterialEdge()
@@ -11,17 +10,26 @@ namespace FluxForge.Story.Hospital
         {
         }
 
-        internal override Task Execute(StorySequence player)
+        internal override void Execute(StorySequence player)
         {
-            player.SayNpc(HospitalContractMaterialTexts.Greeting);
+            Append(player);
+        }
+
+        internal static void Append(StorySequence player)
+        {
+            player.SayNpc(ModHelper.GetLocalized("fluxforge", HospitalContractMaterialTexts.Greeting));
             player.Do(delegate
             {
                 HospitalContractStock.GiveWeekly(
                     HospitalContractStock.WeeklyCount());
+                if (HospitalSynaprestState.Completed)
+                {
+                    HospitalSynaprestStock.GiveWeekly();
+                }
                 HospitalContractState.MarkMaterial(
                     StoreStation.GetDayCounter());
             });
-            return Task.CompletedTask;
+            player.Insert(HospitalStoryPoints.MaterialDelivered);
         }
     }
 }

@@ -1,0 +1,916 @@
+{
+  "reviewer": "defensive_review / 防御性代码删除员与数据契约审查员",
+  "files": [
+    {
+      "path": "src/Story/Runtime/Model/IStoryState.cs",
+      "lineCount": 18,
+      "sha256": "7036c8e9537ea272b989c5ada6ce22a7daa77ec59ba54f7cd94ded34d8afaf5b",
+      "blocks": [
+        {
+          "start": 1,
+          "end": 5,
+          "verdict": "retain",
+          "reason": "纯C#状态边界，使选择器不依赖PlayerStore；命名空间和接口声明遵循逻辑层不引游戏类型规范。",
+          "evidence": [
+            "src/Story/Runtime/State/NpcState.cs:6",
+            "src/Logic/README.md:35"
+          ]
+        },
+        {
+          "start": 6,
+          "end": 8,
+          "verdict": "retain",
+          "reason": "访问次数与最后来访日期供条件/冷却读取，初值由状态适配层负责。",
+          "evidence": [
+            "src/Story/Runtime/State/NpcState.cs:17",
+            "src/Story/Runtime/Selection/VisitRuleSelector.cs:32"
+          ]
+        },
+        {
+          "start": 9,
+          "end": 14,
+          "verdict": "retain",
+          "reason": "旗标和标签读写是作者状态接口；当前剧情未调用写方法/标签方法，保留已设计扩展能力，不声称已有生产剧情依赖。",
+          "evidence": [
+            "src/Story/Runtime/State/NpcState.cs:71",
+            "src/Story/Runtime/State/NpcState.cs:76",
+            "src/Story/Runtime/State/NpcState.cs:81",
+            "src/Story/Runtime/State/NpcState.cs:86",
+            "tests/FluxForge.Story.Tests/StoryPlaybackTests.cs:126"
+          ]
+        },
+        {
+          "start": 15,
+          "end": 18,
+          "verdict": "retain",
+          "reason": "完成次数读取和标记用于MaxTimes规则与播放器正常完成；不是猜测存档修复。",
+          "evidence": [
+            "src/Story/Runtime/Selection/StoryEventSelector.cs:45",
+            "src/Story/Runtime/Playback/StoryPlayer.cs:151"
+          ]
+        }
+      ]
+    },
+    {
+      "path": "src/Story/Runtime/Model/NpcDefinition.cs",
+      "lineCount": 29,
+      "sha256": "99966f46056b66659a2e04be92553a866beb35e0a1568a805c0b7af9a94255bc",
+      "blocks": [
+        {
+          "start": 1,
+          "end": 5,
+          "verdict": "retain",
+          "reason": "不可变NPC身份数据契约，无游戏依赖。",
+          "evidence": [
+            "src/Story/Npcs/AcidBuyer/AcidBuyerStory.cs:30",
+            "src/Story/Npcs/FlowEmitterMerchant/FlowEmitterMerchantStory.cs:13"
+          ]
+        },
+        {
+          "start": 6,
+          "end": 12,
+          "verdict": "retain",
+          "reason": "编号显示名立绘用于客户创建；VisitCountKey承接奥雅旧键，QueueOnGameLoad区分奥雅/薇拉，FactionId可选绑定医院。",
+          "evidence": [
+            "src/Story/Runtime/Direction/NpcStoryHost.cs:139",
+            "src/Story/Npcs/FlowEmitterMerchant/FlowEmitterMerchantStory.cs:17",
+            "src/Story/Npcs/AcidBuyer/AcidBuyerStory.cs:36"
+          ]
+        },
+        {
+          "start": 13,
+          "end": 20,
+          "verdict": "retain",
+          "reason": "显式构造参数保持注册可读；FactionId默认null对应奥雅未指定派系，不做参数纠错。",
+          "evidence": [
+            "src/Story/Npcs/FlowEmitterMerchant/FlowEmitterMerchantStory.cs:13",
+            "src/Story/Npcs/AcidBuyer/AcidBuyerStory.cs:30"
+          ]
+        },
+        {
+          "start": 21,
+          "end": 29,
+          "verdict": "retain",
+          "reason": "逐字段赋值保留原始配置，不生成额外缓存或兜底。",
+          "evidence": [
+            "src/Story/Runtime/Direction/NpcStoryHost.cs:139",
+            "src/Story/Runtime/State/NpcState.cs:49"
+          ]
+        }
+      ]
+    },
+    {
+      "path": "src/Story/Runtime/Model/NpcStoryContent.cs",
+      "lineCount": 48,
+      "sha256": "379b2a504c2b4720ef35f11e632e5a16d347c90210185910ea0637f9be599560",
+      "blocks": [
+        {
+          "start": 1,
+          "end": 7,
+          "verdict": "retain",
+          "reason": "NPC聚合注册类，纯数据与绑定关系。",
+          "evidence": [
+            "src/Story/Npcs/AcidBuyer/AcidBuyerStory.cs:178",
+            "src/Story/Npcs/FlowEmitterMerchant/FlowEmitterMerchantStory.cs:66"
+          ]
+        },
+        {
+          "start": 8,
+          "end": 14,
+          "verdict": "retain",
+          "reason": "同时保存事件装配及选择规则投影，选择器不依赖具体装配。 Native registration follow-up: explicitly configured direct factory, no state access during creation; unregister and clear native name cache on disposal. See docs/design/npc-native-registration.md.",
+          "evidence": [
+            "src/Story/Runtime/Direction/NpcStoryHost.cs:219",
+            "src/Story/Runtime/Direction/NpcStoryHost.cs:238",
+            "docs/design/npc-native-registration.md"
+          ]
+        },
+        {
+          "start": 15,
+          "end": 25,
+          "verdict": "retain",
+          "reason": "构造保存注册定义与规则数组，调用方均显式给定；不补空集合。 Native registration follow-up: explicitly configured direct factory, no state access during creation; unregister and clear native name cache on disposal. See docs/design/npc-native-registration.md.",
+          "evidence": [
+            "src/Story/Npcs/FlowEmitterMerchant/FlowEmitterMerchantStory.cs:66",
+            "src/Story/Npcs/AcidBuyer/AcidBuyerStory.cs:178",
+            "docs/design/npc-native-registration.md"
+          ]
+        },
+        {
+          "start": 26,
+          "end": 33,
+          "verdict": "retain",
+          "reason": "一次构造选择投影，保留注册顺序作为等优先级顺序；无需每次选择重建。",
+          "evidence": [
+            "src/Story/Runtime/Selection/StoryEventSelector.cs:18",
+            "src/Story/Runtime/Selection/StoryEventSelector.cs:26"
+          ]
+        },
+        {
+          "start": 34,
+          "end": 43,
+          "verdict": "retain",
+          "reason": "按唯一事件ID恢复执行装配，ID来自同一注册投影，循环简单且注册规模小；未额外建字典。",
+          "evidence": [
+            "src/Story/Runtime/Direction/NpcStoryHost.cs:238",
+            "src/Story/Runtime/Direction/Services/NpcVisitAssembly.cs:76"
+          ]
+        },
+        {
+          "start": 44,
+          "end": 48,
+          "verdict": "retain",
+          "reason": "搜索无匹配返回null是查找API语义，生产selector返回的ID必来自本集合；没有调用方拿未知ID失败后静默重试。",
+          "evidence": [
+            "src/Story/Runtime/Direction/NpcStoryHost.cs:219",
+            "src/Story/Runtime/Direction/NpcStoryHost.cs:238"
+          ]
+        }
+      ],
+      "registrationReview": "root: native dictionary, factory, lifecycle and affected constructor callers reviewed; see ../npc-native-registration.md"
+    },
+    {
+      "path": "src/Story/Runtime/Model/StoryContext.cs",
+      "lineCount": 52,
+      "sha256": "c6fcbb3f2ed2cbdd43e4812adb76cb6aaa859fb7f61afd44f3a43211df36b830",
+      "blocks": [
+        {
+          "start": 1,
+          "end": 5,
+          "verdict": "retain",
+          "reason": "事件条件上下文纯数据定义，不直接依赖游戏单例。",
+          "evidence": [
+            "src/Story/Runtime/Selection/StoryEventSelector.cs:36"
+          ]
+        },
+        {
+          "start": 6,
+          "end": 13,
+          "verdict": "retain",
+          "reason": "身份状态阶段来访类型日期交易结果命名点由到访编排/插入游标构造；未要求所有阶段都有交易。",
+          "evidence": [
+            "src/Story/Runtime/Direction/NpcStoryHost.cs:209",
+            "src/Story/Runtime/Direction/Services/NpcVisitAssembly.cs:31",
+            "src/Story/Runtime/Playback/Execution/StoryInsertionCursor.cs:17"
+          ]
+        },
+        {
+          "start": 14,
+          "end": 29,
+          "verdict": "retain",
+          "reason": "生命周期构造逐项赋值；TradeResult为空对应到访/离场，交易阶段显式传入。",
+          "evidence": [
+            "src/Story/Runtime/Direction/NpcStoryHost.cs:209",
+            "src/Story/Runtime/Direction/Services/NpcVisitAssembly.cs:31"
+          ]
+        },
+        {
+          "start": 30,
+          "end": 36,
+          "verdict": "retain",
+          "reason": "插入上下文继承原交易结果和日期，仅替换阶段/命名点，供候选过滤。",
+          "evidence": [
+            "src/Story/Runtime/Playback/Execution/StoryInsertionCursor.cs:17",
+            "src/Story/Runtime/Selection/StoryEventSelector.cs:43"
+          ]
+        },
+        {
+          "start": 37,
+          "end": 45,
+          "verdict": "retain",
+          "reason": "访问次数及旗标便利方法是作者接口；当前HasFlag由框架执行测试覆盖，现业务访问自身进度类。",
+          "evidence": [
+            "tests/FluxForge.Story.Tests/StoryPlaybackTests.cs:126",
+            "src/Story/Runtime/State/NpcState.cs:71"
+          ]
+        },
+        {
+          "start": 46,
+          "end": 52,
+          "verdict": "retain",
+          "reason": "标签便利方法转发状态契约，当前无生产剧情条件调用；保留能力，不新增空值兜底。",
+          "evidence": [
+            "src/Story/Runtime/State/NpcState.cs:81"
+          ]
+        }
+      ],
+      "commentReview": "Comment wording reviewed against implementation; executable tokens and line positions unchanged. See ../story-comment-audit.json."
+    },
+    {
+      "path": "src/Story/Runtime/Model/StoryEvent.cs",
+      "lineCount": 51,
+      "sha256": "ea77289ae73739316b4b6c3d9411294f0b01cc92cb5a8fa361b4b38e82306cc8",
+      "blocks": [
+        {
+          "start": 1,
+          "end": 9,
+          "verdict": "retain",
+          "reason": "事件选择数据与内容分离，只有System委托依赖。",
+          "evidence": [
+            "src/Story/Runtime/Selection/StoryEventSelector.cs:11"
+          ]
+        },
+        {
+          "start": 10,
+          "end": 18,
+          "verdict": "retain",
+          "reason": "标识/归属/时机/命名点/优先级/次数/互斥/条件均由选择器读取；MaxTimes=0和空互斥是正常配置。",
+          "evidence": [
+            "src/Story/Runtime/Selection/StoryEventSelector.cs:41",
+            "src/Story/Npcs/AcidBuyer/AcidBuyerStory.cs:76"
+          ]
+        },
+        {
+          "start": 19,
+          "end": 35,
+          "verdict": "retain",
+          "reason": "生命周期事件显式构造和直接赋值；不校验/修复null条件，因为注册均给定条件。",
+          "evidence": [
+            "src/Story/Npcs/AcidBuyer/AcidBuyerStory.cs:76",
+            "src/Story/Npcs/FlowEmitterMerchant/FlowEmitterMerchantStory.cs:33"
+          ]
+        },
+        {
+          "start": 36,
+          "end": 51,
+          "verdict": "retain",
+          "reason": "命名插入构造复用共同字段赋值，固定InsertionPoint并记录Point；避免复制选择规则。",
+          "evidence": [
+            "src/Story/Hospital/Events/HospitalHighestDemand/HospitalHighestDemand.cs:11",
+            "src/Story/Runtime/Selection/StoryEventSelector.cs:43"
+          ]
+        }
+      ]
+    },
+    {
+      "path": "src/Story/Runtime/Model/StoryEventDefinition.cs",
+      "lineCount": 20,
+      "sha256": "693ed4c4a57293487c649dfdca20ded41b62b37aa97816fd4cbd07b5778393dc",
+      "blocks": [
+        {
+          "start": 1,
+          "end": 5,
+          "verdict": "retain",
+          "reason": "事件与装配绑定对象，不让选择器依赖内容。",
+          "evidence": [
+            "src/Story/Runtime/Direction/NpcStoryHost.cs:238"
+          ]
+        },
+        {
+          "start": 6,
+          "end": 9,
+          "verdict": "retain",
+          "reason": "Event选择身份、Content播放入口、Outcome管理离场；三项职责分离但同一注册绑定。",
+          "evidence": [
+            "src/Story/Runtime/Playback/StoryPlayer.cs:120",
+            "src/Story/Runtime/Direction/Services/NpcVisitAssembly.cs:15"
+          ]
+        },
+        {
+          "start": 10,
+          "end": 20,
+          "verdict": "retain",
+          "reason": "构造直接赋值，不注册额外全局状态或空值兜底。",
+          "evidence": [
+            "src/Story/Npcs/FlowEmitterMerchant/FlowEmitterMerchantStory.cs:71"
+          ]
+        }
+      ]
+    },
+    {
+      "path": "src/Story/Runtime/Model/StoryOutcome.cs",
+      "lineCount": 10,
+      "sha256": "a29b7cacb7dbab3bd291bbcd9ea78aa3fb1e819a4f0e4e81d322cf5949da6b78",
+      "blocks": [
+        {
+          "start": 1,
+          "end": 5,
+          "verdict": "retain",
+          "reason": "结束语义枚举，游戏行为由Host适配。",
+          "evidence": [
+            "src/Story/Runtime/Direction/NpcStoryHost.cs:260"
+          ]
+        },
+        {
+          "start": 6,
+          "end": 10,
+          "verdict": "retain",
+          "reason": "Default按VisitKind解析，Leave标准离场，OpenShop恢复可驱离后继续原版交易；不是未处理默认异常。",
+          "evidence": [
+            "src/Story/Runtime/Direction/NpcStoryHost.cs:267",
+            "src/Story/Runtime/Direction/NpcStoryHost.cs:272",
+            "src/Story/Npcs/FlowEmitterMerchant/FlowEmitterMerchantStory.cs:79"
+          ]
+        }
+      ],
+      "commentReview": "Comment wording reviewed against implementation; executable tokens and line positions unchanged. See ../story-comment-audit.json."
+    },
+    {
+      "path": "src/Story/Runtime/Model/StoryTradeResult.cs",
+      "lineCount": 17,
+      "sha256": "62f696074f72e4b857f1cf83dacc4c38be2016c508693577583b85e88d0397c4",
+      "blocks": [
+        {
+          "start": 1,
+          "end": 5,
+          "verdict": "retain",
+          "reason": "稳定交易结果值对象；交易后机制是现有框架扩展能力，当前生产剧情没有QueueTradeCompleted调用。",
+          "evidence": [
+            "src/Story/Runtime/Direction/Services/NpcVisitAssembly.cs:26"
+          ]
+        },
+        {
+          "start": 6,
+          "end": 9,
+          "verdict": "retain",
+          "reason": "Success/Amount/ItemKey为交易条件契约；Success已有真实播放器回归，Amount/ItemKey目前无读取测试，不能声称业务使用。",
+          "evidence": [
+            "tests/FluxForge.Tests/StoryEventSelectorTests.cs:133",
+            "tests/FluxForge.Story.Tests/StoryPlaybackTests.cs:248"
+          ]
+        },
+        {
+          "start": 10,
+          "end": 17,
+          "verdict": "retain",
+          "reason": "构造直接赋值保留提供方结果，不猜测单位、修复负数或校验物品ID。",
+          "evidence": [
+            "tests/FluxForge.Tests/StoryEventSelectorTests.cs:133"
+          ]
+        }
+      ]
+    },
+    {
+      "path": "src/Story/Runtime/Model/StoryTrigger.cs",
+      "lineCount": 11,
+      "sha256": "5286b3343a8f622d6a9537d9c0fd1805823ac8e02966ead8302cbbafbde2d761",
+      "blocks": [
+        {
+          "start": 1,
+          "end": 5,
+          "verdict": "retain",
+          "reason": "阶段定义纯枚举。",
+          "evidence": [
+            "src/Story/Runtime/Direction/NpcStoryHost.cs:212"
+          ]
+        },
+        {
+          "start": 6,
+          "end": 11,
+          "verdict": "retain",
+          "reason": "到访、交易后、离场前由同一来访编排；插入点由游标单独评估，多种时机有执行路径。",
+          "evidence": [
+            "src/Story/Runtime/Direction/Services/NpcVisitAssembly.cs:31",
+            "src/Story/Runtime/Direction/Services/NpcVisitAssembly.cs:43",
+            "src/Story/Runtime/Playback/Execution/StoryInsertionCursor.cs:17"
+          ]
+        }
+      ],
+      "commentReview": "Comment wording reviewed against implementation; executable tokens and line positions unchanged. See ../story-comment-audit.json."
+    },
+    {
+      "path": "src/Story/Runtime/Model/VisitContext.cs",
+      "lineCount": 20,
+      "sha256": "edda1d746791d172fb144d533de4d3c4a156ff0d14fd6c85a802dbb5b0b23488",
+      "blocks": [
+        {
+          "start": 1,
+          "end": 5,
+          "verdict": "retain",
+          "reason": "到访条件专用纯上下文，区别于已到场事件。",
+          "evidence": [
+            "src/Story/Runtime/Direction/NpcStoryHost.cs:99"
+          ]
+        },
+        {
+          "start": 6,
+          "end": 9,
+          "verdict": "retain",
+          "reason": "身份用于归属过滤，状态用于冷却，日期供医院按期到访条件读取。",
+          "evidence": [
+            "src/Story/Runtime/Selection/VisitRuleSelector.cs:22",
+            "src/Story/Runtime/Selection/VisitRuleSelector.cs:32",
+            "src/Story/Npcs/AcidBuyer/AcidBuyerStory.cs:57"
+          ]
+        },
+        {
+          "start": 10,
+          "end": 20,
+          "verdict": "retain",
+          "reason": "构造保存同次排队计算输入，无重复状态快照/防御修复。",
+          "evidence": [
+            "src/Story/Runtime/Direction/NpcStoryHost.cs:99"
+          ]
+        }
+      ]
+    },
+    {
+      "path": "src/Story/Runtime/Model/VisitDecision.cs",
+      "lineCount": 16,
+      "sha256": "2cb231f6e7b324eacfa9486e3f79c806b0a5f101de21c290846cd9fe11d9189e",
+      "blocks": [
+        {
+          "start": 1,
+          "end": 5,
+          "verdict": "retain",
+          "reason": "保留选中Rule，Host需要其OnVisitStarted，不只需要访问类型。",
+          "evidence": [
+            "src/Story/Runtime/Direction/NpcStoryHost.cs:198"
+          ]
+        },
+        {
+          "start": 6,
+          "end": 10,
+          "verdict": "retain",
+          "reason": "Kind计算读取Rule.Kind避免另存可漂移字段；简单getter无需高级语法。",
+          "evidence": [
+            "src/Story/Runtime/Direction/NpcStoryHost.cs:145"
+          ]
+        },
+        {
+          "start": 11,
+          "end": 16,
+          "verdict": "retain",
+          "reason": "保存选择规则，由纯选择器创建；没有无匹配时的伪决策。",
+          "evidence": [
+            "src/Story/Runtime/Selection/VisitRuleSelector.cs:56"
+          ]
+        }
+      ]
+    },
+    {
+      "path": "src/Story/Runtime/Model/VisitKind.cs",
+      "lineCount": 11,
+      "sha256": "340e83d10dd20689a8488b03b94cfe065225721c1fb5eca0d6d9bcfab5be537b",
+      "blocks": [
+        {
+          "start": 1,
+          "end": 5,
+          "verdict": "retain",
+          "reason": "访客意图的框架枚举，避免纯层依赖StoreClient。",
+          "evidence": [
+            "src/Story/Runtime/Direction/NpcStoryHost.cs:167"
+          ]
+        },
+        {
+          "start": 6,
+          "end": 11,
+          "verdict": "retain",
+          "reason": "Dialogue/Sell当前生产使用；Buy/SellBuy是完整原版意图映射的作者能力，目前注册未使用，保留而非编造调用。",
+          "evidence": [
+            "src/Story/Npcs/AcidBuyer/AcidBuyerStory.cs:45",
+            "src/Story/Npcs/FlowEmitterMerchant/FlowEmitterMerchantStory.cs:27",
+            "src/Story/Runtime/Direction/NpcStoryHost.cs:174",
+            "src/Story/Runtime/Direction/NpcStoryHost.cs:179"
+          ]
+        }
+      ]
+    },
+    {
+      "path": "src/Story/Runtime/Model/VisitRule.cs",
+      "lineCount": 40,
+      "sha256": "6cda9baf4ea213a2b35e89990564469433a7c5bd14f76b443206644eac8a23ef",
+      "blocks": [
+        {
+          "start": 1,
+          "end": 10,
+          "verdict": "retain",
+          "reason": "到访规则数据和委托，纯C#，与逻辑层的规则模型相同依赖方向。",
+          "evidence": [
+            "src/Story/Runtime/Selection/VisitRuleSelector.cs:12",
+            "src/Logic/README.md:35"
+          ]
+        },
+        {
+          "start": 11,
+          "end": 19,
+          "verdict": "retain",
+          "reason": "Id是规则诊断/作者标识（当前生产不读，选择测试读取）；其余字段分别支持归属/优先级/概率/冷却/类型/条件/访次更新。",
+          "evidence": [
+            "tests/FluxForge.Tests/VisitRuleSelectorTests.cs:60",
+            "src/Story/Runtime/Selection/VisitRuleSelector.cs:22",
+            "src/Story/Runtime/Selection/VisitRuleSelector.cs:33",
+            "src/Story/Runtime/Selection/VisitRuleSelector.cs:40",
+            "src/Story/Runtime/Selection/VisitRuleSelector.cs:51",
+            "src/Story/Runtime/Direction/NpcStoryHost.cs:198"
+          ]
+        },
+        {
+          "start": 20,
+          "end": 29,
+          "verdict": "retain",
+          "reason": "构造要求明确所有到访参数，OnVisitStarted允许null并采用默认访次更新；奥雅自定义旧进度。",
+          "evidence": [
+            "src/Story/Npcs/FlowEmitterMerchant/FlowEmitterMerchantStory.cs:21",
+            "src/Story/Npcs/AcidBuyer/AcidBuyerStory.cs:38",
+            "src/Story/Runtime/Direction/NpcStoryHost.cs:198"
+          ]
+        },
+        {
+          "start": 30,
+          "end": 40,
+          "verdict": "retain",
+          "reason": "直接赋值不Clamp概率、不补默认条件；业务注册掌握有效取值，无猜测防御。",
+          "evidence": [
+            "src/Story/Npcs/FlowEmitterMerchant/FlowEmitterMerchantStory.cs:21",
+            "src/Story/Npcs/AcidBuyer/AcidBuyerStory.cs:38"
+          ]
+        }
+      ]
+    },
+    {
+      "path": "src/Story/Runtime/Selection/StoryEventSelector.cs",
+      "lineCount": 51,
+      "sha256": "6796a6a88ed14a9a2e90e9e9b93892addbf396b2b02ca8559b9ed503453f7330",
+      "blocks": [
+        {
+          "start": 1,
+          "end": 10,
+          "verdict": "retain",
+          "reason": "纯事件选择器，XML注释单选指Select而非插入游标整个点；不调用游戏。",
+          "evidence": [
+            "src/Story/Runtime/Direction/NpcStoryHost.cs:219",
+            "src/Story/Runtime/Playback/Execution/StoryInsertionCursor.cs:29"
+          ]
+        },
+        {
+          "start": 11,
+          "end": 17,
+          "verdict": "retain",
+          "reason": "输入规则集合/上下文/已消费互斥组，selected初始null表示没有候选。",
+          "evidence": [
+            "src/Story/Runtime/Direction/NpcStoryHost.cs:219"
+          ]
+        },
+        {
+          "start": 18,
+          "end": 25,
+          "verdict": "retain",
+          "reason": "按注册顺序考察资格，不合格continue为业务过滤；不修复不存在的注册。",
+          "evidence": [
+            "src/Story/Npcs/AcidBuyer/AcidBuyerStory.cs:76",
+            "src/Story/Runtime/Playback/Execution/StoryInsertionCursor.cs:29"
+          ]
+        },
+        {
+          "start": 26,
+          "end": 35,
+          "verdict": "retain",
+          "reason": "首次匹配替换null，更高优先级才替换，等优先级保持前者；无匹配返回null由Host默认结果处理。",
+          "evidence": [
+            "src/Story/Runtime/Direction/NpcStoryHost.cs:226",
+            "tests/FluxForge.Tests/StoryEventSelectorTests.cs:84"
+          ]
+        },
+        {
+          "start": 36,
+          "end": 43,
+          "verdict": "retain",
+          "reason": "先比较NPC/Trigger/Point防止无关阶段读取不适用TradeResult；插入与生命周期均调用。",
+          "evidence": [
+            "tests/FluxForge.Tests/StoryEventSelectorTests.cs:115",
+            "src/Story/Runtime/Playback/Execution/StoryInsertionCursor.cs:17"
+          ]
+        },
+        {
+          "start": 44,
+          "end": 51,
+          "verdict": "retain",
+          "reason": "Condition、次数上限、互斥按短路求值。所有生产条件只读，Condition先于次数不是重复副作用bug；可重复查询只读状态。不增加catch/副作用防御。",
+          "evidence": [
+            "src/Story/Npcs/AcidBuyer/AcidBuyerStory.cs:76",
+            "src/Story/Npcs/AcidBuyer/AcidBuyerStory.cs:148",
+            "src/Story/Hospital/Events/HospitalHighestDemand/HospitalHighestDemand.cs:11",
+            "tests/FluxForge.Tests/StoryEventSelectorTests.cs:96",
+            "tests/FluxForge.Tests/StoryEventSelectorTests.cs:109"
+          ]
+        }
+      ],
+      "commentReview": "Comment wording reviewed against implementation; executable tokens and line positions unchanged. See ../story-comment-audit.json."
+    },
+    {
+      "path": "src/Story/Runtime/Selection/VisitRuleSelector.cs",
+      "lineCount": 59,
+      "sha256": "501a6584f552cc73552f17a3cd811f1c73d7c8f808ccc9763606a24854ef277a",
+      "blocks": [
+        {
+          "start": 1,
+          "end": 11,
+          "verdict": "retain",
+          "reason": "纯到访选择器，随机通过委托注入，遵守Logic纯边界。",
+          "evidence": [
+            "src/Story/Runtime/Direction/NpcStoryHost.cs:104",
+            "tests/FluxForge.Tests/VisitRuleSelectorTests.cs:49"
+          ]
+        },
+        {
+          "start": 12,
+          "end": 18,
+          "verdict": "retain",
+          "reason": "选中规则初始null，规则集合与日期状态由排队时构造。",
+          "evidence": [
+            "src/Story/Runtime/Direction/NpcStoryHost.cs:99"
+          ]
+        },
+        {
+          "start": 19,
+          "end": 26,
+          "verdict": "retain",
+          "reason": "过滤其他NPC，虽现每NPC单独配置仍属于可共享规则的作者契约，不是异常兜底。",
+          "evidence": [
+            "src/Story/Npcs/AcidBuyer/AcidBuyerStory.cs:38",
+            "src/Story/Runtime/Selection/VisitRuleSelector.cs:12"
+          ]
+        },
+        {
+          "start": 27,
+          "end": 31,
+          "verdict": "retain",
+          "reason": "条件不成立跳过，生产条件只读任务状态，不能把执行动作放在这里。",
+          "evidence": [
+            "src/Story/Npcs/AcidBuyer/AcidBuyerStory.cs:46",
+            "src/Story/Npcs/AcidBuyer/AcidBuyerStory.cs:57"
+          ]
+        },
+        {
+          "start": 32,
+          "end": 39,
+          "verdict": "retain",
+          "reason": "CooldownDays>0和LastVisitDay>=0区分无需冷却/从未来访；首次-1由NpcState正常初值产生。",
+          "evidence": [
+            "src/Story/Runtime/State/NpcState.cs:33",
+            "src/Story/Npcs/FlowEmitterMerchant/FlowEmitterMerchantStory.cs:26",
+            "src/Story/Npcs/AcidBuyer/AcidBuyerStory.cs:55"
+          ]
+        },
+        {
+          "start": 40,
+          "end": 45,
+          "verdict": "retain",
+          "reason": "保留最高优先级，等优先级注册顺序，非排序无需额外集合。",
+          "evidence": [
+            "tests/FluxForge.Tests/VisitRuleSelectorTests.cs:49"
+          ]
+        },
+        {
+          "start": 46,
+          "end": 50,
+          "verdict": "retain",
+          "reason": "没有匹配规则返回null为正常不来访，Host直接返回。",
+          "evidence": [
+            "src/Story/Runtime/Direction/NpcStoryHost.cs:110",
+            "tests/FluxForge.Tests/VisitRuleSelectorTests.cs:90"
+          ]
+        },
+        {
+          "start": 51,
+          "end": 59,
+          "verdict": "retain",
+          "reason": "只对最终规则概率判定一次，失败不回退。Chance=1时不调用RNG不是防御，是确定到访路径。",
+          "evidence": [
+            "tests/FluxForge.Tests/VisitRuleSelectorTests.cs:65",
+            "src/Story/Runtime/Direction/NpcStoryHost.cs:107"
+          ]
+        }
+      ]
+    },
+    {
+      "path": "src/Story/Runtime/Graph/StoryEdge.cs",
+      "lineCount": 53,
+      "sha256": "2572f2a4746c8059f9084bfc9abd301ad993cb0c1e0594ab56f56cf666b77c68",
+      "blocks": [
+        {
+          "start": 1,
+          "end": 10,
+          "verdict": "retain",
+          "reason": "抽象边承载作者选项与同步步骤注册，不依赖具体游戏UI。",
+          "evidence": [
+            "src/Story/Npcs/FlowEmitterMerchant/Events/FlowEmitterArrival/FlowEmitterArrivalAssembly.cs:17"
+          ]
+        },
+        {
+          "start": 11,
+          "end": 18,
+          "verdict": "retain",
+          "reason": "Label/Icon供适配器，_to为默认下一节点；Branch三字段仅分支路径使用，不额外保留无用From。",
+          "evidence": [
+            "src/Story/Runtime/Playback/Dialogue/StoryDialogueAdapter.cs:61",
+            "src/Story/Npcs/FlowEmitterMerchant/Events/FlowEmitterArrival/FlowEmitterArrivalAssembly.cs:22"
+          ]
+        },
+        {
+          "start": 19,
+          "end": 26,
+          "verdict": "retain",
+          "reason": "构造选项数据并声明Execute契约；入口可null标签，无参数兜底。",
+          "evidence": [
+            "src/Story/Npcs/FlowEmitterMerchant/Events/FlowEmitterArrival/FlowEmitterArrivalAssembly.cs:17",
+            "src/Story/Runtime/Playback/Execution/StoryCallFrame.cs:33"
+          ]
+        },
+        {
+          "start": 27,
+          "end": 36,
+          "verdict": "retain",
+          "reason": "无Branch用Connect终点，有Branch读取业务结果；条件null来源于未调用Branch，正常图状态。virtual被医院/薇拉动态分支覆写。",
+          "evidence": [
+            "src/Story/Npcs/FlowEmitterMerchant/Events/FlowEmitterArrival/FlowEmitterArrivalAssembly.cs:22",
+            "src/Story/Hospital/Events/HospitalContractOffer/HospitalContractOfferEdges.cs:33"
+          ]
+        },
+        {
+          "start": 37,
+          "end": 46,
+          "verdict": "retain",
+          "reason": "设置分支数据只在装配时发生，复用显式分支无反射DSL。",
+          "evidence": [
+            "src/Story/Npcs/FlowEmitterMerchant/Events/FlowEmitterArrival/FlowEmitterArrivalAssembly.cs:22"
+          ]
+        },
+        {
+          "start": 47,
+          "end": 53,
+          "verdict": "retain",
+          "reason": "Connect保存目标，from可空是入口边真实用法；null终点表示完成当前子图，非缺配置静默补救。",
+          "evidence": [
+            "src/Story/Npcs/FlowEmitterMerchant/Events/FlowEmitterArrival/FlowEmitterArrivalAssembly.cs:17",
+            "src/Story/Npcs/FlowEmitterMerchant/Events/FlowEmitterArrival/FlowEmitterArrivalAssembly.cs:19"
+          ]
+        }
+      ],
+      "commentReview": "Comment wording reviewed against implementation; executable tokens and line positions unchanged. See ../story-comment-audit.json."
+    },
+    {
+      "path": "src/Story/Runtime/Graph/StoryNode.cs",
+      "lineCount": 25,
+      "sha256": "b0f51a81ccf94d7c7b9a05ec65b70a518771390078e0e3bfa10306985d602d5c",
+      "blocks": [
+        {
+          "start": 1,
+          "end": 7,
+          "verdict": "retain",
+          "reason": "选择暂停节点，仅描述图结构，不执行对白副作用。",
+          "evidence": [
+            "src/Story/Npcs/FlowEmitterMerchant/Events/FlowEmitterArrival/FlowEmitterArrivalAssembly.cs:15"
+          ]
+        },
+        {
+          "start": 8,
+          "end": 14,
+          "verdict": "retain",
+          "reason": "私有有序出边集合以只读接口公开，菜单按注册顺序装配。",
+          "evidence": [
+            "src/Story/Runtime/Playback/Dialogue/StoryDialogueAdapter.cs:49"
+          ]
+        },
+        {
+          "start": 15,
+          "end": 19,
+          "verdict": "retain",
+          "reason": "节点侧Connect委托边绑定两端，作者装配简写有生产调用。",
+          "evidence": [
+            "src/Story/Npcs/FlowEmitterMerchant/Events/FlowEmitterArrival/FlowEmitterArrivalAssembly.cs:18"
+          ]
+        },
+        {
+          "start": 20,
+          "end": 25,
+          "verdict": "retain",
+          "reason": "边Connect调用内部添加出边，无循环/重复防御；重复连接由作者配置负责。",
+          "evidence": [
+            "src/Story/Runtime/Graph/StoryEdge.cs:50"
+          ]
+        }
+      ]
+    },
+    {
+      "path": "src/Story/Runtime/Contracts/StoryAssembly.cs",
+      "lineCount": 16,
+      "sha256": "0d795d3634f5518090b6500b1cb08d1a61c8749d2b502e2c63d17f3d47955d65",
+      "blocks": [
+        {
+          "start": 1,
+          "end": 8,
+          "verdict": "retain",
+          "reason": "内容装配基类，模型不依赖具体NPC。",
+          "evidence": [
+            "src/Story/Npcs/FlowEmitterMerchant/FlowEmitterMerchantStory.cs:73"
+          ]
+        },
+        {
+          "start": 9,
+          "end": 10,
+          "verdict": "retain",
+          "reason": "Entry是每帧启动入口；非null由具体装配负责，不添加运行时兜底图。",
+          "evidence": [
+            "src/Story/Runtime/Playback/Execution/StoryCallFrame.cs:19"
+          ]
+        },
+        {
+          "start": 11,
+          "end": 16,
+          "verdict": "retain",
+          "reason": "Complete默认空实现允许没有完成副作用的图；正常子图返回才调用，业务有明确override而非无用扩展。",
+          "evidence": [
+            "src/Story/Runtime/Playback/StoryPlayer.cs:148",
+            "src/Story/Hospital/Events/HospitalHighestDemand/Assemblies/HospitalHighestDemandAssemblies.cs:12",
+            "src/Story/Npcs/AcidBuyer/Events/AcidBuyerArrival/AcidBuyerArrivalAssembly.cs:11"
+          ]
+        }
+      ],
+      "commentReview": "Comment wording reviewed against implementation; executable tokens and line positions unchanged. See ../story-comment-audit.json."
+    }
+  ],
+  "findings": [
+    {
+      "severity": "documentation",
+      "path": "src/Story/Runtime/Model/IStoryState.cs",
+      "line": 3,
+      "description": "注释称可读取但接口同时定义MarkFlag/SetTag/MarkSeen写入；建议改为NPC状态读写契约，避免误解Condition允许写入。",
+      "status": "resolved",
+      "resolution": "根代理修改XML注释为状态读写契约，并明确条件仅使用读取方法；本审查员已重新读取源文件。"
+    },
+    {
+      "severity": "documentation",
+      "path": "src/Story/Runtime/Selection/StoryEventSelector.cs",
+      "line": 44,
+      "description": "条件是可重复求值的只读查询。现有生产条件均只读；建议作者文档明示该约定，不增加针对假设副作用的防御代码。"
+    },
+    {
+      "severity": "coverage_note",
+      "path": "src/Story/Runtime/Model/StoryTradeResult.cs",
+      "line": 7,
+      "description": "Amount/ItemKey为保留的作者数据契约，现有测试只验证Success条件。不能声称这些字段已有生产消费或逐字段测试。"
+    }
+  ],
+  "crossReview": [
+    {
+      "report": "docs/design/story-line-audit/playback-review.json",
+      "verdict": "agree",
+      "reason": "完整阅读各连续块并独立核对真实UI源码：菜单carrier是SelectChoice→ContinueConversation的必要协议节点；取消前置位阻止InterruptDialog执行待办动作；NativeSkipDelay精确0.01f判别有两个原版调用点和正常延时下限证据，不是任意小延时兜底。无需新增异常分支。",
+      "evidence": [
+        ".tmp-decomp/DialogUIManager.cs:421",
+        ".tmp-decomp/DialogUIManager.cs:521",
+        ".tmp-decomp/DialogUIManager.cs:347",
+        ".tmp-decomp/DialogUIManager.cs:351",
+        ".tmp-decomp/DialogUIManager.cs:360",
+        ".tmp-decomp/DialogUIManager.cs:723"
+      ]
+    },
+    {
+      "report": "docs/design/story-line-audit/integration-review.json",
+      "verdict": "agree",
+      "reason": "Read the full integration report and current Host/portrait implementation. HasInstance prevents constructing a save during unload. Removing only registered queue/current clients releases CanEndDay without affecting native clients. Portraits enter the cache only after successful Load; Shutdown unregisters owned keys before destroying generated sprite/canvas and clearing the cache. Removing unsupported null recovery and broad catch is justified. External texture lookup has a concrete filesystem-loader boundary. Terminal rendering initially looked corrupted, but Unicode code-point inspection confirmed the actual JSON and source are correct; no encoding defect exists.",
+      "evidence": [
+        ".tmp-decomp/PlayerStore.cs:671",
+        ".tmp-decomp/PlayerStore.cs:682",
+        ".tmp-decomp/PlayerStore.cs:1790",
+        ".tmp-decomp/PlayerStore.cs:1797",
+        ".tmp-decomp/ModLoader.cs:1315",
+        ".tmp-decomp/ModLoader.cs:1330",
+        "src/Story/Portraits/NpcPortraitRegistry.cs:57",
+        "src/Story/Portraits/NpcPortraitRegistry.cs:76"
+      ]
+    }
+  ]
+}

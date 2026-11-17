@@ -1,0 +1,66 @@
+{
+  "sourceSprite": "assets/薇拉.png",
+  "faceInspiration": "user-provided Persona 5 Royal Tae Takemi image",
+  "variants": [
+    {
+      "id": "01",
+      "design": "成熟冷艳，细长眼型，克制的烟熏眼妆，乌黑短波波头，白大褂搭配墨绿内搭。",
+      "source": "C:\\Users\\Administrator\\.codex\\generated_images\\01a1d3bf-72c9-7052-a0ca-19ba75942c09\\exec-d531d2a7-d2d4-46e3-b6fa-34fc5fe80048.png",
+      "file": "vera-01.png"
+    },
+    {
+      "id": "02",
+      "design": "优雅而有距离感，半垂眼神，利落黑色短发，浅白大褂和炭黑衣领。",
+      "source": "C:\\Users\\Administrator\\.codex\\generated_images\\01a1d3bf-72c9-7052-a0ca-19ba75942c09\\exec-17827c69-061b-462c-a143-362d1be509ba.png",
+      "file": "vera-02.png"
+    },
+    {
+      "id": "03",
+      "design": "迷人知性，锐利杏眼，微挑眉，黑色短发带柔和弧度，象牙白大褂。",
+      "source": "C:\\Users\\Administrator\\.codex\\generated_images\\01a1d3bf-72c9-7052-a0ca-19ba75942c09\\exec-f028c32d-ebf2-437a-b92a-bea9358ae3a9.png",
+      "file": "vera-03.png"
+    },
+    {
+      "id": "04",
+      "design": "慵懒自信，眼尾微挑，深色眼线，乌黑蓬松短发，白大褂配暗红内搭。",
+      "source": "C:\\Users\\Administrator\\.codex\\generated_images\\01a1d3bf-72c9-7052-a0ca-19ba75942c09\\exec-fd211b00-255a-405b-9d27-17bcbb2679fc.png",
+      "file": "vera-04.png"
+    },
+    {
+      "id": "05",
+      "design": "沉静神秘，窄长眼睛，淡淡烟熏妆，黑色齐颈短发，灰白大褂配深绿衬衣。",
+      "source": "C:\\Users\\Administrator\\.codex\\generated_images\\01a1d3bf-72c9-7052-a0ca-19ba75942c09\\exec-8d896f6d-7bbc-4534-9de6-6f93673ad9de.png",
+      "file": "vera-05.png"
+    },
+    {
+      "id": "06",
+      "design": "成熟妩媚，清晰眼睫与柔和眼影，黑色短发侧分，白大褂配酒红领饰。",
+      "source": "C:\\Users\\Administrator\\.codex\\generated_images\\01a1d3bf-72c9-7052-a0ca-19ba75942c09\\exec-fd3d0d09-de13-4fd4-9623-47145b4978d5.png",
+      "file": "vera-06.png"
+    },
+    {
+      "id": "07",
+      "design": "冷静专业，深邃杏眼，略带倦意但美丽，乌黑短发，银灰大褂和墨蓝内搭。",
+      "source": "C:\\Users\\Administrator\\.codex\\generated_images\\01a1d3bf-72c9-7052-a0ca-19ba75942c09\\exec-08ca08a6-e2b3-4757-9479-e45a66e02160.png",
+      "file": "vera-07.png"
+    },
+    {
+      "id": "08",
+      "design": "从容迷人，精致眼线，轻微挑眉，黑色蓬松短发，奶油白大褂和黑绿衣领。",
+      "source": "C:\\Users\\Administrator\\.codex\\generated_images\\01a1d3bf-72c9-7052-a0ca-19ba75942c09\\exec-0973ca5b-e3a0-451e-8336-844b36cb77c2.png",
+      "file": "vera-08.png"
+    },
+    {
+      "id": "09",
+      "design": "克制的危险感，狭长眼型与暗色眼妆，乌黑短发，冷白大褂和深色高领。",
+      "source": "C:\\Users\\Administrator\\.codex\\generated_images\\01a1d3bf-72c9-7052-a0ca-19ba75942c09\\exec-854a0834-7570-48b7-9036-d6f473100d06.png",
+      "file": "vera-09.png"
+    },
+    {
+      "id": "10",
+      "design": "成熟优雅，柔和但锋利的眼神，黑色短波波头，米白实验大褂和深绿内搭。",
+      "source": "C:\\Users\\Administrator\\.codex\\generated_images\\01a1d3bf-72c9-7052-a0ca-19ba75942c09\\exec-1d452008-1dd0-4a65-b354-583c7d6a0c0b.png",
+      "file": "vera-10.png"
+    }
+  ]
+}

@@ -1,0 +1,289 @@
+{
+  "id": "starter_note",
+  "title": "starter_note",
+  "width": 720,
+  "height": 850,
+  "designWidth": 720,
+  "designHeight": 850,
+  "draggable": true,
+  "zoomable": true,
+  "chrome": [
+    {
+      "type": "button",
+      "id": "close",
+      "action": "close",
+      "x": 670,
+      "y": 10,
+      "w": 32,
+      "h": 34
+    },
+    {
+      "type": "button",
+      "id": "zoom",
+      "action": "zoom",
+      "x": 630,
+      "y": 10,
+      "w": 32,
+      "h": 34
+    }
+  ],
+  "pages": [
+    {
+      "name": "instructions",
+      "elements": [
+        {
+          "type": "text",
+          "id": "title",
+          "loc": "paper.starter.title",
+          "x": 32,
+          "y": 42,
+          "w": 656,
+          "h": 52,
+          "style": "body",
+          "fontSize": 32,
+          "align": "center"
+        },
+        {
+          "type": "text",
+          "id": "caption",
+          "loc": "paper.starter.caption",
+          "x": 32,
+          "y": 100,
+          "w": 656,
+          "h": 40,
+          "style": "body",
+          "fontSize": 22,
+          "align": "center"
+        },
+        {
+          "type": "text",
+          "id": "fill",
+          "loc": "paper.starter.fill",
+          "x": 40,
+          "y": 160,
+          "w": 640,
+          "h": 55,
+          "style": "body",
+          "fontSize": 25,
+          "align": "left"
+        },
+        {
+          "type": "image",
+          "id": "bottle",
+          "sprite": "water_container3/mini",
+          "x": 154,
+          "y": 228,
+          "w": 64,
+          "h": 128,
+          "fit": "fit"
+        },
+        {
+          "type": "image",
+          "id": "fill_emitter",
+          "sprite": "flow_emitter_1x2",
+          "x": 500,
+          "y": 228,
+          "w": 64,
+          "h": 128,
+          "fit": "fit"
+        },
+        {
+          "type": "line",
+          "id": "fill_arrow",
+          "x": 260,
+          "y": 286,
+          "x2": 460,
+          "y2": 286,
+          "thickness": 3,
+          "arrow": "end",
+          "arrowSize": 10,
+          "color": "#387e89"
+        },
+        {
+          "type": "text",
+          "id": "input_emitter_caption",
+          "loc": "paper.starter.input",
+          "x": 86,
+          "y": 355,
+          "w": 200,
+          "h": 40,
+          "style": "body",
+          "fontSize": 20,
+          "align": "center"
+        },
+        {
+          "type": "text",
+          "id": "fill_emitter_caption",
+          "loc": "paper.starter.emitter",
+          "x": 440,
+          "y": 355,
+          "w": 180,
+          "h": 40,
+          "style": "body",
+          "fontSize": 20,
+          "align": "center"
+        },
+        {
+          "type": "text",
+          "id": "place",
+          "loc": "paper.starter.place",
+          "x": 40,
+          "y": 402,
+          "w": 640,
+          "h": 50,
+          "style": "body",
+          "fontSize": 22,
+          "align": "left"
+        },
+        {
+          "type": "image",
+          "id": "emitter",
+          "sprite": "flow_emitter_1x2",
+          "x": 84,
+          "y": 436,
+          "w": 64,
+          "h": 128,
+          "fit": "fit"
+        },
+        {
+          "type": "image",
+          "id": "heater",
+          "sprite": "chem_reactor_heat",
+          "x": 280,
+          "y": 468,
+          "w": 64,
+          "h": 64,
+          "fit": "fit"
+        },
+        {
+          "type": "image",
+          "id": "filter",
+          "sprite": "chem_reactor_alkali",
+          "x": 408,
+          "y": 468,
+          "w": 64,
+          "h": 64,
+          "fit": "fit"
+        },
+        {
+          "type": "image",
+          "id": "receiver",
+          "sprite": "flow_emitter_1x2",
+          "x": 572,
+          "y": 436,
+          "w": 64,
+          "h": 128,
+          "fit": "fit"
+        },
+        {
+          "type": "line",
+          "id": "route1",
+          "x": 186,
+          "y": 500,
+          "x2": 254,
+          "y2": 500,
+          "thickness": 3,
+          "arrow": "end",
+          "arrowSize": 10,
+          "color": "#387e89"
+        },
+        {
+          "type": "line",
+          "id": "route2",
+          "x": 354,
+          "y": 500,
+          "x2": 386,
+          "y2": 500,
+          "thickness": 3,
+          "arrow": "end",
+          "arrowSize": 10,
+          "color": "#387e89"
+        },
+        {
+          "type": "line",
+          "id": "route3",
+          "x": 482,
+          "y": 500,
+          "x2": 530,
+          "y2": 500,
+          "thickness": 3,
+          "arrow": "end",
+          "arrowSize": 10,
+          "color": "#387e89"
+        },
+        {
+          "type": "text",
+          "id": "heater_label",
+          "loc": "paper.starter.heater",
+          "x": 244,
+          "y": 550,
+          "w": 140,
+          "h": 36,
+          "style": "body",
+          "fontSize": 20,
+          "align": "center"
+        },
+        {
+          "type": "text",
+          "id": "filter_label",
+          "loc": "paper.starter.filter",
+          "x": 372,
+          "y": 550,
+          "w": 140,
+          "h": 36,
+          "style": "body",
+          "fontSize": 20,
+          "align": "center"
+        },
+        {
+          "type": "text",
+          "id": "receiver_label",
+          "loc": "paper.starter.receiver",
+          "x": 515,
+          "y": 550,
+          "w": 175,
+          "h": 70,
+          "style": "body",
+          "fontSize": 17,
+          "align": "center"
+        },
+        {
+          "type": "text",
+          "id": "heat_tip",
+          "loc": "paper.starter.heat_tip",
+          "x": 40,
+          "y": 630,
+          "w": 640,
+          "h": 46,
+          "style": "body",
+          "fontSize": 21,
+          "align": "center"
+        },
+        {
+          "type": "text",
+          "id": "activate",
+          "loc": "paper.starter.activate",
+          "x": 40,
+          "y": 692,
+          "w": 640,
+          "h": 52,
+          "style": "body",
+          "fontSize": 23,
+          "align": "left"
+        },
+        {
+          "type": "text",
+          "id": "recover",
+          "loc": "paper.starter.recover",
+          "x": 40,
+          "y": 768,
+          "w": 640,
+          "h": 48,
+          "style": "body",
+          "fontSize": 23,
+          "align": "left"
+        }
+      ]
+    }
+  ]
+}

@@ -1,12 +1,11 @@
 using System;
 using System.Collections.Generic;
-using FluxForge.Story.Portraits;
 
 namespace FluxForge.Story
 {
     /// <summary>
     /// 通用 NPC 到访控制器：决定谁来访、创建访客、选择剧情、执行结局。
-    /// 新增剧情只需注册 StoryEvent，不修改这里。
+    /// 具体 NPC 的到访规则、事件条件和内容通过 NpcStoryContent 注册。
     /// </summary>
     internal sealed class NpcStoryHost
     {
@@ -21,6 +20,9 @@ namespace FluxForge.Story
 
         internal void Add(NpcStoryContent content)
         {
+            StoreClientListDict.storeClientDict.Add(
+                content.Definition.Identifier,
+                delegate { return Create(content, new VisitDecision(content.DirectVisitRule)); });
             _contents.Add(content);
         }
 
@@ -34,12 +36,47 @@ namespace FluxForge.Story
         {
             ModHook.OnGameLoadedLate -= OnGameLoaded;
             ModHook.OnShutterOpenedLate -= _queueOnShutter;
-            NpcPortraitRegistry.Shutdown();
+            RemoveClients();
+            for (int i = 0; i < _contents.Count; i++)
+            {
+                StoreClientListDict.storeClientDict.Remove(
+                    _contents[i].Definition.Identifier);
+            }
+            StoreClientListDict.ClearDisplayNameCache();
+        }
+
+        private void RemoveClients()
+        {
+            // Instance 会懒建存档；菜单中卸载时不能因清理而创建存档。
+            if (!PlayerStore.HasInstance)
+            {
+                return;
+            }
+
+            PlayerStore store = PlayerStore.Instance;
+            store.storeClientManager.clientStack.RemoveAll(IsRegisteredClient);
+            StoreClientInstance current = store.currentClientInstance;
+            if (current != null && IsRegisteredClient(current.GetClientBlueprint()))
+            {
+                store.DismissCurrentClient(callNextWhenPossible: false);
+            }
+        }
+
+        private bool IsRegisteredClient(StoreClient client)
+        {
+            for (int i = 0; i < _contents.Count; i++)
+            {
+                if (_contents[i].Definition.Identifier == client.identifier)
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         private void OnGameLoaded()
         {
-            NpcPortraitRegistry.Apply();
             QueueAll(true);
         }
 
@@ -186,15 +223,12 @@ namespace FluxForge.Story
                 day,
                 null);
 
-            NpcVisitSession session = new NpcVisitSession(
-                content,
-                decision,
-                context);
+            HashSet<string> consumedGroups = new HashSet<string>();
 
             StoryEvent selected = StoryEventSelector.Select(
                 content.Events,
                 context,
-                session.ConsumedGroups);
+                consumedGroups);
 
             if (selected == null)
             {
@@ -207,126 +241,24 @@ namespace FluxForge.Story
 
             if (!string.IsNullOrEmpty(selected.ExclusionGroup))
             {
-                session.ConsumedGroups.Add(selected.ExclusionGroup);
+                consumedGroups.Add(selected.ExclusionGroup);
             }
 
             StoryEventDefinition definition = content.FindEvent(selected.Id);
             client.dismissable = false;
 
+            StoryPlaybackContext playback = new StoryPlaybackContext(
+                content, context, consumedGroups);
+            NpcVisitAssembly visit = new NpcVisitAssembly(playback, definition);
             StoryPlayer player = new StoryPlayer(
-                delegate { return client.displayName; },
-                delegate { OnStoryFinished(session, definition, client); });
-
-            StoryNpcRuntime.BeginStory(client.identifier, player);
-            _ = player.Start(definition.Content);
-        }
-
-        private static void OnStoryFinished(
-            NpcVisitSession session,
-            StoryEventDefinition definition,
-            StoreClient client)
-        {
-            StoryNpcRuntime.EndStory(client.identifier);
-            session.Context.State.MarkSeen(definition.Event.Id);
-
-            StoryTradeResult trade = StoryNpcRuntime.TakeTradeCompleted();
-            if (trade != null)
-            {
-                StoryContext tradeContext = new StoryContext(
-                    session.Context.Definition,
-                    session.Context.State,
-                    StoryTrigger.TradeCompleted,
-                    session.Context.VisitKind,
-                    session.Context.Day,
-                    trade);
-
-                StoryEvent tradeEvent = StoryEventSelector.Select(
-                    session.Content.Events,
-                    tradeContext,
-                    session.ConsumedGroups);
-
-                if (tradeEvent != null)
-                {
-                    if (!string.IsNullOrEmpty(tradeEvent.ExclusionGroup))
-                    {
-                        session.ConsumedGroups.Add(tradeEvent.ExclusionGroup);
-                    }
-
-                    StoryEventDefinition tradeDefinition
-                        = session.Content.FindEvent(tradeEvent.Id);
-
-                    StoryPlayer tradePlayer = new StoryPlayer(
-                        delegate { return client.displayName; },
-                        delegate
-                        {
-                            StoryNpcRuntime.EndStory(client.identifier);
-                            session.Context.State.MarkSeen(
-                                tradeDefinition.Event.Id);
-                            RunEnding(session, definition, client);
-                        });
-
-                    StoryNpcRuntime.BeginStory(
-                        client.identifier,
-                        tradePlayer);
-                    _ = tradePlayer.Start(tradeDefinition.Content);
-                    return;
-                }
-            }
-
-            RunEnding(session, definition, client);
-        }
-
-        private static void RunEnding(
-            NpcVisitSession session,
-            StoryEventDefinition definition,
-            StoreClient client)
-        {
-            StoryContext endingContext = new StoryContext(
-                session.Context.Definition,
-                session.Context.State,
-                StoryTrigger.VisitEnding,
-                session.Context.VisitKind,
-                session.Context.Day,
-                null);
-
-            StoryEvent ending = StoryEventSelector.Select(
-                session.Content.Events,
-                endingContext,
-                session.ConsumedGroups);
-
-            if (ending == null)
-            {
-                ApplyOutcome(
-                    client,
-                    session.Decision.Kind,
-                    definition.Outcome);
-                return;
-            }
-
-            if (!string.IsNullOrEmpty(ending.ExclusionGroup))
-            {
-                session.ConsumedGroups.Add(ending.ExclusionGroup);
-            }
-
-            StoryEventDefinition endingDefinition
-                = session.Content.FindEvent(ending.Id);
-
-            StoryPlayer player = new StoryPlayer(
-                delegate { return client.displayName; },
+                delegate { return client.displayName; }, playback,
                 delegate
                 {
-                    StoryNpcRuntime.EndStory(client.identifier);
-                    session.Context.State.MarkSeen(endingDefinition.Event.Id);
-                    ApplyOutcome(
-                        client,
-                        session.Decision.Kind,
-                        endingDefinition.Outcome == StoryOutcome.Default
-                            ? definition.Outcome
-                            : endingDefinition.Outcome);
+                    StoryNpcRuntime.EndStory();
+                    ApplyOutcome(client, decision.Kind, visit.Outcome);
                 });
-
             StoryNpcRuntime.BeginStory(client.identifier, player);
-            _ = player.Start(endingDefinition.Content);
+            player.Start(visit);
         }
 
         private static void ApplyOutcome(

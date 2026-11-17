@@ -6,6 +6,8 @@ namespace FluxForge.Story
     internal sealed class NpcStoryContent
     {
         internal NpcDefinition Definition { get; }
+        /// <summary>原版目录直接创建时采用的来访入口，不检查自然排队条件。</summary>
+        internal VisitRule DirectVisitRule { get; }
         internal VisitRule[] VisitRules { get; }
         internal StoryEventDefinition[] EventDefinitions { get; }
         internal IReadOnlyList<StoryEvent> Events { get; }
@@ -13,9 +15,11 @@ namespace FluxForge.Story
         internal NpcStoryContent(
             NpcDefinition definition,
             VisitRule[] visitRules,
-            StoryEventDefinition[] eventDefinitions)
+            StoryEventDefinition[] eventDefinitions,
+            VisitRule directVisitRule)
         {
             Definition = definition;
+            DirectVisitRule = directVisitRule;
             VisitRules = visitRules;
             EventDefinitions = eventDefinitions;
 

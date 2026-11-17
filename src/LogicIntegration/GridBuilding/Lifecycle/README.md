@@ -1,3 +1,5 @@
+> 当前状态索引：2026-11-16，见[项目状态](../../../../docs/current-project-state.md)。自动测试结果及待执行清理见维护记录。
+
 # LogicIntegration/Grid/Lifecycle：网格生命周期
 
 ## 要做什么

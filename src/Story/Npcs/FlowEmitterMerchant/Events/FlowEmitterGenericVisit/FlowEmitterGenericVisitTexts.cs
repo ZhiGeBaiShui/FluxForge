@@ -4,9 +4,9 @@ namespace FluxForge.Story.FlowEmitterGenericVisit
     internal static class FlowEmitterGenericVisitTexts
     {
         internal const string Greeting
-            = "你好，我又来了。";
+            = "story.FlowEmitterGenericVisitTexts.Greeting";
 
         internal const string MoreItems
-            = "你还需要买新装置吗？";
+            = "story.FlowEmitterGenericVisitTexts.MoreItems";
     }
 }

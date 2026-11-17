@@ -1,4 +1,3 @@
-using System.Threading.Tasks;
 
 namespace FluxForge.Story.Hospital
 {
@@ -12,21 +11,22 @@ namespace FluxForge.Story.Hospital
             _tier = tier;
         }
 
-        internal override Task Execute(StorySequence player)
+        internal override void Execute(StorySequence player)
         {
             if (_tier >= 40)
             {
-                player.SayNpc(HospitalContractMilestoneTexts.At50_1);
-                player.SayNpc(HospitalContractMilestoneTexts.At50_2);
+                player.SayNpc(ModHelper.GetLocalized("fluxforge", HospitalContractMilestoneTexts.At40_1));
+                player.SayNpc(ModHelper.GetLocalized("fluxforge", HospitalContractMilestoneTexts.At40_2));
             }
             else
             {
-                player.SayNpc(HospitalContractMilestoneTexts.At25_1);
-                player.SayNpc(HospitalContractMilestoneTexts.At25_2);
-                player.SayNpc(HospitalContractMilestoneTexts.At25_3);
+                player.SayNpc(ModHelper.GetLocalized("fluxforge", HospitalContractMilestoneTexts.At20_1));
+                player.SayNpc(ModHelper.GetLocalized("fluxforge", HospitalContractMilestoneTexts.At20_2));
+                player.SayNpc(ModHelper.GetLocalized("fluxforge", HospitalContractMilestoneTexts.At20_3));
+                player.SayNpc(ModHelper.GetLocalized("fluxforge", HospitalContractMilestoneTexts.At20_4));
             }
 
-            return Task.CompletedTask;
+
         }
     }
 }

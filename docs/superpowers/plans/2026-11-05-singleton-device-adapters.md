@@ -1,3 +1,5 @@
+> 维护校对：2026-11-16。当前实现以[项目状态](../../current-project-state.md)及源码为准；历史方案和审查结论保留其当时上下文。未被工程使用的设计图片、试听文件和审查中间产物已列入清理清单；批量删除被工具策略拒绝，尚未删除。
+
 # Singleton Device Adapters and Create/Load Migration Plan
 
 > **Status:** Implemented 2026-11-05. Build 0 warnings / errors; tests 290/290. Historically retained as the migration plan.

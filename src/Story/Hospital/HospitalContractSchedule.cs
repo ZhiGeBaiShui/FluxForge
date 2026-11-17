@@ -1,11 +1,11 @@
 namespace FluxForge.Story.Hospital
 {
-    /// <summary>合同两段周节奏的纯计算。</summary>
+    /// <summary>以首次约定日期的星期为锚点，不在其他星期补发跳过的业务。</summary>
     internal static class HospitalContractSchedule
     {
         internal static bool IsDue(int nextDay, int today)
         {
-            return today >= nextDay;
+            return today >= nextDay && (today - nextDay) % 7 == 0;
         }
 
         internal static int Advance(int nextDay, int today)
@@ -19,24 +19,5 @@ namespace FluxForge.Story.Hospital
             return nextDay + periods * 7;
         }
 
-        internal static bool ShouldRunPickup(
-            bool pickupDue,
-            bool materialDue,
-            int lastPickupDay,
-            int lastMaterialDay)
-        {
-            return pickupDue
-                && (!materialDue || lastPickupDay <= lastMaterialDay);
-        }
-
-        internal static bool ShouldRunMaterial(
-            bool pickupDue,
-            bool materialDue,
-            int lastPickupDay,
-            int lastMaterialDay)
-        {
-            return materialDue
-                && (!pickupDue || lastMaterialDay < lastPickupDay);
-        }
     }
 }

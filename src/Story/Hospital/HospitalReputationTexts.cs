@@ -14,6 +14,15 @@ namespace FluxForge.Story.Hospital
         internal const string TerminationPerkId
             = "HOSPITAL_CONTRACT_TERMINATED";
 
+        internal const string TrustPaymentPerkId
+            = "HOSPITAL_TRUST_PAYMENT";
+
+        internal const string SpecialProcurementPerkId
+            = "HOSPITAL_SPECIAL_PROCUREMENT";
+
+        internal const string ExternalExpertPerkId
+            = "HOSPITAL_EXTERNAL_EXPERT";
+
         internal static void Register()
         {
             var table = LocalizationSettings.StringDatabase.GetTable(
@@ -22,23 +31,44 @@ namespace FluxForge.Story.Hospital
             Add(
                 table,
                 TrustedPerkId,
-                "初步信任",
-                "医院认为你比其他供货商更值得信任，薇拉每周会额外带1瓶原料给你。",
-                "有个很奇怪的事情——你并没有听说过医院会提供原料给经销商们。");
+                ModHelper.GetLocalized("fluxforge", "reputation.hospital.trusted.name"),
+                ModHelper.GetLocalized("fluxforge", "reputation.hospital.trusted.description"),
+                ModHelper.GetLocalized("fluxforge", "reputation.hospital.trusted.flavor"));
 
             Add(
                 table,
                 AcePerkId,
-                "王牌供应商",
-                "你成为了医院最大的供货商之一，现在薇拉每周会带4瓶原料给你了。",
-                "你听说给你提供原料，是薇拉在医院中的提议，她的身份看起来不简单。");
+                ModHelper.GetLocalized("fluxforge", "reputation.hospital.ace.name"),
+                ModHelper.GetLocalized("fluxforge", "reputation.hospital.ace.description"),
+                ModHelper.GetLocalized("fluxforge", "reputation.hospital.ace.flavor"));
+
+            Add(
+                table,
+                TrustPaymentPerkId,
+                ModHelper.GetLocalized("fluxforge", "reputation.hospital.payment.name"),
+                ModHelper.GetLocalized("fluxforge", "reputation.hospital.payment.description"),
+                ModHelper.GetLocalized("fluxforge", "reputation.hospital.payment.flavor"));
+
+            Add(
+                table,
+                SpecialProcurementPerkId,
+                ModHelper.GetLocalized("fluxforge", "reputation.hospital.procurement.name"),
+                ModHelper.GetLocalized("fluxforge", "reputation.hospital.procurement.description"),
+                ModHelper.GetLocalized("fluxforge", "reputation.hospital.procurement.flavor"));
 
             Add(
                 table,
                 TerminationPerkId,
-                "终止合同",
-                "医院不相信你稳定供货的能力，选择终止合同。",
-                "似乎有一位特殊的客人，仍然会来造访。");
+                ModHelper.GetLocalized("fluxforge", "reputation.hospital.termination.name"),
+                ModHelper.GetLocalized("fluxforge", "reputation.hospital.termination.description"),
+                ModHelper.GetLocalized("fluxforge", "reputation.hospital.termination.flavor"));
+
+            Add(
+                table,
+                ExternalExpertPerkId,
+                ModHelper.GetLocalized("fluxforge", "reputation.hospital.expert.name"),
+                ModHelper.GetLocalized("fluxforge", "reputation.hospital.expert.description"),
+                ModHelper.GetLocalized("fluxforge", "reputation.hospital.expert.flavor"));
         }
 
         private static void Add(

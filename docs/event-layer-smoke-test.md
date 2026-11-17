@@ -1,57 +1,14 @@
-# Event Layer Smoke Test
+> 维护校对：2026-11-16。当前实现以[项目状态](current-project-state.md)及源码为准；历史方案和审查结论保留其当时上下文。未被工程使用的设计图片、试听文件和审查中间产物已列入清理清单；批量删除被工具策略拒绝，尚未删除。
 
-Use a dedicated empty `GameGridInventory` with at least 18×4 cells; do not run on the player's live
-counter while testing.
+# 装置演示游戏内检查
 
-## 1. Lock
+构建通过不等于本清单已通过。
 
-```csharp
-FlowEventApi.LockGrid(grid);
-```
+- 七页翻页、关闭、重新打开，按钮可点击，无旧网格或流源残留。
+- 进阶：右侧装液并仅发射一次，按降温→冷萃→升温→左侧接收，之后清理。
+- 自动化：六个转角方向正确，两升温、两降温；左下转角最初不存在，流源进入冷萃后放置；形成闭环10秒后清理。
+- 冷萃0°C入口和5°C入口可增效；运输途中的环境换热保留。
+- Simple模式修复后检查原截图转角边缘、升温装置上下边是否还有窄线。
+- 演示中翻页/关闭应立即取消和清理；重新点击不残留上一轮内容。
 
-Expected: no item can be dragged, selected, activated, inserted, or removed. Window chrome is not
-covered by this layer; close story UI separately if needed.
-
-## 2. Boundary emitter
-
-```csharp
-bool started = FlowEventApi.RunBoundaryEmitter(grid);
-```
-
-Expected:
-
-- one `flow_emitter` appears at the far-left, facing right;
-- the item contains water and emits one flow;
-- the flow crosses the grid and disappears at the right boundary;
-- the emitter is destroyed after the flow removal;
-- no `OnEntityRemoved` polling loop is needed.
-
-## 3. Two-emitter relay
-
-```csharp
-bool started = FlowEventApi.RunTwoEmitterRelay(grid);
-```
-
-Expected:
-
-- left emitter faces right, right emitter faces left;
-- left flow is absorbed by the right emitter;
-- after approximately two seconds, the right emitter emits its stored flow;
-- that flow leaves through the left boundary;
-- both emitters are destroyed.
-
-## 4. Unlock
-
-```csharp
-FlowEventApi.UnlockGrid(grid);
-```
-
-Expected: grid insert/remove flags and item `forceDisableUse` / `forceDisableActivate` return to their
-pre-lock values. The test trait is not part of this layer.
-
-## Failure cases
-
-- grid width < 2: placement fails, no items remain;
-- another mod changed the grid shape: `CheckShapePlacement` fails cleanly;
-- receiver is absent or blocked: event 2 fails and cleans both emitters;
-- grid runtime missing: event returns `false`.
+最新构建和自动化测试结果见[维护记录](maintenance/2026-11-16-cleanup.md)。

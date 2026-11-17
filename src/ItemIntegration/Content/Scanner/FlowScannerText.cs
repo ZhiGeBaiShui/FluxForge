@@ -31,12 +31,11 @@ namespace FluxForge.Mod
                 }
 
                 string name = def.Kind == FlowPropertyKind.Foreign
-                    ? "外来液体"
+                    ? ModHelper.GetLocalized(ItemFactory.ModId, "scanner.foreign")
                     : Liquid.LiquidDict[def.Id].displayName;
 
-                builder.Append(name)
-                    .Append("：")
-                    .Append(WaterScannerUIManager.FormatAmount((int)amount));
+                builder.Append(ModHelper.GetLocalized(ItemFactory.ModId, "scanner.component",
+                    name, WaterScannerUIManager.FormatAmount((int)amount)));
 
                 if (total > 0d)
                 {
@@ -53,10 +52,8 @@ namespace FluxForge.Mod
 
         internal static string Temperature(FlowProperties properties)
         {
-            return "温度："
-                + properties.Get(FlowProps.Temperature)
-                    .ToString("0.#", CultureInfo.InvariantCulture)
-                + "℃";
+            return ModHelper.GetLocalized(ItemFactory.ModId, "scanner.temperature",
+                properties.Get(FlowProps.Temperature).ToString("0.#", CultureInfo.InvariantCulture));
         }
     }
 }

@@ -6,7 +6,10 @@ namespace FluxForge.Story.Hospital
     internal static class HospitalReputation
     {
         internal const string FactionId = "FACTION_FLUXFORGE_HOSPITAL";
-        internal const string DisplayName = "上层区中心医院";
+        internal static string DisplayName
+        {
+            get { return ModHelper.GetLocalized("fluxforge", "faction.hospital.name"); }
+        }
 
         internal static bool IsRegistered
         {
@@ -34,6 +37,7 @@ namespace FluxForge.Story.Hospital
                 PlayerStore.Instance.storeReputations.Add(reputation);
             }
 
+            reputation.factionDisplay = DisplayName;
             HospitalReputationTexts.Register();
 
             EnsurePerk(
@@ -48,9 +52,25 @@ namespace FluxForge.Story.Hospital
                 1);
             EnsurePerk(
                 reputation,
+                HospitalReputationTexts.TrustPaymentPerkId,
+                HospitalContractScore.TrustReputationThreshold,
+                1);
+            EnsurePerk(
+                reputation,
+                HospitalReputationTexts.SpecialProcurementPerkId,
+                80,
+                1);
+            EnsurePerk(
+                reputation,
                 HospitalReputationTexts.TerminationPerkId,
                 -20,
                 -1);
+
+            EnsurePerk(
+                reputation,
+                HospitalReputationTexts.ExternalExpertPerkId,
+                HospitalContractScore.ExternalExpertReputationThreshold,
+                1);
 
             StoreReputation.UpdateReputation();
         }

@@ -1,4 +1,3 @@
-using System.Threading.Tasks;
 
 namespace FluxForge.Story.FlowEmitterGenericVisit
 {
@@ -10,11 +9,10 @@ namespace FluxForge.Story.FlowEmitterGenericVisit
         {
         }
 
-        internal override Task Execute(StorySequence player)
+        internal override void Execute(StorySequence player)
         {
-            player.SayNpc(FlowEmitterGenericVisitTexts.Greeting);
-            player.SayNpc(FlowEmitterGenericVisitTexts.MoreItems);
-            return Task.CompletedTask;
+            player.SayNpc(ModHelper.GetLocalized("fluxforge", FlowEmitterGenericVisitTexts.Greeting));
+            player.SayNpc(ModHelper.GetLocalized("fluxforge", FlowEmitterGenericVisitTexts.MoreItems));
         }
     }
 }

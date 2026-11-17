@@ -1,3 +1,4 @@
+using System.Linq;
 using FluxForge.Story.AcidBuyerArrival;
 using FluxForge.Story.AcidBuyerRepeatVisit;
 using FluxForge.Story.FlowEmitterMerchant;
@@ -9,11 +10,26 @@ namespace FluxForge.Story.AcidBuyer
     /// <summary>薇拉的访客身份、到访规则和剧情事件注册。</summary>
     internal static class AcidBuyerStory
     {
+        internal static void RestoreAfterLoad()
+        {
+            if (HospitalContractState.Started)
+            {
+                HospitalReputation.EnsureFaction();
+                return;
+            }
+
+            if (AcidBuyerProgress.HasHighPurityDialogueDone
+                && !HospitalContractState.OfferDeclined)
+            {
+                HospitalContractState.QueueOffer();
+            }
+        }
+
         internal static NpcStoryContent Create()
         {
             NpcDefinition definition = new NpcDefinition(
                 "fluxforge_acid_buyer",
-                "薇拉",
+                "npc.vera.name",
                 NpcPortraitRegistry.AcidBuyerSpriteKey,
                 null,
                 false,
@@ -26,7 +42,11 @@ namespace FluxForge.Story.AcidBuyer
                 1d,
                 7,
                 VisitKind.Dialogue,
-                delegate { return FlowEmitterMerchantProgress.HasArrivalSeen; },
+                delegate
+                {
+                    return FlowEmitterMerchantProgress.HasArrivalSeen
+                        && (!HospitalContractState.Started || HospitalContractState.Terminated);
+                },
                 null);
 
             VisitRule contractPickup = new VisitRule(
@@ -42,6 +62,17 @@ namespace FluxForge.Story.AcidBuyer
                         context.Day);
                 },
                 null);
+
+            VisitRule synaprestOfferVisit = new VisitRule(
+                "acid_buyer.synaprest_offer", definition.Identifier,
+                120, 1d, 1, VisitKind.Dialogue,
+                delegate(VisitContext context) { return HospitalSynaprestState.CanOffer(context.Day); },
+                null);
+
+            StoryEvent synaprestOffer = new StoryEvent(
+                "hospital.synaprest.offer", definition.Identifier,
+                StoryTrigger.VisitStarted, 270, 0, null,
+                delegate(StoryContext context) { return HospitalSynaprestState.CanOffer(context.Day); });
 
             VisitRule contractMaterial = new VisitRule(
                 "acid_buyer.contract_material",
@@ -76,11 +107,11 @@ namespace FluxForge.Story.AcidBuyer
                 delegate { return true; });
 
             StoryEvent contractOffer = new StoryEvent(
-                "acid_buyer.contract_offer",
+                HospitalContractOfferAssembly.EventId,
                 definition.Identifier,
                 StoryTrigger.VisitStarted,
                 150,
-                1,
+                0,
                 null,
                 delegate
                 {
@@ -132,7 +163,7 @@ namespace FluxForge.Story.AcidBuyer
             StoryEvent reputation20 = new StoryEvent(
                 "acid_buyer.hospital_rep20",
                 definition.Identifier,
-                StoryTrigger.VisitStarted,
+                HospitalStoryPoints.MaterialDelivered,
                 250,
                 1,
                 null,
@@ -142,32 +173,32 @@ namespace FluxForge.Story.AcidBuyer
                         && !HospitalContractState.Terminated
                         && HospitalReputation.Get() >= 20
                         && context.State.SeenCount(
-                            "acid_buyer.hospital_rep40") == 0
-                        && context.State.SeenCount(
-                            "acid_buyer.hospital_rep20") == 0;
+                            "acid_buyer.hospital_rep40") == 0;
                 });
 
             StoryEvent reputation40 = new StoryEvent(
                 "acid_buyer.hospital_rep40",
                 definition.Identifier,
-                StoryTrigger.VisitStarted,
+                HospitalStoryPoints.MaterialDelivered,
                 260,
                 1,
                 null,
-                delegate(StoryContext context)
+                delegate
                 {
                     return HospitalContractState.Started
                         && !HospitalContractState.Terminated
-                        && HospitalReputation.Get() >= 40
-                        && context.State.SeenCount(
-                            "acid_buyer.hospital_rep40") == 0;
+                        && HospitalReputation.Get() >= 40;
                 });
 
             return new NpcStoryContent(
                 definition,
-                new[] { visit, contractPickup, contractMaterial },
+                new[] { visit, contractPickup, contractMaterial, synaprestOfferVisit },
                 new[]
                 {
+                    new StoryEventDefinition(
+                        synaprestOffer,
+                        new HospitalSynaprestOfferAssembly(),
+                        StoryOutcome.Leave),
                     new StoryEventDefinition(
                         arrival,
                         new AcidBuyerArrivalAssembly(),
@@ -178,7 +209,7 @@ namespace FluxForge.Story.AcidBuyer
                         StoryOutcome.Leave),
                     new StoryEventDefinition(
                         contractOffer,
-                        new HospitalContractOfferAssembly(),
+                        new HospitalContractOfferAssembly(new NpcState(definition)),
                         StoryOutcome.Leave),
                     new StoryEventDefinition(
                         contractPickupEvent,
@@ -195,12 +226,13 @@ namespace FluxForge.Story.AcidBuyer
                     new StoryEventDefinition(
                         reputation20,
                         new HospitalContractMilestoneAssembly(20),
-                        StoryOutcome.Leave),
+                        StoryOutcome.Default),
                     new StoryEventDefinition(
                         reputation40,
                         new HospitalContractMilestoneAssembly(40),
-                        StoryOutcome.Leave),
-                });
+                        StoryOutcome.Default),
+                }.Concat(HospitalHighestDemand.CreateEvents(definition.Identifier)).ToArray(),
+                visit);
         }
     }
 }

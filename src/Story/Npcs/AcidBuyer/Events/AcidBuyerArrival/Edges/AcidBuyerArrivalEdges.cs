@@ -1,4 +1,3 @@
-using System.Threading.Tasks;
 using FluxForge.Story;
 using FluxForge.Story.AcidBuyer;
 using FluxForge.Story.AcidBuyerFirstHighPurity;
@@ -7,38 +6,43 @@ namespace FluxForge.Story.AcidBuyerArrival
 {
     internal sealed class AcidBuyerGreetingEdge : StoryEdge
     {
-        internal AcidBuyerGreetingEdge()
+        private readonly AcidBuyerTradeSession _session;
+
+        internal AcidBuyerGreetingEdge(AcidBuyerTradeSession session)
             : base(null, null)
         {
+            _session = session;
         }
 
-        internal override Task Execute(StorySequence player)
+        internal override void Execute(StorySequence player)
         {
-            player.SayNpc(AcidBuyerArrivalTexts.Line1);
-            player.SayNpc(AcidBuyerArrivalTexts.Line2);
-            player.SayNpc(AcidBuyerArrivalTexts.Line3);
+            _session.BeginVisit();
+            player.SayNpc(ModHelper.GetLocalized("fluxforge", AcidBuyerArrivalTexts.Line1));
+            player.SayNpc(ModHelper.GetLocalized("fluxforge", AcidBuyerArrivalTexts.Line2));
+            player.SayNpc(ModHelper.GetLocalized("fluxforge", AcidBuyerArrivalTexts.Line3));
             player.Do(AcidBuyerStock.GiveRaw);
-            player.SayNpc(AcidBuyerArrivalTexts.Line4);
-            player.SayNpc(AcidBuyerArrivalTexts.PriceIntro);
-            player.SayNpc(AcidBuyerArrivalTexts.PriceStep);
-            player.SayNpc(AcidBuyerArrivalTexts.PricePure);
-            return Task.CompletedTask;
+            player.SayNpc(ModHelper.GetLocalized("fluxforge", AcidBuyerArrivalTexts.Line4));
+            player.SayNpc(ModHelper.GetLocalized("fluxforge", AcidBuyerArrivalTexts.PriceIntro));
+            player.SayNpc(ModHelper.GetLocalized("fluxforge", AcidBuyerArrivalTexts.PriceStep));
+            player.SayNpc(ModHelper.GetLocalized("fluxforge", AcidBuyerArrivalTexts.PricePure));
         }
     }
 
     internal sealed class AcidBuyerTradeEdge : StoryEdge
     {
+        private readonly AcidBuyerTradeSession _session;
         private StoryNode _success;
         private StoryNode _highPurity;
         private StoryNode _failure;
 
         internal bool Succeeded { get; private set; }
 
-        internal AcidBuyerTradeEdge(string label = null)
+        internal AcidBuyerTradeEdge(AcidBuyerTradeSession session)
             : base(
-                label ?? AcidBuyerArrivalTexts.TradeOption,
+                AcidBuyerArrivalTexts.TradeOption,
                 "fluxforge_test_acid")
         {
+            _session = session;
         }
 
         internal void SetTargets(
@@ -58,34 +62,38 @@ namespace FluxForge.Story.AcidBuyerArrival
                 return _failure;
             }
 
-            return AcidBuyerProgress.ShouldShowHighPurityDialogue
+            return _session.ShouldShowHighPurityDialogue
                 ? _highPurity
                 : _success;
         }
 
-        internal override Task Execute(StorySequence player)
+        internal override void Execute(StorySequence player)
         {
-            AcidBuyerTradeResult result = AcidBuyerTrade.TrySellAll(out _);
+            AcidBuyerTradeResult result = AcidBuyerTrade.TrySellAll(_session, out _);
             Succeeded = result == AcidBuyerTradeResult.Success;
 
             if (result == AcidBuyerTradeResult.NoAcidOrBase)
             {
-                player.SayNpc(AcidBuyerArrivalTexts.NoAcidOrBase);
+                player.SayNpc(ModHelper.GetLocalized("fluxforge", AcidBuyerArrivalTexts.NoAcidOrBase));
             }
             else if (result == AcidBuyerTradeResult.ConcentrationTooLow)
             {
-                player.SayNpc(AcidBuyerArrivalTexts.ConcentrationTooLow);
+                player.SayNpc(ModHelper.GetLocalized("fluxforge", AcidBuyerArrivalTexts.ConcentrationTooLow));
             }
             else
             {
-                player.SayNpc(AcidBuyerArrivalTexts.Success);
-                if (AcidBuyerProgress.ShouldShowHighPurityDialogue)
+                player.SayNpc(ModHelper.GetLocalized("fluxforge", AcidBuyerArrivalTexts.Success));
+                if (_session.ShouldShowHighPurityDialogue)
                 {
-                    player.SayNpc(AcidBuyerFirstHighPurityTexts.Question);
+                    player.SayNpc(ModHelper.GetLocalized("fluxforge", AcidBuyerFirstHighPurityTexts.Inspection));
+                    player.SayNpc(ModHelper.GetLocalized("fluxforge", AcidBuyerFirstHighPurityTexts.Question));
+                }
+                else
+                {
+                    player.SayNpc(ModHelper.GetLocalized("fluxforge", AcidBuyerArrivalTexts.ContinueQuestion));
                 }
             }
 
-            return Task.CompletedTask;
         }
     }
 
@@ -96,28 +104,28 @@ namespace FluxForge.Story.AcidBuyerArrival
         {
         }
 
-        internal override Task Execute(StorySequence player)
+        internal override void Execute(StorySequence player)
         {
-            player.SayNpc(AcidBuyerArrivalTexts.ExitLine);
-            return Task.CompletedTask;
+            player.SayNpc(ModHelper.GetLocalized("fluxforge", AcidBuyerArrivalTexts.ExitLine));
         }
     }
 
     internal sealed class AcidBuyerSoldOutEdge : StoryEdge
     {
-        internal AcidBuyerSoldOutEdge()
+        private readonly AcidBuyerTradeSession _session;
+
+        internal AcidBuyerSoldOutEdge(AcidBuyerTradeSession session)
             : base(AcidBuyerArrivalTexts.SoldOutOption, "question")
         {
+            _session = session;
         }
 
-        internal override Task Execute(StorySequence player)
+        internal override void Execute(StorySequence player)
         {
             player.SayNpc(
-                AcidBuyerProgress.LastHighPurityDeliveryVolume
-                    >= AcidBuyerProgress.HighPurityDialogueThreshold
-                    ? AcidBuyerArrivalTexts.SoldOutHigh
-                    : AcidBuyerArrivalTexts.SoldOutLow);
-            return Task.CompletedTask;
+                _session.HasSufficientHighPurity
+                    ? ModHelper.GetLocalized("fluxforge", AcidBuyerArrivalTexts.SoldOutHigh)
+                    : ModHelper.GetLocalized("fluxforge", AcidBuyerArrivalTexts.SoldOutLow));
         }
     }
 }

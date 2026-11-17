@@ -14,7 +14,7 @@ namespace FluxForge.Manual
             BookHelper.InitPaperGuide(item);
             item.canActivateSlotItemFunc = (_, _, _) => HealthData.CanRead();
             item.mayActivateSlotItemFunc = (_, _, _) => HealthData.CanRead();
-            item.onActivateSlotItemFunc = (_, _, _) => PaperNoteContent.Open(def.paperImage);
+            item.onActivateSlotItemFunc = (_, _, _) => PaperNoteContent.Open();
         }
     }
 }

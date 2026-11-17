@@ -60,7 +60,7 @@ namespace FluxForge.Story.AcidBuyer
             properties.Set(FlowProps.Temperature, 20d);
             FlowStock.Write(item, properties);
 
-            item.name = acid ? "受污染酸液" : "受污染碱液";
+            item.name = ModHelper.GetLocalized("fluxforge", acid ? "item.stock.polluted_acid.name" : "item.stock.polluted_base.name");
             GeneralHelper.SetItemOwned(item, true);
             GraphUtils.EmporiumTryAdd(
                 EmporiumEntry.Instance.frontInvinvElement,

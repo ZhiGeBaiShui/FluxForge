@@ -1,3 +1,5 @@
+> 维护校对：2026-11-16。当前实现以[项目状态](../current-project-state.md)及源码为准；历史方案和审查结论保留其当时上下文。未被工程使用的设计图片、试听文件和审查中间产物已列入清理清单；批量删除被工具策略拒绝，尚未删除。
+
 # Fluid-device SFX — sourced candidates
 
 Status: selected 2026-11-04
@@ -52,4 +54,4 @@ temperature.heated       → fluxforge.heater
 temperature.cooled       → fluxforge.cooler
 ```
 
-The original preview files used for audition are in `artifacts/audio-candidates/`.
+Audition previews are listed for cleanup, but bulk deletion was blocked by the execution policy. Runtime WAVs and the source/license information above are retained.

@@ -1,0 +1,46 @@
+{
+  "reviewer": "root: story-owned exit patch follow-up review",
+  "files": [
+    {
+      "path": "src/Story/Runtime/Patches/StorySaveExitPatches.cs",
+      "lineCount": 24,
+      "sha256": "bcd6bbc6a7df5b7279f94a03316bf80579752ddd3415fb27b927c46eb368f813",
+      "blocks": [
+        {
+          "start": 1,
+          "end": 4,
+          "verdict": "retain",
+          "reason": "Direct Harmony dependency in the Story namespace; no dependency on LogicIntegration hooks.",
+          "evidence": [
+            "src/Story/Runtime/Playback/Dialogue/DialoguePacing.cs:40"
+          ]
+        },
+        {
+          "start": 5,
+          "end": 14,
+          "verdict": "retain",
+          "reason": "Native main-menu exit clears store without OnDismiss. A prefix cancels the existing story before that reset. No extra state or defensive fallback.",
+          "evidence": [
+            ".tmp-decomp/EscapeUIManager.cs:89",
+            ".tmp-decomp/EscapeUIManager.cs:107",
+            ".tmp-decomp/PlayerStore.cs:3761",
+            "src/Story/Runtime/Direction/Services/StoryNpcRuntime.cs:37"
+          ]
+        },
+        {
+          "start": 15,
+          "end": 24,
+          "verdict": "retain",
+          "reason": "The second native exit route closes scenes synchronously, so its independent prefix invokes the same Story cleanup before leaving.",
+          "evidence": [
+            ".tmp-decomp/GameMaster.cs:79",
+            ".tmp-decomp/GameMaster.cs:81",
+            "src/Story/Runtime/Direction/Services/StoryNpcRuntime.cs:37"
+          ]
+        }
+      ],
+      "commentReview": "Comment wording reviewed against implementation; executable tokens and line positions unchanged. See ../story-comment-audit.json."
+    }
+  ],
+  "findings": []
+}

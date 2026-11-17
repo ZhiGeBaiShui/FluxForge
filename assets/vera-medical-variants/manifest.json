@@ -1,0 +1,75 @@
+{
+  "tool": "built-in image_gen",
+  "variants": [
+    {
+      "id": "01",
+      "design": "经典制药师：象牙白大褂，墨绿衬衣，细红色腰带暗示，黄铜胸针，保留原棕色盘发。",
+      "source": "C:\\Users\\Administrator\\.codex\\generated_images\\01a1d3bf-72c9-7052-a0ca-19ba75942c09\\exec-083e6d5b-2449-4e8b-9c29-b17764e0cbf0.png",
+      "file": "vera-01.png",
+      "prompt": "Edit identity-preserve pixel-art NPC texture. Image 1 is the EXISTING VERA sprite and is the strict edit target. Image 2 is the clothing inspiration only. Preserve image 1's exact front-facing resting pose, arm positions, head position, expression, face identity, brown pinned wavy hair, body proportions, shoulder span, bust portrait framing and bottom crop. Do NOT adopt image 2's full-body pose, short black bob haircut, lifted arm, tablet, realistic/anime painting style or long legs. Redesign clothes only with a medical chemist white lab coat over dark clothing inspired by image 2. Strict low-resolution hand-pixelled game sprite, same coarse pixel scale, clustered pixels, restrained muted palette and sharp stepped edges as image 1, no antialiasing, no smooth gradients, no glossy anime rendering. Single centered character, same silhouette proportions and transparent canvas with generous empty space matching source. Aim for original sprite 145x160 composition. No text, no borders, no labels, no sheet. Transparent background. Variant details: 经典制药师：象牙白大褂，墨绿衬衣，细红色腰带暗示，黄铜胸针，保留原棕色盘发。"
+    },
+    {
+      "id": "02",
+      "design": "冷色实验室：浅灰白大褂，炭黑内搭，青蓝领口细节，小型金属身份牌，保留原棕色盘发。",
+      "source": "C:\\Users\\Administrator\\.codex\\generated_images\\01a1d3bf-72c9-7052-a0ca-19ba75942c09\\exec-f27b9beb-f68f-42fb-8b89-cd6a4fbf2431.png",
+      "file": "vera-02.png",
+      "prompt": "Edit identity-preserve pixel-art NPC texture. Image 1 is the EXISTING VERA sprite and is the strict edit target. Image 2 is the clothing inspiration only. Preserve image 1's exact front-facing resting pose, arm positions, head position, expression, face identity, brown pinned wavy hair, body proportions, shoulder span, bust portrait framing and bottom crop. Do NOT adopt image 2's full-body pose, short black bob haircut, lifted arm, tablet, realistic/anime painting style or long legs. Redesign clothes only with a medical chemist white lab coat over dark clothing inspired by image 2. Strict low-resolution hand-pixelled game sprite, same coarse pixel scale, clustered pixels, restrained muted palette and sharp stepped edges as image 1, no antialiasing, no smooth gradients, no glossy anime rendering. Single centered character, same silhouette proportions and transparent canvas with generous empty space matching source. Aim for original sprite 145x160 composition. No text, no borders, no labels, no sheet. Transparent background. Variant details: 冷色实验室：浅灰白大褂，炭黑内搭，青蓝领口细节，小型金属身份牌，保留原棕色盘发。"
+    },
+    {
+      "id": "03",
+      "design": "旧医院制服：略泛黄的白大褂，深橄榄绿高领衬衣，暗红衣领饰边，复古纽扣，保留原棕色盘发。",
+      "source": "C:\\Users\\Administrator\\.codex\\generated_images\\01a1d3bf-72c9-7052-a0ca-19ba75942c09\\exec-3e1361f7-9e3e-476e-b493-8cc9b963aa6a.png",
+      "file": "vera-03.png",
+      "prompt": "Edit identity-preserve pixel-art NPC texture. Image 1 is the EXISTING VERA sprite and is the strict edit target. Image 2 is the clothing inspiration only. Preserve image 1's exact front-facing resting pose, arm positions, head position, expression, face identity, brown pinned wavy hair, body proportions, shoulder span, bust portrait framing and bottom crop. Do NOT adopt image 2's full-body pose, short black bob haircut, lifted arm, tablet, realistic/anime painting style or long legs. Redesign clothes only with a medical chemist white lab coat over dark clothing inspired by image 2. Strict low-resolution hand-pixelled game sprite, same coarse pixel scale, clustered pixels, restrained muted palette and sharp stepped edges as image 1, no antialiasing, no smooth gradients, no glossy anime rendering. Single centered character, same silhouette proportions and transparent canvas with generous empty space matching source. Aim for original sprite 145x160 composition. No text, no borders, no labels, no sheet. Transparent background. Variant details: 旧医院制服：略泛黄的白大褂，深橄榄绿高领衬衣，暗红衣领饰边，复古纽扣，保留原棕色盘发。"
+    },
+    {
+      "id": "04",
+      "design": "高级制药师：整洁白色大褂，黑色立领内搭，酒红细领巾，细金色胸针，保留原棕色盘发。",
+      "source": "C:\\Users\\Administrator\\.codex\\generated_images\\01a1d3bf-72c9-7052-a0ca-19ba75942c09\\exec-3a38f04a-0c89-47a3-8b61-0fc1c74599f5.png",
+      "file": "vera-04.png",
+      "prompt": "Edit identity-preserve pixel-art NPC texture. Image 1 is the EXISTING VERA sprite and is the strict edit target. Image 2 is the clothing inspiration only. Preserve image 1's exact front-facing resting pose, arm positions, head position, expression, face identity, brown pinned wavy hair, body proportions, shoulder span, bust portrait framing and bottom crop. Do NOT adopt image 2's full-body pose, short black bob haircut, lifted arm, tablet, realistic/anime painting style or long legs. Redesign clothes only with a medical chemist white lab coat over dark clothing inspired by image 2. Strict low-resolution hand-pixelled game sprite, same coarse pixel scale, clustered pixels, restrained muted palette and sharp stepped edges as image 1, no antialiasing, no smooth gradients, no glossy anime rendering. Single centered character, same silhouette proportions and transparent canvas with generous empty space matching source. Aim for original sprite 145x160 composition. No text, no borders, no labels, no sheet. Transparent background. Variant details: 高级制药师：整洁白色大褂，黑色立领内搭，酒红细领巾，细金色胸针，保留原棕色盘发。"
+    },
+    {
+      "id": "05",
+      "design": "实务研究员：灰米色大褂，暗绿针织内搭，胸袋少量细笔，朴素扣件，保留原棕色盘发。",
+      "source": "C:\\Users\\Administrator\\.codex\\generated_images\\01a1d3bf-72c9-7052-a0ca-19ba75942c09\\exec-3722c114-0b91-4dae-8a68-cfbd7e426907.png",
+      "file": "vera-05.png",
+      "prompt": "Edit identity-preserve pixel-art NPC texture. Image 1 is the EXISTING VERA sprite and is the strict edit target. Image 2 is the clothing inspiration only. Preserve image 1's exact front-facing resting pose, arm positions, head position, expression, face identity, brown pinned wavy hair, body proportions, shoulder span, bust portrait framing and bottom crop. Do NOT adopt image 2's full-body pose, short black bob haircut, lifted arm, tablet, realistic/anime painting style or long legs. Redesign clothes only with a medical chemist white lab coat over dark clothing inspired by image 2. Strict low-resolution hand-pixelled game sprite, same coarse pixel scale, clustered pixels, restrained muted palette and sharp stepped edges as image 1, no antialiasing, no smooth gradients, no glossy anime rendering. Single centered character, same silhouette proportions and transparent canvas with generous empty space matching source. Aim for original sprite 145x160 composition. No text, no borders, no labels, no sheet. Transparent background. Variant details: 实务研究员：灰米色大褂，暗绿针织内搭，胸袋少量细笔，朴素扣件，保留原棕色盘发。"
+    },
+    {
+      "id": "06",
+      "design": "温和医疗风：暖白大褂，灰绿色衬衣，柔和棕红领结，低饱和暖色，保留原棕色盘发。",
+      "source": "C:\\Users\\Administrator\\.codex\\generated_images\\01a1d3bf-72c9-7052-a0ca-19ba75942c09\\exec-5930f3b2-c889-4f6a-953a-44c3043e2bef.png",
+      "file": "vera-06.png",
+      "prompt": "Edit identity-preserve pixel-art NPC texture. Image 1 is the EXISTING VERA sprite and is the strict edit target. Image 2 is the clothing inspiration only. Preserve image 1's exact front-facing resting pose, arm positions, head position, expression, face identity, brown pinned wavy hair, body proportions, shoulder span, bust portrait framing and bottom crop. Do NOT adopt image 2's full-body pose, short black bob haircut, lifted arm, tablet, realistic/anime painting style or long legs. Redesign clothes only with a medical chemist white lab coat over dark clothing inspired by image 2. Strict low-resolution hand-pixelled game sprite, same coarse pixel scale, clustered pixels, restrained muted palette and sharp stepped edges as image 1, no antialiasing, no smooth gradients, no glossy anime rendering. Single centered character, same silhouette proportions and transparent canvas with generous empty space matching source. Aim for original sprite 145x160 composition. No text, no borders, no labels, no sheet. Transparent background. Variant details: 温和医疗风：暖白大褂，灰绿色衬衣，柔和棕红领结，低饱和暖色，保留原棕色盘发。"
+    },
+    {
+      "id": "07",
+      "design": "城市医院代表：银灰白大褂，深海军蓝内搭，红棕细领带，医院风格无文字胸牌，保留原棕色盘发。",
+      "source": "C:\\Users\\Administrator\\.codex\\generated_images\\01a1d3bf-72c9-7052-a0ca-19ba75942c09\\exec-b0f07aad-516a-499a-80c4-6b458a24332a.png",
+      "file": "vera-07.png",
+      "prompt": "Edit identity-preserve pixel-art NPC texture. Image 1 is the EXISTING VERA sprite and is the strict edit target. Image 2 is the clothing inspiration only. Preserve image 1's exact front-facing resting pose, arm positions, head position, expression, face identity, brown pinned wavy hair, body proportions, shoulder span, bust portrait framing and bottom crop. Do NOT adopt image 2's full-body pose, short black bob haircut, lifted arm, tablet, realistic/anime painting style or long legs. Redesign clothes only with a medical chemist white lab coat over dark clothing inspired by image 2. Strict low-resolution hand-pixelled game sprite, same coarse pixel scale, clustered pixels, restrained muted palette and sharp stepped edges as image 1, no antialiasing, no smooth gradients, no glossy anime rendering. Single centered character, same silhouette proportions and transparent canvas with generous empty space matching source. Aim for original sprite 145x160 composition. No text, no borders, no labels, no sheet. Transparent background. Variant details: 城市医院代表：银灰白大褂，深海军蓝内搭，红棕细领带，医院风格无文字胸牌，保留原棕色盘发。"
+    },
+    {
+      "id": "08",
+      "design": "工业化验员：淡灰大褂，墨绿工作衬衣，少量褐色皮革饰边，实用口袋，保留原棕色盘发。",
+      "source": "C:\\Users\\Administrator\\.codex\\generated_images\\01a1d3bf-72c9-7052-a0ca-19ba75942c09\\exec-0ce12b9b-4f7e-42af-8e94-b1bb6e5d54ac.png",
+      "file": "vera-08.png",
+      "prompt": "Edit identity-preserve pixel-art NPC texture. Image 1 is the EXISTING VERA sprite and is the strict edit target. Image 2 is the clothing inspiration only. Preserve image 1's exact front-facing resting pose, arm positions, head position, expression, face identity, brown pinned wavy hair, body proportions, shoulder span, bust portrait framing and bottom crop. Do NOT adopt image 2's full-body pose, short black bob haircut, lifted arm, tablet, realistic/anime painting style or long legs. Redesign clothes only with a medical chemist white lab coat over dark clothing inspired by image 2. Strict low-resolution hand-pixelled game sprite, same coarse pixel scale, clustered pixels, restrained muted palette and sharp stepped edges as image 1, no antialiasing, no smooth gradients, no glossy anime rendering. Single centered character, same silhouette proportions and transparent canvas with generous empty space matching source. Aim for original sprite 145x160 composition. No text, no borders, no labels, no sheet. Transparent background. Variant details: 工业化验员：淡灰大褂，墨绿工作衬衣，少量褐色皮革饰边，实用口袋，保留原棕色盘发。"
+    },
+    {
+      "id": "09",
+      "design": "严谨药剂专家：冷白大褂，深绿色立领内搭，极简银色衣扣，窄领口，保留原棕色盘发。",
+      "source": "C:\\Users\\Administrator\\.codex\\generated_images\\01a1d3bf-72c9-7052-a0ca-19ba75942c09\\exec-36f9b3c1-26a9-4790-a612-68254f00d86b.png",
+      "file": "vera-09.png",
+      "prompt": "Edit identity-preserve pixel-art NPC texture. Image 1 is the EXISTING VERA sprite and is the strict edit target. Image 2 is the clothing inspiration only. Preserve image 1's exact front-facing resting pose, arm positions, head position, expression, face identity, brown pinned wavy hair, body proportions, shoulder span, bust portrait framing and bottom crop. Do NOT adopt image 2's full-body pose, short black bob haircut, lifted arm, tablet, realistic/anime painting style or long legs. Redesign clothes only with a medical chemist white lab coat over dark clothing inspired by image 2. Strict low-resolution hand-pixelled game sprite, same coarse pixel scale, clustered pixels, restrained muted palette and sharp stepped edges as image 1, no antialiasing, no smooth gradients, no glossy anime rendering. Single centered character, same silhouette proportions and transparent canvas with generous empty space matching source. Aim for original sprite 145x160 composition. No text, no borders, no labels, no sheet. Transparent background. Variant details: 严谨药剂专家：冷白大褂，深绿色立领内搭，极简银色衣扣，窄领口，保留原棕色盘发。"
+    },
+    {
+      "id": "10",
+      "design": "复古私人医院：奶油白大褂，黑绿内搭，深红领口装饰和细金属链，保留原棕色盘发。",
+      "source": "C:\\Users\\Administrator\\.codex\\generated_images\\01a1d3bf-72c9-7052-a0ca-19ba75942c09\\exec-03578224-1281-47d3-b558-a9a274e63a4c.png",
+      "file": "vera-10.png",
+      "prompt": "Edit identity-preserve pixel-art NPC texture. Image 1 is the EXISTING VERA sprite and is the strict edit target. Image 2 is the clothing inspiration only. Preserve image 1's exact front-facing resting pose, arm positions, head position, expression, face identity, brown pinned wavy hair, body proportions, shoulder span, bust portrait framing and bottom crop. Do NOT adopt image 2's full-body pose, short black bob haircut, lifted arm, tablet, realistic/anime painting style or long legs. Redesign clothes only with a medical chemist white lab coat over dark clothing inspired by image 2. Strict low-resolution hand-pixelled game sprite, same coarse pixel scale, clustered pixels, restrained muted palette and sharp stepped edges as image 1, no antialiasing, no smooth gradients, no glossy anime rendering. Single centered character, same silhouette proportions and transparent canvas with generous empty space matching source. Aim for original sprite 145x160 composition. No text, no borders, no labels, no sheet. Transparent background. Variant details: 复古私人医院：奶油白大褂，黑绿内搭，深红领口装饰和细金属链，保留原棕色盘发。"
+    }
+  ]
+}

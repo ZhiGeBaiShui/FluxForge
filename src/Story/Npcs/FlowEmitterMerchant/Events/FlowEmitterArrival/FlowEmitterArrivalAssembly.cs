@@ -3,7 +3,7 @@ using FluxForge.Story.FlowEmitterMerchant;
 namespace FluxForge.Story.FlowEmitterArrival
 {
     /// <summary>
-    /// 首次到访：邀请体验、赠送材料、等待验收并告别。
+    /// 首次体验线：邀请体验；接受后赠料，可提交验收或直接告别。
     /// </summary>
     internal sealed class FlowEmitterArrivalAssembly : StoryAssembly
     {

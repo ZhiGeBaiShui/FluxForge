@@ -3,7 +3,7 @@ using FluxForge.Story.AcidBuyerFirstHighPurity;
 
 namespace FluxForge.Story.AcidBuyerArrival
 {
-    /// <summary>首次到访：开场、赠送原料，然后进入交易选项。</summary>
+    /// <summary>首次到访：开场中赠送原料，再进入交易选项；正常结束时记录已见面。</summary>
     internal sealed class AcidBuyerArrivalAssembly : StoryAssembly
     {
         internal override StoryEdge Entry { get; }
@@ -15,19 +15,15 @@ namespace FluxForge.Story.AcidBuyerArrival
 
         internal AcidBuyerArrivalAssembly()
         {
+            AcidBuyerTradeSession session = new AcidBuyerTradeSession();
             StoryNode root = new StoryNode();
             StoryNode success = new StoryNode();
             StoryNode highPurity = new StoryNode();
-            StoryNode highPuritySuccess = new StoryNode();
-            AcidBuyerGreetingEdge greeting = new AcidBuyerGreetingEdge();
-            AcidBuyerTradeEdge trade = new AcidBuyerTradeEdge();
-            AcidBuyerTradeEdge tradeAgain = new AcidBuyerTradeEdge();
-            AcidBuyerTradeEdge tradeAfterHigh
-                = new AcidBuyerTradeEdge(
-                    AcidBuyerArrivalTexts.TradeAfterHighOption);
+            AcidBuyerGreetingEdge greeting = new AcidBuyerGreetingEdge(session);
+            AcidBuyerTradeEdge trade = new AcidBuyerTradeEdge(session);
+            AcidBuyerTradeEdge tradeAgain = new AcidBuyerTradeEdge(session);
             AcidBuyerExitEdge exit = new AcidBuyerExitEdge();
-            AcidBuyerSoldOutEdge soldOut = new AcidBuyerSoldOutEdge();
-            AcidBuyerSoldOutEdge soldOutHigh = new AcidBuyerSoldOutEdge();
+            AcidBuyerSoldOutEdge soldOut = new AcidBuyerSoldOutEdge(session);
             AcidBuyerHighPurityAnswerEdge selfMade
                 = new AcidBuyerHighPurityAnswerEdge(
                     AcidBuyerFirstHighPurityTexts.SelfMadeOption,
@@ -46,17 +42,8 @@ namespace FluxForge.Story.AcidBuyerArrival
             tradeAgain.SetTargets(success, highPurity, success);
             soldOut.Connect(success, null);
 
-            tradeAfterHigh.Connect(
-                highPuritySuccess,
-                highPuritySuccess);
-            tradeAfterHigh.SetTargets(
-                highPuritySuccess,
-                highPurity,
-                highPuritySuccess);
-            soldOutHigh.Connect(highPuritySuccess, null);
-
-            selfMade.Connect(highPurity, highPuritySuccess);
-            luck.Connect(highPurity, highPuritySuccess);
+            selfMade.Connect(highPurity, success);
+            luck.Connect(highPurity, success);
 
             Entry = greeting;
         }

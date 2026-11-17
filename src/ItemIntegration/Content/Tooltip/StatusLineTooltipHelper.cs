@@ -64,7 +64,7 @@ namespace FluxForge.Mod
 
         private static void AppendLine(RichTextBuilder builder, GameItemElement item, StatusLine line)
         {
-            if (line == null || string.IsNullOrEmpty(line.tag) || string.IsNullOrEmpty(line.label))
+            if (line == null || string.IsNullOrEmpty(line.tag) || string.IsNullOrEmpty(line.labelLoc))
             {
                 return;
             }
@@ -81,7 +81,8 @@ namespace FluxForge.Mod
                 return;
             }
 
-            string text = line.label + "：" + FormatValue(state, line) + (line.unit ?? string.Empty);
+            string text = ModHelper.GetLocalized(ItemFactory.ModId, "tooltip.status",
+                ModHelper.GetLocalized(ItemFactory.ModId, line.labelLoc), FormatValue(state, line), line.unit ?? string.Empty);
             builder.AddLine(text, true, ParseColor(line.color));
         }
 

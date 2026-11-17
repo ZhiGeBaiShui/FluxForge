@@ -13,7 +13,7 @@ namespace FluxForge.Mod
         public string tag { get; set; }
 
         /// <summary>显示标签（如「含冰量」）。</summary>
-        public string label { get; set; }
+        public string labelLoc { get; set; }
 
         /// <summary>
         /// tag 值 → 显示值的乘数。例：tag 存 µL、显示 g 则填 0.001（1000 µL = 1 g）。

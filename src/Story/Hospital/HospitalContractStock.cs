@@ -4,7 +4,7 @@ namespace FluxForge.Story.Hospital
 {
     /// <summary>
     /// 医院每周送来的受污染原料。
-    /// 与首次到访赠送的酸/碱分开，按医院声望决定数量。
+    /// 与首次到访赠送的酸/碱分开；调用方在发放时按当前医院声望计算瓶数。
     /// </summary>
     internal static class HospitalContractStock
     {
@@ -71,7 +71,7 @@ namespace FluxForge.Story.Hospital
             properties.Set(FlowProps.Temperature, 20d);
             FlowStock.Write(item, properties);
 
-            item.name = acid ? "医院送来的酸液" : "医院送来的碱液";
+            item.name = ModHelper.GetLocalized("fluxforge", acid ? "item.stock.hospital_acid.name" : "item.stock.hospital_base.name");
             GeneralHelper.SetItemOwned(item, true);
             GraphUtils.EmporiumTryAdd(
                 EmporiumEntry.Instance.frontInvinvElement,

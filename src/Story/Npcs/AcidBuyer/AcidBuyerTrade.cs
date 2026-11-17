@@ -12,8 +12,8 @@ namespace FluxForge.Story.AcidBuyer
     }
 
     /// <summary>
-    /// 酸/碱收货：只扫描后柜台（玩家放货的一侧），收走所有浓度 >=90% 的酸/碱。
-    /// >=99% 的交易会累加高纯度交付次数。
+    /// 酸/碱收货：扫描后柜台，跳过流体装置，按最低 90% 浓度门槛整瓶收购。
+    /// 将本批 >=99% 的交付体积计入本次到访，供首次问答与告别判定。
     /// </summary>
     internal static class AcidBuyerTrade
     {
@@ -21,7 +21,8 @@ namespace FluxForge.Story.AcidBuyer
         private const double HighConcentration = 0.99d;
         private const double PureConcentration = 1d - 1e-9d;
 
-        internal static AcidBuyerTradeResult TrySellAll(out int reward)
+        internal static AcidBuyerTradeResult TrySellAll(
+            AcidBuyerTradeSession session, out int reward)
         {
             reward = 0;
 
@@ -82,7 +83,7 @@ namespace FluxForge.Story.AcidBuyer
             }
 
             PlayerStore.Instance.ModCash(reward);
-            AcidBuyerProgress.SetLastHighPurityDeliveryVolume(
+            session.RecordHighPurityDelivery(
                 highPurityVolume);
 
             return AcidBuyerTradeResult.Success;

@@ -1,4 +1,3 @@
-using System.Threading.Tasks;
 
 namespace FluxForge.Story.Hospital
 {
@@ -9,12 +8,11 @@ namespace FluxForge.Story.Hospital
         {
         }
 
-        internal override Task Execute(StorySequence player)
+        internal override void Execute(StorySequence player)
         {
             HospitalContractState.Terminate();
-            player.SaySystem(HospitalContractTerminationTexts.Black);
-            player.SaySystem(HospitalContractTerminationTexts.Gray);
-            return Task.CompletedTask;
+            player.SaySystem(ModHelper.GetLocalized("fluxforge", HospitalContractTerminationTexts.Black));
+            player.SaySystem(ModHelper.GetLocalized("fluxforge", HospitalContractTerminationTexts.Gray));
         }
     }
 }

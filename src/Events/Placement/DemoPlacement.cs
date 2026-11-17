@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using FluxForge.Mod;
+using UnityEngine.UI;
 
 namespace FluxForge.Events
 {
@@ -87,6 +88,11 @@ namespace FluxForge.Events
             item.modifiedXOrigin = 0;
             item.modifiedYOrigin = 0;
             item.Validate();
+
+            // 原版 RenderNodePrefab 的 Image 为 Tiled；缩放后像素对齐可能多平铺一条窄边。
+            GameItemElement element = (GameItemElement)item;
+            element.background.image.type = Image.Type.Simple;
+            element.fakeBackground.image.type = Image.Type.Simple;
 
             FlowRuntime runtime = GridRegistry.Get(grid);
             runtime.Grid.Register(item);

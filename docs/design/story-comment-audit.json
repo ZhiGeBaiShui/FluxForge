@@ -1,0 +1,191 @@
+{
+  "scope": "src/Story/**/*.cs and tests/FluxForge.Story.Tests/*.cs",
+  "filesReviewed": 107,
+  "changedFiles": 36,
+  "changedLines": 52,
+  "codeAndDialogueTokensUnchanged": true,
+  "lineCountsUnchanged": true,
+  "xmlDocumentationGroupsValidated": 79,
+  "files": [
+    {
+      "path": "src/Story/Hospital/HospitalContractDefinition.cs",
+      "changedLines": 1,
+      "sha256": "1022c69bf7cbbe06c94070f10de1f098c8c3af49432811d3a493f2644a572a49"
+    },
+    {
+      "path": "src/Story/Hospital/HospitalContractInspection.cs",
+      "changedLines": 1,
+      "sha256": "68bfdfc453f65a83ce9ed29960cff192428cfc7b1082913c44a2abcc6ed5fe8a"
+    },
+    {
+      "path": "src/Story/Hospital/HospitalContractStock.cs",
+      "changedLines": 1,
+      "sha256": "ec130282f7c243dd3b8739601e138fe91992007dc9568a58abe5977a6a663441"
+    },
+    {
+      "path": "src/Story/Hospital/HospitalContractTrade.cs",
+      "changedLines": 2,
+      "sha256": "c3533d05a8772b44a9cf712e8ea930f79eb1169c1288355c7afa5794e633c465"
+    },
+    {
+      "path": "src/Story/Hospital/HospitalHighestDemandState.cs",
+      "changedLines": 1,
+      "sha256": "7a82298c6e7bfa83391f2370a102d0f8cde530deffae02c7a26d716b80af923c"
+    },
+    {
+      "path": "src/Story/Portraits/NpcPortraitRegistry.cs",
+      "changedLines": 7,
+      "sha256": "002f0e69fa7e525bf81fb953af7fe804bf5260b4cd9ea612e56bd077760b3d6e"
+    },
+    {
+      "path": "src/Story/Runtime/Contracts/StoryAssembly.cs",
+      "changedLines": 2,
+      "sha256": "0d795d3634f5518090b6500b1cb08d1a61c8749d2b502e2c63d17f3d47955d65"
+    },
+    {
+      "path": "src/Story/Runtime/Direction/NpcStoryHost.cs",
+      "changedLines": 2,
+      "sha256": "a869530d65db6909211b3071c5da417f43439ef6a2db9631de153f5c0b832a27"
+    },
+    {
+      "path": "src/Story/Runtime/Graph/StoryEdge.cs",
+      "changedLines": 1,
+      "sha256": "2572f2a4746c8059f9084bfc9abd301ad993cb0c1e0594ab56f56cf666b77c68"
+    },
+    {
+      "path": "src/Story/Runtime/Model/StoryContext.cs",
+      "changedLines": 1,
+      "sha256": "c6fcbb3f2ed2cbdd43e4812adb76cb6aaa859fb7f61afd44f3a43211df36b830"
+    },
+    {
+      "path": "src/Story/Runtime/Model/StoryOutcome.cs",
+      "changedLines": 1,
+      "sha256": "a29b7cacb7dbab3bd291bbcd9ea78aa3fb1e819a4f0e4e81d322cf5949da6b78"
+    },
+    {
+      "path": "src/Story/Runtime/Model/StoryTrigger.cs",
+      "changedLines": 1,
+      "sha256": "5286b3343a8f622d6a9537d9c0fd1805823ac8e02966ead8302cbbafbde2d761"
+    },
+    {
+      "path": "src/Story/Runtime/Patches/StorySaveExitPatches.cs",
+      "changedLines": 2,
+      "sha256": "bcd6bbc6a7df5b7279f94a03316bf80579752ddd3415fb27b927c46eb368f813"
+    },
+    {
+      "path": "src/Story/Runtime/Selection/StoryEventSelector.cs",
+      "changedLines": 1,
+      "sha256": "6796a6a88ed14a9a2e90e9e9b93892addbf396b2b02ca8559b9ed503453f7330"
+    },
+    {
+      "path": "src/Story/Runtime/Playback/Dialogue/DialoguePacing.cs",
+      "changedLines": 1,
+      "sha256": "bdb919f856c5cfb664e1319f237c9e867322ea0196e11a5767aef30799a68016"
+    },
+    {
+      "path": "src/Story/Runtime/Playback/Dialogue/StoryDialogueAdapter.cs",
+      "changedLines": 1,
+      "sha256": "946fe0094d3410f0534bd7deceffae1066c76e808e16a210d7dc7c19f928e3ea"
+    },
+    {
+      "path": "src/Story/Runtime/Playback/Execution/StoryInsertionCursor.cs",
+      "changedLines": 1,
+      "sha256": "aec4ee244a157796319ff2d344d3de56dda923d06865ac568db599231e7f0bd7"
+    },
+    {
+      "path": "src/Story/Runtime/Playback/Execution/StoryPlaybackContext.cs",
+      "changedLines": 1,
+      "sha256": "9bd233148783995ebdc26076c1565408bbf90cdea4344359a438c19d00871494"
+    },
+    {
+      "path": "src/Story/Runtime/Playback/Execution/StorySequence.cs",
+      "changedLines": 1,
+      "sha256": "8e9e4fd4ac62e59fa311cef4d58f1c312c955f469d5e2d1e81890ffa08fcf191"
+    },
+    {
+      "path": "src/Story/Runtime/Direction/Services/StoryNpcRuntime.cs",
+      "changedLines": 1,
+      "sha256": "59bf79d43f9822a6579788e01ec5c6d10d592166261e8a1fd2f4fbf12041b169"
+    },
+    {
+      "path": "src/Story/Npcs/AcidBuyer/AcidBuyerTrade.cs",
+      "changedLines": 1,
+      "sha256": "8a0c15c673b57154c05d912200c4675115f4db9fb590f2e3595c7b168766a045"
+    },
+    {
+      "path": "src/Story/Npcs/AcidBuyer/AcidBuyerTradeSession.cs",
+      "changedLines": 1,
+      "sha256": "af49384d24620c3b7634d14197300b251b925ed12b026a8984abcb7fc0142234"
+    },
+    {
+      "path": "src/Story/Npcs/FlowEmitterMerchant/FlowEmitterMerchantStock.cs",
+      "changedLines": 3,
+      "sha256": "5d51449b6b64f81161ceb3760725f60bbda05b12fe1d282e9db630ce0c8a507a"
+    },
+    {
+      "path": "src/Story/Npcs/FlowEmitterMerchant/Events/FlowEmitterArrival/FlowEmitterArrivalAssembly.cs",
+      "changedLines": 1,
+      "sha256": "31e236f54c8786275d625a6f29332ebcf4d8407d776bc247358ef239f611f057"
+    },
+    {
+      "path": "src/Story/Npcs/FlowEmitterMerchant/Events/FlowEmitterGenericVisit/FlowEmitterGenericVisitAssembly.cs",
+      "changedLines": 1,
+      "sha256": "0f73e5f577a80857b88181dc7cd4d157c02ef52605ba68cc6d8341ac44d992f7"
+    },
+    {
+      "path": "src/Story/Npcs/FlowEmitterMerchant/Events/FlowEmitterSecondVisit/FlowEmitterSecondVisitAssembly.cs",
+      "changedLines": 1,
+      "sha256": "afe8930d14c597c16ecfd99ebdddb22ae7707a2d5171945976075befa5a5bb46"
+    },
+    {
+      "path": "src/Story/Npcs/FlowEmitterMerchant/Events/FlowEmitterSecondVisit/Edges/FlowEmitterSecondVisitGreetingEdge.cs",
+      "changedLines": 1,
+      "sha256": "7b459935f366608b7f3f3aa729da8924aeca13f24122661ebc0d660e039714c6"
+    },
+    {
+      "path": "src/Story/Npcs/AcidBuyer/Events/AcidBuyerArrival/AcidBuyerArrivalAssembly.cs",
+      "changedLines": 1,
+      "sha256": "5f27e099a70798bbbb2657828296e1aeb7dafcf74df5e20070aff06129014226"
+    },
+    {
+      "path": "src/Story/Npcs/AcidBuyer/Events/AcidBuyerFirstHighPurity/AcidBuyerFirstHighPurityTexts.cs",
+      "changedLines": 1,
+      "sha256": "3fb379bad140c99aac0f564bbb9bc9b945ce0ead90af7b6682df3ea80e440d5f"
+    },
+    {
+      "path": "src/Story/Hospital/Events/HospitalContractMaterial/HospitalContractMaterialEdges.cs",
+      "changedLines": 1,
+      "sha256": "e666a5920a9186ed46189a037ce02f3d91d1c49dcba46977322f5dd60a5df709"
+    },
+    {
+      "path": "src/Story/Hospital/Events/HospitalContractPickup/HospitalContractPickupEdges.cs",
+      "changedLines": 1,
+      "sha256": "73c67b6b4bf4920575b661d62763ed3386dc49b3cd46131544f52e91269474eb"
+    },
+    {
+      "path": "tests/FluxForge.Story.Tests/GameBoundaryStubs.cs",
+      "changedLines": 1,
+      "sha256": "e6da766a0ed44204bb68a935ac9713c05bec70257257dee805c91948650c7412"
+    },
+    {
+      "path": "tests/FluxForge.Story.Tests/StoryDialoguePacingTests.cs",
+      "changedLines": 1,
+      "sha256": "a1bdafdc7ffc56a808a69c07293570235e01b8a9d906ce89b4419001f07c5d5d"
+    },
+    {
+      "path": "tests/FluxForge.Story.Tests/StoryFlowTests.cs",
+      "changedLines": 2,
+      "sha256": "a16c9dca57f85ec2bf1ba26754714d9260ab2ee74f697de66b1f07e423881adb"
+    },
+    {
+      "path": "tests/FluxForge.Story.Tests/StoryPlaybackTests.cs",
+      "changedLines": 1,
+      "sha256": "0f9550e8d6a976008da268ad5a0ad605a915dbf19d3eb9f16870dd6f4f926978"
+    },
+    {
+      "path": "tests/FluxForge.Story.Tests/StoryRuntimeBugReproTests.cs",
+      "changedLines": 4,
+      "sha256": "6c7b7d5e7650c6d67b3a21613b5d7197935bf8b1da1bb7bdfb88ad8a470d0164"
+    }
+  ]
+}

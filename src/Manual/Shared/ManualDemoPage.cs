@@ -8,9 +8,8 @@ namespace FluxForge.Manual
     /// <summary>把事件层演示装配到手册页面预留的虚拟网格区域。</summary>
     public sealed class ManualDemoPage : MonoBehaviour
     {
-        // 手动调整演示网格尺寸；净化与冷萃路线至少需要 7 格宽。
-        private const int DemoGridWidth = 7;
-        private const int DemoGridHeight = 3;
+        private int gridWidth;
+        private int gridHeight;
         private const float DemoGridTransparency = 0.65f;
         // 每条边的留白，给非方形装置贴图留出视觉余量。
         private const float DemoGridEdgePadding = 16f;
@@ -23,8 +22,12 @@ namespace FluxForge.Manual
         internal void Configure(
             RectTransform area,
             GameObject placeholderObject,
-            Func<GameGridInventory, bool> eventRunner)
+            Func<GameGridInventory, bool> eventRunner,
+            int width = 7,
+            int height = 3)
         {
+            gridWidth = width;
+            gridHeight = height;
             gridArea = area;
             placeholder = placeholderObject;
             runEvent = eventRunner;
@@ -49,7 +52,7 @@ namespace FluxForge.Manual
         {
             Stop();
 
-            grid = new GameGridInventory(DemoGridWidth, DemoGridHeight);
+            grid = new GameGridInventory(gridWidth, gridHeight);
             grid.rectTransform.SetParent(gridArea, false);
             grid.rectTransform.anchorMin = new Vector2(0f, 1f);
             grid.rectTransform.anchorMax = new Vector2(0f, 1f);

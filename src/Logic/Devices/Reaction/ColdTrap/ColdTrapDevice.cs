@@ -136,7 +136,7 @@ namespace FluxForge
 
             double inlet = properties.Get(FlowProps.Temperature);
             double outlet = inlet + _temperatureDeltaCelsius;
-            bool crossed = inlet > _phaseThresholdCelsius && outlet < _phaseThresholdCelsius;
+            bool crossed = inlet >= _phaseThresholdCelsius && outlet <= _phaseThresholdCelsius;
 
             double rawAmount = _baseExtractionMicrolitres * (crossed ? _thresholdEfficiency : 1d);
             int amount = (int)rawAmount;

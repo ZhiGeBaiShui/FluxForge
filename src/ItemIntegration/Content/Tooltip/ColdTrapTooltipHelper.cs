@@ -21,7 +21,7 @@ namespace FluxForge.Mod
 
             double microlitres = FlowStock.Total(item);
             builder.AddLine(
-                "已收集：" + Format(microlitres),
+                ModHelper.GetLocalized(ItemFactory.ModId, "tooltip.collected_amount", Format(microlitres)),
                 true,
                 RenderHandler.ColorPalette.LightBlue);
         }

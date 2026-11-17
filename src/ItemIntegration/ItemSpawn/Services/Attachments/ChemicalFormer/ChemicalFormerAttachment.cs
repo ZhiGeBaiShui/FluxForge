@@ -106,7 +106,7 @@ namespace FluxForge.Mod
             {
                 targetLabel.SetText(LocHelper.GetLocalizedMechanic(
                     "mech_chem_finisher_no_target"));
-                statusLabel.SetText("暂无已登记的 FluxForge 配方");
+                statusLabel.SetText(ModHelper.GetLocalized(ItemFactory.ModId, "former.no_recipes"));
                 return;
             }
 
@@ -127,7 +127,7 @@ namespace FluxForge.Mod
 
             if (!CanOutput(machine, containerSlot))
             {
-                statusLabel.SetText("原料不符合所选配方");
+                statusLabel.SetText(ModHelper.GetLocalized(ItemFactory.ModId, "former.wrong_material"));
                 return;
             }
 

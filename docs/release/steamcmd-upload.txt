@@ -1,0 +1,18 @@
+FluxForge 0.2.0 发布文件
+
+ZIP：E:\code\FluxForge\dist\FluxForge-0.2.0-release-20261116-193001.zip
+上传内容目录：E:\code\FluxForge\dist\FluxForge-0.2.0-release-20261116-193001\FluxForge
+VDF：E:\code\FluxForge\docs\release\workshop-0.2.0.vdf
+封面：E:/code/FluxForge/docs/release/workshop-cover-selected.jpg
+
+SteamCMD命令（在steamcmd.exe所在目录执行，把“你的Steam账号”替换为账号名）：
+steamcmd.exe +login 你的Steam账号 +workshop_build_item "E:\code\FluxForge\docs\release\workshop-0.2.0.vdf" +quit
+
+密码及Steam Guard验证码按SteamCMD提示输入，不需要写进命令。
+当前publishedfileid为3840844438，更新现有条目。VDF顶层使用英文，localizations块同时配置英文和简体中文。双击publish-bilingual.cmd可通过Steam官方接口更新双语描述和标签。
+手动安装ZIP：将其中的FluxForge文件夹放入游戏Mods目录。
+
+仅生成发布文件和上传命令，本次没有上传或发布创意工坊条目。
+
+双语描述/标签自动更新入口：E:\code\FluxForge\docs\release\publish-bilingual.cmd
+该入口使用桌面Steam客户端已有登录，不需要手动粘贴。线上只读查询本轮返回k_EResultFail，发布尚未实测；本轮未执行发布。

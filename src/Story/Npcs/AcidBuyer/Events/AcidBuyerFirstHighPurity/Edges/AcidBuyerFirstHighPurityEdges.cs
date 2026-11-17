@@ -1,4 +1,3 @@
-using System.Threading.Tasks;
 using FluxForge.Story.AcidBuyer;
 using FluxForge.Story.Hospital;
 
@@ -6,22 +5,22 @@ namespace FluxForge.Story.AcidBuyerFirstHighPurity
 {
     internal sealed class AcidBuyerHighPurityAnswerEdge : StoryEdge
     {
-        private readonly string _response;
+        private readonly string _responseKey;
 
         internal AcidBuyerHighPurityAnswerEdge(
             string label,
             string response)
             : base(label, "question")
         {
-            _response = response;
+            _responseKey = response;
         }
 
-        internal override Task Execute(StorySequence player)
+        internal override void Execute(StorySequence player)
         {
             AcidBuyerProgress.MarkHighPurityDialogueDone();
             HospitalContractState.QueueOffer();
-            player.SayNpc(_response);
-            return Task.CompletedTask;
+            player.SayNpc(ModHelper.GetLocalized("fluxforge", _responseKey));
+            player.SayNpc(ModHelper.GetLocalized("fluxforge", AcidBuyerFirstHighPurityTexts.ContinueQuestion));
         }
     }
 }

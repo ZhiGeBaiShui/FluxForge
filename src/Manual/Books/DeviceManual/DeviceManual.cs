@@ -78,12 +78,16 @@ namespace FluxForge.Manual
             DeviceManual view = instance.AddComponent<DeviceManual>();
             view.manager = uiManager;
             Transform pagesRoot = instance.transform.Find("Pages");
+            GameObject coldTrapAdvanced = ColdTrapAdvancedPage.Bind(pagesRoot);
+            GameObject coldTrapAutomation = ColdTrapAdvancedPage.BindAutomation(pagesRoot);
             view.pages = new[]
             {
                 OverviewPage.Bind(pagesRoot),
                 EmitterPage.Bind(pagesRoot),
                 FilterPage.Bind(pagesRoot),
                 ColdTrapPage.Bind(pagesRoot),
+                coldTrapAdvanced,
+                coldTrapAutomation,
                 CentrifugePage.Bind(pagesRoot)
             };
             view.previousButton = instance.transform.Find("PreviousButton").GetComponent<Button>();
@@ -101,7 +105,7 @@ namespace FluxForge.Manual
                     continue;
                 }
 
-                text.text = ChineseManualText(LocalizationKey(text.gameObject.name));
+                text.text = ModHelper.GetLocalized(ModId, LocalizationKey(text.gameObject.name));
             }
 
             view.previousButton.onClick.AddListener(view.FlipLeft);
@@ -128,12 +132,6 @@ namespace FluxForge.Manual
                 "account (1)" => "manual.overview.recipe_b",
                 _ => objectName
             };
-        }
-
-        private static string ChineseManualText(string key)
-        {
-            LoadedMod mod = ModLoader.Mods.Find(loaded => loaded.Manifest.ID == ModId);
-            return mod.Localization["zh-CN"][key];
         }
 
         private void ShowPage(int pageIndex)

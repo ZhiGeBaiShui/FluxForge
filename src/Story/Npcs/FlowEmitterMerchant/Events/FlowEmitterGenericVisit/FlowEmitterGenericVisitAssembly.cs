@@ -2,7 +2,7 @@ using FluxForge.Story.FlowEmitterMerchant;
 
 namespace FluxForge.Story.FlowEmitterGenericVisit
 {
-    /// <summary>没有专用剧情时的通用到访开场。</summary>
+    /// <summary>没有专用剧情时播放通用开场，正常结束时按进度上货。</summary>
     internal sealed class FlowEmitterGenericVisitAssembly : StoryAssembly
     {
         internal override StoryEdge Entry { get; }

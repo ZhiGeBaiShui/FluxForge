@@ -24,8 +24,8 @@ namespace FluxForge.Mod
             double total = properties.SubstanceTotal;
 
             __instance.testedTMP.text = item.name
-                + "\n总存量：" + WaterScannerUIManager.FormatAmount((int)total);
-            __instance.labelTMP.text = "流源装置\n"
+                + "\n" + ModHelper.GetLocalized(ItemFactory.ModId, "scanner.total", WaterScannerUIManager.FormatAmount((int)total));
+            __instance.labelTMP.text = ModHelper.GetLocalized(ItemFactory.ModId, "scanner.flow_device") + "\n"
                 + FlowScannerText.Temperature(properties);
             __instance.contaminantTMP.text =
                 FlowScannerText.BuildComposition(properties, total);

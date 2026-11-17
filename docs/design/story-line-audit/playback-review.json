@@ -1,0 +1,723 @@
+{
+  "reviewer": "architecture_review: execution architecture and junior-maintainer review",
+  "files": [
+    {
+      "path": "src/Story/Runtime/Playback/StoryPlayer.cs",
+      "lineCount": 162,
+      "sha256": "fbdcaa43e6281732a3ea13c11d21b06ec5667244bb66256827d9980cf11694a3",
+      "blocks": [
+        {
+          "start": 1,
+          "end": 14,
+          "verdict": "retain",
+          "reason": "Imports, class and per-visit execution state: stack represents actual nested returns; cancellation is per player, not a global flag.",
+          "evidence": [
+            "src/Story/Runtime/Playback/Execution/StorySequence.cs:32",
+            "src/Story/Runtime/Direction/Services/NpcVisitAssembly.cs:18"
+          ]
+        },
+        {
+          "start": 15,
+          "end": 22,
+          "verdict": "retain",
+          "reason": "Constructor stores explicit runtime dependencies without guessed null recovery.",
+          "evidence": [
+            "src/Story/Runtime/Direction/Services/NpcVisitAssembly.cs:18",
+            "src/Story/Runtime/Direction/NpcStoryHost.cs:244"
+          ]
+        },
+        {
+          "start": 23,
+          "end": 32,
+          "verdict": "retain",
+          "reason": "Push root and build first visible segment; an action-only assembly can complete synchronously so no first line is a valid result.",
+          "evidence": [
+            "src/Story/Runtime/Playback/StoryPlayer.cs:147",
+            "tests/FluxForge.Story.Tests/StoryPlaybackTests.cs:187"
+          ]
+        },
+        {
+          "start": 33,
+          "end": 38,
+          "verdict": "retain",
+          "reason": "Set cancellation before native interruption, which can itself execute the displayed endAction.",
+          "evidence": [
+            ".tmp-decomp/DialogUIManager.cs:717",
+            ".tmp-decomp/DialogUIManager.cs:723",
+            ".tmp-decomp/PlayerStore.cs:1669"
+          ]
+        },
+        {
+          "start": 39,
+          "end": 44,
+          "verdict": "retain",
+          "reason": "Selected PLAYER line calls this method; selection resets only current frame then appends following content onto selected line.",
+          "evidence": [
+            "src/Story/Runtime/Playback/Dialogue/StoryDialogueAdapter.cs:54",
+            "src/Story/Runtime/Playback/Execution/StoryCallFrame.cs:23",
+            ".tmp-decomp/DialogUIManager.cs:421"
+          ]
+        },
+        {
+          "start": 45,
+          "end": 49,
+          "verdict": "retain",
+          "reason": "Named continuation passes the same no-prefix resume operation to both bridges; no extra state.",
+          "evidence": [
+            "src/Story/Runtime/Playback/StoryPlayer.cs:81",
+            "src/Story/Runtime/Playback/StoryPlayer.cs:143"
+          ]
+        },
+        {
+          "start": 50,
+          "end": 56,
+          "verdict": "retain",
+          "reason": "Carry optional selected line as first/tail, then process current frame while not cancelled; count-zero is normal root completion.",
+          "evidence": [
+            "src/Story/Runtime/Playback/StoryPlayer.cs:25",
+            "src/Story/Runtime/Playback/StoryPlayer.cs:147"
+          ]
+        },
+        {
+          "start": 57,
+          "end": 70,
+          "verdict": "retain",
+          "reason": "Drain insertion cursor one candidate at a time, pushing child frames or clearing exhausted cursor; parent position remains advanced.",
+          "evidence": [
+            "src/Story/Runtime/Playback/Execution/StoryInsertionCursor.cs:36",
+            "src/Story/Runtime/Playback/StoryPlayer.cs:125"
+          ]
+        },
+        {
+          "start": 71,
+          "end": 75,
+          "verdict": "retain",
+          "reason": "Lazy registration after entering an edge or selecting another; explicit Select nulls Sequence.",
+          "evidence": [
+            "src/Story/Runtime/Playback/Execution/StoryCallFrame.cs:23",
+            "src/Story/Runtime/Playback/Execution/StoryCallFrame.cs:30"
+          ]
+        },
+        {
+          "start": 76,
+          "end": 85,
+          "verdict": "retain",
+          "reason": "Read next step; defer Call/Insert until existing dialogue and actions finish using an invisible bridge; advance before descent to prevent replay.",
+          "evidence": [
+            ".tmp-decomp/DialogUIManager.cs:314",
+            ".tmp-decomp/DialogUIManager.cs:408",
+            "tests/FluxForge.Story.Tests/StoryPlaybackTests.cs:89"
+          ]
+        },
+        {
+          "start": 86,
+          "end": 99,
+          "verdict": "retain",
+          "reason": "Line dispatch and first/tail chain construction; normal distinction between empty prefix and accumulated dialogue.",
+          "evidence": [
+            "src/Story/Runtime/Playback/Dialogue/StoryDialogueAdapter.cs:25",
+            ".tmp-decomp/Dialogue.cs:252"
+          ]
+        },
+        {
+          "start": 100,
+          "end": 117,
+          "verdict": "retain",
+          "reason": "Action without line executes immediately; otherwise append ordered closure to endAction. Capture is a fresh local per loop body. Cancellation check blocks native InterruptDialog side effects.",
+          "evidence": [
+            ".tmp-decomp/DialogUIManager.cs:723",
+            "tests/FluxForge.Story.Tests/StoryPlaybackTests.cs:194",
+            "tests/FluxForge.Story.Tests/StoryPlaybackTests.cs:202"
+          ]
+        },
+        {
+          "start": 118,
+          "end": 128,
+          "verdict": "retain",
+          "reason": "Call uses explicit registered context or inherits parent; Insert constructs point cursor. Both are authored distinct step types, no fallback repair.",
+          "evidence": [
+            "src/Story/Runtime/Playback/Execution/StorySequence.cs:32",
+            "src/Story/Runtime/Playback/Execution/StorySequence.cs:37",
+            "src/Story/Runtime/Playback/Execution/StorySequence.cs:42"
+          ]
+        },
+        {
+          "start": 129,
+          "end": 140,
+          "verdict": "retain",
+          "reason": "Pause at next choice node, attach choices to existing visible tail or build standalone options for graph contract; no speculative failure handling.",
+          "evidence": [
+            "src/Story/Runtime/Playback/Execution/StoryCallFrame.cs:34",
+            "src/Story/Runtime/Playback/Dialogue/StoryDialogueAdapter.cs:15",
+            "src/Story/Runtime/Playback/Dialogue/StoryDialogueAdapter.cs:44"
+          ]
+        },
+        {
+          "start": 141,
+          "end": 146,
+          "verdict": "retain",
+          "reason": "End of a spoken sequence must defer frame completion until last line finishes; bridge prevents native early ending.",
+          "evidence": [
+            ".tmp-decomp/DialogUIManager.cs:330",
+            ".tmp-decomp/DialogUIManager.cs:421"
+          ]
+        },
+        {
+          "start": 147,
+          "end": 154,
+          "verdict": "retain",
+          "reason": "Pop completed child, execute content completion, then mark registered identity only. Direct child and root have no event identity.",
+          "evidence": [
+            "src/Story/Runtime/Playback/Execution/StorySequence.cs:32",
+            "src/Story/Runtime/Playback/Execution/StorySequence.cs:37",
+            "tests/FluxForge.Story.Tests/StoryPlaybackTests.cs:165"
+          ]
+        },
+        {
+          "start": 155,
+          "end": 162,
+          "verdict": "retain",
+          "reason": "Only normal exhausted root exits visit; cancellation deliberately avoids completion/outcome business actions.",
+          "evidence": [
+            "tests/FluxForge.Story.Tests/StoryPlaybackTests.cs:202",
+            "src/Story/Runtime/Direction/Services/NpcVisitAssembly.cs:18"
+          ]
+        }
+      ]
+    },
+    {
+      "path": "src/Story/Runtime/Playback/Dialogue/DialoguePacing.cs",
+      "lineCount": 60,
+      "sha256": "bdb919f856c5cfb664e1319f237c9e867322ea0196e11a5767aef30799a68016",
+      "blocks": [
+        {
+          "start": 1,
+          "end": 11,
+          "verdict": "retain",
+          "reason": "Weak-reference and Harmony dependencies plus custom dialogue pacing boundary declaration.",
+          "evidence": [
+            "src/Story/Runtime/Playback/Dialogue/StoryDialogueAdapter.cs:40"
+          ]
+        },
+        {
+          "start": 12,
+          "end": 19,
+          "verdict": "retain",
+          "reason": "Reference-type value required by ConditionalWeakTable; weak keys avoid process-wide strong retention of every past dialogue.",
+          "evidence": [
+            "src/Story/Runtime/Playback/Dialogue/StoryDialogueAdapter.cs:37",
+            "src/Story/Runtime/Playback/Dialogue/StoryDialogueAdapter.cs:40"
+          ]
+        },
+        {
+          "start": 20,
+          "end": 24,
+          "verdict": "retain",
+          "reason": "Register pause once for freshly allocated custom line; no redundant Remove or overwrite fallback.",
+          "evidence": [
+            "src/Story/Runtime/Playback/Dialogue/StoryDialogueAdapter.cs:37",
+            "src/Story/Runtime/Playback/Dialogue/StoryDialogueAdapter.cs:40"
+          ]
+        },
+        {
+          "start": 25,
+          "end": 38,
+          "verdict": "retain",
+          "reason": "TryGet distinguishes custom lines from native lines because the patch intercepts all native auto advance calls; zero output is unused when false.",
+          "evidence": [
+            ".tmp-decomp/DialogUIManager.cs:90",
+            "src/Story/Runtime/Playback/Dialogue/StoryDialogueAdapter.cs:40"
+          ]
+        },
+        {
+          "start": 39,
+          "end": 44,
+          "verdict": "retain",
+          "reason": "Native skip-delay constant names the actual protocol value from the only native skipped auto-advance call; this is not a guessed threshold. Comment explains why the native flag is insufficient.",
+          "evidence": [
+            ".tmp-decomp/DialogUIManager.cs:347",
+            ".tmp-decomp/DialogUIManager.cs:351"
+          ]
+        },
+        {
+          "start": 45,
+          "end": 51,
+          "verdict": "retain-after-fix",
+          "reason": "Do not replace exactly the native fast-skip delay after the native flag was already cleared. Internal Prefix is directly exercised as the real Harmony boundary without reflection or a test-only wrapper.",
+          "evidence": [
+            ".tmp-decomp/DialogUIManager.cs:345",
+            ".tmp-decomp/DialogUIManager.cs:351",
+            "tests/FluxForge.Story.Tests/StoryDialoguePacingTests.cs:14"
+          ]
+        },
+        {
+          "start": 52,
+          "end": 60,
+          "verdict": "retain",
+          "reason": "For the native normal auto-advance call, replace delay only when current line is registered by this framework; leave native unregistered lines unchanged. Native calls supply a current dialogue; no invented null repair.",
+          "evidence": [
+            ".tmp-decomp/DialogUIManager.cs:360",
+            "tests/FluxForge.Story.Tests/StoryDialoguePacingTests.cs:29",
+            "tests/FluxForge.Story.Tests/StoryDialoguePacingTests.cs:42"
+          ]
+        }
+      ],
+      "commentReview": "Comment wording reviewed against implementation; executable tokens and line positions unchanged. See ../story-comment-audit.json."
+    },
+    {
+      "path": "src/Story/Runtime/Playback/Dialogue/StoryDialogueAdapter.cs",
+      "lineCount": 70,
+      "sha256": "946fe0094d3410f0534bd7deceffae1066c76e808e16a210d7dc7c19f928e3ea",
+      "blocks": [
+        {
+          "start": 1,
+          "end": 14,
+          "verdict": "retain",
+          "reason": "UI-only adapter forces start for already selected visitor narrative; the generic player owns when to start, adapter owns native API call.",
+          "evidence": [
+            "src/Story/Runtime/Playback/StoryPlayer.cs:23",
+            ".tmp-decomp/DialogUIManager.cs:238"
+          ]
+        },
+        {
+          "start": 15,
+          "end": 24,
+          "verdict": "retain",
+          "reason": "Standalone choice graph support uses native Dialogue container; not evidence for adding recursive blank-line repair. Existing production retries use selected prefix.",
+          "evidence": [
+            "src/Story/Runtime/Playback/StoryPlayer.cs:131",
+            "src/Story/Hospital/Events/HospitalContractPickup/HospitalContractPickupEdges.cs:139"
+          ]
+        },
+        {
+          "start": 25,
+          "end": 36,
+          "verdict": "retain",
+          "reason": "Map author speaker to native NPC/PLAYER/system title. PLAYER marker is an API token, not the player display name.",
+          "evidence": [
+            ".tmp-decomp/DialogUIManager.cs:277",
+            ".tmp-decomp/DialogUIManager.cs:434",
+            "tests/FluxForge.Story.Tests/StoryPlaybackTests.cs:79"
+          ]
+        },
+        {
+          "start": 37,
+          "end": 43,
+          "verdict": "retain",
+          "reason": "Allocate native line and set both action delay and auto-advance pacing; separate native timers require both values.",
+          "evidence": [
+            ".tmp-decomp/DialogUIManager.cs:327",
+            ".tmp-decomp/DialogUIManager.cs:360"
+          ]
+        },
+        {
+          "start": 44,
+          "end": 58,
+          "verdict": "retain",
+          "reason": "One selected line per outgoing edge; short closure holds this iteration option and selected object and invokes actual option runtime only when entered.",
+          "evidence": [
+            ".tmp-decomp/DialogUIManager.cs:421",
+            "src/Story/Runtime/Playback/StoryPlayer.cs:39"
+          ]
+        },
+        {
+          "start": 59,
+          "end": 70,
+          "verdict": "retain",
+          "reason": "Separate choice carrier is mandatory: native DisplayChoice reads its text, SelectChoice assigns it, then ContinueConversation moves to its next. Carrier is not repeated player speech.",
+          "evidence": [
+            ".tmp-decomp/DialogUIManager.cs:489",
+            ".tmp-decomp/DialogUIManager.cs:521",
+            ".tmp-decomp/DialogUIManager.cs:421",
+            "tests/FluxForge.Story.Tests/StoryPlaybackTests.cs:60"
+          ]
+        }
+      ],
+      "commentReview": "Comment wording reviewed against implementation; executable tokens and line positions unchanged. See ../story-comment-audit.json."
+    },
+    {
+      "path": "src/Story/Runtime/Playback/Dialogue/StoryDialogueBridge.cs",
+      "lineCount": 21,
+      "sha256": "077a4fe8ae557f575c4d77e02f118ff0a2510aabd1a23a8383ccfc7a240590a5",
+      "blocks": [
+        {
+          "start": 1,
+          "end": 9,
+          "verdict": "retain",
+          "reason": "Native continuation bridge takes an explicit synchronous continuation. Both player continuation points install this bridge rather than restarting the UI.",
+          "evidence": [
+            "src/Story/Runtime/Playback/StoryPlayer.cs:81",
+            "src/Story/Runtime/Playback/StoryPlayer.cs:143"
+          ]
+        },
+        {
+          "start": 10,
+          "end": 15,
+          "verdict": "retain",
+          "reason": "Create the invisible next line; its start callback clears the current bridge before evaluating the continuation. This preserves the state visible to completion and exit callbacks.",
+          "evidence": [
+            ".tmp-decomp/DialogUIManager.cs:421",
+            ".tmp-decomp/DialogUIManager.cs:424",
+            "src/Story/Runtime/Playback/StoryPlayer.cs:147"
+          ]
+        },
+        {
+          "start": 16,
+          "end": 21,
+          "verdict": "retain-after-fix",
+          "reason": "Assign continuation result unconditionally, including normal root completion returning null. Native SetCurrentDialog is only a field assignment and accepts null; the previous next!=null branch was redundant, not a required normal-flow guard. Native ContinueConversation re-reads current after startAction and ends on null.",
+          "evidence": [
+            ".tmp-decomp/DialogUIManager.cs:754",
+            ".tmp-decomp/DialogUIManager.cs:756",
+            ".tmp-decomp/DialogUIManager.cs:426"
+          ]
+        }
+      ]
+    },
+    {
+      "path": "src/Story/Runtime/Playback/Execution/Steps/StoryActionStep.cs",
+      "lineCount": 13,
+      "sha256": "3c7429dcc1903ff28e893c53fbc860e603db0f5731d2016b1a76800ad70d3ccd",
+      "blocks": [
+        {
+          "start": 1,
+          "end": 13,
+          "verdict": "retain",
+          "reason": "Immutable action step stores authored callback consumed by player; no null action substitution or extra execution flag.",
+          "evidence": [
+            "src/Story/Runtime/Playback/Execution/StorySequence.cs:27",
+            "src/Story/Runtime/Playback/StoryPlayer.cs:100"
+          ]
+        }
+      ]
+    },
+    {
+      "path": "src/Story/Runtime/Playback/Execution/Steps/StoryCallStep.cs",
+      "lineCount": 20,
+      "sha256": "f91cd694ed270a649dc99617fa58b090f16797b2bfe2ea43a6226a74ea1ec00f",
+      "blocks": [
+        {
+          "start": 1,
+          "end": 7,
+          "verdict": "retain",
+          "reason": "Distinct immutable content/context/event identity for plain and registered child calls.",
+          "evidence": [
+            "src/Story/Runtime/Playback/StoryPlayer.cs:118"
+          ]
+        },
+        {
+          "start": 8,
+          "end": 12,
+          "verdict": "retain",
+          "reason": "Plain child supplies content only, meaning inherit context and no event completion count.",
+          "evidence": [
+            "src/Story/Runtime/Playback/Execution/StorySequence.cs:32",
+            "src/Story/Runtime/Playback/StoryPlayer.cs:121"
+          ]
+        },
+        {
+          "start": 13,
+          "end": 20,
+          "verdict": "retain",
+          "reason": "Registered child transfers definition identity and explicit stage context; shared completion accounting uses this identity.",
+          "evidence": [
+            "src/Story/Runtime/Playback/Execution/StorySequence.cs:37",
+            "src/Story/Runtime/Direction/Services/NpcVisitAssembly.cs:38",
+            "src/Story/Runtime/Playback/StoryPlayer.cs:149"
+          ]
+        }
+      ]
+    },
+    {
+      "path": "src/Story/Runtime/Playback/Execution/Steps/StoryInsertionStep.cs",
+      "lineCount": 11,
+      "sha256": "3a339fc8f22ba2fa6a126523b919a11eb4877228e51c217f91f85addaeee67e4",
+      "blocks": [
+        {
+          "start": 1,
+          "end": 11,
+          "verdict": "retain",
+          "reason": "Immutable insertion-point name, resolved at execution time rather than registration.",
+          "evidence": [
+            "src/Story/Runtime/Playback/Execution/StorySequence.cs:42",
+            "src/Story/Runtime/Playback/StoryPlayer.cs:123"
+          ]
+        }
+      ]
+    },
+    {
+      "path": "src/Story/Runtime/Playback/Execution/Steps/StoryLineStep.cs",
+      "lineCount": 23,
+      "sha256": "3b81d70132b9be0b9e49cc699e650a0c55c1362c409290c2732530613e98a89a",
+      "blocks": [
+        {
+          "start": 1,
+          "end": 9,
+          "verdict": "retain",
+          "reason": "Three speaker roles are authoring values mapped by adapter rather than game UI types.",
+          "evidence": [
+            "src/Story/Runtime/Playback/Dialogue/StoryDialogueAdapter.cs:25"
+          ]
+        },
+        {
+          "start": 10,
+          "end": 23,
+          "verdict": "retain",
+          "reason": "Immutable text/speaker/pause payload; no duplicated render or game dependency in sequence data.",
+          "evidence": [
+            "src/Story/Runtime/Playback/Execution/StorySequence.cs:12",
+            "src/Story/Runtime/Playback/Dialogue/StoryDialogueAdapter.cs:25"
+          ]
+        }
+      ]
+    },
+    {
+      "path": "src/Story/Runtime/Playback/Execution/Steps/StoryStep.cs",
+      "lineCount": 6,
+      "sha256": "934fafcb3ff017a0f1320bf6d43bcf973080e9c1f9faf02bad3d79ba35a41a22",
+      "blocks": [
+        {
+          "start": 1,
+          "end": 6,
+          "verdict": "retain",
+          "reason": "Minimal common type enables ordered heterogeneous authored steps; no virtual runtime methods or invented behavior.",
+          "evidence": [
+            "src/Story/Runtime/Playback/Execution/StorySequence.cs:9",
+            "src/Story/Runtime/Playback/StoryPlayer.cs:78"
+          ]
+        }
+      ]
+    },
+    {
+      "path": "src/Story/Runtime/Playback/Execution/StoryCallFrame.cs",
+      "lineCount": 37,
+      "sha256": "3c955d974c930e54377482d996a8bc93512e11c7e5afa93a56a952b980c8bdea",
+      "blocks": [
+        {
+          "start": 1,
+          "end": 14,
+          "verdict": "retain",
+          "reason": "Frame owns content identity/context, selected edge, registered sequence, next-node snapshot, step and insertion cursors; each read by current state machine.",
+          "evidence": [
+            "src/Story/Runtime/Playback/StoryPlayer.cs:56",
+            "src/Story/Runtime/Playback/StoryPlayer.cs:76",
+            "src/Story/Runtime/Playback/StoryPlayer.cs:131"
+          ]
+        },
+        {
+          "start": 15,
+          "end": 22,
+          "verdict": "retain",
+          "reason": "Initialize child with entry edge and inherited or explicit context; no fake default entry.",
+          "evidence": [
+            "src/Story/Runtime/Playback/StoryPlayer.cs:25",
+            "src/Story/Runtime/Playback/StoryPlayer.cs:66",
+            "src/Story/Runtime/Playback/StoryPlayer.cs:121"
+          ]
+        },
+        {
+          "start": 23,
+          "end": 29,
+          "verdict": "retain",
+          "reason": "Selecting an option invalidates old sequence and resets step index, leaving next to be replaced by registration.",
+          "evidence": [
+            "src/Story/Runtime/Playback/StoryPlayer.cs:39",
+            "src/Story/Runtime/Playback/StoryPlayer.cs:71"
+          ]
+        },
+        {
+          "start": 30,
+          "end": 37,
+          "verdict": "retain",
+          "reason": "Synchronously register all edge steps and immediately snapshot ResolveNext, preserving current legacy branch state semantics.",
+          "evidence": [
+            "src/Story/Runtime/Graph/StoryEdge.cs:27",
+            "src/Story/Runtime/Playback/StoryPlayer.cs:73"
+          ]
+        }
+      ]
+    },
+    {
+      "path": "src/Story/Runtime/Playback/Execution/StoryInsertionCursor.cs",
+      "lineCount": 58,
+      "sha256": "aec4ee244a157796319ff2d344d3de56dda923d06865ac568db599231e7f0bd7",
+      "blocks": [
+        {
+          "start": 1,
+          "end": 13,
+          "verdict": "retain",
+          "reason": "Maintain ordered candidates and one traversal position; playback/context are shared real inputs rather than new global state.",
+          "evidence": [
+            "src/Story/Runtime/Playback/StoryPlayer.cs:126"
+          ]
+        },
+        {
+          "start": 14,
+          "end": 25,
+          "verdict": "retain",
+          "reason": "Build insertion-only point candidate set, preserving definition identity; point filtering is authored routing, not defensive recovery.",
+          "evidence": [
+            "src/Story/Runtime/Model/StoryContext.cs:31",
+            "src/Story/Runtime/Model/StoryEvent.cs:40"
+          ]
+        },
+        {
+          "start": 26,
+          "end": 35,
+          "verdict": "retain",
+          "reason": "Stable descending insertion sort: strict greater comparison keeps equal priorities in registration order; elementary loops are readable and bounded by candidate list.",
+          "evidence": [
+            "tests/FluxForge.Story.Tests/StoryPlaybackTests.cs:150"
+          ]
+        },
+        {
+          "start": 36,
+          "end": 46,
+          "verdict": "retain",
+          "reason": "Each candidate visited once, eligible check runs just before child start so preceding actions/children can update state.",
+          "evidence": [
+            "src/Story/Runtime/Selection/StoryEventSelector.cs:36",
+            "tests/FluxForge.Story.Tests/StoryPlaybackTests.cs:122"
+          ]
+        },
+        {
+          "start": 47,
+          "end": 58,
+          "verdict": "retain",
+          "reason": "Consume only authored nonempty exclusion group and return selected definition; null means ordinary cursor exhaustion.",
+          "evidence": [
+            "tests/FluxForge.Story.Tests/StoryPlaybackTests.cs:136",
+            "src/Story/Runtime/Playback/StoryPlayer.cs:59"
+          ]
+        }
+      ],
+      "commentReview": "Comment wording reviewed against implementation; executable tokens and line positions unchanged. See ../story-comment-audit.json."
+    },
+    {
+      "path": "src/Story/Runtime/Playback/Execution/StoryPlaybackContext.cs",
+      "lineCount": 20,
+      "sha256": "9bd233148783995ebdc26076c1565408bbf90cdea4344359a438c19d00871494",
+      "blocks": [
+        {
+          "start": 1,
+          "end": 11,
+          "verdict": "retain",
+          "reason": "Per-visit immutable dependency bundle shares registration, original visit and consumed groups across frames; removes repeated parameter chains.",
+          "evidence": [
+            "src/Story/Runtime/Playback/StoryPlayer.cs:10",
+            "src/Story/Runtime/Direction/Services/NpcVisitAssembly.cs:12"
+          ]
+        },
+        {
+          "start": 12,
+          "end": 20,
+          "verdict": "retain",
+          "reason": "Constructor retains caller-provided objects with no cloning or guessed fallbacks, allowing shared exclusion semantics.",
+          "evidence": [
+            "src/Story/Runtime/Direction/NpcStoryHost.cs:241"
+          ]
+        }
+      ],
+      "commentReview": "Comment wording reviewed against implementation; executable tokens and line positions unchanged. See ../story-comment-audit.json."
+    },
+    {
+      "path": "src/Story/Runtime/Playback/Execution/StorySequence.cs",
+      "lineCount": 47,
+      "sha256": "8e9e4fd4ac62e59fa311cef4d58f1c312c955f469d5e2d1e81890ffa08fcf191",
+      "blocks": [
+        {
+          "start": 1,
+          "end": 11,
+          "verdict": "retain",
+          "reason": "Ordered list of immutable steps exposed read-only to playback; no native UI dependency in authoring record.",
+          "evidence": [
+            "src/Story/Runtime/Playback/StoryPlayer.cs:76"
+          ]
+        },
+        {
+          "start": 12,
+          "end": 16,
+          "verdict": "retain",
+          "reason": "Register NPC line with explicit optional author pause; no execution during registration.",
+          "evidence": [
+            "src/Story/Runtime/Playback/Dialogue/StoryDialogueAdapter.cs:25"
+          ]
+        },
+        {
+          "start": 17,
+          "end": 26,
+          "verdict": "retain",
+          "reason": "Player/system authoring operations choose fixed roles and default pause. No current production SayPlayer call, but explicit API contract tested.",
+          "evidence": [
+            "tests/FluxForge.Story.Tests/StoryPlaybackTests.cs:79",
+            "src/Story/Runtime/Playback/Dialogue/StoryDialogueAdapter.cs:25"
+          ]
+        },
+        {
+          "start": 27,
+          "end": 31,
+          "verdict": "retain",
+          "reason": "Record side effect rather than running it early; actual timing controlled by player.",
+          "evidence": [
+            "src/Story/Runtime/Playback/StoryPlayer.cs:100"
+          ]
+        },
+        {
+          "start": 32,
+          "end": 41,
+          "verdict": "retain",
+          "reason": "Only two justified call forms: ordinary child inherit context, registered stage child carry event identity and context.",
+          "evidence": [
+            "src/Story/Runtime/Direction/Services/NpcVisitAssembly.cs:18",
+            "src/Story/Runtime/Direction/Services/NpcVisitAssembly.cs:38",
+            "src/Story/Runtime/Playback/StoryPlayer.cs:121"
+          ]
+        },
+        {
+          "start": 42,
+          "end": 47,
+          "verdict": "retain",
+          "reason": "Record stable point string for deferred condition evaluation; no child registration hardcoded here.",
+          "evidence": [
+            "src/Story/Runtime/Playback/StoryPlayer.cs:123",
+            "tests/FluxForge.Story.Tests/StoryPlaybackTests.cs:122"
+          ]
+        }
+      ],
+      "commentReview": "Comment wording reviewed against implementation; executable tokens and line positions unchanged. See ../story-comment-audit.json."
+    }
+  ],
+  "findings": [
+    {
+      "id": "PLAYBACK-01",
+      "priority": "P2",
+      "path": "src/Story/Runtime/Playback/Dialogue/DialoguePacing.cs",
+      "start": 45,
+      "end": 48,
+      "reason": "Native skip flag has already been cleared at OnCurrentTextDisplayed:347 before ScheduleAutoAdvance(0.01f):351. The existing guard cannot preserve skip timing for custom lines.",
+      "evidence": [
+        ".tmp-decomp/DialogUIManager.cs:345",
+        ".tmp-decomp/DialogUIManager.cs:347",
+        ".tmp-decomp/DialogUIManager.cs:351",
+        ".tmp-decomp/DialogUIManager.cs:360"
+      ],
+      "recommendation": "Discriminate the actual native skip-delay call rather than a flag no longer true; add a regression against the native call sequence.",
+      "status": "fixed-and-source-rereviewed",
+      "resolution": "Exact native skip-delay discrimination replaces ineffective flag check; real Prefix directly covered by three focused boundary tests."
+    },
+    {
+      "id": "PLAYBACK-02",
+      "priority": "P3",
+      "path": "src/Story/Runtime/Playback/Dialogue/StoryDialogueBridge.cs",
+      "originalStart": 16,
+      "originalEnd": 19,
+      "status": "fixed-and-source-rereviewed",
+      "reason": "The previous next!=null branch skipped only a redundant null assignment after the same callback had already cleared currentDialog. Native SetCurrentDialog has no null-specific side effect.",
+      "evidence": [
+        ".tmp-decomp/DialogUIManager.cs:754",
+        ".tmp-decomp/DialogUIManager.cs:756"
+      ],
+      "resolution": "Removed the conditional; preserved the pre-clear and unconditional assignment of resume result. Bridge mechanism remains necessary for native continuation ordering."
+    }
+  ]
+}

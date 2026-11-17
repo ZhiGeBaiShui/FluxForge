@@ -11,14 +11,14 @@ namespace FluxForge.Mod
         {
             new HeavyMetalFluxRecipe(
                 "fluxforge_heavy_metal_flux_agent",
-                LocHelper.GetLocalizedItem("item_flux_agent_name"),
-                "所需材料：100% 重金属，4 mL",
+                "item_flux_agent_name",
+                "former.flux_material",
                 "flux_agent",
                 4000),
             new HeavyMetalFluxRecipe(
                 "fluxforge_heavy_metal_advanced_flux_agent",
-                LocHelper.GetLocalizedItem("item_advanced_flux_agent_name"),
-                "所需材料：100% 重金属，400 mL",
+                "item_advanced_flux_agent_name",
+                "former.advanced_flux_material",
                 "advanced_flux_agent",
                 400000),
         };
@@ -62,7 +62,7 @@ namespace FluxForge.Mod
 
             selector = MachineHelper.CreateMachineryWindow(
                 true,
-                MachineHelper.Panel("选择配方", productGrid, "recipes"));
+                MachineHelper.Panel(ModHelper.GetLocalized(ItemFactory.ModId, "former.select_recipe"), productGrid, "recipes"));
             selector.closeCallback = () =>
             {
                 if (RecipeSelectHandler.current.callback == selectionCallback)

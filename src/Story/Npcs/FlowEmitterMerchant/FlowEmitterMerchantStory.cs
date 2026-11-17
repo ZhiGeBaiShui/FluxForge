@@ -12,7 +12,7 @@ namespace FluxForge.Story.FlowEmitterMerchant
         {
             NpcDefinition definition = new NpcDefinition(
                 "fluxforge_flow_emitter_demo",
-                "奥雅",
+                "npc.oya.name",
                 NpcPortraitRegistry.SpriteKey,
                 FlowEmitterMerchantProgress.VisitCountKey,
                 true);
@@ -78,7 +78,8 @@ namespace FluxForge.Story.FlowEmitterMerchant
                         genericVisit,
                         new FlowEmitterGenericVisitAssembly(),
                         StoryOutcome.OpenShop),
-                });
+                },
+                visit);
         }
     }
 }

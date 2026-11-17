@@ -1,6 +1,6 @@
 namespace FluxForge.Story
 {
-    /// <summary>选择器和剧情条件可读取的 NPC 状态。</summary>
+    /// <summary>NPC 持久状态读写契约；选择器和剧情条件只使用读取方法。</summary>
     internal interface IStoryState
     {
         int VisitCount { get; }

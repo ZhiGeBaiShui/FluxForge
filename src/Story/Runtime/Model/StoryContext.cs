@@ -1,6 +1,6 @@
 namespace FluxForge.Story
 {
-    /// <summary>剧情事件选择时可见的上下文。</summary>
+    /// <summary>事件选择与播放帧共享的上下文；插入点上下文保留原阶段的交易结果。</summary>
     internal sealed class StoryContext
     {
         internal NpcDefinition Definition { get; }
@@ -9,6 +9,7 @@ namespace FluxForge.Story
         internal VisitKind VisitKind { get; }
         internal int Day { get; }
         internal StoryTradeResult TradeResult { get; }
+        internal string Point { get; }
 
         internal StoryContext(
             NpcDefinition definition,
@@ -24,6 +25,13 @@ namespace FluxForge.Story
             VisitKind = visitKind;
             Day = day;
             TradeResult = tradeResult;
+        }
+
+        internal StoryContext(StoryContext visit, string point)
+            : this(visit.Definition, visit.State, StoryTrigger.InsertionPoint,
+                visit.VisitKind, visit.Day, visit.TradeResult)
+        {
+            Point = point;
         }
 
         internal int VisitCount

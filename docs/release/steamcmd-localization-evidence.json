@@ -1,0 +1,17 @@
+{
+  "binary": "E:/code/steam/steamconsole.dll",
+  "sha256": "1d8bc777499231c531ef965c6890ad70be102e7e50b4f73e846c26719b9f38fe",
+  "function_string_references": {
+    "0x100604d2": "title",
+    "0x1006053a": "description",
+    "0x100605a4": "visibility",
+    "0x1006060d": "previewfile",
+    "0x1006067a": "contentfolder",
+    "0x100606ee": "kvtags",
+    "0x100607a3": "changenote"
+  },
+  "no_language_key_in_inspected_function": true,
+  "no_plain_tags_key_in_inspected_function": true,
+  "publication_executed": false,
+  "read_only_query_result": "k_EResultFail"
+}

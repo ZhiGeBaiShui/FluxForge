@@ -2,7 +2,7 @@ using FluxForge.Story.FlowEmitterMerchant;
 
 namespace FluxForge.Story.FlowEmitterSecondVisit
 {
-    /// <summary>第二次到访：介绍新货，不再演示冷萃装置。</summary>
+    /// <summary>第二次到访：介绍新货、赠送手册；正常结束时记录进度并上货。</summary>
     internal sealed class FlowEmitterSecondVisitAssembly : StoryAssembly
     {
         internal override StoryEdge Entry { get; }

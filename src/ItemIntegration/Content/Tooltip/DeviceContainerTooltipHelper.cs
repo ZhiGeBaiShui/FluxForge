@@ -39,7 +39,7 @@ namespace FluxForge.Mod
                 StatusLine line = def.statusLines[i];
                 if (line == null
                     || string.IsNullOrEmpty(line.tag)
-                    || string.IsNullOrEmpty(line.label)
+                    || string.IsNullOrEmpty(line.labelLoc)
                     || !item.IsTag(line.tag))
                 {
                     continue;
@@ -51,9 +51,8 @@ namespace FluxForge.Mod
                     continue;
                 }
 
-                string text = line.label
-                    + "：" + FormatValue(state, line)
-                    + (line.unit ?? string.Empty);
+                string text = ModHelper.GetLocalized(ItemFactory.ModId, "tooltip.status",
+                    ModHelper.GetLocalized(ItemFactory.ModId, line.labelLoc), FormatValue(state, line), line.unit ?? string.Empty);
 
                 builder.AddLine(text, true, ParseColor(line.color));
             }
@@ -61,7 +60,8 @@ namespace FluxForge.Mod
             // 存量不落额外 tag：直接从 CURRENT_PART_* 实时求和。
             double millilitres = FlowStock.Total(item) / 1000d;
             builder.AddLine(
-                "存量：" + millilitres.ToString(DefaultFormat, CultureInfo.InvariantCulture) + "mL",
+                ModHelper.GetLocalized(ItemFactory.ModId, "tooltip.stored_amount",
+                    millilitres.ToString(DefaultFormat, CultureInfo.InvariantCulture)),
                 true,
                 DefaultColor);
         }

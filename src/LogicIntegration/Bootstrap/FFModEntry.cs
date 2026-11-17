@@ -45,14 +45,14 @@ namespace FluxForge.Mod
             // tooltip helper 登记（AppendAll 里也会懒初始化，这里提前装好）
             FlowTooltipHelpers.EnsureInitialized();
 
-            // 本地化表启动时补一次；读档会重载，SaveLoaded 再补
-            ItemTypeLocalization.RegisterAll();
+            // 类型翻译在OnModAssetsLoaded之后登记；读档重载由SaveLoaded补回。
 
             Log.Log("FluxForge 已加载");
         }
 
         public void OnEnable()
         {
+            ModMetadataLocalization.Initialize();
             // 直接委托：Mono 下 ModHook 的事件就是普通 C# 事件，不需要 DelegateSupport。
             ModHook.OnModItemDirectoryInit += OnModItemDirectoryInit;
             SaveLoaded.Subscribe();
@@ -71,6 +71,7 @@ namespace FluxForge.Mod
 
         public void OnDisable()
         {
+            ModMetadataLocalization.Shutdown();
             DeviceManual.Shutdown();
             PaperNoteContent.Clear();
             ModHook.OnModItemDirectoryInit -= OnModItemDirectoryInit;

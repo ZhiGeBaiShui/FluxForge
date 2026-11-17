@@ -9,10 +9,6 @@ namespace FluxForge.Story.Hospital
             = "hospital.contract.started";
         private const string StartDayKey
             = "hospital.contract.start_day";
-        private const string NextPickupDayKey
-            = "hospital.contract.next_pickup_day";
-        private const string NextMaterialDayKey
-            = "hospital.contract.next_material_day";
         private const string LastPickupDayKey
             = "hospital.contract.last_pickup_day";
         private const string LastMaterialDayKey
@@ -21,6 +17,8 @@ namespace FluxForge.Story.Hospital
             = "hospital.contract.offer_ready";
         private const string OfferDeclinedKey
             = "hospital.contract.offer_declined";
+        private const string DetailsExplainedKey
+            = "hospital.contract.details_explained";
         private const string TerminatedKey
             = "hospital.contract.terminated";
 
@@ -39,12 +37,12 @@ namespace FluxForge.Story.Hospital
 
         internal static int NextPickupDay
         {
-            get { return ReadInt(NextPickupDayKey); }
+            get { return HospitalContractSchedule.Advance(StartDay + 7, LastPickupDay); }
         }
 
         internal static int NextMaterialDay
         {
-            get { return ReadInt(NextMaterialDayKey); }
+            get { return HospitalContractSchedule.Advance(StartDay + 3, LastMaterialDay); }
         }
 
         internal static int LastPickupDay
@@ -75,6 +73,19 @@ namespace FluxForge.Story.Hospital
             }
         }
 
+        internal static bool DetailsExplained
+        {
+            get
+            {
+                return PlayerStore.Instance.modData.ContainsKey(DetailsExplainedKey);
+            }
+        }
+
+        internal static void MarkDetailsExplained()
+        {
+            PlayerStore.Instance.modData[DetailsExplainedKey] = "1";
+        }
+
         internal static bool Terminated
         {
             get
@@ -93,10 +104,6 @@ namespace FluxForge.Story.Hospital
 
             PlayerStore.Instance.modData[StartedKey] = "1";
             PlayerStore.Instance.modData[StartDayKey] = day.ToString();
-            PlayerStore.Instance.modData[NextPickupDayKey]
-                = (day + 7).ToString();
-            PlayerStore.Instance.modData[NextMaterialDayKey]
-                = (day + 3).ToString();
             PlayerStore.Instance.modData[LastPickupDayKey]
                 = day.ToString();
             PlayerStore.Instance.modData[LastMaterialDayKey]
@@ -108,64 +115,38 @@ namespace FluxForge.Story.Hospital
         {
             return Started
                 && HospitalContractSchedule.IsDue(
-                    NextPickupDay,
-                    day);
+                    StartDay + 7,
+                    day)
+                && day > LastPickupDay;
         }
 
         internal static bool IsMaterialDue(int day)
         {
             return Started
                 && HospitalContractSchedule.IsDue(
-                    NextMaterialDay,
-                    day);
+                    StartDay + 3,
+                    day)
+                && day > LastMaterialDay;
         }
 
         internal static bool ShouldRunPickup(int day)
         {
-            if (Terminated)
-            {
-                return false;
-            }
-
-            return HospitalContractSchedule.ShouldRunPickup(
-                IsPickupDue(day),
-                IsMaterialDue(day),
-                LastPickupDay,
-                LastMaterialDay);
+            return !Terminated && IsPickupDue(day);
         }
 
         internal static bool ShouldRunMaterial(int day)
         {
-            if (Terminated)
-            {
-                return false;
-            }
-
-            return HospitalContractSchedule.ShouldRunMaterial(
-                IsPickupDue(day),
-                IsMaterialDue(day),
-                LastPickupDay,
-                LastMaterialDay);
+            return !Terminated && IsMaterialDue(day);
         }
 
         internal static void MarkPickup(int day)
         {
-            PlayerStore.Instance.modData[LastPickupDayKey]
-                = day.ToString();
-            PlayerStore.Instance.modData[NextPickupDayKey]
-                = HospitalContractSchedule.Advance(
-                    NextPickupDay,
-                    day).ToString();
+            PlayerStore.Instance.modData[LastPickupDayKey] = day.ToString();
         }
 
         internal static void MarkMaterial(int day)
         {
-            PlayerStore.Instance.modData[LastMaterialDayKey]
-                = day.ToString();
-            PlayerStore.Instance.modData[NextMaterialDayKey]
-                = HospitalContractSchedule.Advance(
-                    NextMaterialDay,
-                    day).ToString();
+            PlayerStore.Instance.modData[LastMaterialDayKey] = day.ToString();
         }
 
         internal static void QueueOffer()
