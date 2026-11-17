@@ -1,6 +1,7 @@
 {
   "id": "starter_note",
   "title": "starter_note",
+  "background": "starter_note_paper",
   "width": 720,
   "height": 850,
   "designWidth": 720,
@@ -12,6 +13,7 @@
       "type": "button",
       "id": "close",
       "action": "close",
+      "sprite": "paper_buttons_close1",
       "x": 670,
       "y": 10,
       "w": 32,
@@ -21,6 +23,7 @@
       "type": "button",
       "id": "zoom",
       "action": "zoom",
+      "sprite": "paper_buttons_screen_0",
       "x": 630,
       "y": 10,
       "w": 32,

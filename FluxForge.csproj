@@ -110,6 +110,11 @@
       <Link>Textures\%(Filename)%(Extension)</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <!-- 纸面 UI 的 PaperSprites：便条背景与关闭/缩放按钮。 -->
+    <None Update="mod\Textures\Paper\*.png">
+      <Link>Textures\Paper\%(Filename)%(Extension)</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Update="mod\AssetBundles\fluxforge_device_manual">
       <Link>AssetBundles\fluxforge_device_manual</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
