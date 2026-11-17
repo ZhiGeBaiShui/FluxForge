@@ -87,5 +87,38 @@ namespace FluxForge.Tests
             double concentration = ContaminantTotal(entity) / entity.Properties.SubstanceTotal;
             Assert.True(concentration > 0.01d);
         }
+
+        [Fact]
+        public void SecondPassAtFloorDoesNotPublishAnotherSound()
+        {
+            // 第二次穿过时 target 与 contaminants 只差约 9e-13；
+            // 不能把这部分浮点残差当成一次新的净化。
+            FlowProperties properties = new FlowProperties();
+            properties.Set(FlowProps.Water, 80453d);
+            properties.Set(FlowProps.ChemicalContaminant, 4809d);
+            properties.Set(FlowProps.HeavyMetal, 5873d);
+            properties.Set(FlowProps.Microbe, 5962d);
+            properties.Set(FlowProps.Temperature, 20d);
+
+            FlowEntity entity = new FlowEntity(
+                new FlowPos(0d, 0d),
+                new FlowMotionData(1, 2.5d),
+                properties);
+            FilterDevice device = new FilterDevice();
+            int sounds = 0;
+            System.Action<FlowAudioEvent> handler = evt => sounds++;
+            FlowAudio.Played += handler;
+            try
+            {
+                device.TryReact(entity);
+                device.TryReact(entity);
+            }
+            finally
+            {
+                FlowAudio.Played -= handler;
+            }
+
+            Assert.Equal(1, sounds);
+        }
     }
 }

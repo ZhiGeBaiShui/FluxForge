@@ -30,6 +30,13 @@ namespace FluxForge
         /// <summary>温度每升高 1 度，下限下降的比例：0.01%。</summary>
         public const double FloorDropPerDegree = 0.0001d;
 
+        /// <summary>
+        /// 判断是否已经到达下限的相对容差。第二次穿过时 target 与 contaminants
+        /// 可能只差 double 舍入误差（实测约 9e-13），直接比较会把残差当成
+        /// 一次新的去除并再次播报音效。
+        /// </summary>
+        private const double FloorComparisonEpsilon = 1e-9d;
+
         /// <summary>温度基准点（水的沸点）。</summary>
         public const double ReferenceTemperature = 100d;
 
@@ -71,7 +78,8 @@ namespace FluxForge
 
             double nonContaminants = properties.SubstanceTotal - contaminants;
             double target = floor * nonContaminants / (1d - floor);
-            if (target >= contaminants)
+            double epsilon = contaminants * FloorComparisonEpsilon;
+            if (target >= contaminants - epsilon)
             {
                 return;
             }
