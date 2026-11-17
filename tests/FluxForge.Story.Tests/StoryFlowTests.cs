@@ -344,7 +344,7 @@ namespace FluxForge.Story.Tests
             foreach (var entry in savedData) PlayerStore.Instance.modData.Add(entry.Key, entry.Value);
             StoreStation.Day = 7;
             Conversation repeat = new Conversation(OfferAssembly());
-            Assert.Equal(new[] { "你好，老板。", "关于合同，你改变主意了吗？" },
+            Assert.Equal(new[] { "你好，店主。", "关于合同，你改变主意了吗？" },
                 repeat.Lines.Select(l => l.Text));
             Assert.Equal(3, repeat.Last.Choices.Count);
             repeat.HasChoice("还是只散卖。");
@@ -374,7 +374,7 @@ namespace FluxForge.Story.Tests
             first.Player.Cancel();
 
             Conversation repeat = new Conversation(OfferAssembly());
-            Assert.Equal(new[] { "你好，老板。", "关于合同，你改变主意了吗？" },
+            Assert.Equal(new[] { "你好，店主。", "关于合同，你改变主意了吗？" },
                 repeat.Lines.Select(l => l.Text));
             repeat.HasChoice("行，我答应了。");
             Assert.DoesNotContain(repeat.Last.Choices, choice => choice.Text == "怎么供。");
@@ -399,7 +399,7 @@ namespace FluxForge.Story.Tests
             {
                 StoreStation.Day = day;
                 Conversation repeat = new Conversation(assembly);
-                Assert.Equal(new[] { "你好，老板。", "关于合同，你改变主意了吗？" },
+                Assert.Equal(new[] { "你好，店主。", "关于合同，你改变主意了吗？" },
                     repeat.Lines.Select(l => l.Text));
                 Assert.Equal(3, repeat.Last.Choices.Count);
                 repeat.HasChoice("行，我答应了。");

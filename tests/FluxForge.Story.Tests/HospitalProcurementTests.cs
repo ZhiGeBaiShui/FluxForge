@@ -109,7 +109,7 @@ namespace FluxForge.Story.Tests
         }
 
         [Theory]
-        [InlineData("fluxforge_hospital_visitor_01", "npc_hospital_visitor_01", "你好，老板。", "医院让我来买点东西，你这有什么好货？", null)]
+        [InlineData("fluxforge_hospital_visitor_01", "npc_hospital_visitor_01", "你好，店主。", "医院让我来买点东西，你这有什么好货？", null)]
         [InlineData("fluxforge_hospital_visitor_02", "npc_hospital_visitor_02", "你好。", "我来替医院采购，先看看你的现货。", null)]
         [InlineData("fluxforge_hospital_visitor_03", "npc_hospital_visitor_03", "你好啊。", "让我看看有没有医院用得上的东西。", null)]
         [InlineData("fluxforge_hospital_visitor_04", "npc_hospital_visitor_04", "你好。", "医院需要添些东西。", "我能看看你这里的货吗？")]
