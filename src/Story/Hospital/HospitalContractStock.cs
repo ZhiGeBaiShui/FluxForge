@@ -68,7 +68,7 @@ namespace FluxForge.Story.Hospital
             properties.Set(FlowProps.PhysicalContaminant, physical);
             properties.Set(FlowProps.Mineral, mineral);
             properties.Set(FlowProps.Debris, debris);
-            properties.Set(FlowProps.Temperature, 20d);
+            properties.Set(FlowProps.Temperature, 24d);
             FlowStock.Write(item, properties);
 
             item.name = ModHelper.GetLocalized("fluxforge", acid ? "item.stock.hospital_acid.name" : "item.stock.hospital_base.name");

@@ -57,7 +57,7 @@ namespace FluxForge.Story.AcidBuyer
             properties.Set(FlowProps.PhysicalContaminant, physical);
             properties.Set(FlowProps.Mineral, mineral);
             properties.Set(FlowProps.Debris, debris);
-            properties.Set(FlowProps.Temperature, 20d);
+            properties.Set(FlowProps.Temperature, 24d);
             FlowStock.Write(item, properties);
 
             item.name = ModHelper.GetLocalized("fluxforge", acid ? "item.stock.polluted_acid.name" : "item.stock.polluted_base.name");

@@ -23,7 +23,7 @@ namespace FluxForge.Story.Hospital
             int starch = RNG.GetRandomInt(1, pollution - 1);
             contents.Set(FlowProps.Starch, starch);
             contents.Set(RNG.Roll(50) ? FlowProps.Acid : FlowProps.Base, pollution - starch);
-            contents.Set(FlowProps.Temperature, 20d);
+            contents.Set(FlowProps.Temperature, 24d);
             FlowStock.Write(item, contents);
             item.name = ModHelper.GetLocalized("fluxforge", "item.stock.synaprest.name");
             GeneralHelper.SetItemOwned(item, true);
