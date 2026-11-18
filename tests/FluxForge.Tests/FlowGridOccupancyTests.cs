@@ -5,6 +5,31 @@ namespace FluxForge.Tests
     public class FlowGridOccupancyTests
     {
         [Fact]
+        public void DiagnosticDetectsMovedShapeWithoutRegistrationRefresh()
+        {
+            var grid = new FlowGridAdapter(new GameGridInventory());
+            var item = new GameItem { modifiedShape = new GridShape(1, 1) { minX = 2, minY = 3 } };
+            grid.Register(item);
+            Assert.Null(grid.FindRegistrationMismatch());
+
+            item.modifiedShape.minX = 7;
+            Assert.Contains("expected=(7,3)", grid.FindRegistrationMismatch());
+
+            grid.Register(item);
+            Assert.Null(grid.FindRegistrationMismatch());
+        }
+
+        [Fact]
+        public void DiagnosticAcceptsRotatedFlippedShapeWithHoles()
+        {
+            var grid = new FlowGridAdapter(new GameGridInventory());
+            var shape = new GridShape(2, 3) { minX = 4, minY = 5, orientation = 1, flipped = true };
+            shape.cells[1] = 0;
+            grid.Register(new GameItem { modifiedShape = shape });
+            Assert.Null(grid.FindRegistrationMismatch());
+        }
+
+        [Fact]
         public void OrdinaryShapeRegistersOnlySolidCellsAndUnregistersAll()
         {
             var item = new GameItem { modifiedShape = new GridShape(2,2) { minX=3, minY=4 } };

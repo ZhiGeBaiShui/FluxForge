@@ -1,4 +1,6 @@
+using System;
 using System.Collections.Generic;
+using System.Text;
 
 namespace FluxForge.Mod
 {
@@ -64,7 +66,7 @@ namespace FluxForge.Mod
 
             // 同网格移动可能只触发 AddParent（旧条目先清掉，避免旧格残留）。
             Unregister(item);
-            RegisterCore(item);
+            RegisterWithDiagnostics(item);
         }
 
         /// <summary>仅刷新已落地登记的物品；拿起后已注销的物品不能被校验回调重新登记。</summary>
@@ -101,8 +103,108 @@ namespace FluxForge.Mod
 
             for (int i = 0; i < items.Count; i++)
             {
-                RegisterCore(items[i]);
+                RegisterWithDiagnostics(items[i]);
             }
+        }
+
+        // Register 与 Rebuild 都会访问 anchor 标签及格子字典；失败时记录物品，不吞掉异常。
+        private void RegisterWithDiagnostics(GameItem item)
+        {
+            try
+            {
+                RegisterCore(item);
+            }
+            catch (Exception e)
+            {
+                FFModEntry.Log.Error("[流源诊断][格子注册] grid=" + _inventory.GetHashCode()
+                    + " item=" + (item == null ? "null" : item.GetHashCode().ToString())
+                    + "：" + e);
+                throw;
+            }
+        }
+
+        internal bool IsRegistered(GameItem item)
+        {
+            return _itemCells.ContainsKey(item);
+        }
+
+        /// <summary>用物品当前形状检查登记结果；返回首个偏差，不修改登记表。</summary>
+        internal string FindRegistrationMismatch()
+        {
+            foreach (var entry in _itemCells)
+            {
+                GameItem item = entry.Key;
+                GridShape shape = item.modifiedShape;
+                DeviceHost host = DeviceRegistry.GetHost(item);
+                int expectedCount = 0;
+                if (host != null && host.CellLayout == null)
+                {
+                    var anchor = shape.ForwardTransform(
+                        item.state.dict[FlowTags.AnchorX].GetInt(),
+                        item.state.dict[FlowTags.AnchorY].GetInt());
+                    long key = Pack(anchor.Item1, anchor.Item2);
+                    if (!entry.Value.Contains(key) || !_deviceCells.ContainsKey(key))
+                        return "anchor mismatch item=" + item.GetHashCode()
+                            + " expected=(" + anchor.Item1 + "," + anchor.Item2 + ")";
+                    expectedCount = 1;
+                }
+                else
+                {
+                    for (int y = 0; y < shape.height; y++)
+                    {
+                        for (int x = 0; x < shape.width; x++)
+                        {
+                            if (shape.GetLocal(x, y) == 0) continue;
+                            expectedCount++;
+                            var cell = shape.ForwardTransform(x, y);
+                            long key = Pack(cell.Item1, cell.Item2);
+                            bool registered = host == null
+                                ? _occupied.Contains(key) : _deviceCells.ContainsKey(key);
+                            if (!entry.Value.Contains(key) || !registered)
+                                return "cell mismatch item=" + item.GetHashCode()
+                                    + " expected=(" + cell.Item1 + "," + cell.Item2 + ")";
+                        }
+                    }
+                }
+                if (entry.Value.Count != expectedCount)
+                    return "cell count mismatch item=" + item.GetHashCode()
+                        + " expected=" + expectedCount + " actual=" + entry.Value.Count;
+            }
+            return null;
+        }
+
+        /// <summary>仅由手动诊断调用，导出实际登记表，不修改或重建格子。</summary>
+        internal string DescribeRegistration()
+        {
+            StringBuilder text = new StringBuilder();
+            text.Append("[流源诊断][格子] grid=").Append(_inventory.GetHashCode());
+            foreach (var entry in _itemCells)
+            {
+                GridShape shape = entry.Key.modifiedShape;
+                text.Append("\nitem=").Append(entry.Key.GetHashCode())
+                    .Append(" shape=").Append(shape.width).Append('x').Append(shape.height)
+                    .Append(" orientation=").Append(shape.orientation)
+                    .Append(" flipped=").Append(shape.flipped);
+                text.Append(" shapeCells=");
+                for (int y = 0; y < shape.height; y++)
+                {
+                    for (int x = 0; x < shape.width; x++)
+                    {
+                        if (shape.GetLocal(x, y) == 0) continue;
+                        var cell = shape.ForwardTransform(x, y);
+                        text.Append('(').Append(cell.Item1).Append(',').Append(cell.Item2).Append(')');
+                    }
+                }
+                text.Append(" registeredCells=");
+                foreach (long key in entry.Value)
+                {
+                    int x = (int)(key >> 32);
+                    int y = (int)key;
+                    text.Append(" cell=(").Append(x).Append(',').Append(y).Append(") kind=")
+                        .Append(GetCellKind(x, y));
+                }
+            }
+            return text.ToString();
         }
 
         /// <summary>只写表，不先清旧条目；<see cref="Register"/> 与 <see cref="Rebuild"/> 共用。</summary>

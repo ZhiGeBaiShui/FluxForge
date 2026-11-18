@@ -1,2 +1,2 @@
-E:\code\FluxForge\dist\FluxForge-0.2.0-release-20261116-193001.zip
-E:\code\FluxForge\dist\FluxForge-0.2.0-release-20261116-193001\FluxForge
+E:\code\FluxForge\dist\FluxForge-0.2.0-release-20261118-192141.zip
+E:\code\FluxForge\dist\FluxForge-0.2.0-release-20261118-192141\FluxForge

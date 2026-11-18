@@ -20,6 +20,10 @@
     <DefaultItemExcludes>$(DefaultItemExcludes);开发参考资料/**;output/**;dist/**;artifacts/**</DefaultItemExcludes>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(FlowDiagnostics)' == 'true'">
+    <DefineConstants>$(DefineConstants);FLOW_DIAGNOSTICS</DefineConstants>
+  </PropertyGroup>
+
   <ItemGroup>
     <Reference Include="Assembly-CSharp">
       <HintPath>$(GameManagedDir)\Assembly-CSharp.dll</HintPath>

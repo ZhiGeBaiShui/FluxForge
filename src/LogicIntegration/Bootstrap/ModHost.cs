@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.SceneManagement;
 
 namespace FluxForge.Mod
@@ -54,6 +54,13 @@ namespace FluxForge.Mod
         {
             // 视觉归每台机器自己：调度器逐台 Tick，单台失败不连累其它机器。
             FlowDriver.LateUpdateVisuals(Time.deltaTime);
+#if FLOW_DIAGNOSTICS
+            FlowDiagnostics.CheckFrame();
+
+            // 临时定位：在本帧绘制完成后读取格子与贴图的同一时刻快照。
+            if (Input.GetKeyDown(KeyCode.F8))
+                FlowDriver.LogDiagnostics();
+#endif
         }
 
         private void OnSceneUnloaded(Scene scene)

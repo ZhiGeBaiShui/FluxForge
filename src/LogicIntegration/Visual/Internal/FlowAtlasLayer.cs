@@ -335,6 +335,61 @@ namespace FluxForge.Mod.Visual.Internal
             _dotOrderDirty = false;
         }
 
+
+
+#if FLOW_DIAGNOSTICS
+        internal string FindCenterMismatch(int index, Vector3 expectedWorld)
+        {
+            // Submit 只绘制 SourceCapacity 个，其余实体没有对应的 UI 槽位。
+            if (index >= _activeSources) return null;
+            Canvas canvas = _root.GetComponentInParent<Canvas>().rootCanvas;
+            Camera camera = canvas.renderMode == RenderMode.ScreenSpaceOverlay ? null : canvas.worldCamera;
+            Vector2 expected = RectTransformUtility.WorldToScreenPoint(camera, expectedWorld);
+            string body = CheckCenter(_bodies[index], expected, camera);
+            if (body != null) return body;
+            string edge = CheckCenter(_edges[index], expected, camera);
+            if (edge != null) return edge;
+            return CheckCenter(_accents[index], expected, camera);
+        }
+
+        private static string CheckCenter(Image image, Vector2 expected, Camera camera)
+        {
+            // sprite=null 的通道会由 QuadCache.SetSprite 关闭，不参与可见中心检查。
+            if (!image.enabled) return null;
+            RectTransform rect = image.rectTransform;
+            Vector2 actual = RectTransformUtility.WorldToScreenPoint(
+                camera, rect.TransformPoint(rect.rect.center));
+            // 渲染器会做屏幕像素取整，允许每轴一像素差，避免将取整误报为偏移。
+            if (Mathf.Abs(actual.x - expected.x) <= 1f && Mathf.Abs(actual.y - expected.y) <= 1f)
+                return null;
+            return "channel=" + image.name + " expectedScreen=" + expected
+                + " actualScreen=" + actual + " delta=" + (actual - expected);
+        }
+#endif
+
+        /// <summary>读取实际渲染节点，供无异常的贴图偏移问题定位。</summary>
+        internal string DescribePositions()
+        {
+            System.Text.StringBuilder text = new System.Text.StringBuilder();
+            text.Append("atlasAlive=").Append(IsAlive);
+            if (!IsAlive)
+                return text.ToString();
+            text.Append(" rootRect=").Append(_root.rect)
+                .Append(" rootWorld=").Append(_root.position)
+                .Append(" scale=").Append(_root.lossyScale)
+                .Append(" gridRect=").Append(_gridRect.rect);
+            for (int i = 0; i < _activeSources; i++)
+            {
+                Image body = _bodies[i];
+                text.Append("\nslot=").Append(i)
+                    .Append(" anchor=").Append(body.rectTransform.anchoredPosition)
+                    .Append(" world=").Append(body.rectTransform.position)
+                    .Append(" size=").Append(body.rectTransform.sizeDelta)
+                    .Append(" sprite=").Append(body.sprite == null ? "null" : body.sprite.name);
+            }
+            return text.ToString();
+        }
+
         /// <summary>销毁整层（面板重建 / 网格退役 / 退档或 mod 卸载）。可重复调用。</summary>
         public void Destroy()
         {

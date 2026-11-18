@@ -28,6 +28,10 @@ namespace FluxForge.Mod
             Grid = new FlowGridAdapter(inventory);
             Flows = new FlowSpawner();
             Motion = new FlowManager(Grid, Flows);
+#if FLOW_DIAGNOSTICS
+            Motion.EntryObserved = (entity, x, y, router, result) =>
+                FlowDiagnostics.LogStraightEntry(this, entity, x, y, router, result);
+#endif
             // 视觉最后装配：视图会直接订阅本网格的生死广播；
             // 装配完成后再由 GridRegistry 登记，避免半初始化的环境被 Tick。
             Visual = new FlowVisualLayer(inventory, Flows);
@@ -50,6 +54,9 @@ namespace FluxForge.Mod
         /// 为 null 表示已退役。
         /// </summary>
         public FlowVisualLayer Visual;
+#if FLOW_DIAGNOSTICS
+        internal bool DiagnosticMismatchReported;
+#endif
 
         /// <summary>
         /// 网格 UI 还在不在。网格销毁后 <c>rectTransform</c> 变成 Unity 的 fake null；
@@ -92,6 +99,9 @@ namespace FluxForge.Mod
                 (CollectorDevice)DeviceRegistry.GetRouter(item);
             double emitSpeed = collector.EmitSpeed;
 
+#if FLOW_DIAGNOSTICS
+            FlowDiagnostics.LogEmission(this, item, origin, direction);
+#endif
             if (!Flows.TryEmit(payload, origin, direction, emitSpeed, Grid))
                 return false;
 

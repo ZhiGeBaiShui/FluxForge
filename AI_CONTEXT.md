@@ -53,4 +53,4 @@ Logic/Presentation不依赖Unity或Assembly-CSharp。剧情层只用自己的生
 
 ## 2026-11-17 本地化接入
 
-所有玩家可见文本（含NPC对白、选项、姓名、医院声望奖励、扫描仪、成型机、手册及便条）均使用外置Localization/zh.csv和en.csv，共389个对应键。中文locale为zh。原版ModHelper负责选语言及回退；选项保存键、展示时解析，不缓存启动时语言。原版物品存档保留最终文字，不额外重翻译旧物品。模组描述和类型文字在OnModAssetsLoaded后注册；未启用模组的manifest描述为英文。验证为517项逻辑、192项剧情测试通过，原版JSON/CSV解析通过；未游戏内实测，未部署或更新旧发布包。详见docs/design/item-and-note-localization.md。
+所有玩家可见文本（含NPC对白、选项、姓名、医院声望奖励、扫描仪、成型机、手册及便条）均使用外置Localization/zh.csv和en.csv，共389个对应键。中文locale为zh。原版ModHelper负责选语言及回退；选项保存键、展示时解析，不缓存启动时语言。原版物品存档保留最终文字，不额外重翻译旧物品。模组描述和类型文字在OnModAssetsLoaded后注册；未启用模组的manifest描述为英文。验证为517项逻辑、192项剧情测试通过，原版JSON/CSV解析通过；未游戏内实测。实现已随64d5eda推送；Release已部署到工坊安装目录4348910/3840844438，31文件哈希一致，旧zh-CN.csv因删除审批拒绝仍保留。旧发布ZIP未更新。完整交接上下文见[双语适配交接](docs/design/bilingual-handoff.md)，实现说明见docs/design/item-and-note-localization.md。

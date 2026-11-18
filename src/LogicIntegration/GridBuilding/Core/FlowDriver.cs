@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using FluxForge.Mod.Visual;
 
@@ -67,11 +67,32 @@ namespace FluxForge.Mod
                     if (_visualErrorReported.Add(runtime))
                     {
                         FFModEntry.Log.Error(
-                            "[流源] 视觉推进失败，已退役该环境（其它网格继续绘制）：" + e);
+                            "[流源][视觉] grid=" + runtime.Inventory.GetHashCode()
+                            + " 视觉推进失败，已退役该环境（其它网格继续绘制）：" + e);
                     }
 
                     Retire(runtime);
                     i--;
+                }
+            }
+        }
+
+        /// <summary>临时 F8 诊断入口。逐网格读取，某块诊断失败仍输出其它网格。</summary>
+        internal static void LogDiagnostics()
+        {
+            FFModEntry.Log.Log("[流源诊断] F8 snapshot，网格数=" + GridRegistry.Runtimes.Count);
+            foreach (FlowRuntime runtime in GridRegistry.Runtimes)
+            {
+                try
+                {
+                    FFModEntry.Log.Log(runtime.Grid.DescribeRegistration());
+                    if (runtime.Visual != null)
+                        FFModEntry.Log.Log(runtime.Visual.DescribePositions());
+                }
+                catch (Exception e)
+                {
+                    FFModEntry.Log.Error("[流源诊断] 读取快照失败 grid="
+                        + runtime.Inventory.GetHashCode() + "：" + e);
                 }
             }
         }

@@ -2,7 +2,7 @@
 {
 	"appid"		"4348910"
 	"publishedfileid"		"3840844438"
-	"contentfolder"		"E:/code/FluxForge/dist/FluxForge-0.2.0-release-20261117-2045/FluxForge"
+	"contentfolder"		"E:/code/FluxForge/dist/FluxForge-0.2.0-release-20261118-192141/FluxForge"
 	"previewfile"		"E:/code/FluxForge/docs/release/workshop-cover-selected.jpg"
 	"visibility"		"0"
 	"title"		"FluxForge | Liquid Processing"
@@ -56,7 +56,7 @@ Progress from individual sales to a long-term supply contract: the hospital prov
 As your reputation grows, the hospital offers additional support.
 
 Once you have earned enough trust, the hospital will ask for your help purifying a special raw material."
-	"changenote"		"FluxForge 0.2.0 - filter, temperature and emission fixes"
+	"changenote"		"FluxForge 0.2.0 - added straight pipe entry and mod attribution diagnostics"
 	"tags"
 	{
 		"0" "Mod"

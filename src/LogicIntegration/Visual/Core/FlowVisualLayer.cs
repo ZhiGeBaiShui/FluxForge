@@ -209,6 +209,50 @@ namespace FluxForge.Mod.Visual
 
         // ---- 生命周期回调（只来自本网格 FlowSpawner） ----
 
+
+
+#if FLOW_DIAGNOSTICS
+        internal string FindCenterMismatch()
+        {
+            // Tick 在未建层或面板隐藏时不绘制，诊断也不将这些情况认作偏移。
+            if (_layer == null || !_layer.IsAlive || !_rect.gameObject.activeInHierarchy)
+                return null;
+            RectTransform cells = _inventory.inner.rectTransform;
+            for (int i = 0; i < _entities.Count; i++)
+            {
+                FlowEntity entity = _entities[i];
+                // 独立使用原版网格尺寸和物品容器变换，不调用 PositionFor / ReadSnapshot。
+                Vector3 local = new Vector3(
+                    cells.rect.xMin + (float)(entity.Position.X + 0.5d) * UISettings.current.gridSize,
+                    cells.rect.yMax - (float)(entity.Position.Y + 0.5d) * UISettings.current.gridSize, 0f);
+                string mismatch = _layer.FindCenterMismatch(i, cells.TransformPoint(local));
+                if (mismatch != null)
+                    return "flow=" + entity.GetHashCode() + " gridSize=" + UISettings.current.gridSize
+                        + " logic=(" + entity.Position.X + "," + entity.Position.Y + ") " + mismatch;
+            }
+            return null;
+        }
+#endif
+
+        /// <summary>对照逻辑中心、绘制坐标和实际 UI；不推进或修正流源。</summary>
+        internal string DescribePositions()
+        {
+            System.Text.StringBuilder text = new System.Text.StringBuilder();
+            text.Append("[流源诊断][视觉] grid=").Append(_inventory.GetHashCode())
+                .Append(" rect=").Append(_rect == null ? "null" : _rect.name);
+            for (int i = 0; i < _entities.Count; i++)
+            {
+                FlowEntity entity = _entities[i];
+                FlowFrameInput snapshot = ReadSnapshot(entity);
+                text.Append("\nflow=").Append(entity.GetHashCode())
+                    .Append(" logic=(").Append(entity.Position.X).Append(',').Append(entity.Position.Y)
+                    .Append(") draw=(").Append(snapshot.X).Append(',').Append(snapshot.Y).Append(')');
+            }
+            if (_layer != null)
+                text.Append('\n').Append(_layer.DescribePositions());
+            return text.ToString();
+        }
+
         private void OnEntityAdded(FlowEntity entity)
         {
             _blockedStates[entity] = false;

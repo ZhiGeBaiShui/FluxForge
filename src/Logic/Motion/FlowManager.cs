@@ -107,6 +107,9 @@ namespace FluxForge
                 if (!_grid.Contains(currentX, currentY)
                     || _grid.GetCellKind(currentX, currentY) == FlowCellKind.Occupied)
                 {
+#if FLOW_DIAGNOSTICS
+                    EntryObserved?.Invoke(entity, currentX, currentY, null, "current-cell-occupied-or-outside");
+#endif
                     flows.Kill(entity);
                     continue;
                 }
@@ -267,18 +270,29 @@ namespace FluxForge
         }
 
         /// <summary>入口只检查占位和方向，不执行化学反应或转向。</summary>
+#if FLOW_DIAGNOSTICS
+        internal Action<FlowEntity, int, int, IFlowRouter, string> EntryObserved;
+#endif
         private bool TryEnterCell(FlowEntity entity, FlowSpawner flows, int x, int y)
         {
             if (!_grid.Contains(x, y) || _grid.GetCellKind(x, y) == FlowCellKind.Occupied)
             {
+#if FLOW_DIAGNOSTICS
+                EntryObserved?.Invoke(entity, x, y, null, "occupied-or-outside");
+#endif
                 flows.Kill(entity);
                 return true;
             }
             var router = _grid.GetRouterAt(x, y);
             var reactor = _grid.GetReactorAt(x, y);
             int direction = entity.Motion.Direction;
-            if ((router is IFlowInlet routerInlet && !routerInlet.CanEnter(direction))
-                || (reactor is IFlowInlet reactorInlet && !reactorInlet.CanEnter(direction)))
+            bool routerDenied = router is IFlowInlet routerInlet && !routerInlet.CanEnter(direction);
+            bool reactorDenied = !routerDenied && reactor is IFlowInlet reactorInlet && !reactorInlet.CanEnter(direction);
+#if FLOW_DIAGNOSTICS
+            EntryObserved?.Invoke(entity, x, y, router,
+                routerDenied ? "router-denied" : reactorDenied ? "reactor-denied" : "allowed");
+#endif
+            if (routerDenied || reactorDenied)
             {
                 flows.Kill(entity);
                 return true;

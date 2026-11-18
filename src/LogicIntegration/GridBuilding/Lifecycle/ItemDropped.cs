@@ -74,6 +74,9 @@ namespace FluxForge.Mod
             }
 
             runtime.Grid.Register(item);
+#if FLOW_DIAGNOSTICS
+            FlowDiagnostics.LogDrop(runtime, item);
+#endif
         }
     }
 }
